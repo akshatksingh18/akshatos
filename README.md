@@ -1,8 +1,9 @@
 # Squat Reminder
 
 Personal, local-only interval reminders with a polished daily dashboard, Pause/Resume controls,
-actionable notifications, completed-set tracking, and an end-of-day overview. The accepted primary
-target is iPhone; the existing Android Kotlin/Compose source remains an unverified fallback.
+actionable notifications, completed-set tracking, daily-goal streak motivation, optional Home
+auto-pause, and an end-of-day overview. The accepted primary target is iPhone; the existing Android
+Kotlin/Compose source remains an unverified fallback.
 
 **Current state:** the iPhone app has not been scaffolded or built. The Android scaffold exists but
 has never completed a clean build or physical-device run. Nothing in this README is a claim that
@@ -11,6 +12,8 @@ either platform is verified.
 Source and planning are backed up in the private
 [`akshatksingh18/squat-reminder`](https://github.com/akshatksingh18/squat-reminder) repository.
 Private hosting does not change the app's local-only runtime design.
+It also does not bypass iOS permission rules: Home automation remains opt-in and is explained before
+the app asks for location access.
 
 ## Intended daily behavior
 
@@ -19,11 +22,17 @@ Private hosting does not change the app's local-only runtime design.
 - Receive ordinary local notifications until pausing or tapping **End my day**.
 - Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
   not unrecorded individual repetitions.
+- Reach the configurable daily set goal to qualify that local date for the streak. The dashboard
+  shows today's progress plus current and personal-best streak; the initial goal number remains to
+  be chosen later rather than hard-coded now.
 - Use **Pause** while away and **Resume** when ready. Resume begins a fresh 45-minute interval.
+- Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
+  only that same day if the geofence caused the pause. Manual controls remain available at all times.
 - Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day.
-- End finalizes the day and shows completed sets, timing, pauses, snoozes, and a completion timeline.
+- End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
+  a completion timeline. A below-goal current date stays marked at risk until that date ends.
 - Keep lightweight daily summaries locally. There is no account, cloud sync, remote analytics,
-  multiple schedule engine, or backend.
+  movement history, multiple schedules, second reminder engine, or backend.
 
 The accepted feature scope and dashboard behavior are in [`features.md`](features.md).
 
@@ -39,14 +48,23 @@ space may show only Done and Pause; expand the notification for the third action
 notification controls use the same idempotent lifecycle commands.
 
 Settings and current intent live in `UserDefaults`; versioned local session/event storage owns
-completion timestamps, pause segments, and daily summaries. On launch and foreground return the app
-must query actual notification permission and pending requests, merge any locked-device actions,
+completion timestamps, pause segments, each date's goal snapshot/qualification, and daily summaries.
+Current and best streak are derived from those records. On launch and foreground return the app must
+query actual notification permission and pending requests, merge any locked-device actions,
 reconcile them with stored intent, and show Running only when system state supports that claim.
 
-After the native core works, App Intents can expose Start, Pause, Resume, Done, and End to optional
-Siri/Shortcuts automations. The recommended forgotten-away convenience is Leave Home → Pause and
-Arrive Home → Resume, guarded so arrival cannot restart an ended or manually paused day. The app
-itself does not request always-on location access and does not depend on automation.
+The accepted forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
+location to choose/confirm a circular Home boundary, then requests the authorization needed for iOS
+to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
+state stay in protected local storage; the app never continuously tracks location or saves a route.
+Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
+is Home-away automation. A deliberate pause always wins; an explicit run-anyway choice while outside
+temporarily suppresses repeat exit events.
+
+After the native commands work, App Intents expose Start, Pause, Resume, Done, and End to optional
+Siri/Shortcuts Leave/Arrive or Focus automations. They are backup/alternate triggers, not the reminder
+engine. Native and Shortcut events share idempotent, pause-source-aware commands so duplicates are
+safe.
 
 ### iPhone caveats
 
@@ -59,6 +77,13 @@ itself does not request always-on location access and does not depend on automat
   be tested on the actual iPhone before calling reminders dependable.
 - Notification actions must be tested locked/backgrounded, including duplicate callbacks, action
   order, Pause/End races, and persistence before the system background callback expires.
+- Home entry/exit is a system convenience, not precise real-time tracking. Authorization changes,
+  Background App Refresh restrictions, boundary jitter, reboot-before-first-unlock, force-quit, or a
+  missed region event can degrade it; the app must report that status and retain manual/notification
+  controls rather than silently claiming success.
+- Streak qualification uses explicit non-undone Done events and the goal stored for each local date.
+  Test skipped days, multiple same-day sessions, Undo, goal changes, midnight, daylight-saving, and
+  time-zone changes before trusting current/best totals.
 - Same-bundle refresh should preserve the app container, but it must be proven. Never uninstall as
   part of routine refresh because uninstall removes preferences, history, and pending requests.
 
@@ -91,7 +116,7 @@ source ownership are in `architecture.md`; open work is in `todo.md`.
 
 ## Documentation synchronization
 
-When product behavior, platform priority, scheduling, permission handling, persistence, build/
-signing, status, or recovery changes, update this README, `features.md`, `architecture.md`, `todo.md`,
-and `CLAUDE.md` together. Keep accepted plan, present source, and physically verified behavior
-separate.
+When product behavior, platform priority, scheduling, notification/location permission handling,
+streak rules, persistence, build/signing, status, or recovery changes, update this README,
+`features.md`, `architecture.md`, `todo.md`, and `CLAUDE.md` together. Keep accepted plan, present
+source, and physically verified behavior separate.

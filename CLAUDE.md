@@ -1,10 +1,10 @@
 # Squat Reminder
 
 Personal, local-only squat-reminder app with a daily Start/Pause/Resume/End lifecycle, actionable
-interval notifications, completed-set tracking, and a daily overview. The primary target is now
-Akshat's iPhone; the current Kotlin/Compose Android scaffold is preserved as a fallback for the old
-Android phone. Both variants are personal sideloads only: no backend, account, remote analytics,
-App Store, or Play Store release.
+interval notifications, completed-set tracking, streak motivation, optional Home-geofence
+auto-pause/resume, and a daily overview. The primary target is now Akshat's iPhone; the current
+Kotlin/Compose Android scaffold is preserved as a fallback for the old Android phone. Both variants
+are personal sideloads only: no backend, account, remote analytics, App Store, or Play Store release.
 
 **Status:** iPhone plan accepted but not implemented; Android fallback remains an unverified
 scaffold. Moves to Building when the separate SwiftUI iOS target exists, produces its first
@@ -16,8 +16,9 @@ release IPA, and begins physical-device verification; neither platform is curren
   signing, refresh, testing, and fallback plan.
 - `README.md` — current product/status overview, accepted iPhone behavior and caveats, build/
   installation boundary, and Android fallback evaluation steps.
-- `features.md` — accepted dashboard, lifecycle, notification actions, completion counting, daily
-  overview/history, optional Shortcuts automation, and v1 scope; read before product work.
+- `features.md` — accepted dashboard, lifecycle, notification actions, completion counting,
+  goal/streak rules, Home geofence, daily overview/history, optional Shortcuts automation, and v1
+  scope; read before product work.
 - `architecture.md` — accepted native-iOS scheduling/reconciliation plan plus the distinct current
   Android fallback stack/source design and cross-platform invariants.
 - `todo.md` — prioritized iPhone implementation/physical-refresh gates and separate Android gaps;
@@ -38,8 +39,9 @@ release IPA, and begins physical-device verification; neither platform is curren
   or delete the Android fallback.
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), tap
   **Start my day**, receive ordinary squat reminders, log completed sets, Pause/Resume around
-  interruptions, and tap **End my day** for a local daily overview. `features.md` owns the exact
-  dashboard, lifecycle, notification-action, counting, history, and optional automation scope.
+  interruptions, protect a daily-goal streak, optionally auto-pause outside Home, and tap **End my
+  day** for a local daily overview. `features.md` owns the exact dashboard, lifecycle,
+  notification-action, counting/streak, geofence, history, and automation scope.
 - Count explicit completed squat **sets/breaks** in v1. Do not infer individual repetitions or
   notification-delivery counts. Keep timestamped current-day events and lightweight local daily
   summaries, but do not add accounts, cloud sync, social features, remote analytics, or a server.
@@ -47,9 +49,11 @@ release IPA, and begins physical-device verification; neither platform is curren
   staying alive, a background timer, Web Push, a remote notification service, a Shortcut or
   Personal Automation, LiveContainer/JIT, or the Android phone. App Intents/Shortcuts are optional
   convenience entry points after the native core works, never the reminder engine.
-- Use a single ordinary application target with no widget, Watch app, App Group, background mode,
-  or notification-service extension. This keeps free provisioning and replacement installers as
-  simple as possible.
+- Use a single ordinary application target with no widget, Watch app, App Group, or notification-
+  service extension. Core Location geographic-region monitoring and its honest usage descriptions
+  are accepted for Home auto-pause. Add only the location/background configuration demonstrated to
+  be necessary for region events on the target iOS version; never run continuous route/location
+  tracking or retain movement history.
 
 ### Notification behavior
 
@@ -90,11 +94,12 @@ release IPA, and begins physical-device verification; neither platform is curren
 
 ### Persistence and reconciliation
 
-- Keep settings, current lifecycle intent, stable identifiers, and a schema/version key in
-  `UserDefaults`. Use a local versioned SwiftData store for active/finalized day sessions,
-  completion timestamps, pause segments, and snooze events when the final deployment target is
-  iOS 17 or later; fall back to Core Data or SQLite only if the activation toolchain/device makes
-  SwiftData unsuitable.
+- Keep settings, current lifecycle intent, stable identifiers, daily-goal configuration, geofence
+  enablement/health, and a schema/version key in `UserDefaults`. Store the Home coordinate/radius in
+  protected local storage, never logs or remote services. Use a local versioned SwiftData store for
+  active/finalized day sessions, completion timestamps, pause segments, snooze events, per-day goal
+  snapshots, and streak qualification when the final deployment target is iOS 17 or later; fall back
+  to Core Data or SQLite only if the activation toolchain/device makes SwiftData unsuitable.
 - Notification actions can run while the phone is locked. Write each action through an idempotent,
   lock-safe command path; if the primary store is unavailable under data protection, durably queue
   the small action event and merge it into the main store on the next accessible foreground pass.
@@ -118,19 +123,34 @@ release IPA, and begins physical-device verification; neither platform is curren
 ### Dashboard, overview, and automation
 
 - Build the dashboard around one readable state hero, a scheduled-next-reminder treatment, a large
-  sets-completed-today count, contextual lifecycle controls, and a compact Today event timeline.
-  End requires confirmation and opens a summary with sets, start/end, active/paused duration,
-  completion times, pause segments, snoozes, and interval. Keep finalized daily summaries local.
+  sets-completed-today count, configurable daily-goal progress, current/best streak, contextual
+  lifecycle controls, and a compact Today event timeline. End requires confirmation and opens a
+  summary with sets, goal/streak result, start/end, active/paused duration, completion times, pause
+  segments, snoozes, and interval. Keep finalized daily summaries local.
 - Treat only explicit Done actions as completion evidence. iOS does not provide a dependable count
   of every notification actually presented under Focus/Scheduled Summary, so do not display a
   fabricated delivery count or completion percentage.
+- A day qualifies once when its local-day set total reaches the configured threshold. The initial
+  threshold remains deliberately unset until Akshat chooses it. Store the goal used per day, apply
+  later goal changes prospectively, treat an unfinished current day as at risk rather than already
+  broken, and deterministically recompute current/best streak after Undo or day edits. Do not add a
+  grace/freeze or retroactive goal rewrite without an explicit later decision.
+- Implement native Home auto-pause with one system-monitored circular geographic region. Request
+  authorization only from an explanatory setup flow: use foreground access to choose/confirm Home,
+  then request Always access for terminated/background delivery. Leaving pauses only a Running day;
+  entering resumes only that same day when its pause reason is `homeAwayAutomation`. Persist no movement
+  trail, debounce boundary noise, and provide edit/disable/delete controls.
+- A deliberate Pause while already auto-paused replaces the automation reason so arrival cannot
+  override it. Start while known Outside offers start-paused versus run-anyway; a confirmed manual
+  Resume while Outside suppresses repeat exit auto-pauses until Home entry or End.
+- Location denial/revocation, insufficient authorization, unavailable region monitoring,
+  Background App Refresh off, reboot-before-first-unlock, or a missed event must show a degraded
+  automation state with manual/notification fallback. Do not label Home automation healthy merely
+  because a region was registered.
 - After core behavior passes, add App Intents for Start, Pause, Resume, Log completed set, and End.
-  Document optional Shortcuts automations for Leave Home/Arrive Home and Focus/workout changes.
-  An arrival action may resume only a day paused by its matching away automation; it cannot restart
-  an ended day or override a manual pause.
-- Do not add native always-on location/geofencing in v1. Shortcuts owns optional location triggers,
-  so the app keeps its no-location, no-background-mode capability profile. If Shortcuts is disabled
-  or fails, normal dashboard/notification controls remain complete and truthful.
+  Shortcuts Leave/Arrive and Focus/workout automations remain optional backup/alternate triggers.
+  Native geofence and Shortcut events call the same idempotent commands, and neither may restart an
+  ended day or override a manual/notification pause.
 
 ### Build and signing artifact
 
@@ -229,6 +249,13 @@ release IPA, and begins physical-device verification; neither platform is curren
   <https://developer.apple.com/documentation/appintents>,
   <https://developer.apple.com/documentation/appintents/app-shortcuts>, and
   <https://support.apple.com/guide/shortcuts/welcome/ios>.
+- Core Location geographic-condition monitoring can wake an iOS app for region changes. Reliable
+  terminated-app delivery requires Always authorization; region events remain approximate and must
+  be treated as a convenience with observable fallbacks. Re-check the selected API and capability
+  configuration against the final deployment target:
+  <https://developer.apple.com/documentation/corelocation/monitoring-the-user-s-proximity-to-geographic-regions>,
+  <https://developer.apple.com/documentation/corelocation/requesting-authorization-to-use-location-services>,
+  and <https://developer.apple.com/documentation/corelocation/handling-location-updates-in-the-background>.
 - Re-check the official Sideloadly FAQ and changelog before activation or after an iOS/Apple-login
   change. They document current iOS support, same-bundle overwrite behavior, background refresh,
   wireless-detection caveats, retry behavior, and recent Apple-authentication fixes:
@@ -249,6 +276,14 @@ current observed behavior in the applicable project document rather than relying
   snooze, Pause/End with a snooze pending, and notification action ordering in compact/expanded UI;
 - daily summary correctness across start/end, pause segments, snoozes, completions, local midnight,
   time-zone changes, relaunch, and same-day restart confirmation;
+- goal/streak behavior below, exactly at, and above the chosen threshold; current-day at-risk state;
+  skipped days; same-day multiple sessions; Undo/past-day edits; prospective goal changes; current/
+  best recomputation; midnight, daylight-saving, clock, and time-zone changes;
+- Home setup/edit/disable/delete; When In Use → Always authorization, denial/revocation/reduced
+  accuracy, region-monitoring unavailability, enter/exit while foreground/background/terminated,
+  force-quit, boundary jitter/duplicate events, Background App Refresh off/on, reboot before/after
+  first unlock, Start/Resume while outside, deliberate-pause precedence, missed-event reconciliation,
+  and proof that no route/location history is retained;
 - foreground, locked screen, ordinary background, explicit force-quit, device reboot, and Low
   Power Mode;
 - notifications while a representative Focus mode and Scheduled Summary are enabled, confirming
@@ -258,9 +293,9 @@ current observed behavior in the applicable project document rather than relying
   `UserDefaults`, the installation container, and reminder reconciliation remain sound;
 - Windows reboot, Sideloadly daemon restart, phone absent during an attempted refresh, later retry,
   pairing/authentication failure, and the visible expiry-warning path;
-- App Intents invoked from Siri/Shortcuts plus optional Leave/Arrive and Focus automations; prove an
-  arrival cannot resume an ended day or a day paused manually, and document disabled/failed
-  automation behavior without adding native location access;
+- App Intents invoked from Siri/Shortcuts plus optional Leave/Arrive and Focus automations; prove
+  native and Shortcut boundary events remain idempotent and that arrival cannot resume an ended day
+  or a day paused manually; document disabled/failed automation behavior;
 - a controlled expiry/recovery exercise on a disposable/test state before trusting automation;
   never use “pending notifications might survive expiry” as a success condition;
 - multiple consecutive seven-day signing cycles without uninstalling, changing bundle IDs, losing
@@ -269,27 +304,33 @@ current observed behavior in the applicable project document rather than relying
 ### Phased implementation plan
 
 1. **Product and visual foundation:** create the separate SwiftUI target, permanent bundle ID,
-   reusable dashboard tokens/components, explicit lifecycle state model, and notification
-   permission/status presentation while leaving Android intact.
+   reusable dashboard tokens/components, explicit lifecycle state model, goal/streak presentation,
+   and notification/location permission-status surfaces while leaving Android intact.
 2. **Reliable lifecycle:** implement validated interval input, Start/Pause/Resume/End, the single
    repeating request plus one snooze request, `UserDefaults` intent, versioned day/event storage,
    idempotent domain commands, and foreground reconciliation. Gate optional automation on this core.
 3. **Actions and insight:** implement Done +1, notification actions, lock-safe action persistence,
-   Undo, Today timeline, finalized daily summaries/history, and the end-of-day overview. Verify the
-   summary never treats scheduled/delivered reminders as completed sets.
-4. **Native verification:** build on macOS/Xcode and complete action ordering, locked/background/
+   Undo, Today timeline, per-day goal snapshot, deterministic current/best streak calculation,
+   finalized daily summaries/history, and the end-of-day overview. Verify the summary never treats
+   scheduled/delivered reminders as completed sets.
+4. **Home automation:** implement one locally stored geographic Home condition, staged When In Use
+   then Always authorization, pause-source guards, boundary-event deduplication, automation health,
+   and edit/disable/delete. Use region monitoring, not continuous tracking, and keep every manual
+   fallback working.
+5. **Native verification:** build on macOS/Xcode and complete action ordering, locked/background/
    force-quit, reboot, Focus/Summary, Low Power Mode, permission, snooze, lifecycle, persistence, and
-   day-boundary tests on the physical iPhone.
-5. **Optional-away automation:** expose App Intents and prove Leave/Arrive or Focus automations on
-   the target iPhone, including pause-source guards and failure states. Keep native location access
-   out unless a later explicit decision replaces this approach.
-6. **Portable release:** produce and checksum a clean release IPA; prove same-bundle overwrite and
+   day-boundary, goal/streak, geofence, Background App Refresh, and authorization tests on the
+   physical iPhone.
+6. **Optional Shortcut automation:** expose App Intents and prove Leave/Arrive or Focus automations
+   on the target iPhone as backup/alternate triggers, including pause-source guards, duplicate native
+   plus Shortcut events, and failure states.
+7. **Portable release:** produce and checksum a clean release IPA; prove same-bundle overwrite and
    state/history/request reconciliation first through a direct reinstall and then through Sideloadly.
-7. **Reliable refresh:** configure Local Anisette, Windows-start daemon, early retries, verified
+8. **Reliable refresh:** configure Local Anisette, Windows-start daemon, early retries, verified
    success records, expiry alerts, and USB recovery; exercise failure and expiry recovery.
-8. **Soak:** run through multiple profile cycles before calling it dependable. Only after the iOS
-   path is stable should nonessential goals/streaks, rep tracking, native geofencing, or Android
-   parity work resume.
+9. **Soak:** run through multiple profile cycles before calling it dependable. Only after the iOS
+   path is stable should nonessential rep tracking, streak freezes, deeper charts/achievements, or
+   Android parity work resume.
 
 ### iPhone done criteria
 
@@ -303,11 +344,17 @@ The iPhone path can be described as working only when all of the following are t
 - Done from both dashboard and notification records exactly one set, 10-minute snooze never
   accumulates requests or records completion, and the Today timeline/history/end summary survive
   relaunch, locked action handling, and in-place upgrade without duplication or loss;
+- the configurable daily goal, current/best streak, at-risk state, qualification history, and
+  prospective goal changes remain correct across End, skipped days, Undo, relaunch, local midnight,
+  daylight-saving changes, and time-zone changes;
 - expected behavior is physically verified across background/force-quit, reboot, Low Power Mode,
   notification-setting changes, actionable-notification presentation, and the documented Focus/
   Summary caveats;
-- the core loop remains complete without Shortcuts; if Leave/Arrive automation is enabled, it
-  pauses/resumes only the appropriate running day and fails safely without always-on app location;
+- optional Home auto-pause uses one local-only system geofence, pauses/resumes only the appropriate
+  active day, never records a movement trail, reports degraded authorization/system conditions, and
+  leaves the manual and notification controls fully usable when no region event arrives;
+- the core loop remains complete without Shortcuts; optional native and Shortcut automations share
+  idempotent source-aware commands and cannot resume an ended or deliberately paused day;
 - same-bundle Sideloadly refresh preserves local state through multiple cycles, daily/early
   automation proves success rather than merely running, expiry risk raises a visible alert, and
   USB recovery has been rehearsed;
@@ -331,21 +378,24 @@ credentials, signing material, provisioning data, device state, or release IPAs.
   separately.
 - Preserve the local-only, single-user, one-purpose scope unless Akshat explicitly changes it.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
-  Start/Pause/Resume/End lifecycle, explicit-set counting, daily overview, and notification actions;
-  keep optional Shortcuts automation distinct from the dependable native core.
+  Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily
+  overview, and notification actions; keep optional Shortcuts automation distinct from the
+  dependable native core.
 - Read `architecture.md` before changing notification/alarm, reboot, permission, reconciliation,
-  action handling, day/session persistence, Shortcuts, or lifecycle behavior on either platform.
+  action handling, day/session persistence, streak, Core Location/geofence, Shortcuts, or lifecycle
+  behavior on either platform.
   When the iOS target is created, replace planned architecture statements with implemented details,
   add/index exact setup documentation, and keep Android fallback behavior explicitly separate.
 - Keep actionable implementation gaps in `todo.md`; remove or rewrite an item when its current
   state changes instead of appending dated progress notes. Do not mix unimplemented iPhone work
   into statements that describe the current Android scaffold as already working.
 - Preserve the permanent iOS bundle ID, ordinary/actionable-notification design, standard portable
-  IPA, and early verified refresh buffer unless Akshat explicitly changes the deployment strategy.
+  IPA, local-only Home boundary, deterministic streak rules, and early verified refresh buffer
+  unless Akshat explicitly changes the deployment strategy.
 - Treat Sideloadly as a replaceable signer/installer, not an application runtime or proprietary
   build target. Never couple reminder behavior to it.
-- Any material product, platform, scheduling, permission, persistence, build/signing, status, or
-  recovery decision must update this file and every affected current-state supporting document—
+- Any material product, platform, scheduling, permission, location, streak, persistence, build/
+  signing, status, or recovery decision must update this file and every affected current-state document—
   especially `features.md`, `README.md`, `architecture.md`, and `todo.md`—in the same change. Keep
   iPhone plan, iPhone implementation, Android fallback, and physical verification claims explicitly
   separate.

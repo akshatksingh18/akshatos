@@ -7,11 +7,16 @@ primary; Android remains a separate fallback scaffold.
 
 - [ ] **Choose activation inputs.** Confirm the permanent unique bundle ID, Apple Account/team,
       compatible Mac/Xcode build path, Windows IPA-cache/backup locations, and refresh-alert method.
+- [ ] **Choose the deferred product constants before behavior acceptance.** Set the initial daily
+      completed-set goal and validate a practical default Home-boundary radius on the actual phone;
+      keep both configurable and do not block the initial scaffold on choosing the numbers now.
 - [ ] **Create the separate SwiftUI target.** Keep the Android module intact and add one minimal iOS
-      application target with no extensions or unnecessary entitlements.
+      application target with no extensions or unnecessary entitlements; include honest notification
+      and location usage descriptions once their setup flows exist.
 - [ ] **Build the visual dashboard foundation.** Add reusable colors/type/spacing/components, the
-      state hero and scheduled countdown, sets-completed card, contextual lifecycle controls, Today
-      timeline, accessibility labels, Dynamic Type, contrast, and Reduce Motion behavior.
+      state hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak
+      card, contextual lifecycle controls, Today timeline, automation-health surface, accessibility
+      labels, Dynamic Type, contrast, and Reduce Motion behavior.
 - [ ] **Implement permission/status UI.** Cover not-determined, authorized, denied, later-revoked,
       Focus/Summary caveats, and the Settings route without displaying a false Running state.
 - [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
@@ -25,20 +30,36 @@ primary; Android remains a separate fallback scaffold.
 - [ ] **Implement local day data and overview.** Add versioned session/event persistence, pause
       segments, snooze events, Today timeline, End-my-day summary, lightweight daily history, local
       midnight/time-zone handling, migration coverage, and explicit history deletion.
+- [ ] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
+      at most once from explicit non-undone Done events, derive current/best streak, keep the current
+      date at risk until rollover, treat skipped post-activation dates as missed, apply goal changes
+      prospectively, and recompute safely after Undo or past-day edits.
+- [ ] **Implement opt-in Home auto-pause.** Add explanatory staged When In Use → Always authorization,
+      one-shot Home selection plus map/radius confirmation, one stable monitored circular region,
+      protected this-device-only boundary storage, pause-reason guards, duplicate/jitter handling,
+      deliberate-pause precedence, outside-Home Start/Resume handling, launch reconciliation, visible
+      automation health, and edit/disable/delete. Never continuously track location or persist a
+      movement trail.
 - [ ] **Implement foreground reconciliation.** Compare `UserDefaults`, actual notification settings,
-      recurring/snooze requests, pending action inbox, and day data on launch/foreground return;
-      cancel stale requests and expose missing/wrong-request repair.
+      recurring/snooze requests, pending action inbox, day data, and Home-region configuration on
+      launch/foreground return; cancel stale requests and expose reminder or geofence repair/degraded
+      states.
 - [ ] **Add logic and persistence tests.** Cover lifecycle transitions, interval validation, state
       reconciliation, action deduplication, permission transitions, snooze replacement, summary
-      derivation, day boundaries, migrations, and protected-data fallback. Simulator tests do not
-      replace hardware tests.
+      derivation, goal/streak boundaries, skipped dates, same-day sessions, Undo/past edits,
+      prospective goal changes, day/DST/time-zone boundaries, geofence pause-source guards and
+      duplicate events, migrations, and protected-data fallback. Simulator tests do not replace
+      hardware tests.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End, snooze,
       foreground/background, explicit force-quit, reboot, Low Power Mode, Focus, Scheduled Summary,
-      external notification-setting changes, delivery-boundary races, day summary, and relaunch.
+      external notification-setting changes, delivery-boundary races, day summary, streak rollover,
+      Home setup/entry/exit, region jitter, Background App Refresh off/on, reboot/first-unlock, missed
+      event recovery, proof of no stored movement trail, and relaunch.
 - [ ] **Add optional App Intents and automation guide.** Expose Start, Pause, Resume, Log set, and
       End only after the core works; prove Leave/Arrive or Focus automations, pause-source guards,
-      disabled/failure behavior, and no native location permission.
+      duplicate native-plus-Shortcut callbacks, and disabled/failure behavior as backup/alternate
+      triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
@@ -60,13 +81,13 @@ primary; Android remains a separate fallback scaffold.
 ## Optional ideas (not committed scope)
 
 - Configurable repetitions per set and actual total-rep tracking.
-- Daily set goals, streaks, achievements, deeper charts, or shareable summaries.
+- Streak freezes/grace days, broader achievements, deeper charts, or shareable summaries.
 - More snooze durations, an optional end-of-day prompt, or scheduled quiet window.
-- Native geofencing, multiple profiles/schedules, HealthKit, or a widget remain out of scope unless
-  Akshat explicitly expands the one-purpose product after the core is reliable.
+- Multiple saved places/geofences, multiple profiles/schedules, HealthKit, or a widget remain out of
+  scope unless Akshat explicitly expands the one-purpose product after the core is reliable.
 
 ## Documentation synchronization
 
-When an item changes product/platform behavior or becomes implemented/verified, update
-`features.md`, `README.md`, `architecture.md`, and `CLAUDE.md` in the same change; remove or rewrite
-the item rather than appending a dated progress log.
+When an item changes product/platform behavior, notification/location permissions, streak rules, or
+becomes implemented/verified, update `features.md`, `README.md`, `architecture.md`, and `CLAUDE.md`
+in the same change; remove or rewrite the item rather than appending a dated progress log.
