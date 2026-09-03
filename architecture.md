@@ -1,17 +1,71 @@
-# Squat Reminder Architecture
+# Squat Reminder architecture
 
-## Stack
+**State:** The iPhone-first architecture is accepted but unimplemented. The Android source tree is
+an existing, never-verified fallback scaffold. Track the two platforms separately.
 
-- Kotlin 2.2.20 and Jetpack Compose with Material3
-- AGP 9.2.1, compileSdk/targetSdk 36, minSdk 26
-- `AlarmManager.setExactAndAllowWhileIdle` for reminder scheduling
-- SharedPreferences for running state, interval, and next trigger time
-- No database, navigation framework, media stack, backend, or analytics
+## Primary iPhone architecture
 
-The versions above are scaffold selections, not verified build results. Re-check compatibility
-when the project is activated.
+### Stack and source boundary
 
-## Source layout
+- Swift and SwiftUI in a separate iOS target/source area within this repository.
+- UserNotifications for ordinary local reminders.
+- `UserDefaults` for selected interval, desired running state, and a small schema/version key.
+- One application target only: no widget, Watch app, App Group, notification-service extension,
+  backend, analytics, remote push, or background mode.
+
+### Scheduling model
+
+- Keep one stable notification request identifier.
+- Start validates a whole-minute interval, requests authorization when undetermined, removes any
+  stale request with that identifier, and adds exactly one repeating
+  `UNTimeIntervalNotificationTrigger`. The repeating interval is at least 60 seconds.
+- Store/display Running only after the request is accepted and permission remains usable. The first
+  reminder occurs one interval after Start.
+- Stop removes the pending request by identifier, clears desired running state, and may remove
+  already-delivered Squat Reminder notifications after physical testing establishes the least
+  surprising behavior.
+- Do not use an in-process timer, background loop, unbounded list of future notifications, Web Push,
+  a Shortcut/Personal Automation, or a server.
+
+### State reconciliation
+
+On launch and every foreground return, inspect both notification settings and pending requests:
+
+- desired running + correct request + usable permission = Running;
+- desired running + missing/wrong request = repair-required state with explicit re-arm (or a later
+  carefully tested foreground repair);
+- desired stopped + unexpected request = cancel stale request;
+- disabled/revoked permission = blocked state even if a request remains pending.
+
+`UserDefaults` records intent, not system truth. Interval edits remain stopped-only. If that product
+decision changes, replace the active request and update stored state only after replacement succeeds.
+
+### iOS delivery limits
+
+Focus, Scheduled Summary, sound/banner settings, permission revocation, and user actions can delay or
+silence ordinary notifications. The UI should explain observable state and route to Settings; it
+cannot promise interruption. Critical Alerts and Time Sensitive delivery are not product dependencies.
+
+### Build/deployment boundary
+
+A compatible Mac/Xcode environment produces a conventional release IPA with one permanent bundle
+ID. Windows refreshes the cached IPA through the shared Sideloadly portfolio. Same-bundle overwrite,
+state/request reconciliation, expiry recovery, and USB fallback must pass on the physical iPhone;
+routine refresh never uninstalls the app. Detailed gates live in `CLAUDE.md` and `../CLAUDE.md`.
+
+## Current Android fallback architecture
+
+### Stack
+
+- Kotlin 2.2.20 and Jetpack Compose with Material3.
+- AGP 9.2.1, compileSdk/targetSdk 36, minSdk 26.
+- `AlarmManager.setExactAndAllowWhileIdle` for reminder scheduling.
+- SharedPreferences for running state, interval, and next trigger time.
+- No database, navigation framework, backend, or analytics.
+
+These are scaffold selections, not verified build results. Re-check compatibility on activation.
+
+### Source layout
 
 ```text
 app/src/main/java/com/akshat/squatreminder/
@@ -22,38 +76,29 @@ app/src/main/java/com/akshat/squatreminder/
 └── ReminderPrefs.kt       # SharedPreferences wrapper
 ```
 
-## Design decisions
+### Android scheduling decisions
 
-### The interval is user-settable
+- The interval is editable only while stopped and is read when starting the next chain.
+- Exact alarms were selected over periodic WorkManager or a foreground service for closer interval
+  timing, subject to exact-alarm permission and OEM behavior.
+- Each receiver invocation schedules the next alarm only while stored running state is true, so one
+  alarm remains in flight.
+- Manifest declarations are not enough: notification permission and exact-alarm access must be
+  reflected in truthful UI state.
+- Exact alarms disappear on reboot; `BootReceiver` intends to re-arm from stored state. This has not
+  been proven on hardware.
 
-The interval is stored in preferences and should be editable only while stopped. The scheduler
-reads it again for each new alarm so the next started chain uses the current value.
+## Cross-platform product invariants
 
-### Exact alarms instead of periodic work
+- One local user, one interval, one Start/Stop schedule, no history or service dependency.
+- “Running” must reflect actual platform scheduling/permission capability, not preferences alone.
+- Start must not create duplicates; Stop must make future reminders cease as far as the platform
+  permits and report any unavoidable delivery race honestly.
+- Platform scheduling implementations remain separate. Do not port Android exact-alarm assumptions
+  to iOS or claim parity without physical tests on both devices.
 
-The intended behavior requires reminders near the selected interval even while the phone is
-idle. WorkManager periodic work has a minimum interval and intentionally batches execution; a
-foreground service would add persistent-notification and lifecycle complexity. Exact alarms fit
-the intended personal reminder behavior, subject to Android permission and OEM restrictions.
+## Documentation synchronization
 
-### A self-rescheduling chain
-
-Each receiver invocation schedules the next alarm only when the stored running state remains
-true. This avoids an inexact repeating alarm and keeps only one alarm in flight.
-
-### Permission-aware state
-
-The manifest permission alone is insufficient. The app must account for exact-alarm access and
-notification permission. Displayed “Running” state should not imply successful delivery when a
-required permission is absent.
-
-### Reboot recovery
-
-Exact alarms disappear on reboot. When the stored running state is true, the boot receiver is
-intended to schedule the next reminder using the stored interval. This behavior remains
-unverified until physical-device testing.
-
-### SharedPreferences instead of a database
-
-The product needs only running state, next-trigger time, and interval. There is no history or
-multi-profile data that would justify a database.
+Any material scheduling, permission, persistence, platform, build/signing, status, or recovery
+change must update this file, `README.md`, `todo.md`, and `CLAUDE.md` in the same change. Record planned,
+implemented, and physically verified state separately.

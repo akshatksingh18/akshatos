@@ -1,50 +1,52 @@
 # TODO / known gaps
 
-Nothing here is urgent — the app should work as-is once built and sideloaded.
-Rough order of what's probably worth doing first if you pick this back up:
+This is current-state work, not a claim that either platform is already usable. The iPhone path is
+primary; Android remains a separate fallback scaffold.
 
-- [ ] **No launcher icon.** Currently relies on Android Studio's default
-      generated icon (or none, if it doesn't scaffold one for a manifest
-      with no `android:icon` set). Cosmetic only — doesn't affect function.
-      Add an `ic_launcher` set via Android Studio's Image Asset tool if you
-      want a real icon.
+## iPhone-primary work
 
-- [ ] **Never actually built/run.** This was scaffolded without access to
-      Android Studio or an SDK in the environment it was written in — open
-      it in Android Studio and do a first build/run pass before trusting it.
-      Likely rough edges: exact Compose API surface for the version pins,
-      and whether the exact-alarm settings deep link
-      (`ACTION_REQUEST_SCHEDULE_EXACT_ALARM`) behaves as expected on your
-      specific Android version.
+- [ ] **Choose activation inputs.** Confirm the permanent unique bundle ID, Apple Account/team,
+      compatible Mac/Xcode build path, Windows IPA-cache/backup locations, and refresh-alert method.
+- [ ] **Create the separate SwiftUI target.** Keep the Android module intact and add one minimal iOS
+      application target with no extensions or unnecessary entitlements.
+- [ ] **Implement permission/status UI.** Cover not-determined, authorized, denied, later-revoked,
+      Focus/Summary caveats, and the Settings route without displaying a false Running state.
+- [ ] **Implement one repeating request.** Validate whole minutes (minimum one), use one stable
+      request ID, make Start idempotent, and make Stop cancel the request and stored intent.
+- [ ] **Implement foreground reconciliation.** Compare `UserDefaults`, actual notification settings,
+      and pending requests on launch/foreground return; expose missing/stale request repair.
+- [ ] **Add logic tests.** Cover interval validation, state reconciliation, duplicate Start, Stop,
+      permission transitions, and request replacement. Simulator tests do not replace hardware tests.
+- [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
+      foreground/background, explicit force-quit, reboot, Low Power Mode, Focus, Scheduled Summary,
+      external notification-setting changes, and Stop near a delivery boundary.
+- [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
+      version/source/hash, and cache current plus previous known-good artifacts on Windows.
+- [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
+      and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
+      recovery, and pass multiple cycles without uninstalling.
 
-- [ ] **UI doesn't reflect actual notification-delivery capability.** "Running" is read straight
-      from the `isRunning` preference, not from whether `POST_NOTIFICATIONS` is actually granted.
-      If the user denies/revokes it after starting, the app keeps showing "Running" while
-      reminders silently stop arriving. Fix: check
-      `ContextCompat.checkSelfPermission` in the UI (not just in `ReminderReceiver`) and surface a
-      warning state instead of a bare "Running."
+## Current Android fallback gaps
 
-- [ ] **No input validation UI beyond digit-filtering.** The minutes field
-      clamps to >= 1 on Start, but there's no visible error state if you
-      leave it blank or type 0 — it just silently falls back to 45. A
-      small helper/error text would make that less surprising.
+- [ ] **Never built or run.** Add a Gradle wrapper, complete a clean build, and run on the fallback
+      Android phone before trusting any intended behavior.
+- [ ] **Running UI ignores actual delivery capability.** It reads `isRunning` without reconciling
+      `POST_NOTIFICATIONS` or exact-alarm access; surface a blocked/warning state.
+- [ ] **Input validation is silent.** Blank or zero input currently falls back/clamps without a
+      visible error; add explicit validation feedback.
+- [ ] **No verified launcher icon.** Add a proper `ic_launcher` resource if the scaffold lacks one.
+- [ ] **Reboot and OEM behavior unverified.** Test exact-alarm re-arm after reboot and battery-policy
+      behavior on the actual fallback device; document any required settings honestly.
 
-- [ ] **No snooze / skip-one-reminder.** If a reminder fires at a bad moment
-      (mid-meeting), there's no in-notification action to push it back —
-      you just dismiss it and wait for the next one. A notification action
-      button calling into `ReminderScheduler.scheduleNext()` with a longer
-      delay would cover this.
+## Optional ideas (not committed scope)
 
-- [ ] **No "pause without losing today's Start."** Stop fully cancels the
-      chain; there's no quick pause/resume within a day. Not clear this is
-      wanted — flagging in case it comes up.
+- Snooze/skip-one action.
+- Pause/resume within a day.
+- Reminder history, multiple profiles/schedules, or a widget remain out of scope unless Akshat
+  explicitly expands the one-purpose product.
 
-- [ ] **Doze / manufacturer battery optimization.** Some OEMs (Samsung,
-      Xiaomi, etc.) aggressively kill apps or ignore exact alarms unless the
-      app is also exempted from battery optimization. If reminders start
-      silently skipping after a few hours, check
-      Settings -> Apps -> Squat Reminder -> Battery -> Unrestricted.
+## Documentation synchronization
 
-Not planned unless you ask for them (deliberately kept out of scope for a
-one-job app): reminder history/log, multiple reminder profiles/schedules,
-widget.
+When an item changes product/platform behavior or becomes implemented/verified, update
+`README.md`, `architecture.md`, and `CLAUDE.md` in the same change; remove or rewrite the item rather
+than appending a dated progress log.
