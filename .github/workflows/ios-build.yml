@@ -128,7 +128,7 @@ jobs:
           } > "$artifact_root/build-info.txt"
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: squat-reminder-ios-${{ github.run_number }}
           path: artifacts/

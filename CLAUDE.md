@@ -6,9 +6,10 @@ auto-pause/resume, and a daily overview. The primary target is now Akshat's iPho
 Kotlin/Compose Android scaffold is preserved as a fallback for the old Android phone. Both variants
 are personal sideloads only: no backend, account, remote analytics, App Store, or Play Store release.
 
-**Status:** iPhone cloud-build smoke scaffold added but not yet compiled, signed, installed, or
-opened on the physical phone; Android fallback remains unverified. Moves to Building after the
-first GitHub Actions IPA passes the Sideloadly open test and dashboard implementation begins.
+**Status:** iPhone cloud-build smoke scaffold now passes private GitHub Actions compilation,
+packaging, Windows download, and checksum verification, but is not yet signed, installed, or opened
+on the physical phone; Android fallback remains unverified. Moves to Building after this IPA passes
+the Sideloadly open test and dashboard implementation begins.
 
 ## Files
 

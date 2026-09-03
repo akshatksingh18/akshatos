@@ -5,10 +5,11 @@ actionable notifications, completed-set tracking, daily-goal streak motivation, 
 auto-pause, and an end-of-day overview. The accepted primary target is iPhone; the existing Android
 Kotlin/Compose source remains an unverified fallback.
 
-**Current state:** a minimal SwiftUI iPhone installation-smoke scaffold and private GitHub Actions
-build workflow now exist, but neither has completed its first cloud build or physical-phone open
-test. The Android scaffold has never completed a clean build or physical-device run. Nothing in this
-README is a claim that either platform is verified.
+**Current state:** the minimal SwiftUI iPhone installation-smoke scaffold has completed the private
+GitHub Actions simulator/device builds, IPA packaging, download, and checksum verification. It has
+not yet been signed, installed, or opened on the physical phone. The Android scaffold has never
+completed a clean build or physical-device run. Nothing in this README is a claim that either
+platform is physically verified.
 
 Source and planning are backed up in the private
 [`akshatksingh18/squat-reminder`](https://github.com/akshatksingh18/squat-reminder) repository.

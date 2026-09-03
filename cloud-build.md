@@ -1,7 +1,9 @@
 # Squat Reminder cloud build and iPhone smoke install
 
-**State:** The Windows-authored GitHub Actions path is configured but is not proven until the first
-workflow produces an IPA and that exact artifact opens on Akshat's physical iPhone.
+**State:** The Windows-authored GitHub Actions path has passed simulator compilation, unsigned-device
+compilation, packaging, metadata inspection, artifact upload, Windows download, and SHA-256
+verification. The remaining activation gate is signing, installing, and opening that exact IPA on
+Akshat's physical iPhone.
 
 ## What the pipeline does
 
@@ -28,6 +30,17 @@ Current smoke-build identity:
 Keep the bundle identifier unchanged after the first successful phone installation unless Akshat
 explicitly approves a migration. It is one of the permanent identities in the three-app free-signing
 portfolio.
+
+Current verified cloud artifact:
+
+- source commit: `714ec81c6049c76b349cb198ce839b15e83b80c1`;
+- successful workflow: **iOS Cloud Build #2**;
+- GitHub artifact: `squat-reminder-ios-2`;
+- downloaded ZIP SHA-256: `50539c3d45b093036ee1979faba704cfbe2e93dfc3bbfebd7c47c8143ce15c32`;
+- unsigned IPA SHA-256: `a2b7fc4c5b78ed9276d6657a8d7c406465fab1e956fb9e00109a856f7d4759c1`.
+
+The artifact is still a smoke candidate rather than a known-good release cache entry until the
+physical open test passes.
 
 ## Download the cloud artifact
 
