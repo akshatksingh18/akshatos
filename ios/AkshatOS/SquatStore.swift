@@ -171,7 +171,8 @@ final class ReminderService: NSObject, UNUserNotificationCenterDelegate {
             return
         }
         nextReminder = trigger.nextTriggerDate()
-        snoozeReminder = requests.first(where: { $0.identifier == ReminderService.snooze })?.trigger?.nextTriggerDate()
+        let snoozeTrigger = requests.first(where: { $0.identifier == ReminderService.snooze })?.trigger as? UNTimeIntervalNotificationTrigger
+        snoozeReminder = snoozeTrigger?.nextTriggerDate()
         operational = "Running"
     }
 

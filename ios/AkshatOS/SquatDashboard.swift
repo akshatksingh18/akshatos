@@ -47,6 +47,7 @@ struct SquatDashboard: View {
         }
         .background(Palette.background.ignoresSafeArea())
         .navigationTitle("Squat Reminder").navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showSettings = true } label: { Image(systemName: "slider.horizontal.3") }
