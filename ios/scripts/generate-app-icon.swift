@@ -1,5 +1,7 @@
-import AppKit
+import CoreGraphics
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 
 guard CommandLine.arguments.count == 2 else {
     fputs("Usage: swift generate-app-icon.swift <output.png>\n", stderr)
@@ -7,71 +9,57 @@ guard CommandLine.arguments.count == 2 else {
 }
 
 let side = 1024
-let canvas = NSRect(x: 0, y: 0, width: side, height: side)
+let sideLength = CGFloat(side)
+let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-guard let bitmap = NSBitmapImageRep(
-    bitmapDataPlanes: nil,
-    pixelsWide: side,
-    pixelsHigh: side,
-    bitsPerSample: 8,
-    samplesPerPixel: 3,
-    hasAlpha: false,
-    isPlanar: false,
-    colorSpaceName: .deviceRGB,
-    bytesPerRow: side * 3,
-    bitsPerPixel: 24
-), let graphicsContext = NSGraphicsContext(bitmapImageRep: bitmap) else {
+guard let context = CGContext(
+    data: nil,
+    width: side,
+    height: side,
+    bitsPerComponent: 8,
+    bytesPerRow: 0,
+    space: colorSpace,
+    bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+) else {
     fputs("Unable to create the app-icon drawing context.\n", stderr)
     exit(1)
 }
 
-bitmap.size = NSSize(width: side, height: side)
-NSGraphicsContext.saveGraphicsState()
-NSGraphicsContext.current = graphicsContext
-
-let background = NSGradient(
-    starting: NSColor(calibratedRed: 0.04, green: 0.07, blue: 0.13, alpha: 1),
-    ending: NSColor(calibratedRed: 0.12, green: 0.20, blue: 0.36, alpha: 1)
-)
-background?.draw(in: canvas, angle: -55)
-
-let haloRect = NSRect(x: 164, y: 164, width: 696, height: 696)
-let halo = NSBezierPath(ovalIn: haloRect)
-NSColor(calibratedWhite: 1, alpha: 0.08).setFill()
-halo.fill()
-
-let ringRect = NSRect(x: 218, y: 218, width: 588, height: 588)
-let ring = NSBezierPath(ovalIn: ringRect)
-ring.lineWidth = 36
-NSColor(calibratedRed: 0.70, green: 0.96, blue: 0.38, alpha: 1).setStroke()
-ring.stroke()
-
-let paragraph = NSMutableParagraphStyle()
-paragraph.alignment = .center
-let text = NSString(string: "45")
-let textAttributes: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 300, weight: .heavy),
-    .foregroundColor: NSColor.white,
-    .paragraphStyle: paragraph
-]
-text.draw(
-    in: NSRect(x: 212, y: 342, width: 600, height: 350),
-    withAttributes: textAttributes
+let backgroundColors = [
+    CGColor(red: 0.04, green: 0.07, blue: 0.13, alpha: 1),
+    CGColor(red: 0.12, green: 0.20, blue: 0.36, alpha: 1)
+] as CFArray
+guard let background = CGGradient(
+    colorsSpace: colorSpace,
+    colors: backgroundColors,
+    locations: [0, 1]
+) else {
+    fputs("Unable to create the app-icon gradient.\n", stderr)
+    exit(1)
+}
+context.drawLinearGradient(
+    background,
+    start: CGPoint(x: 0, y: sideLength),
+    end: CGPoint(x: sideLength, y: 0),
+    options: []
 )
 
-let accent = NSBezierPath()
-accent.move(to: NSPoint(x: 350, y: 308))
-accent.line(to: NSPoint(x: 674, y: 308))
-accent.lineWidth = 28
-accent.lineCapStyle = .round
-NSColor(calibratedRed: 0.70, green: 0.96, blue: 0.38, alpha: 1).setStroke()
-accent.stroke()
+context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.08))
+context.fillEllipse(in: CGRect(x: 164, y: 164, width: 696, height: 696))
 
-graphicsContext.flushGraphics()
-NSGraphicsContext.restoreGraphicsState()
+let accentColor = CGColor(red: 0.70, green: 0.96, blue: 0.38, alpha: 1)
+context.setStrokeColor(accentColor)
+context.setLineWidth(36)
+context.strokeEllipse(in: CGRect(x: 218, y: 218, width: 588, height: 588))
 
-guard let png = bitmap.representation(using: .png, properties: [:]) else {
-    fputs("Unable to encode the app icon as PNG.\n", stderr)
+context.setLineWidth(28)
+context.setLineCap(.round)
+context.move(to: CGPoint(x: 350, y: 308))
+context.addLine(to: CGPoint(x: 674, y: 308))
+context.strokePath()
+
+guard let image = context.makeImage() else {
+    fputs("Unable to render the app icon.\n", stderr)
     exit(1)
 }
 
@@ -80,5 +68,18 @@ try FileManager.default.createDirectory(
     at: outputURL.deletingLastPathComponent(),
     withIntermediateDirectories: true
 )
-try png.write(to: outputURL, options: .atomic)
+guard let destination = CGImageDestinationCreateWithURL(
+    outputURL as CFURL,
+    UTType.png.identifier as CFString,
+    1,
+    nil
+) else {
+    fputs("Unable to create the app-icon PNG destination.\n", stderr)
+    exit(1)
+}
+CGImageDestinationAddImage(destination, image, nil)
+guard CGImageDestinationFinalize(destination) else {
+    fputs("Unable to encode the app icon as PNG.\n", stderr)
+    exit(1)
+}
 print("Generated placeholder app icon at \(outputURL.path)")
