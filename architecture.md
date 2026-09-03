@@ -40,7 +40,7 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
 - Core Location geographic-region monitoring for the optional Home boundary and a one-shot
   foreground location only while the user sets or edits Home. Use MapKit/SwiftUI Map for boundary
   confirmation; do not run continuous GPS or retain a movement trail.
-- `UserDefaults` for settings, lifecycle intent, stable identifiers, daily-goal configuration,
+- `UserDefaults` for settings, stable identifiers, daily-goal configuration,
   geofence enablement/health, a small schema/version key, and a lock-safe pending-action inbox when
   primary data is inaccessible. Keep the Home coordinate/radius in protected, this-device-only local
   storage suitable after first unlock, never in logs, analytics, or Git.
@@ -84,7 +84,7 @@ actions and inspect both notification settings and pending requests:
 - desired paused/ended/not-started + unexpected recurring request = cancel stale request;
 - disabled/revoked permission = blocked state even if a request remains pending.
 
-`UserDefaults` records intent, not system truth. Interval edits remain unavailable while Running or
+The SwiftData session records lifecycle intent, not system truth. Interval edits remain unavailable while Running or
 Paused so one active day keeps one interval. If that decision changes, replace the active request and
 update stored state only after replacement succeeds.
 

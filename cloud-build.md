@@ -1,8 +1,8 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Repository/target transition and first hub/Squats source slice implemented. Cloud test,
-simulator/device compilation, new IPA verification, and first AkshatOS physical launch are pending.
-This file owns the evidence; a source change is not a passed build.
+**State:** First AkshatOS preview passed cloud domain/UI tests, simulator/device compilation,
+package inspection and downloaded-IPA checksum verification. First AkshatOS physical installation,
+reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 ## Current identity and artifact
 
@@ -22,9 +22,24 @@ AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
 
+Verified preview: [iOS Cloud Build #5](https://github.com/akshatksingh18/akshatos/actions/runs/33809750440),
+source `6b4bb75b95b86f55707eaef10091c1d8265fd55a`, artifact `akshatos-ios-5`.
+All 12 domain assertions and picker → dashboard → back UI test passed. Both exported simulator
+screenshots were visually inspected; this is not physical-phone evidence. Simulator compilation,
+unsigned device Release build and IPA packaging passed. The downloaded package contains
+`Payload/AkshatOS.app` with the app executable/plist, without a test runner, extension or profile.
+
+Verified extracted download: `C:\Users\aksha\Downloads\akshatos-ios-5`.
+`AkshatOS-unsigned.ipa` SHA-256:
+`403cfb500e316ce24c1baff8cb247ba8ee98b2db2b7d3d396b07cf2b59abacee`.
+The local hash matches the cloud checksum. Keep the IPA, checksum and `build-info.txt` together.
+Screenshots are in its `screenshots/` directory. No durable release-cache promotion or signing
+has been performed for this preview.
+
 1. The workflow generates the code-drawn icon and Xcode project.
-2. Compile/run `ios/tests/main.swift` with the pure `SquatSession.swift` domain.
-3. Compile simulator and unsigned arm64 device Release builds.
+2. Compile/run `ios/tests/main.swift` with the pure `SquatSession.swift` domain (12 assertions).
+3. Compile simulator, run the hub → dashboard → back UI test with screenshot attachments, and
+   compile the unsigned arm64 device Release build. Simulator test runners are not in the IPA.
 4. Inspect bundle/version/executable, package ordinary Payload IPA, generate checksum/build metadata.
 5. Upload a 14-day Actions artifact. Download and checksum it before signing. Keep a durable copy
    outside Git after physical acceptance; temporary Actions storage is not the release cache.
@@ -34,11 +49,12 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 
 ## First AkshatOS install (manual steps; no computer control)
 
-1. Download/extract the latest successful **AkshatOS** workflow artifact, not the old smoke download.
+1. Use the verified **AkshatOS** download above, not the old smoke download; download a newer
+   successful artifact only when its source/build is intentionally selected.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
-   This is a observed workaround, not a confirmed root cause or universal fix.
+   This is an observed workaround, not a confirmed root cause or universal fix.
 4. Select the connected/unlocked iPhone and `AkshatOS-unsigned.ipa`, use the same intended Apple
    Account, and preserve `com.akshatksingh18.akshatos` across signing attempts. Enter secrets only
    in Sideloadly. Verify actual signed identity before relying on retained data.

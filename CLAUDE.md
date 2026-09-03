@@ -11,6 +11,8 @@ The full target feature contract below is not a claim that every feature is impl
 
 ## Files
 
+- `hub-plan.md` — canonical shared packaging, source/identity ownership, feature boundaries,
+  and integration gates; versioned here, with parent/sibling indexes linking to it.
 - `CLAUDE.md` — canonical project instructions and the accepted end-to-end iPhone implementation,
   signing, refresh, testing, and fallback plan.
 - `README.md` — current product/status overview, accepted iPhone behavior and caveats, build/
@@ -25,8 +27,8 @@ The full target feature contract below is not a claim that every feature is impl
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `.github/workflows/ios-build.yml` — private macOS-runner job that generates the Xcode project,
-  compiles simulator/device smoke builds, packages the unsigned IPA, and uploads verified metadata.
-- `ios/` — Windows-authored SwiftUI smoke source, XcodeGen project specification, asset catalog,
+  runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
+- `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,
   and deterministic icon generator; this is the canonical hub source tree.
 - `ios/AkshatOS/` — hub/app entry, visual components, Squats dashboard, pure session domain,
   SwiftData store, and app-scoped notification service; these source files form the first slice.
@@ -109,8 +111,9 @@ The full target feature contract below is not a claim that every feature is impl
 
 ### Persistence and reconciliation
 
-- Keep settings, current lifecycle intent, stable identifiers, daily-goal configuration, geofence
-  enablement/health, and a schema/version key in `UserDefaults`. Store the Home coordinate/radius in
+- Keep idle interval/goal preferences in `UserDefaults`. Lifecycle intent belongs in the same
+  versioned SwiftData session payload as its events, avoiding a separate divergent intent copy.
+  Future geofence enablement/health and identifiers may use namespaced preferences. Store the Home coordinate/radius in
   protected local storage, never logs or remote services. Use a local versioned SwiftData store for
   active/finalized day sessions, completion timestamps, pause segments, snooze events, per-day goal
   snapshots, and streak qualification when the final deployment target is iOS 17 or later; fall back
@@ -121,7 +124,7 @@ The full target feature contract below is not a claim that every feature is impl
   Never lose a Done tap or apply one twice.
 - On launch and every return to the foreground, query both
   `getNotificationSettings` and `getPendingNotificationRequests`. Reconcile the stored intent with
-  the actual pending request instead of trusting `UserDefaults` alone:
+  the actual pending request instead of trusting persisted intent alone:
   - stored running + correct pending request + usable permission = Running;
   - stored running + missing/wrong request = visible repair-required state, with an explicit
     re-arm action (or a carefully tested automatic repair while foregrounded);
@@ -244,7 +247,7 @@ The full target feature contract below is not a claim that every feature is impl
   behavior. Deleting the hub removes all three modules' local data, so full recovery is mandatory.
 - Use Windows Sideloadly, no phone-side host. Another signer is an explicit workflow choice; the
   spare slot is not automatic permission to add it. Free seven-day expiry/early refresh still apply.
-- `../iphone-hub-plan.md` owns source/build ownership and identity reconciliation before coding.
+- `hub-plan.md` owns source/build ownership and identity reconciliation before coding.
   The hub target/workflow now live here; the old downloaded smoke IPA remains a separate historical artifact.
 
 ### Current authoritative constraints

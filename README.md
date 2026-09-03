@@ -57,7 +57,8 @@ The next notification phase will add a category exposing Done, Pause, and Remind
 space may show only Done and Pause; expand the notification for the third action. Dashboard and
 notification controls use the same idempotent lifecycle commands.
 
-Settings and current intent live in `UserDefaults`; versioned local session/event storage owns
+Interval/goal settings live in `UserDefaults`; current session intent and events live in the
+versioned SwiftData store. Versioned local session/event storage owns
 completion timestamps, pause segments, each date's goal snapshot/qualification, and daily summaries.
 Current and best streak are derived from those records. On launch and foreground return the app must
 query actual notification permission and pending requests, merge any locked-device actions,
@@ -99,9 +100,9 @@ safe.
 
 ## iPhone build and installation
 
-The smoke-build download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
+The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Squats, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `../iphone-hub-plan.md`.
+Squats, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a private GitHub Actions macOS/Xcode runner generates the Xcode

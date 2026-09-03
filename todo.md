@@ -13,6 +13,8 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
       `com.akshatksingh18.akshatos`. Physical provisioning of this identity is still a gate.
 - [ ] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
       picker → Squats → back navigation; verify reminders continue while the picker is shown.
+      Cloud domain/navigation tests, both builds and downloaded IPA inspection/hash have passed;
+      first physical AkshatOS install and behavior are still pending (see `cloud-build.md`).
 
 - [x] **Prove the no-local-Mac smoke pipeline.** Cloud simulator/device compilation, packaging,
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
@@ -56,7 +58,8 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
       deliberate-pause precedence, outside-Home Start/Resume handling, launch reconciliation, visible
       automation health, and edit/disable/delete. Never continuously track location or persist a
       movement trail.
-- [ ] **Implement foreground reconciliation.** Compare `UserDefaults`, actual notification settings,
+- [ ] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
+      `UserDefaults` preferences, actual notification settings,
       recurring/snooze requests, pending action inbox, day data, and Home-region configuration on
       launch/foreground return; cancel stale requests and expose reminder or geofence repair/degraded
       states.
@@ -109,7 +112,8 @@ dashboard snooze, SwiftData session storage/recent session overview, and configu
 The unchecked items above describe remaining full-contract implementation and acceptance, not an
 instruction to create second copies of those systems. Cloud domain assertions cover event dedup,
 round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Add service/persistence
-and UI tests plus physical evidence before closing the larger gates.
+integration tests plus physical evidence before closing the larger gates. The cloud UI test covers
+picker → dashboard → back navigation and captures both screens; it does not test reminder delivery.
 
 ## Documentation synchronization
 
