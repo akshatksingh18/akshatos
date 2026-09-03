@@ -2,9 +2,9 @@
 
 **State:** The iPhone-first product architecture is accepted but unimplemented; only a cloud-build/
 installation smoke scaffold exists. Its generated project now passes cloud simulator/device
-compilation, IPA packaging, and Windows checksum verification, but physical signing/install/open is
-still unverified. The Android source tree is an existing, never-verified fallback scaffold. Track
-the two platforms separately.
+compilation, IPA packaging, and Windows checksum verification, and the Windows Sideloadly signer is
+installed, but physical signing/install/open is still unverified. The Android source tree is an
+existing, never-verified fallback scaffold. Track the two platforms separately.
 
 ## Primary iPhone architecture
 
@@ -157,6 +157,10 @@ and no unnecessary continuous-location configuration. Streak/date logic and Home
 must pass tests plus the physical matrix in `CLAUDE.md`; simulator or green CI alone is insufficient.
 The XcodeGen source remains portable to a borrowed/rented Mac or another compatible macOS builder.
 Detailed artifact/install steps live in `cloud-build.md`.
+
+Sideloadly is currently present at its standard per-user Windows installation path. Device pairing,
+Apple personal signing, USB installation, first launch, Local Anisette, and background refresh are
+not yet verified.
 
 ## Current Android fallback architecture
 

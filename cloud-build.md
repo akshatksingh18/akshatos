@@ -2,8 +2,8 @@
 
 **State:** The Windows-authored GitHub Actions path has passed simulator compilation, unsigned-device
 compilation, packaging, metadata inspection, artifact upload, Windows download, and SHA-256
-verification. The remaining activation gate is signing, installing, and opening that exact IPA on
-Akshat's physical iPhone.
+verification. Sideloadly is installed on Windows. The remaining activation gate is connecting the
+iPhone, signing, installing, and opening that exact IPA on the physical device.
 
 ## What the pipeline does
 
@@ -41,6 +41,10 @@ Current verified cloud artifact:
 
 The artifact is still a smoke candidate rather than a known-good release cache entry until the
 physical open test passes.
+
+The verified extracted files are kept together at
+`C:\Users\aksha\Downloads\squat-reminder-ios-3`; redundant downloaded ZIPs have been removed. Keep
+the IPA, its checksum, and `build-info.txt` together until the physical proof is complete.
 
 ## Download the cloud artifact
 
