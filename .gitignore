@@ -23,7 +23,7 @@ keystore.properties
 # Generated iOS project/build artifacts
 ios/*.xcodeproj/
 ios/DerivedData/
-ios/SquatReminder/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+ios/AkshatOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 
 # Local environment and OS files
 .env

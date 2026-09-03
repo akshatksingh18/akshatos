@@ -1,4 +1,4 @@
-name: SquatReminder
+name: AkshatOS
 
 options:
   bundleIdPrefix: com.akshatksingh18
@@ -18,19 +18,19 @@ settings:
     TARGETED_DEVICE_FAMILY: "1"
 
 targets:
-  SquatReminder:
+  AkshatOS:
     type: application
     platform: iOS
     sources:
-      - path: SquatReminder
+      - path: AkshatOS
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.squatreminder
-        PRODUCT_NAME: SquatReminder
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos
+        PRODUCT_NAME: AkshatOS
+        MARKETING_VERSION: "0.2.0"
+        CURRENT_PROJECT_VERSION: "2"
         GENERATE_INFOPLIST_FILE: "YES"
-        INFOPLIST_KEY_CFBundleDisplayName: Squat Reminder
+        INFOPLIST_KEY_CFBundleDisplayName: AkshatOS
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
@@ -41,12 +41,28 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: "YES"
         SUPPORTS_MACCATALYST: "NO"
 
+  AkshatOSUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: AkshatOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos.uitests
+        GENERATE_INFOPLIST_FILE: "YES"
+
 schemes:
-  SquatReminder:
+  AkshatOS:
     build:
       targets:
-        SquatReminder: all
+        AkshatOS: all
     run:
       config: Debug
     archive:
       config: Release
+    test:
+      config: Debug
+      targets:
+        - AkshatOSUITests

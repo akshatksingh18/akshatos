@@ -1,37 +1,68 @@
-# Squat Reminder cloud build and iPhone smoke install
+# AkshatOS cloud build and iPhone installation
 
-**State:** The Windows-authored GitHub Actions path has passed simulator compilation, unsigned-device
-compilation, packaging, metadata inspection, artifact upload, Windows download, and SHA-256
-verification. Sideloadly is installed on Windows. The remaining activation gate is connecting the
-iPhone, signing, installing, and opening that exact IPA on the physical device.
+**State:** Repository/target transition and first hub/Squats source slice implemented. Cloud test,
+simulator/device compilation, new IPA verification, and first AkshatOS physical launch are pending.
+This file owns the evidence; a source change is not a passed build.
 
-## What the pipeline does
+## Current identity and artifact
 
-The repository keeps human-readable Swift source and `ios/project.yml`. A private-repository GitHub
-Actions job runs on macOS, installs the pinned XcodeGen release, generates the `.xcodeproj`, compiles
-both simulator and unsigned device builds, packages the device `.app` into an IPA, records its SHA-256
-and build metadata, and uploads the files as a 14-day workflow artifact.
+- Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
+- Local source: `D:\AI Important Files\personal-project\akshatos`.
+- XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
+- Bundle ID: `com.akshatksingh18.akshatos`; version/build: **0.2.0 (2)**; minimum iOS 17.
+- Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
+- Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
+- Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
+- Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
-The workflow intentionally receives no Apple Account password, two-factor code, certificate,
-provisioning profile, device identifier, or Sideloadly data. GitHub compiles the ordinary app;
-Sideloadly on the trusted Windows computer performs personal signing and installation later.
+The hub is a fresh identity, not an in-place upgrade of the former standalone smoke app.
+Akshat removed that disposable app after its successful launch. No activity/history feature existed
+in it; no migration is implemented. Do not reuse deletion as the workflow for future data-bearing
+AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
-Current smoke-build identity:
+## Cloud validation and delivery
 
-- display name: **Squat Reminder**;
-- bundle identifier: `com.akshatksingh18.squatreminder`;
-- version/build: `0.1.0 (1)`;
-- minimum deployment target: iOS 17.0;
-- target: iPhone only;
-- capabilities: none beyond an ordinary application target;
-- content: a static screen proving the binary launched; reminders, persistence, streaks, location,
-  and other product behavior are not implemented yet.
+1. The workflow generates the code-drawn icon and Xcode project.
+2. Compile/run `ios/tests/main.swift` with the pure `SquatSession.swift` domain.
+3. Compile simulator and unsigned arm64 device Release builds.
+4. Inspect bundle/version/executable, package ordinary Payload IPA, generate checksum/build metadata.
+5. Upload a 14-day Actions artifact. Download and checksum it before signing. Keep a durable copy
+   outside Git after physical acceptance; temporary Actions storage is not the release cache.
 
-Keep the bundle identifier unchanged after the first successful phone installation unless Akshat
-explicitly approves a migration. It is one of the permanent identities in the three-app free-signing
-portfolio.
+No local Mac is available. Windows edits source; macOS/Xcode in the private cloud build compiles.
+Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
-Current verified cloud artifact:
+## First AkshatOS install (manual steps; no computer control)
+
+1. Download/extract the latest successful **AkshatOS** workflow artifact, not the old smoke download.
+2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
+3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
+   working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
+   This is a observed workaround, not a confirmed root cause or universal fix.
+4. Select the connected/unlocked iPhone and `AkshatOS-unsigned.ipa`, use the same intended Apple
+   Account, and preserve `com.akshatksingh18.akshatos` across signing attempts. Enter secrets only
+   in Sideloadly. Verify actual signed identity before relying on retained data.
+5. Complete Apple verification, Developer Mode, and developer trust prompts as required.
+6. Open **AkshatOS**: the first screen must be the app picker. Select **Squat Reminder**; test back
+   navigation to the hub. Other modules must clearly say they are not available.
+7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
+   lock the phone, receive an alert, open Squats and Done +1, Undo, Pause, Resume, snooze, End, and
+   reopen the app. Test 45 minutes too. No notification-action buttons exist in this slice.
+8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
+   Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
+
+Wi-Fi/automatic refresh, expiry recovery, in-place upgrades, full daily summary, notification
+buttons, Home geofence, Shortcuts, and export/restore are not verified/completed by this first slice.
+Keep real irreplaceable history out until recovery is implemented.
+
+## Previous standalone smoke evidence
+
+The earlier standalone **Squat Reminder 0.1.0 (1)** passed cloud compilation/package/hash and
+Sideloadly installation/launch, confirmed by Akshat's screenshot. It was then deleted from the
+phone by Akshat, who disconnected USB. Its Downloads files and Sideloadly enrollment/cache were
+not reported removed; do not assume either state. Exact profile/expiry metadata was not inspected.
+
+Historical smoke artifact (not AkshatOS):
 
 - source commit: `cc9fe467f6088205b51958c9dea28217ae42a6fe`;
 - successful workflow: **iOS Cloud Build #3** with no annotations;
@@ -39,58 +70,23 @@ Current verified cloud artifact:
 - downloaded ZIP SHA-256: `ad659e00a7556018df9ff1345bb21d2d53d3438405d4b275a3baad3981d3e8f3`;
 - unsigned IPA SHA-256: `fab363737fdd48d95872138ddde3ae7028fcdbaef89f276a19dbbd7caf997f07`.
 
-The artifact is still a smoke candidate rather than a known-good release cache entry until the
-physical open test passes.
+This old artifact passed the physical smoke open test. It is not a functional product release;
+promotion to a stable local release cache remains pending.
 
 The verified extracted files are kept together at
 `C:\Users\aksha\Downloads\squat-reminder-ios-3`; redundant downloaded ZIPs have been removed. Keep
-the IPA, its checksum, and `build-info.txt` together until the physical proof is complete.
+the IPA, its checksum, and `build-info.txt` together as the verified smoke artifact; do not delete
+the download before a stable cache copy is chosen and verified.
 
-## Download the cloud artifact
 
-1. Open the private GitHub repository and select **Actions**.
-2. Open the latest green **iOS Cloud Build** run for `main`.
-3. In **Artifacts**, download `squat-reminder-ios-<run number>`.
-4. Extract the downloaded ZIP. It contains:
-   - `SquatReminder-unsigned.ipa`;
-   - `SquatReminder-unsigned.ipa.sha256`;
-   - `build-info.txt`.
-5. Compare the IPA's Windows SHA-256 with the value in the `.sha256` file before installation:
 
-   ```powershell
-   Get-FileHash -Algorithm SHA256 .\SquatReminder-unsigned.ipa
-   Get-Content .\SquatReminder-unsigned.ipa.sha256
-   ```
+## Failure handling
 
-The hexadecimal values must match. The filename says `unsigned` deliberately: never treat the
-GitHub artifact as containing personal signing material.
-
-## First Sideloadly installation
-
-1. On the iPhone, enable Developer Mode under **Settings → Privacy & Security → Developer Mode** if
-   it is not already enabled.
-2. Connect the iPhone to Windows over USB for the first proof and accept the computer trust prompt.
-3. Open Sideloadly, select the connected iPhone, and choose `SquatReminder-unsigned.ipa`.
-4. Use the same Apple Account intended for the three-app portfolio. Keep the custom bundle ID fixed
-   at `com.akshatksingh18.squatreminder`; do not let retries invent a new identity.
-5. Start the sideload and complete Apple's authentication/verification prompts locally. Never put
-   those credentials or codes in GitHub, project files, screenshots, or chat.
-6. If iOS asks for trust, open **Settings → General → VPN & Device Management**, select the personal
-   developer entry, and trust it.
-7. Open **Squat Reminder**. Success means the placeholder icon is visible and the app opens to
-   **Cloud build installed successfully — Smoke build 0.1.0 (1)** without immediately closing.
-
-For this first proof, use USB rather than Wi-Fi refresh. Do not uninstall on later builds; overwrite
-using the same Apple Account and bundle ID so preservation behavior can be tested.
-
-## Failure handoff
-
-- Red GitHub run: preserve the failing step and log; fix the build rather than weakening validation.
-- Missing artifact: the build is not successful even if earlier compile output is green.
-- Hash mismatch: do not install; download the artifact again.
-- Sideloadly signing/install error: preserve the exact non-secret error text and the relevant log
-  section. Do not paste an Apple password, two-factor code, session data, or provisioning material.
-- App installs but closes on launch: keep it installed and capture the visible behavior/device iOS
-  version. Do not change the bundle ID or delete local state as the first troubleshooting step.
-
-The physical open test is the gate. A green cloud build proves compilation and packaging only.
+- No device: check unlocked phone, data-capable USB cable/port, trust and official Apple Windows
+  components; do not change the IPA to fix detection.
+- Failed CI or missing artifact: inspect the failing step; do not sideload an unverified package.
+- Hash mismatch: redownload and compare; do not install.
+- Signing error: preserve non-secret error text; do not share password, 2FA, session/profile data.
+- Launch crash or storage failure: keep the app installed and report iOS version and behavior.
+  Never reset/delete its container as a first repair.
+- Check official [Sideloadly setup](https://sideloadly.io/faq.html) when installer requirements change.

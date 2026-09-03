@@ -52,10 +52,14 @@ context.setStrokeColor(accentColor)
 context.setLineWidth(36)
 context.strokeEllipse(in: CGRect(x: 218, y: 218, width: 588, height: 588))
 
-context.setLineWidth(28)
+context.setLineWidth(42)
 context.setLineCap(.round)
-context.move(to: CGPoint(x: 350, y: 308))
-context.addLine(to: CGPoint(x: 674, y: 308))
+context.setLineJoin(.round)
+context.move(to: CGPoint(x: 352, y: 342))
+context.addLine(to: CGPoint(x: 512, y: 702))
+context.addLine(to: CGPoint(x: 672, y: 342))
+context.move(to: CGPoint(x: 418, y: 490))
+context.addLine(to: CGPoint(x: 606, y: 490))
 context.strokePath()
 
 guard let image = context.makeImage() else {

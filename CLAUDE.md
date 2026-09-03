@@ -1,16 +1,13 @@
-# Squat Reminder
+# AkshatOS
 
-Personal, local-only squat-reminder app with a daily Start/Pause/Resume/End lifecycle, actionable
-interval notifications, completed-set tracking, streak motivation, optional Home-geofence
-auto-pause/resume, and a daily overview. The primary target is now Akshat's iPhone; the current
-Kotlin/Compose Android scaffold is preserved as a fallback for the old Android phone. Both variants
-are personal sideloads only: no backend, account, remote analytics, App Store, or Play Store release.
+Personal native iPhone hub: the home screen selects a feature, starting with Squat Reminder.
+PageVault and ReelVault are reserved for later; WHOOP stays standalone. This repository evolved
+from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
-**Status:** iPhone cloud-build smoke scaffold now passes private GitHub Actions compilation,
-packaging, Windows download, and checksum verification, and Sideloadly is installed on Windows. The
-IPA is not yet signed, installed, or opened on the physical phone; Android fallback remains
-unverified. Moves to Building after this IPA passes the Sideloadly open test and dashboard
-implementation begins.
+**Status:** Building — hub picker and first Squats dashboard/core are implemented in source.
+Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
+`cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
+The full target feature contract below is not a claim that every feature is implemented.
 
 ## Files
 
@@ -30,7 +27,12 @@ implementation begins.
 - `.github/workflows/ios-build.yml` — private macOS-runner job that generates the Xcode project,
   compiles simulator/device smoke builds, packages the unsigned IPA, and uploads verified metadata.
 - `ios/` — Windows-authored SwiftUI smoke source, XcodeGen project specification, asset catalog,
-  and deterministic placeholder-icon generator; this is the iPhone source tree.
+  and deterministic icon generator; this is the canonical hub source tree.
+- `ios/AkshatOS/` — hub/app entry, visual components, Squats dashboard, pure session domain,
+  SwiftData store, and app-scoped notification service; these source files form the first slice.
+- `ios/tests/main.swift` — executable Swift domain assertions run by the cloud workflow.
+- `ios/UITests/` — simulator hub/dashboard navigation test and screenshot attachments; test runner
+  is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
 - `build.gradle.kts` — root Android build configuration and plugin versions.
 - `settings.gradle.kts` — Gradle project and repository configuration.
 - `gradle.properties` — project-wide Gradle and Android settings.
@@ -41,10 +43,15 @@ implementation begins.
 
 ### Product and target decision
 
-- Build a **separate native iOS app in SwiftUI** rather than translating the Android alarm chain,
-  wrapping the Android project, using Shortcuts, or treating a PWA as the reminder engine. Keep it
-  in this repository under `ios/` as its own generated Xcode target/source tree; do not replace or
-  delete the Android fallback. The current screen is only an installation smoke test.
+- Canonical source/build owner: this `akshatos/` repository, private GitHub
+  `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (2)`.
+  This is a new identity from the disposable smoke app, which Akshat removed; no user-history
+  migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
+- Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
+  picker must not stop reminders. PageVault/ReelVault cards are visibly unavailable, not fake apps.
+  `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
+
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), tap
   **Start my day**, receive ordinary squat reminders, log completed sets, Pause/Resume around
   interruptions, protect a daily-goal streak, optionally auto-pause outside Home, and tap **End my
@@ -162,10 +169,10 @@ implementation begins.
 
 ### Build and signing artifact
 
-- Use `com.akshatksingh18.squatreminder` as the candidate permanent reverse-DNS bundle identifier.
-  It becomes fixed after the first successful phone install; use the same Apple Account/team and
-  identifier on every later build and refresh, and do not let build scripts or Sideloadly generate
-  changing identifiers.
+- The hub uses `com.akshatksingh18.akshatos`. Do not change it for retries or updates.
+  The former `com.akshatksingh18.squatreminder` is historical smoke identity only; its IPA must
+  never be relabeled as AkshatOS. The new identity still needs physical signing acceptance.
+
 - Produce a plain release-mode IPA with no Sideloadly-specific injection, tweak, JIT, or private
   framework dependency. That standard artifact must remain signable by Sideloadly and portable to
   another compatible installer or direct Xcode deployment if the preferred tool stops working.
@@ -223,23 +230,22 @@ implementation begins.
   Apple-side change can still invalidate an old release. The recovery path is to update or replace
   the signer while keeping the bundle ID and cached standard IPA unchanged.
 
-### Free-account app-slot portfolio
+### Accepted free-account app-slot portfolio
 
-- Plan around the free Personal Team limit of three simultaneously installed development apps on
-  the iPhone:
-  1. Squat Reminder native iOS app — one slot.
-  2. WHOOP personal native iOS app — one slot.
-  3. PageVault native iOS app — one slot.
-- This deliberately fills all three free-development-app slots. There is no standing fourth slot
-  for test builds, helper apps, AltStore, or SideStore. Replace an existing app temporarily, merge
-  scope deliberately, or use a different signing account/tier before installing another personal
-  development app. Do not count ordinary App Store apps against this development-app portfolio.
-- A PageVault PWA can remain an emergency non-native fallback, but it is not the selected primary
-  plan and must not be used to claim that a free development slot is available.
-- Sideloadly runs from Windows and does not itself install a permanent host app that consumes one
-  of these slots. By contrast, SideStore or AltStore installs its own on-phone host app: keeping
-  either installed would require removing one of the three planned native apps. Confirm the
-  current Apple/tool limits before switching because they can change.
+- Install one native hub for Squats, PageVault, and ReelVault, plus standalone WHOOP: two free slots.
+  One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
+  installation identity per module is required. Packaging is accepted; implementation is pending.
+- The hub's notification/geofence handlers belong to the application lifecycle, not the Squats
+  screen. Reading PDFs or playing reels must not stop scheduling or action processing. Show
+  foreground notifications appropriately; namespace requests/categories/actions and cancel only
+  Squats-owned requests. Never let navigation disable Home monitoring.
+- OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
+  apply to the hub as a whole. Keep module stores/export logically separate and test cross-section
+  behavior. Deleting the hub removes all three modules' local data, so full recovery is mandatory.
+- Use Windows Sideloadly, no phone-side host. Another signer is an explicit workflow choice; the
+  spare slot is not automatic permission to add it. Free seven-day expiry/early refresh still apply.
+- `../iphone-hub-plan.md` owns source/build ownership and identity reconciliation before coding.
+  The hub target/workflow now live here; the old downloaded smoke IPA remains a separate historical artifact.
 
 ### Current authoritative constraints
 
@@ -326,9 +332,9 @@ current observed behavior in the applicable project document rather than relying
 
 ### Phased implementation plan
 
-1. **Cloud-build activation:** generate the smoke target from `ios/project.yml`, pass simulator and
-   unsigned-device compilation, download/checksum the IPA, and prove that Sideloadly can sign,
-   install, and open it on the physical iPhone with the candidate permanent bundle ID.
+1. **Hub transition and cloud activation:** source/repository and bundle ID are selected and the
+   target/workflow is adapted. Pass cloud tests/build and physical hub-picker → Squats navigation
+   before calling this new identity phone-verified; see `cloud-build.md`.
 2. **Product and visual foundation:** replace the smoke screen with reusable dashboard tokens/
    components while preserving the permanent bundle ID, add the explicit lifecycle state model,
    goal/streak presentation, and notification/location permission-status surfaces, and leave
@@ -388,15 +394,17 @@ The iPhone path can be described as working only when all of the following are t
 - same-bundle Sideloadly refresh preserves local state through multiple cycles, daily/early
   automation proves success rather than merely running, expiry risk raises a visible alert, and
   USB recovery has been rehearsed;
-- the cached IPA can be signed by a fallback path without source changes, and Squat Reminder,
-  WHOOP, and native PageVault together fit the agreed three-slot portfolio;
+- the common hub IPA can be signed by a fallback path without source changes, coexists with
+  standalone WHOOP in two free slots, and preserves all three modules across refresh/upgrade;
+- Squats actions and Home events work without opening its section, including while PageVault/Reels
+  is visible, and their module transitions cannot cancel requests or delay durable action handling;
 - Android remains buildable as a fallback or is still explicitly documented as unverified—do not
   silently imply parity between the platforms.
 
 ## Repository and hosting
 
 The project is backed up to the private GitHub repository
-<https://github.com/akshatksingh18/squat-reminder>; local `main` tracks `origin/main` after the first
+<https://github.com/akshatksingh18/akshatos>; local `main` tracks `origin/main` after the first
 push. Keep it private unless Akshat explicitly decides to make it public after a separate privacy,
 licensing, history, and secret review. GitHub stores source and documentation only—not Apple
 credentials, signing material, provisioning data, device state, or release IPAs.
@@ -409,10 +417,11 @@ credentials, signing material, provisioning data, device state, or release IPAs.
   `README.md`, `features.md`, `architecture.md`, `todo.md`, `cloud-build.md`, and affected workflows/
   setup guides. Update current-state wording in the same change, commit and push repository-backed
   updates when publishing the project work, and state which documents changed or why none needed to.
-- Treat this as an unverified scaffold until it passes a clean physical-device build and run; do
+- Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
-- Preserve the local-only, single-user, one-purpose scope unless Akshat explicitly changes it.
+- Preserve the local-only, single-user Squats feature scope within the accepted three-module hub;
+  packaging consolidation does not add new product features or activate WHOOP.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
   Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily
   overview, and notification actions; keep optional Shortcuts automation distinct from the

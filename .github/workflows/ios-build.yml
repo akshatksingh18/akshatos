@@ -19,15 +19,15 @@ concurrency:
 env:
   XCODEGEN_VERSION: "2.46.0"
   XCODE_PATH: /Applications/Xcode_26.6.app/Contents/Developer
-  PROJECT_PATH: ios/SquatReminder.xcodeproj
-  SCHEME: SquatReminder
-  BUNDLE_ID: com.akshatksingh18.squatreminder
+  PROJECT_PATH: ios/AkshatOS.xcodeproj
+  SCHEME: AkshatOS
+  BUNDLE_ID: com.akshatksingh18.akshatos
 
 jobs:
   build:
     name: Build installable IPA
     runs-on: macos-26
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Check out source
@@ -60,11 +60,18 @@ jobs:
         run: |
           set -euo pipefail
           swift ios/scripts/generate-app-icon.swift \
-            "$GITHUB_WORKSPACE/ios/SquatReminder/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+            "$GITHUB_WORKSPACE/ios/AkshatOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
           "$XCODEGEN_BIN" generate --spec ios/project.yml
           xcodebuild -list -project "$PROJECT_PATH"
 
-      - name: Compile simulator smoke build
+      - name: Test Squats domain logic
+        shell: bash
+        run: |
+          set -euo pipefail
+          swiftc ios/AkshatOS/SquatSession.swift ios/tests/main.swift -o "$RUNNER_TEMP/squats-tests"
+          "$RUNNER_TEMP/squats-tests"
+
+      - name: Compile simulator build
         shell: bash
         run: |
           set -euo pipefail
@@ -77,6 +84,20 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/DerivedData-simulator" \
             CODE_SIGNING_ALLOWED=NO \
             COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Test hub navigation on simulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          device_id=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for devices in d["devices"].values() for x in devices if "iPhone" in x["name"]))')
+          xcodebuild test -project "$PROJECT_PATH" -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,id=$device_id" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData-simulator" \
+            -resultBundlePath "$RUNNER_TEMP/HubTests.xcresult" \
+            CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/screenshots"
+          xcrun xcresulttool export attachments --path "$RUNNER_TEMP/HubTests.xcresult" \
+            --output-path "$GITHUB_WORKSPACE/artifacts/screenshots"
 
       - name: Build unsigned device application
         shell: bash
@@ -98,26 +119,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app_path="$RUNNER_TEMP/DerivedData-device/Build/Products/Release-iphoneos/SquatReminder.app"
+          app_path="$RUNNER_TEMP/DerivedData-device/Build/Products/Release-iphoneos/AkshatOS.app"
           package_root="$RUNNER_TEMP/ipa-package"
           artifact_root="$GITHUB_WORKSPACE/artifacts"
-          ipa_path="$artifact_root/SquatReminder-unsigned.ipa"
+          ipa_path="$artifact_root/AkshatOS-unsigned.ipa"
 
           test -d "$app_path"
-          test -x "$app_path/SquatReminder"
+          test -x "$app_path/AkshatOS"
           actual_bundle_id="$(plutil -extract CFBundleIdentifier raw "$app_path/Info.plist")"
           test "$actual_bundle_id" = "$BUNDLE_ID"
-          lipo -info "$app_path/SquatReminder"
+          lipo -info "$app_path/AkshatOS"
 
           mkdir -p "$package_root/Payload" "$artifact_root"
-          ditto "$app_path" "$package_root/Payload/SquatReminder.app"
+          ditto "$app_path" "$package_root/Payload/AkshatOS.app"
           (
             cd "$package_root"
             zip -qry "$ipa_path" Payload
           )
 
           test -s "$ipa_path"
-          shasum -a 256 "$ipa_path" | tee "$artifact_root/SquatReminder-unsigned.ipa.sha256"
+          shasum -a 256 "$ipa_path" | tee "$artifact_root/AkshatOS-unsigned.ipa.sha256"
           {
             echo "commit=$GITHUB_SHA"
             echo "bundle_id=$actual_bundle_id"
@@ -130,7 +151,7 @@ jobs:
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v6.0.0
         with:
-          name: squat-reminder-ios-${{ github.run_number }}
+          name: akshatos-ios-${{ github.run_number }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 14

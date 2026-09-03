@@ -1,8 +1,16 @@
 # Squat Reminder feature plan
 
-**State:** Accepted iPhone-first product plan; none of these iPhone features is implemented or
-physically verified yet. The existing Android scaffold remains a separate unverified fallback and
-does not imply feature parity.
+**State:** Accepted full Squats feature contract inside AkshatOS. The first source implementation
+covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
+`architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
+and device evidence. Notification actions, Home automation, full daily overview/recovery, and
+physical acceptance remain outstanding. Android is an unverified fallback.
+
+## Hub entry
+
+AkshatOS opens to an app-selection screen. Choose **Squat Reminder** to open this dashboard;
+navigate back without changing its active session or reminders. PageVault/ReelVault are visibly
+planned entries until their features are implemented, and WHOOP is not embedded.
 
 ## Product promise
 

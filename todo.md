@@ -5,23 +5,30 @@ primary; Android remains a separate fallback scaffold.
 
 ## iPhone-primary work
 
-- [ ] **Finish activation inputs.** The candidate bundle ID is
-      `com.akshatksingh18.squatreminder` and GitHub Actions macOS/Xcode is the accepted primary build
-      path. Confirm the signing Apple Account/team, stable Windows IPA-cache/backup locations, and
-      refresh-alert method before the smoke artifact becomes a daily-use app.
-- [ ] **Prove the no-local-Mac smoke pipeline.** Regenerate the Xcode project from `ios/project.yml`,
-      pass simulator and unsigned-device builds, download and verify the SHA-256 artifact, sign/install
-      over USB with Sideloadly, and open smoke build `0.1.0 (1)` on the physical iPhone. The cloud,
-      packaging, download, and checksum stages pass at commit `cc9fe46`, and Sideloadly is installed;
-      Apple personal signing, USB installation, and physical launch remain. Preserve failure logs
-      rather than treating a green compile alone as success.
+Current focus: AkshatOS opens to the hub picker, then Squats. Source implementation is underway;
+cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
+
+- [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
+      into private `akshatksingh18/akshatos`; keep history and Android. AkshatOS uses
+      `com.akshatksingh18.akshatos`. Physical provisioning of this identity is still a gate.
+- [ ] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
+      picker → Squats → back navigation; verify reminders continue while the picker is shown.
+
+- [x] **Prove the no-local-Mac smoke pipeline.** Cloud simulator/device compilation, packaging,
+      download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
+      launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
+      verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
+- [ ] **Promote the verified smoke artifact to a durable cache.** Preserve the Downloads IPA,
+      checksum, and build metadata outside Git; choose the stable cache location before moving
+      or deleting that download. No stable-cache copy has been verified yet.
 - [ ] **Choose the deferred product constants before behavior acceptance.** Set the initial daily
       completed-set goal and validate a practical default Home-boundary radius on the actual phone;
       keep both configurable and do not block the initial scaffold on choosing the numbers now.
-- [ ] **Promote the SwiftUI smoke target into the product target.** After the cloud/phone proof,
-      preserve the Android module and permanent iOS identity while replacing the static screen with
-      the real app. Keep one target with no extensions or unnecessary entitlements; add honest
-      notification and location usage descriptions only when their setup flows exist.
+- [ ] **Build the native hub host and Squats module.** After resolving source/identity ownership,
+      the target/workflow and picker/dashboard now exist in source, with reserved later modules and
+      Android preserved. Finish and physically verify the hub IPA. Keep notifications/geofences at host
+      scope; test actions while PDFs/reels are visible and namespace all module data/requests.
+
 - [ ] **Build the visual dashboard foundation.** Add reusable colors/type/spacing/components, the
       state hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak
       card, contextual lifecycle controls, Today timeline, automation-health surface, accessibility
@@ -94,6 +101,15 @@ primary; Android remains a separate fallback scaffold.
 - More snooze durations, an optional end-of-day prompt, or scheduled quiet window.
 - Multiple saved places/geofences, multiple profiles/schedules, HealthKit, or a widget remain out of
   scope unless Akshat explicitly expands the one-purpose product after the core is reliable.
+
+## First-slice source coverage (not acceptance)
+
+Implemented source covers visual dashboard, permission/reconciliation, lifecycle, Done/Undo,
+dashboard snooze, SwiftData session storage/recent session overview, and configurable goals/streaks.
+The unchecked items above describe remaining full-contract implementation and acceptance, not an
+instruction to create second copies of those systems. Cloud domain assertions cover event dedup,
+round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Add service/persistence
+and UI tests plus physical evidence before closing the larger gates.
 
 ## Documentation synchronization
 

@@ -1,16 +1,39 @@
-# Squat Reminder architecture
+# AkshatOS and Squats architecture
 
-**State:** The iPhone-first product architecture is accepted but unimplemented; only a cloud-build/
-installation smoke scaffold exists. Its generated project now passes cloud simulator/device
-compilation, IPA packaging, and Windows checksum verification, and the Windows Sideloadly signer is
-installed, but physical signing/install/open is still unverified. The Android source tree is an
-existing, never-verified fallback scaffold. Track the two platforms separately.
+**State:** First native hub/Squats slice implemented in source; cloud and physical acceptance are
+tracked in `cloud-build.md`. The remaining full-product contract below is not all implemented.
 
-## Primary iPhone architecture
+## Current implementation
+
+- Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
+  history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
+  `com.akshatksingh18.akshatos`, version 0.2.0 (2).
+- `AkshatOSApp.swift` owns one `SquatStore` across navigation and foreground reconciliation.
+  `HubView.swift` is the app picker; `SquatDashboard.swift` opens only after choosing Squats.
+  PageVault/ReelVault are noninteractive planned cards. WHOOP remains separate.
+- `SquatSession.swift` is a pure Codable event/session model and calendar-day streak calculation.
+  `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema, with one
+  app-scoped notification delegate/service. Only interval/goal preferences use UserDefaults.
+  Store errors fail closed and preserve data rather than silently replacing the database.
+- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, one recurring local request and one
+  replaceable dashboard snooze, permission/request reconciliation, session overview/recent history,
+  configurable goal (initially unset), same-day aggregation, and current/best streak.
+- Changes to interval/goal are locked while active; the first session's goal governs that date.
+  Stale prior-day sessions stop scheduling at foreground reconciliation and require explicit End.
+  Midnight is not yet automatically finalized in background. Countdown is display-only;
+  UserNotifications schedules delivery without relying on the dashboard or its timer.
+- Deferred: notification action buttons/locked-action inbox, Home geofence, App Intents, export/
+  restore and history deletion, complete daily aggregate summary with active/paused durations,
+  expanded lifecycle/persistence tests, and physical/refresh acceptance. Notifications currently
+  open the app; logging, pausing and snoozing use the dashboard.
+- Review the intended contract below before extending these areas. Do not label target-only
+  behavior as implemented. No location permission/background mode is currently requested.
+
+## Target iPhone architecture
 
 ### Stack and source boundary
 
-- Swift and SwiftUI in a separate iOS target/source area within this repository.
+- Swift/SwiftUI modules in `ios/AkshatOS/`; extend the existing hub rather than creating separate apps.
 - XcodeGen owns the versioned `ios/project.yml`; GitHub's macOS runner generates the disposable
   `.xcodeproj`. Do not hand-maintain or commit generated project internals from Windows.
 - UserNotifications for ordinary local reminders and actionable notification categories.
@@ -141,13 +164,19 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 
 ### Build/deployment boundary
 
+The workflow now builds AkshatOS from this repository. Its IPA contains the hub and the first
+Squats slice, not PageVault/ReelVault implementations. Keep
+Squats handlers at host scope, namespace requests, and test notifications while other modules are
+foregrounded. One hub refresh must preserve all three modules' state.
+
+
 The primary compiler is a private GitHub Actions macOS runner because no local Mac is available.
 It selects a documented Xcode image, generates the project from `ios/project.yml`, compiles simulator
 and generic-device builds, packages a standard unsigned IPA, verifies bundle metadata/architecture,
 and publishes the IPA plus SHA-256/build metadata as a temporary artifact. The build has no Apple
 credentials or signing material. This cloud side has passed for smoke build `0.1.0 (1)` at source
-commit `cc9fe467f6088205b51958c9dea28217ae42a6fe`; that result does not yet prove signing or launch on
-the physical phone.
+commit `cc9fe467f6088205b51958c9dea28217ae42a6fe`; Akshat subsequently confirmed Sideloadly installation
+and physical launch with the matching smoke-version screen. This is not hub or feature acceptance.
 
 Trusted Windows verifies and caches a physically proven artifact, then Sideloadly signs/installs it
 using the same Apple Account and permanent bundle ID. Same-bundle overwrite, state/request
@@ -158,9 +187,10 @@ must pass tests plus the physical matrix in `CLAUDE.md`; simulator or green CI a
 The XcodeGen source remains portable to a borrowed/rented Mac or another compatible macOS builder.
 Detailed artifact/install steps live in `cloud-build.md`.
 
-Sideloadly is currently present at its standard per-user Windows installation path. Device pairing,
-Apple personal signing, USB installation, first launch, Local Anisette, and background refresh are
-not yet verified.
+Sideloadly is present at its standard per-user Windows installation path. Akshat reports successful
+Local Anisette initialization followed by USB device detection; `cloud-build.md` records the working
+startup sequence. Signing, installation, and first launch passed. Wi-Fi pairing, same-ID upgrades,
+background refresh, and expiry recovery remain unverified.
 
 ## Current Android fallback architecture
 

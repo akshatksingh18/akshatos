@@ -1,21 +1,28 @@
-# Squat Reminder
+# AkshatOS
 
-Personal, local-only interval reminders with a polished daily dashboard, Pause/Resume controls,
-actionable notifications, completed-set tracking, daily-goal streak motivation, optional Home
-auto-pause, and an end-of-day overview. The accepted primary target is iPhone; the existing Android
-Kotlin/Compose source remains an unverified fallback.
+A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
+dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
-**Current state:** the minimal SwiftUI iPhone installation-smoke scaffold has completed the private
-GitHub Actions simulator/device builds, IPA packaging, download, and checksum verification. It has
-not yet been signed, installed, or opened on the physical phone; Sideloadly is installed on Windows
-for that next step. The Android scaffold has never completed a clean build or physical-device run.
-Nothing in this README is a claim that either platform is physically verified.
+**Current state:** first hub/Squats source implementation, version **0.2.0 (2)**,
+bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
+[cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
+by Akshat; that is not evidence that this new hub build works on the phone.
 
-Source and planning are backed up in the private
-[`akshatksingh18/squat-reminder`](https://github.com/akshatksingh18/squat-reminder) repository.
-Private hosting does not change the app's local-only runtime design.
-It also does not bypass iOS permission rules: Home automation remains opt-in and is explained before
-the app asks for location access.
+This repository evolved from Squat Reminder, retaining Git history and the unverified Android
+fallback. Source is private at [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos).
+
+## First slice
+
+- Hub app picker; Squats dashboard; visibly planned PageVault/ReelVault entries.
+- Start/Pause/Resume/End, Done +1/Undo and dashboard 10-minute snooze.
+- One system-scheduled recurring reminder; local versioned SwiftData sessions and recent summaries.
+- Configurable daily goal (unset initially), current/best streak and today's progress.
+- No location access, server, telemetry, account, or embedded WHOOP.
+
+**Still deferred:** notification action buttons, Home auto-pause, Shortcuts, export/restore,
+full daily aggregate overview and acceptance testing. The full intended scope below remains the
+target, not a list of completed features. Until recovery and device tests pass, use disposable
+test activity only.
 
 ## Intended daily behavior
 
@@ -40,14 +47,13 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 
 ## Primary iPhone plan
 
-The `ios/` source currently opens a static smoke-test screen; its first purpose is proving the
-Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical-iPhone path. After that gate,
-build the accepted native SwiftUI product in the same target. It uses one repeating
+The `ios/` source now opens the hub picker and a separate Squats dashboard. The build path is
+Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses one repeating
 `UNTimeIntervalNotificationTrigger` for the normal cadence plus at most one one-off snooze request;
 iOS schedules delivery, so the app does not need a background timer, PWA, or push server. Repeating
 intervals must be at least 60 seconds.
 
-An actionable reminder category exposes Done, Pause, and Remind me in 10 min. Compact notification
+The next notification phase will add a category exposing Done, Pause, and Remind me in 10 min. Compact notification
 space may show only Done and Pause; expand the notification for the third action. Dashboard and
 notification controls use the same idempotent lifecycle commands.
 
@@ -94,8 +100,9 @@ safe.
 ## iPhone build and installation
 
 The smoke-build download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
-build/signing/refresh/recovery plan is in `CLAUDE.md`, and the shared three-app portfolio is in
-`../CLAUDE.md`. In short:
+build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
+Squats, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `../iphone-hub-plan.md`.
+The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a private GitHub Actions macOS/Xcode runner generates the Xcode
   project, compiles it, and uploads an unsigned IPA plus checksum/build metadata;
@@ -104,11 +111,12 @@ build/signing/refresh/recovery plan is in `CLAUDE.md`, and the shared three-app 
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;
 - the permanent bundle ID, same Apple Account/team, early health checks, alerts, backup, and USB
   recovery rules must be preserved;
-- Squat Reminder occupies one of the three slots alongside PageVault and WHOOP.
+- all three native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
+  keeps a separate identity/process. No paid membership or rotation is needed for two slots.
 
-The current candidate permanent bundle ID is `com.akshatksingh18.squatreminder`; it becomes fixed
-after the first successful installation. The iPhone path becomes usable only after the physical-
-device and multiple-refresh-cycle gates in `CLAUDE.md` pass.
+The AkshatOS bundle ID is `com.akshatksingh18.akshatos`. Preserve it and the same Apple Account
+on updates. Do not uninstall a data-bearing app to repair signing. See the complete feature and
+refresh acceptance gates in `CLAUDE.md`.
 
 ## Current Android fallback
 
