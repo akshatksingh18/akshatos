@@ -1,6 +1,7 @@
 # Squat Reminder
 
-Personal, local-only interval reminders with one daily Start/Stop control. The accepted primary
+Personal, local-only interval reminders with a polished daily dashboard, Pause/Resume controls,
+actionable notifications, completed-set tracking, and an end-of-day overview. The accepted primary
 target is iPhone; the existing Android Kotlin/Compose source remains an unverified fallback.
 
 **Current state:** the iPhone app has not been scaffolded or built. The Android scaffold exists but
@@ -15,22 +16,37 @@ Private hosting does not change the app's local-only runtime design.
 
 - Set a whole-minute reminder interval while stopped (default currently planned as 45 minutes).
 - Tap **Start my day**; the first reminder is one interval later.
-- Receive ordinary local notifications until tapping **Stop for the night**.
-- Stop cancels the active schedule. Starting again creates one new schedule; repeated taps must not
-  accumulate duplicate reminders.
-- No account, backend, analytics, remote push, history, multiple schedules, or cloud dependency.
+- Receive ordinary local notifications until pausing or tapping **End my day**.
+- Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
+  not unrecorded individual repetitions.
+- Use **Pause** while away and **Resume** when ready. Resume begins a fresh 45-minute interval.
+- Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day.
+- End finalizes the day and shows completed sets, timing, pauses, snoozes, and a completion timeline.
+- Keep lightweight daily summaries locally. There is no account, cloud sync, remote analytics,
+  multiple schedule engine, or backend.
+
+The accepted feature scope and dashboard behavior are in [`features.md`](features.md).
 
 ## Primary iPhone plan
 
 Build a separate native SwiftUI target in this repository. It uses one repeating
-`UNTimeIntervalNotificationTrigger` with a stable request identifier; iOS schedules delivery, so
-the app does not need to remain running and must not use a background timer, Shortcut, PWA, or push
-server. Repeating intervals must be at least 60 seconds.
+`UNTimeIntervalNotificationTrigger` for the normal cadence plus at most one one-off snooze request;
+iOS schedules delivery, so the app does not need a background timer, PWA, or push server. Repeating
+intervals must be at least 60 seconds.
 
-The app stores only selected interval and desired state in `UserDefaults`. On launch and foreground
-return it must query actual notification permission and pending requests, reconcile them with stored
-intent, and show Running only when the system state supports that claim. Interval editing remains
-disabled while running.
+An actionable reminder category exposes Done, Pause, and Remind me in 10 min. Compact notification
+space may show only Done and Pause; expand the notification for the third action. Dashboard and
+notification controls use the same idempotent lifecycle commands.
+
+Settings and current intent live in `UserDefaults`; versioned local session/event storage owns
+completion timestamps, pause segments, and daily summaries. On launch and foreground return the app
+must query actual notification permission and pending requests, merge any locked-device actions,
+reconcile them with stored intent, and show Running only when system state supports that claim.
+
+After the native core works, App Intents can expose Start, Pause, Resume, Done, and End to optional
+Siri/Shortcuts automations. The recommended forgotten-away convenience is Leave Home → Pause and
+Arrive Home → Resume, guarded so arrival cannot restart an ended or manually paused day. The app
+itself does not request always-on location access and does not depend on automation.
 
 ### iPhone caveats
 
@@ -41,8 +57,10 @@ disabled while running.
   delivery is user-controlled; neither is required for the product.
 - Force-quit, reboot, Low Power Mode, permission changes, and signing refresh/expiry behavior must
   be tested on the actual iPhone before calling reminders dependable.
+- Notification actions must be tested locked/backgrounded, including duplicate callbacks, action
+  order, Pause/End races, and persistence before the system background callback expires.
 - Same-bundle refresh should preserve the app container, but it must be proven. Never uninstall as
-  part of routine refresh because uninstall removes preferences and pending requests.
+  part of routine refresh because uninstall removes preferences, history, and pending requests.
 
 ## iPhone build and installation
 
@@ -74,5 +92,6 @@ source ownership are in `architecture.md`; open work is in `todo.md`.
 ## Documentation synchronization
 
 When product behavior, platform priority, scheduling, permission handling, persistence, build/
-signing, status, or recovery changes, update this README, `architecture.md`, `todo.md`, and
-`CLAUDE.md` together. Keep accepted plan, present source, and physically verified behavior separate.
+signing, status, or recovery changes, update this README, `features.md`, `architecture.md`, `todo.md`,
+and `CLAUDE.md` together. Keep accepted plan, present source, and physically verified behavior
+separate.
