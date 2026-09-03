@@ -12,7 +12,7 @@ primary; Android remains a separate fallback scaffold.
 - [ ] **Prove the no-local-Mac smoke pipeline.** Regenerate the Xcode project from `ios/project.yml`,
       pass simulator and unsigned-device builds, download and verify the SHA-256 artifact, sign/install
       over USB with Sideloadly, and open smoke build `0.1.0 (1)` on the physical iPhone. The cloud,
-      packaging, download, and checksum stages pass at commit `714ec81`; Sideloadly signing, USB
+      packaging, download, and checksum stages pass at commit `cc9fe46`; Sideloadly signing, USB
       installation, and physical launch remain. Preserve failure logs rather than treating a green
       compile alone as success.
 - [ ] **Choose the deferred product constants before behavior acceptance.** Set the initial daily

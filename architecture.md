@@ -146,7 +146,7 @@ It selects a documented Xcode image, generates the project from `ios/project.yml
 and generic-device builds, packages a standard unsigned IPA, verifies bundle metadata/architecture,
 and publishes the IPA plus SHA-256/build metadata as a temporary artifact. The build has no Apple
 credentials or signing material. This cloud side has passed for smoke build `0.1.0 (1)` at source
-commit `714ec81c6049c76b349cb198ce839b15e83b80c1`; that result does not yet prove signing or launch on
+commit `cc9fe467f6088205b51958c9dea28217ae42a6fe`; that result does not yet prove signing or launch on
 the physical phone.
 
 Trusted Windows verifies and caches a physically proven artifact, then Sideloadly signs/installs it
