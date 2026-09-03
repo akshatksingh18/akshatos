@@ -1,0 +1,137 @@
+name: iOS Cloud Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-cloud-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODEGEN_VERSION: "2.46.0"
+  XCODE_PATH: /Applications/Xcode_26.6.app/Contents/Developer
+  PROJECT_PATH: ios/SquatReminder.xcodeproj
+  SCHEME: SquatReminder
+  BUNDLE_ID: com.akshatksingh18.squatreminder
+
+jobs:
+  build:
+    name: Build installable IPA
+    runs-on: macos-26
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6.0.2
+
+      - name: Select Xcode
+        shell: bash
+        run: |
+          sudo xcode-select --switch "$XCODE_PATH"
+          xcodebuild -version
+
+      - name: Install pinned XcodeGen
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/xcodegen.zip"
+          install_root="$RUNNER_TEMP/xcodegen"
+          curl --fail --location --retry 3 \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip" \
+            --output "$archive"
+          mkdir -p "$install_root"
+          unzip -q "$archive" -d "$install_root"
+          xcodegen_bin="$(find "$install_root" -type f -name xcodegen -perm -111 -print -quit)"
+          test -n "$xcodegen_bin"
+          echo "XCODEGEN_BIN=$xcodegen_bin" >> "$GITHUB_ENV"
+          "$xcodegen_bin" --version
+
+      - name: Generate placeholder icon and Xcode project
+        shell: bash
+        run: |
+          set -euo pipefail
+          swift ios/scripts/generate-app-icon.swift \
+            "$GITHUB_WORKSPACE/ios/SquatReminder/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+          "$XCODEGEN_BIN" generate --spec ios/project.yml
+          xcodebuild -list -project "$PROJECT_PATH"
+
+      - name: Compile simulator smoke build
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -project "$PROJECT_PATH" \
+            -scheme "$SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData-simulator" \
+            CODE_SIGNING_ALLOWED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Build unsigned device application
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -project "$PROJECT_PATH" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData-device" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Package and inspect IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          app_path="$RUNNER_TEMP/DerivedData-device/Build/Products/Release-iphoneos/SquatReminder.app"
+          package_root="$RUNNER_TEMP/ipa-package"
+          artifact_root="$GITHUB_WORKSPACE/artifacts"
+          ipa_path="$artifact_root/SquatReminder-unsigned.ipa"
+
+          test -d "$app_path"
+          test -x "$app_path/SquatReminder"
+          actual_bundle_id="$(plutil -extract CFBundleIdentifier raw "$app_path/Info.plist")"
+          test "$actual_bundle_id" = "$BUNDLE_ID"
+          lipo -info "$app_path/SquatReminder"
+
+          mkdir -p "$package_root/Payload" "$artifact_root"
+          ditto "$app_path" "$package_root/Payload/SquatReminder.app"
+          (
+            cd "$package_root"
+            zip -qry "$ipa_path" Payload
+          )
+
+          test -s "$ipa_path"
+          shasum -a 256 "$ipa_path" | tee "$artifact_root/SquatReminder-unsigned.ipa.sha256"
+          {
+            echo "commit=$GITHUB_SHA"
+            echo "bundle_id=$actual_bundle_id"
+            echo "marketing_version=$(plutil -extract CFBundleShortVersionString raw "$app_path/Info.plist")"
+            echo "build_number=$(plutil -extract CFBundleVersion raw "$app_path/Info.plist")"
+            echo "xcodegen_version=$($XCODEGEN_BIN --version)"
+            xcodebuild -version
+          } > "$artifact_root/build-info.txt"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          name: squat-reminder-ios-${{ github.run_number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

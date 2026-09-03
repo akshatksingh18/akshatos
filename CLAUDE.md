@@ -6,9 +6,9 @@ auto-pause/resume, and a daily overview. The primary target is now Akshat's iPho
 Kotlin/Compose Android scaffold is preserved as a fallback for the old Android phone. Both variants
 are personal sideloads only: no backend, account, remote analytics, App Store, or Play Store release.
 
-**Status:** iPhone plan accepted but not implemented; Android fallback remains an unverified
-scaffold. Moves to Building when the separate SwiftUI iOS target exists, produces its first
-release IPA, and begins physical-device verification; neither platform is currently proven.
+**Status:** iPhone cloud-build smoke scaffold added but not yet compiled, signed, installed, or
+opened on the physical phone; Android fallback remains unverified. Moves to Building after the
+first GitHub Actions IPA passes the Sideloadly open test and dashboard implementation begins.
 
 ## Files
 
@@ -23,10 +23,16 @@ release IPA, and begins physical-device verification; neither platform is curren
   Android fallback stack/source design and cross-platform invariants.
 - `todo.md` — prioritized iPhone implementation/physical-refresh gates and separate Android gaps;
   update items in place as their real state changes.
+- `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
+  install, and failure-handoff procedure; read before building or installing an iOS artifact.
+- `.github/workflows/ios-build.yml` — private macOS-runner job that generates the Xcode project,
+  compiles simulator/device smoke builds, packages the unsigned IPA, and uploads verified metadata.
+- `ios/` — Windows-authored SwiftUI smoke source, XcodeGen project specification, asset catalog,
+  and deterministic placeholder-icon generator; this is the iPhone source tree.
 - `build.gradle.kts` — root Android build configuration and plugin versions.
 - `settings.gradle.kts` — Gradle project and repository configuration.
 - `gradle.properties` — project-wide Gradle and Android settings.
-- `.gitignore` — Android/Gradle build-output and local-environment exclusions.
+- `.gitignore` — Android/Gradle and generated iOS build-output plus local-environment exclusions.
 - `app/` — Android application module, manifest, resources, and Kotlin source.
 
 ## iPhone-use plan
@@ -35,8 +41,8 @@ release IPA, and begins physical-device verification; neither platform is curren
 
 - Build a **separate native iOS app in SwiftUI** rather than translating the Android alarm chain,
   wrapping the Android project, using Shortcuts, or treating a PWA as the reminder engine. Keep it
-  in this repository as its own iOS target/source tree when implementation begins; do not replace
-  or delete the Android fallback.
+  in this repository under `ios/` as its own generated Xcode target/source tree; do not replace or
+  delete the Android fallback. The current screen is only an installation smoke test.
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), tap
   **Start my day**, receive ordinary squat reminders, log completed sets, Pause/Resume around
   interruptions, protect a daily-goal streak, optionally auto-pause outside Home, and tap **End my
@@ -154,19 +160,28 @@ release IPA, and begins physical-device verification; neither platform is curren
 
 ### Build and signing artifact
 
-- Choose one permanent reverse-DNS bundle identifier before the first phone install and record it
-  in the iOS project. Use the same Apple ID/team and bundle identifier on every build and refresh;
-  do not let build scripts or Sideloadly generate changing identifiers.
+- Use `com.akshatksingh18.squatreminder` as the candidate permanent reverse-DNS bundle identifier.
+  It becomes fixed after the first successful phone install; use the same Apple Account/team and
+  identifier on every later build and refresh, and do not let build scripts or Sideloadly generate
+  changing identifiers.
 - Produce a plain release-mode IPA with no Sideloadly-specific injection, tweak, JIT, or private
   framework dependency. That standard artifact must remain signable by Sideloadly and portable to
   another compatible installer or direct Xcode deployment if the preferred tool stops working.
-- New or changed iOS binaries require macOS and Xcode. Source changes can be made on Windows, but a
-  new release IPA must be compiled/archived on a compatible owned or borrowed Mac; a hosted build
-  service may be an optional convenience, never the only recovery path. Windows cannot create a
-  new native iOS binary by itself.
-- Cache the last verified release IPA locally with its app version/build number and checksum. The
+- New or changed iOS binaries still require macOS/Xcode, but Akshat has no local Mac. The accepted
+  primary compiler is therefore the private-repository `.github/workflows/ios-build.yml` job on a
+  pinned GitHub-hosted macOS/Xcode image. Windows authors source; XcodeGen creates the project on the
+  runner; the job builds an unsigned ordinary device IPA and publishes its hash/build metadata.
+- Keep Apple credentials, two-factor codes, certificates, provisioning profiles, device IDs, and
+  Sideloadly state out of GitHub Actions. Download the unsigned artifact to trusted Windows storage,
+  verify its SHA-256, and let Sideloadly perform personal signing/install locally.
+- GitHub workflow artifacts are temporary delivery files, not the release cache. After a physical
+  build is verified, copy the IPA to the stable portfolio cache with its version/build number and
+  checksum. The
   weekly signing process should repeatedly re-sign that exact cached IPA; rebuilding is necessary
   only when the app changes or a new iOS/Xcode compatibility fix is required.
+- Preserve a recovery path through a borrowed/rented Mac or another compatible macOS builder. The
+  human-readable XcodeGen spec and standard unsigned IPA packaging must not depend on GitHub-specific
+  runtime code, and a green cloud job never substitutes for physical-iPhone verification.
 - Free Apple Personal Team provisioning is an Apple-controlled development path, not permanent
   installation: profiles normally expire after seven days and Apple authentication/signing
   services remain a dependency. Sideloadly can also require maintenance when Apple changes those
@@ -231,6 +246,12 @@ release IPA, and begins physical-device verification; neither platform is curren
   expiring after seven days, plus three installed apps per device and seven-day provisioning
   profiles:
   <https://developer.apple.com/help/account/basics/about-your-developer-account/>.
+- The no-local-Mac build uses GitHub-hosted macOS runners and the pinned Xcode version available on
+  that image; private repositories consume the account's Actions-minute allowance. Re-check runner
+  availability before toolchain changes: <https://docs.github.com/en/actions/reference/runners/github-hosted-runners>.
+- XcodeGen turns the versioned `ios/project.yml` into the ephemeral Xcode project on the runner;
+  keep its version pinned and re-verify generation when changing it:
+  <https://github.com/yonaskolb/XcodeGen>.
 - The notification design is based on Apple's documented repeating time-interval trigger, whose
   repeating interval must be at least 60 seconds, and on local notifications being scheduled by
   the system rather than an in-process timer:
@@ -303,32 +324,36 @@ current observed behavior in the applicable project document rather than relying
 
 ### Phased implementation plan
 
-1. **Product and visual foundation:** create the separate SwiftUI target, permanent bundle ID,
-   reusable dashboard tokens/components, explicit lifecycle state model, goal/streak presentation,
-   and notification/location permission-status surfaces while leaving Android intact.
-2. **Reliable lifecycle:** implement validated interval input, Start/Pause/Resume/End, the single
+1. **Cloud-build activation:** generate the smoke target from `ios/project.yml`, pass simulator and
+   unsigned-device compilation, download/checksum the IPA, and prove that Sideloadly can sign,
+   install, and open it on the physical iPhone with the candidate permanent bundle ID.
+2. **Product and visual foundation:** replace the smoke screen with reusable dashboard tokens/
+   components while preserving the permanent bundle ID, add the explicit lifecycle state model,
+   goal/streak presentation, and notification/location permission-status surfaces, and leave
+   Android intact.
+3. **Reliable lifecycle:** implement validated interval input, Start/Pause/Resume/End, the single
    repeating request plus one snooze request, `UserDefaults` intent, versioned day/event storage,
    idempotent domain commands, and foreground reconciliation. Gate optional automation on this core.
-3. **Actions and insight:** implement Done +1, notification actions, lock-safe action persistence,
+4. **Actions and insight:** implement Done +1, notification actions, lock-safe action persistence,
    Undo, Today timeline, per-day goal snapshot, deterministic current/best streak calculation,
    finalized daily summaries/history, and the end-of-day overview. Verify the summary never treats
    scheduled/delivered reminders as completed sets.
-4. **Home automation:** implement one locally stored geographic Home condition, staged When In Use
+5. **Home automation:** implement one locally stored geographic Home condition, staged When In Use
    then Always authorization, pause-source guards, boundary-event deduplication, automation health,
    and edit/disable/delete. Use region monitoring, not continuous tracking, and keep every manual
    fallback working.
-5. **Native verification:** build on macOS/Xcode and complete action ordering, locked/background/
+6. **Native verification:** build through macOS/Xcode and complete action ordering, locked/background/
    force-quit, reboot, Focus/Summary, Low Power Mode, permission, snooze, lifecycle, persistence, and
    day-boundary, goal/streak, geofence, Background App Refresh, and authorization tests on the
    physical iPhone.
-6. **Optional Shortcut automation:** expose App Intents and prove Leave/Arrive or Focus automations
+7. **Optional Shortcut automation:** expose App Intents and prove Leave/Arrive or Focus automations
    on the target iPhone as backup/alternate triggers, including pause-source guards, duplicate native
    plus Shortcut events, and failure states.
-7. **Portable release:** produce and checksum a clean release IPA; prove same-bundle overwrite and
+8. **Portable release:** produce and checksum a clean release IPA; prove same-bundle overwrite and
    state/history/request reconciliation first through a direct reinstall and then through Sideloadly.
-8. **Reliable refresh:** configure Local Anisette, Windows-start daemon, early retries, verified
+9. **Reliable refresh:** configure Local Anisette, Windows-start daemon, early retries, verified
    success records, expiry alerts, and USB recovery; exercise failure and expiry recovery.
-9. **Soak:** run through multiple profile cycles before calling it dependable. Only after the iOS
+10. **Soak:** run through multiple profile cycles before calling it dependable. Only after the iOS
    path is stable should nonessential rep tracking, streak freezes, deeper charts/achievements, or
    Android parity work resume.
 
@@ -338,6 +363,9 @@ The iPhone path can be described as working only when all of the following are t
 
 - the standard release IPA installs and launches on the actual iPhone under free Personal Team
   signing, with its permanent bundle ID and no unsupported entitlement dependency;
+- a clean checkout can regenerate the Xcode project and IPA through the documented macOS workflow;
+  its bundle/version/architecture and checksum are inspected, no Apple secrets enter GitHub, and the
+  artifact is copied out of temporary Actions storage after physical verification;
 - Start creates exactly one correct repeating local-notification request; Pause removes it without
   ending the day; Resume safely recreates it; End removes all project requests and finalizes the
   day; and the UI reconciles permission, requests, interval, and stored state truthfully;
@@ -392,6 +420,9 @@ credentials, signing material, provisioning data, device state, or release IPAs.
 - Preserve the permanent iOS bundle ID, ordinary/actionable-notification design, standard portable
   IPA, local-only Home boundary, deterministic streak rules, and early verified refresh buffer
   unless Akshat explicitly changes the deployment strategy.
+- Read `cloud-build.md` before changing the iOS project generator, workflow, artifact packaging,
+  bundle identity, checksum process, or Sideloadly smoke-install steps. Never add Apple credentials,
+  signing files, device identifiers, or release IPAs to Git/GitHub.
 - Treat Sideloadly as a replaceable signer/installer, not an application runtime or proprietary
   build target. Never couple reminder behavior to it.
 - Any material product, platform, scheduling, permission, location, streak, persistence, build/

@@ -1,13 +1,16 @@
 # Squat Reminder architecture
 
-**State:** The iPhone-first architecture is accepted but unimplemented. The Android source tree is
-an existing, never-verified fallback scaffold. Track the two platforms separately.
+**State:** The iPhone-first product architecture is accepted but unimplemented; only a cloud-build/
+installation smoke scaffold exists. The Android source tree is an existing, never-verified fallback
+scaffold. Track the two platforms separately.
 
 ## Primary iPhone architecture
 
 ### Stack and source boundary
 
 - Swift and SwiftUI in a separate iOS target/source area within this repository.
+- XcodeGen owns the versioned `ios/project.yml`; GitHub's macOS runner generates the disposable
+  `.xcodeproj`. Do not hand-maintain or commit generated project internals from Windows.
 - UserNotifications for ordinary local reminders and actionable notification categories.
 - Core Location geographic-region monitoring for the optional Home boundary and a one-shot
   foreground location only while the user sets or edits Home. Use MapKit/SwiftUI Map for boundary
@@ -136,13 +139,20 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 
 ### Build/deployment boundary
 
-A compatible Mac/Xcode environment produces a conventional release IPA with one permanent bundle
-ID. Windows refreshes the cached IPA through the shared Sideloadly portfolio. Same-bundle overwrite,
-state/request reconciliation, expiry recovery, and USB fallback must pass on the physical iPhone;
-routine refresh never uninstalls the app. The release target includes accurate notification and
-location usage strings and no unnecessary continuous-location entitlement/configuration. Streak/date
-logic and Home-region behavior must pass unit/integration tests plus the physical matrix in
-`CLAUDE.md`; simulator success is insufficient. Detailed gates live in `CLAUDE.md` and `../CLAUDE.md`.
+The primary compiler is a private GitHub Actions macOS runner because no local Mac is available.
+It selects a documented Xcode image, generates the project from `ios/project.yml`, compiles simulator
+and generic-device builds, packages a standard unsigned IPA, verifies bundle metadata/architecture,
+and publishes the IPA plus SHA-256/build metadata as a temporary artifact. The build has no Apple
+credentials or signing material.
+
+Trusted Windows verifies and caches a physically proven artifact, then Sideloadly signs/installs it
+using the same Apple Account and permanent bundle ID. Same-bundle overwrite, state/request
+reconciliation, expiry recovery, and USB fallback must pass on the physical iPhone; routine refresh
+never uninstalls the app. The release target includes accurate notification and location usage strings
+and no unnecessary continuous-location configuration. Streak/date logic and Home-region behavior
+must pass tests plus the physical matrix in `CLAUDE.md`; simulator or green CI alone is insufficient.
+The XcodeGen source remains portable to a borrowed/rented Mac or another compatible macOS builder.
+Detailed artifact/install steps live in `cloud-build.md`.
 
 ## Current Android fallback architecture
 

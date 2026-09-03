@@ -5,9 +5,10 @@ actionable notifications, completed-set tracking, daily-goal streak motivation, 
 auto-pause, and an end-of-day overview. The accepted primary target is iPhone; the existing Android
 Kotlin/Compose source remains an unverified fallback.
 
-**Current state:** the iPhone app has not been scaffolded or built. The Android scaffold exists but
-has never completed a clean build or physical-device run. Nothing in this README is a claim that
-either platform is verified.
+**Current state:** a minimal SwiftUI iPhone installation-smoke scaffold and private GitHub Actions
+build workflow now exist, but neither has completed its first cloud build or physical-phone open
+test. The Android scaffold has never completed a clean build or physical-device run. Nothing in this
+README is a claim that either platform is verified.
 
 Source and planning are backed up in the private
 [`akshatksingh18/squat-reminder`](https://github.com/akshatksingh18/squat-reminder) repository.
@@ -38,7 +39,9 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 
 ## Primary iPhone plan
 
-Build a separate native SwiftUI target in this repository. It uses one repeating
+The `ios/` source currently opens a static smoke-test screen; its first purpose is proving the
+Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical-iPhone path. After that gate,
+build the accepted native SwiftUI product in the same target. It uses one repeating
 `UNTimeIntervalNotificationTrigger` for the normal cadence plus at most one one-off snooze request;
 iOS schedules delivery, so the app does not need a background timer, PWA, or push server. Repeating
 intervals must be at least 60 seconds.
@@ -89,17 +92,22 @@ safe.
 
 ## iPhone build and installation
 
-The detailed end-to-end build/signing/refresh/recovery plan is in `CLAUDE.md` and the shared
-three-app portfolio is in `../CLAUDE.md`. In short:
+The smoke-build download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
+build/signing/refresh/recovery plan is in `CLAUDE.md`, and the shared three-app portfolio is in
+`../CLAUDE.md`. In short:
 
-- a compatible Mac/Xcode environment creates the standard release IPA when code changes;
+- source is authored on Windows and a private GitHub Actions macOS/Xcode runner generates the Xcode
+  project, compiles it, and uploads an unsigned IPA plus checksum/build metadata;
+- GitHub receives no Apple credentials or signing material; Windows verifies the artifact and uses
+  Sideloadly for personal signing and installation;
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;
 - the permanent bundle ID, same Apple Account/team, early health checks, alerts, backup, and USB
   recovery rules must be preserved;
 - Squat Reminder occupies one of the three slots alongside PageVault and WHOOP.
 
-The iPhone path becomes usable only after the physical-device and multiple-refresh-cycle gates in
-`CLAUDE.md` pass.
+The current candidate permanent bundle ID is `com.akshatksingh18.squatreminder`; it becomes fixed
+after the first successful installation. The iPhone path becomes usable only after the physical-
+device and multiple-refresh-cycle gates in `CLAUDE.md` pass.
 
 ## Current Android fallback
 

@@ -5,14 +5,21 @@ primary; Android remains a separate fallback scaffold.
 
 ## iPhone-primary work
 
-- [ ] **Choose activation inputs.** Confirm the permanent unique bundle ID, Apple Account/team,
-      compatible Mac/Xcode build path, Windows IPA-cache/backup locations, and refresh-alert method.
+- [ ] **Finish activation inputs.** The candidate bundle ID is
+      `com.akshatksingh18.squatreminder` and GitHub Actions macOS/Xcode is the accepted primary build
+      path. Confirm the signing Apple Account/team, stable Windows IPA-cache/backup locations, and
+      refresh-alert method before the smoke artifact becomes a daily-use app.
+- [ ] **Prove the no-local-Mac smoke pipeline.** Regenerate the Xcode project from `ios/project.yml`,
+      pass simulator and unsigned-device builds, download and verify the SHA-256 artifact, sign/install
+      over USB with Sideloadly, and open smoke build `0.1.0 (1)` on the physical iPhone. Preserve the
+      first failure logs rather than treating a green compile alone as success.
 - [ ] **Choose the deferred product constants before behavior acceptance.** Set the initial daily
       completed-set goal and validate a practical default Home-boundary radius on the actual phone;
       keep both configurable and do not block the initial scaffold on choosing the numbers now.
-- [ ] **Create the separate SwiftUI target.** Keep the Android module intact and add one minimal iOS
-      application target with no extensions or unnecessary entitlements; include honest notification
-      and location usage descriptions once their setup flows exist.
+- [ ] **Promote the SwiftUI smoke target into the product target.** After the cloud/phone proof,
+      preserve the Android module and permanent iOS identity while replacing the static screen with
+      the real app. Keep one target with no extensions or unnecessary entitlements; add honest
+      notification and location usage descriptions only when their setup flows exist.
 - [ ] **Build the visual dashboard foundation.** Add reusable colors/type/spacing/components, the
       state hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak
       card, contextual lifecycle controls, Today timeline, automation-health surface, accessibility
