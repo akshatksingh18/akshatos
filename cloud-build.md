@@ -1,6 +1,6 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** First AkshatOS preview passed cloud domain/UI tests, simulator/device compilation,
+**State:** Module-separated AkshatOS preview passed cloud boundary/domain/UI tests, simulator/device compilation,
 package inspection and downloaded-IPA checksum verification. First AkshatOS physical installation,
 reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
@@ -22,22 +22,24 @@ AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
 
-Current source build 3 separates module boundaries; its cloud verification is pending.
-The verified build 2 download below remains the previous preview, not the refactored binary.
-
-Verified preview: [iOS Cloud Build #5](https://github.com/akshatksingh18/akshatos/actions/runs/33809750440),
-source `6b4bb75b95b86f55707eaef10091c1d8265fd55a`, artifact `akshatos-ios-5`.
-All 12 domain assertions and picker → dashboard → back UI test passed. Both exported simulator
+Verified preview: **0.2.0 (3)**, [iOS Cloud Build #6](https://github.com/akshatksingh18/akshatos/actions/runs/33818156350),
+source `e70740d3af51e5bad288787c99f3a1430103c88e`, artifact `akshatos-ios-6`.
+Boundary checks over 11 Swift sources and six negative fixtures, all 12 domain assertions, and
+picker → dashboard → back → reopen UI test passed; planned media entries have no navigation buttons.
+Both exported simulator
 screenshots were visually inspected; this is not physical-phone evidence. Simulator compilation,
 unsigned device Release build and IPA packaging passed. The downloaded package contains
 `Payload/AkshatOS.app` with the app executable/plist, without a test runner, extension or profile.
 
-Verified extracted download: `C:\Users\aksha\Downloads\akshatos-ios-5`.
+Verified extracted download: `C:\Users\aksha\Downloads\akshatos-module-boundaries\akshatos-ios-6`.
 `AkshatOS-unsigned.ipa` SHA-256:
-`403cfb500e316ce24c1baff8cb247ba8ee98b2db2b7d3d396b07cf2b59abacee`.
+`add44c15fc4a7ba03b0b0f3bc0f6bf524da5ecac4879ab4d3f3248253eae3631`.
 The local hash matches the cloud checksum. Keep the IPA, checksum and `build-info.txt` together.
 Screenshots are in its `screenshots/` directory. No durable release-cache promotion or signing
 has been performed for this preview.
+The prior build-2 preview remains in `C:\Users\aksha\Downloads\akshatos-ios-5` as a previous
+artifact; it was not deleted or relabeled. This refactor preserves the schema, store name, keys,
+and bundle ID. Physical same-ID upgrade/data preservation and reminders still need testing.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
 2. Compile/run `ios/tests/squats/main.swift` with the pure `SquatSession.swift` domain (12 assertions).

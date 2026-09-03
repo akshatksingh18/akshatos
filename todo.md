@@ -7,7 +7,8 @@ primary; Android remains a separate fallback scaffold.
 
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
       metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
-      Boundary guard passes locally; cloud verification of build 3 remains pending in `cloud-build.md`.
+      Boundary checks, domain/navigation tests and both builds pass; build 3 IPA is downloaded and
+      hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
 Current focus: AkshatOS opens to the hub picker, then Squats. Source implementation is underway;
