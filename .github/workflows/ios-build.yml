@@ -64,11 +64,14 @@ jobs:
           "$XCODEGEN_BIN" generate --spec ios/project.yml
           xcodebuild -list -project "$PROJECT_PATH"
 
+      - name: Check source module boundaries
+        run: python3 ios/scripts/check-boundaries.py
+
       - name: Test Squats domain logic
         shell: bash
         run: |
           set -euo pipefail
-          swiftc ios/AkshatOS/SquatSession.swift ios/tests/main.swift -o "$RUNNER_TEMP/squats-tests"
+          swiftc ios/AkshatOS/features/squats/domain/SquatSession.swift ios/tests/squats/main.swift -o "$RUNNER_TEMP/squats-tests"
           "$RUNNER_TEMP/squats-tests"
 
       - name: Compile simulator build

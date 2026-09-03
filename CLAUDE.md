@@ -30,9 +30,15 @@ The full target feature contract below is not a claim that every feature is impl
   runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
 - `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,
   and deterministic icon generator; this is the canonical hub source tree.
-- `ios/AkshatOS/` — hub/app entry, visual components, Squats dashboard, pure session domain,
-  SwiftData store, and app-scoped notification service; these source files form the first slice.
-- `ios/tests/main.swift` — executable Swift domain assertions run by the cloud workflow.
+- `ios/AkshatOS/app/` — composition/lifetime ownership, sole notification delegate, and `hub/`
+  display-only picker with metadata and injected destinations; read for host integration changes.
+- `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
+- `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
+  reminder behavior/storage, but not the process-wide notification delegate.
+- `ios/AkshatOS/Resources/` — app assets; existing icon generation path is unchanged.
+- `ios/scripts/check-boundaries.py` — source dependency/delegate guard and negative fixtures;
+  run locally and in CI. Logical boundaries, not compiler-enforced Swift packages.
+- `ios/tests/squats/main.swift` — executable Squats domain assertions run by the cloud workflow.
 - `ios/UITests/` — simulator hub/dashboard navigation test and screenshot attachments; test runner
   is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
 - `build.gradle.kts` — root Android build configuration and plugin versions.
@@ -47,7 +53,7 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Canonical source/build owner: this `akshatos/` repository, private GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (2)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (3)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -343,7 +349,7 @@ current observed behavior in the applicable project document rather than relying
    goal/streak presentation, and notification/location permission-status surfaces, and leave
    Android intact.
 3. **Reliable lifecycle:** implement validated interval input, Start/Pause/Resume/End, the single
-   repeating request plus one snooze request, `UserDefaults` intent, versioned day/event storage,
+   repeating request plus one snooze request, SwiftData intent and versioned day/event storage,
    idempotent domain commands, and foreground reconciliation. Gate optional automation on this core.
 4. **Actions and insight:** implement Done +1, notification actions, lock-safe action persistence,
    Undo, Today timeline, per-day goal snapshot, deterministic current/best streak calculation,

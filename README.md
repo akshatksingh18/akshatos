@@ -3,7 +3,7 @@
 A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
-**Current state:** first hub/Squats source implementation, version **0.2.0 (2)**,
+**Current state:** source-module-separated hub/Squats implementation, version **0.2.0 (3)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
@@ -12,6 +12,9 @@ This repository evolved from Squat Reminder, retaining Git history and the unver
 fallback. Source is private at [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos).
 
 ## First slice
+
+App composition, display-only hub, shared styling and Squats feature are separated;
+[architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
 - Hub app picker; Squats dashboard; visibly planned PageVault/ReelVault entries.
 - Start/Pause/Resume/End, Done +1/Undo and dashboard 10-minute snooze.

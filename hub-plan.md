@@ -18,6 +18,10 @@ IPAs, a PWA, LiveContainer, or an iOS extension workaround. No Flutter embedding
 
 ## Native hub boundaries
 
+App composition/navigation lives under `ios/AkshatOS/app/`, reusable UI under `shared/`, and each
+feature under `features/<feature>/`. Features must not depend on other features or the host;
+the host wires their entry points. `architecture.md` owns exact boundaries and checks.
+
 - Use one native SwiftUI host and three feature modules; module names need not be separate
   application targets. Keep existing feature requirements and Android fallbacks intact.
 - A simple home/section selector opens each experience. Load PDF documents and video players only

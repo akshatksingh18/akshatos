@@ -9,7 +9,7 @@ reminder behavior and refresh acceptance remain pending. This file owns the buil
 - Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; version/build: **0.2.0 (2)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; version/build: **0.2.0 (3)**; minimum iOS 17.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -21,6 +21,9 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Current source build 3 separates module boundaries; its cloud verification is pending.
+The verified build 2 download below remains the previous preview, not the refactored binary.
 
 Verified preview: [iOS Cloud Build #5](https://github.com/akshatksingh18/akshatos/actions/runs/33809750440),
 source `6b4bb75b95b86f55707eaef10091c1d8265fd55a`, artifact `akshatos-ios-5`.
@@ -36,8 +39,8 @@ The local hash matches the cloud checksum. Keep the IPA, checksum and `build-inf
 Screenshots are in its `screenshots/` directory. No durable release-cache promotion or signing
 has been performed for this preview.
 
-1. The workflow generates the code-drawn icon and Xcode project.
-2. Compile/run `ios/tests/main.swift` with the pure `SquatSession.swift` domain (12 assertions).
+1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
+2. Compile/run `ios/tests/squats/main.swift` with the pure `SquatSession.swift` domain (12 assertions).
 3. Compile simulator, run the hub → dashboard → back UI test with screenshot attachments, and
    compile the unsigned arm64 device Release build. Simulator test runners are not in the IPA.
 4. Inspect bundle/version/executable, package ordinary Payload IPA, generate checksum/build metadata.

@@ -11,6 +11,8 @@ physical acceptance remain outstanding. Android is an unverified fallback.
 AkshatOS opens to an app-selection screen. Choose **Squat Reminder** to open this dashboard;
 navigate back without changing its active session or reminders. PageVault/ReelVault are visibly
 planned entries until their features are implemented, and WHOOP is not embedded.
+The hub receives display metadata and injected destinations; it does not own Squats rules or data.
+The source-boundary refactor changes no user-facing feature scope or reminder/streak behavior.
 
 ## Product promise
 

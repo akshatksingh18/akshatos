@@ -7,13 +7,16 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
 
 - Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (2).
-- `AkshatOSApp.swift` owns one `SquatStore` across navigation and foreground reconciliation.
-  `HubView.swift` is the app picker; `SquatDashboard.swift` opens only after choosing Squats.
+  `com.akshatksingh18.akshatos`, version 0.2.0 (3).
+- `app/AkshatOSApp.swift` retains `AppServices`, which owns one `SquatStore` and the sole
+  `AppNotificationCoordinator` across navigation. `HubRootView` adapts observed Squats state into
+  display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
+  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats.
   PageVault/ReelVault are noninteractive planned cards. WHOOP remains separate.
 - `SquatSession.swift` is a pure Codable event/session model and calendar-day streak calculation.
-  `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema, with one
-  app-scoped notification delegate/service. Only interval/goal preferences use UserDefaults.
+  `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema. The feature's
+  `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
+  Only interval/goal preferences use UserDefaults.
   Store errors fail closed and preserve data rather than silently replacing the database.
 - Implemented: Start/Pause/Resume/End, dashboard Done/Undo, one recurring local request and one
   replaceable dashboard snooze, permission/request reconciliation, session overview/recent history,
@@ -30,6 +33,32 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
   behavior as implemented. No location permission/background mode is currently requested.
 
 ## Target iPhone architecture
+
+### Implemented source-module boundaries
+
+- `ios/AkshatOS/app/`: composition root and process-wide services; the only layer allowed to wire
+  multiple features together. `app/hub/` takes metadata and a destination builder, not stores,
+  database access, permissions or lifecycle commands.
+- `ios/AkshatOS/shared/design-system/`: UI tokens/components, without app or feature dependencies.
+- `ios/AkshatOS/features/squats/`: store plus `domain/` (Foundation-only), `data/` (SwiftData schema),
+  `services/` (Squats scheduling) and `ui/` (dashboard/settings/summary). Features may use shared
+  components, never the host or another feature's concrete types.
+- `ios/tests/squats/`: feature domain assertions; `ios/UITests/`: app navigation tests.
+- Future PageVault/ReelVault source belongs in sibling `features/pagevault/` and `features/reelvault/`
+  areas with their own stores/tests. They are not created or implemented by this refactor.
+
+All sources still compile into the existing AkshatOS module/application target. These are logical
+source boundaries, not independently compiled packages or OS security isolation.
+`python ios/scripts/check-boundaries.py` guards top-level type dependencies, pure-domain imports,
+presentation/service separation and sole delegate ownership; six negative fixtures test the guard.
+It is a lightweight source scan, not a full Swift parser; compiler and review still matter.
+
+Existing schema/model names, the `Squats` store configuration, encoded payload, preference keys,
+notification IDs and Swift compilation module are unchanged. No storage migration/reset is introduced.
+Same-ID physical upgrade remains an acceptance gate. Notification action routing is still deferred:
+the central coordinator currently preserves foreground presentation only. Add future callbacks there
+and route to feature commands; never register competing delegates from feature constructors. Retain
+background-capable services at app lifetime; load future media views/resources only on demand.
 
 ### Stack and source boundary
 

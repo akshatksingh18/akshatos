@@ -12,6 +12,10 @@ final class AkshatOSUITests: XCTestCase {
         capture("Squats dashboard")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["open-pageVault"].exists)
+        XCTAssertFalse(app.buttons["open-reelVault"].exists)
+        app.buttons["open-squats"].tap()
+        XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
     }
 
     private func capture(_ name: String) {
