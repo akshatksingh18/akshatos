@@ -403,6 +403,12 @@ credentials, signing material, provisioning data, device state, or release IPAs.
 
 ## Working agreement
 
+- Documentation synchronization is an automatic completion step; Akshat must never need to request
+  it separately. Before every final response after code/configuration work, a plan decision, build or
+  signing progress, or a reported phone test, audit the full applicable `CLAUDE.md` chain plus
+  `README.md`, `features.md`, `architecture.md`, `todo.md`, `cloud-build.md`, and affected workflows/
+  setup guides. Update current-state wording in the same change, commit and push repository-backed
+  updates when publishing the project work, and state which documents changed or why none needed to.
 - Treat this as an unverified scaffold until it passes a clean physical-device build and run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
