@@ -40,6 +40,14 @@ Physical acceptance still owns lock-screen notifications, Focus, permission chan
 Shortcuts, force-quit/reboot, Sideloadly upgrades/expiry, performance and real data recovery.
 Android, WHOOP and unimplemented media features are not tested by this pipeline.
 
+Build-4 source adds eight domain assertions and 17 action integration tests, plus notification-help
+UI coverage. Tests exercise routing/category order, repeated deliveries, duplicate receipts after
+Undo/restart, save/schedule/inbox faults, protected-store retry, Pause during Resume, cancellation,
+expired/denied snooze, old-category repair, atomic inbox recreation/corruption/protection attributes,
+legacy JSON payload decoding and a file-backed SwiftData reopen. These are registered but pending
+their first cloud run. Injected protection failures and simulator file attributes do not prove
+real locked-device access, background callback deadlines or system notification delivery.
+
 ## Branch protection limitation
 
 The repository's branch-protection and ruleset APIs return HTTP 403: GitHub requires Pro (or another

@@ -9,7 +9,7 @@ reminder behavior and refresh acceptance remain pending. This file owns the buil
 - Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; version/build: **0.2.0 (3)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; source version/build: **0.2.0 (4)**; minimum iOS 17.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -21,6 +21,13 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Build 4 adds notification actions, durable queued commands, receipt persistence and regression
+tests. Its cloud validation is pending; do not install or call it verified until its exact source
+passes `CI Gate`. The existing downloaded build 3 below remains the selected historical preview.
+After a successful build-4 artifact is available, test Done/Pause/snooze from expanded and compact
+notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
+and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
 The expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
 [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042): source/workflow checks,
@@ -49,7 +56,7 @@ artifact; it was not deleted or relabeled. This refactor preserves the schema, s
 and bundle ID. Physical same-ID upgrade/data preservation and reminders still need testing.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
-2. Compile/run `ios/tests/squats/main.swift` with the pure `SquatSession.swift` domain (12 assertions).
+2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (20 assertions).
 3. Compile simulator, run the hub → dashboard → back UI test with screenshot attachments, and
    compile the unsigned arm64 device Release build. Simulator test runners are not in the IPA.
 4. Inspect bundle/version/executable, package ordinary Payload IPA, generate checksum/build metadata.

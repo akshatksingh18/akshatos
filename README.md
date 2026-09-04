@@ -3,7 +3,7 @@
 A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
-**Current state:** source-module-separated hub/Squats implementation, version **0.2.0 (3)**,
+**Current state:** hub/Squats implementation with notification actions, version **0.2.0 (4)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
@@ -21,12 +21,14 @@ App composition, display-only hub, shared styling and Squats feature are separat
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
 - Hub app picker; Squats dashboard; visibly planned PageVault/ReelVault entries.
-- Start/Pause/Resume/End, Done +1/Undo and dashboard 10-minute snooze.
+- Start/Pause/Resume/End, Done +1/Undo and ten-minute snooze from dashboard or notification.
+- Notification actions ordered Done, Pause, then snooze; durable inbox, replay protection after Undo,
+  and queued-action retry UI. Locked-device behavior still needs physical verification.
 - One system-scheduled recurring reminder; local versioned SwiftData sessions and recent summaries.
 - Configurable daily goal (unset initially), current/best streak and today's progress.
 - No location access, server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** notification action buttons, Home auto-pause, Shortcuts, export/restore,
+**Still deferred:** Home auto-pause, Shortcuts, export/restore,
 full daily aggregate overview and acceptance testing. The full intended scope below remains the
 target, not a list of completed features. Until recovery and device tests pass, use disposable
 test activity only.
@@ -60,9 +62,15 @@ Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPh
 iOS schedules delivery, so the app does not need a background timer, PWA, or push server. Repeating
 intervals must be at least 60 seconds.
 
-The next notification phase will add a category exposing Done, Pause, and Remind me in 10 min. Compact notification
+The notification category exposes Done, Pause, and Remind me in 10 min. Compact notification
 space may show only Done and Pause; expand the notification for the third action. Dashboard and
 notification controls use the same idempotent lifecycle commands.
+An old preview's schedule may show Repair reminders after update; re-arm it once to attach the
+current buttons. Actions are queued before processing and receipts survive Undo. If protected
+session data is unavailable, logging waits for unlock and merge; a matching Pause can still cancel
+the schedule. Snooze expires ten minutes from its tap, even during recovery. Before first unlock
+after reboot or on inbox-write failure, saving an action cannot be guaranteed; check the visible
+error and your count after opening Squats. These conditions still need physical-phone acceptance.
 
 Interval/goal settings live in `UserDefaults`; current session intent and events live in the
 versioned SwiftData store. Versioned local session/event storage owns

@@ -6,6 +6,7 @@ struct SquatEvent: Codable, Identifiable, Equatable {
     var id = UUID()
     var date: Date
     var kind: Kind
+    var source: String? = nil
 }
 
 struct SquatSession: Codable, Identifiable, Equatable {
@@ -18,6 +19,9 @@ struct SquatSession: Codable, Identifiable, Equatable {
     var goal: Int?
     var state: State = .paused
     var events: [SquatEvent] = []
+    // Optional additions decode older V1 payloads without rewriting their history.
+    var actionReceipts: [String]? = nil
+    var pauseReason: String? = nil
 
     var count: Int { events.filter { $0.kind == .done }.count }
     var isActive: Bool { state != .ended }

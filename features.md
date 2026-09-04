@@ -3,7 +3,7 @@
 **State:** Accepted full Squats feature contract inside AkshatOS. The first source implementation
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
-and device evidence. Notification actions, Home automation, full daily overview/recovery, and
+and device evidence. Notification actions and a durable inbox are implemented in source; Home automation, full daily overview/recovery, and
 physical acceptance remain outstanding. Android is an unverified fallback.
 
 ## Hub entry
@@ -110,6 +110,12 @@ target iPhone.
 Notification actions run through the same domain commands as dashboard buttons. Action handling must
 be safe while the phone is locked, persist an idempotent event before returning control to iOS, and
 merge any small pending-action inbox into the main day log on the next foreground reconciliation.
+The implemented inbox uses atomic protected files available after first unlock. Receipt persistence
+survives Undo and process restart; busy callbacks queue instead of disappearing. If primary storage
+is temporarily unavailable, Done waits for merge, Pause cancels a matching schedule, and snooze may
+be delayed until storage recovers (never beyond its original ten-minute deadline). The dashboard
+shows queued actions and a retry control. Inbox write failure is reported rather than represented
+as a completed set; reboot-before-first-unlock and locked delivery still require device testing.
 
 Only one normal recurring request and one snooze request may exist. Pause cancels the normal request
 and any obsolete snooze. End cancels all project-owned pending and delivered reminders. A delivery

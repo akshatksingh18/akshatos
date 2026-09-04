@@ -4,19 +4,26 @@ Personal native iPhone hub: the home screen selects a feature, starting with Squ
 PageVault and ReelVault are reserved for later; WHOOP stays standalone. This repository evolved
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
-**Status:** Building — hub picker and first Squats dashboard/core are implemented in source.
+**Status:** Building — hub picker, Squats dashboard/core and durable notification actions are implemented in source.
 Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.
 
 ## Files
 
+- `handoff.md` — new-session entry point, current implementation/evidence boundaries and recommended
+  continuation order; read to resume, then use its linked owning specifications and setup guides.
 - `ci.md` — pipeline stages, feature test registration, failure handling, coverage limits, and
   current GitHub branch-protection limitation; read before changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
 - `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
+- `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
+  scheduling/save failures and file/disk recovery regression tests.
+- `ios/AkshatOS/features/squats/domain/SquatAction.swift` — shared action commands and delivery receipts.
+- `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
+- `ios/AkshatOS/features/squats/data/SquatRepository.swift` — retryable SwiftData persistence adapter.
 - `hub-plan.md` — canonical shared packaging, source/identity ownership, feature boundaries,
   and integration gates; versioned here, with parent/sibling indexes linking to it.
 - `CLAUDE.md` — canonical project instructions and the accepted end-to-end iPhone implementation,
@@ -59,7 +66,7 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Canonical source/build owner: this `akshatos/` repository, private GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (3)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (4)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the

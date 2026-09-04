@@ -54,6 +54,10 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
 - [ ] **Implement actionable notifications and snooze.** Register Done, Pause, and Remind me in 10
       min in that priority order; route them through shared commands; allow only one stable one-off
       snooze; and handle locked-device persistence and callback deadlines safely.
+      Source now includes ordered categories, a shared command path, after-first-unlock atomic inbox,
+      delivery receipts that survive Undo, busy-action draining, protected-store retry and matching
+      Pause cancellation. Regression tests cover replay and failure paths; exact-commit CI and physical
+      locked/force-quit/deadline acceptance remain tracked in `ci.md` and `cloud-build.md`.
 - [ ] **Implement completed-set tracking.** Record one timestamped set per explicit Done action,
       deduplicate callbacks, offer Undo, and never infer reps or notification-delivery counts.
 - [ ] **Implement local day data and overview.** Add versioned session/event persistence, pause
@@ -119,7 +123,7 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
 ## First-slice source coverage (not acceptance)
 
 Implemented source covers visual dashboard, permission/reconciliation, lifecycle, Done/Undo,
-dashboard snooze, SwiftData session storage/recent session overview, and configurable goals/streaks.
+dashboard/notification snooze, durable notification Done/Pause actions, SwiftData session storage/recent session overview, and configurable goals/streaks.
 The unchecked items above describe remaining full-contract implementation and acceptance, not an
 instruction to create second copies of those systems. Cloud domain assertions cover event dedup,
 round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Add service/persistence

@@ -1,8 +1,8 @@
 {
   "squats": {
-    "domain_sources": ["AkshatOS/features/squats/domain/SquatSession.swift"],
+    "domain_sources": ["AkshatOS/features/squats/domain/SquatSession.swift", "AkshatOS/features/squats/domain/SquatAction.swift"],
     "domain_test": "tests/squats/main.swift",
-    "integration_tests": ["UnitTests/SquatsPersistenceTests.swift"],
+    "integration_tests": ["UnitTests/SquatsPersistenceTests.swift", "UnitTests/SquatsActionTests.swift"],
     "ui_tests": ["UITests/AkshatOSUITests.swift"]
   }
 }

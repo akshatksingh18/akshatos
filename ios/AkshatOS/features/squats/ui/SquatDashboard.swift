@@ -16,6 +16,15 @@ struct SquatDashboard: View {
                         .font(.system(.title, design: .rounded, weight: .bold))
                 }
                 hero
+                if store.pendingActionCount > 0 {
+                    Surface {
+                        Label("\(store.pendingActionCount) notification actions waiting to save", systemImage: "tray.and.arrow.down")
+                        Text("Unlock your phone and retry. Queued actions are kept until local history can be updated.")
+                            .font(.caption).foregroundStyle(Palette.muted)
+                        Button("Retry saved actions") { Task { await store.refresh() } }
+                            .disabled(store.busy)
+                    }
+                }
                 Surface {
                     HStack(alignment: .firstTextBaseline) {
                         Text("\(store.todayCount)").font(.system(size: 56, weight: .bold, design: .rounded))
@@ -139,7 +148,7 @@ struct SquatDashboard: View {
         case "Paused": return "Take your time. Your day stays open until you're ready to return."
         case "Day complete": return "Good work showing up. Your sets are saved for today."
         case "Notifications blocked": return "Enable notifications in iOS Settings to receive reminders."
-        case "Reminder needs repair": return "The saved schedule is missing or changed. Re-arm it to continue."
+        case "Reminder needs repair": return "The saved schedule is missing or needs the current action buttons. Re-arm it to continue."
         case "Storage unavailable": return "Local storage needs attention. Keep the app installed to preserve your data."
         default: return "Start when you're ready. Your first reminder comes one full interval later."
         }
@@ -210,9 +219,12 @@ struct SquatDashboard: View {
                 }
                 Section("Coming later") {
                     Label("Home auto-pause", systemImage: "house")
-                    Label("Notification action buttons", systemImage: "bell")
                     Label("Shortcuts & data export", systemImage: "square.and.arrow.up")
                 }.foregroundStyle(.secondary)
+                Section("Notification actions") {
+                    Text("Done logs one set. Pause stops reminders until you resume. Expand a notification for Remind me in 10 min; it keeps your regular cadence.")
+                        .accessibilityIdentifier("notification-actions-help")
+                }
             }.navigationTitle("Squat settings")
                 .toolbar { Button("Done") { showSettings = false } }
         }.tint(Palette.lime)

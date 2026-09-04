@@ -19,6 +19,7 @@ final class AkshatOSUITests: XCTestCase {
         app.buttons["Squat settings"].tap()
         XCTAssertTrue(app.navigationBars["Squat settings"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.steppers.firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["notification-actions-help"].exists)
         app.navigationBars["Squat settings"].buttons["Done"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
     }

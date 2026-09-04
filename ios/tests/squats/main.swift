@@ -41,3 +41,30 @@ var a = session(1, count: 2); a.day = SquatSession.dayKey(prior, calendar: calen
 var b = session(2, count: 2); b.day = SquatSession.dayKey(dst, calendar: calendar); b.started = dst
 assert(SquatSession.streaks([a, b], now: dst, calendar: calendar).current == 2, "Calendar days, not 86400-second arithmetic")
 print("PASS: 12 domain assertions (events, persistence, goal, streak, skipped day, DST)")
+
+var actionSession = session(4, count: 0)
+actionSession.state = .running
+let done = SquatAction(id: "delivery-1", sessionID: actionSession.id, kind: .done,
+                      date: date(4), day: actionSession.day, source: "notification")
+actionSession = done.applying(to: actionSession)
+assert(done.applying(to: actionSession).count == 1, "Duplicate notification counts once")
+actionSession.undo()
+assert(done.applying(to: actionSession).count == 0, "Undo must preserve the delivery receipt")
+let restoredActionSession = try JSONDecoder().decode(SquatSession.self, from: JSONEncoder().encode(actionSession))
+assert(done.applying(to: restoredActionSession).count == 0, "Receipt survives serialization")
+let pause = SquatAction(id: "pause-1", sessionID: actionSession.id, kind: .pause,
+                       date: date(4), day: actionSession.day, source: "notification")
+actionSession = pause.applying(to: actionSession)
+assert(actionSession.state == .paused && actionSession.pauseReason == "notification", "Pause retains deliberate source")
+assert(pause.applying(to: actionSession) == actionSession, "Pause replay is idempotent")
+var expiredDay = done
+expiredDay.id = "tomorrow"
+expiredDay.day = "2026-09-05"
+assert(!expiredDay.canApply(to: actionSession), "A prior-day notification cannot log today's set")
+var foreign = done
+foreign.sessionID = UUID()
+assert(!foreign.canApply(to: actionSession), "Wrong session cannot be changed")
+let firstDelivery = SquatAction.notificationID(session: actionSession.id, request: "regular", delivered: date(4), action: "done")
+let secondDelivery = SquatAction.notificationID(session: actionSession.id, request: "regular", delivered: date(4).addingTimeInterval(2700), action: "done")
+assert(firstDelivery != secondDelivery, "Repeating deliveries must not share an action receipt")
+print("PASS: 8 notification action assertions (replay, Undo, persistence, pause source, stale day, delivery identity)")

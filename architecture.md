@@ -7,8 +7,9 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
 
 - Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (3).
-- `app/AkshatOSApp.swift` retains `AppServices`, which owns one `SquatStore` and the sole
+  `com.akshatksingh18.akshatos`, version 0.2.0 (4).
+- `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
+  completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` across navigation. `HubRootView` adapts observed Squats state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats.
@@ -18,17 +19,17 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
   Only interval/goal preferences use UserDefaults.
   Store errors fail closed and preserve data rather than silently replacing the database.
-- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, one recurring local request and one
-  replaceable dashboard snooze, permission/request reconciliation, session overview/recent history,
+- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, notification Done/Pause/ten-minute snooze,
+  one recurring local request and one replaceable snooze, permission/request reconciliation, session overview/recent history,
   configurable goal (initially unset), same-day aggregation, and current/best streak.
 - Changes to interval/goal are locked while active; the first session's goal governs that date.
   Stale prior-day sessions stop scheduling at foreground reconciliation and require explicit End.
   Midnight is not yet automatically finalized in background. Countdown is display-only;
   UserNotifications schedules delivery without relying on the dashboard or its timer.
-- Deferred: notification action buttons/locked-action inbox, Home geofence, App Intents, export/
+- Deferred: Home geofence, App Intents, export/
   restore and history deletion, complete daily aggregate summary with active/paused durations,
-  expanded lifecycle/persistence tests, and physical/refresh acceptance. Notifications currently
-  open the app; logging, pausing and snoozing use the dashboard.
+  remaining lifecycle/persistence tests, and physical/refresh acceptance. The notification category
+  exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label target-only
   behavior as implemented. No location permission/background mode is currently requested.
 
@@ -57,9 +58,8 @@ It is a lightweight source scan, not a full Swift parser; compiler and review st
 
 Existing schema/model names, the `Squats` store configuration, encoded payload, preference keys,
 notification IDs and Swift compilation module are unchanged. No storage migration/reset is introduced.
-Same-ID physical upgrade remains an acceptance gate. Notification action routing is still deferred:
-the central coordinator currently preserves foreground presentation only. Add future callbacks there
-and route to feature commands; never register competing delegates from feature constructors. Retain
+Same-ID physical upgrade remains an acceptance gate. The central coordinator owns foreground
+presentation and action routing into Squats commands; never register competing delegates from feature constructors. Retain
 background-capable services at app lifetime; load future media views/resources only on demand.
 
 ### Stack and source boundary
@@ -72,8 +72,8 @@ background-capable services at app lifetime; load future media views/resources o
   foreground location only while the user sets or edits Home. Use MapKit/SwiftUI Map for boundary
   confirmation; do not run continuous GPS or retain a movement trail.
 - `UserDefaults` for settings, stable identifiers, daily-goal configuration,
-  geofence enablement/health, a small schema/version key, and a lock-safe pending-action inbox when
-  primary data is inaccessible. Keep the Home coordinate/radius in protected, this-device-only local
+  geofence enablement/health and a small schema/version key. Pending actions use the atomic file inbox
+  described below, not UserDefaults. Keep the Home coordinate/radius in protected, this-device-only local
   storage suitable after first unlock, never in logs, analytics, or Git.
 - SwiftData for versioned day sessions, completion events, pause segments, snoozes, and finalized
   summaries—including each day's goal snapshot and qualification—when targeting iOS 17 or later.
@@ -104,7 +104,34 @@ background-capable services at app lifetime; load future media views/resources o
 - Do not use an in-process timer, background loop, unbounded list of future notifications, Web Push,
   a Shortcut/Personal Automation as the reminder engine, or a server.
 
-### State reconciliation
+### Implemented notification durability
+
+- The coordinator registers the namespaced category before launch completes. Default open/dismiss,
+  unrelated requests, incorrect categories and malformed session IDs cannot log a set.
+- A command receipt combines session ID, stable request ID, notification delivery timestamp and
+  action ID; successive deliveries of the same repeating request remain distinct. The receipt is
+  saved with the event in the session payload and survives Undo. Optional receipt/source/pause-reason
+  fields decode existing V1 payloads without changing SwiftData model identity or resetting data.
+- Every notification callback writes its command to `Application Support/squats-actions/inbox.json`
+  before awaiting service work or checking the store's busy state. Atomic replacement and
+  `completeUntilFirstUserAuthentication` protection retain commands while locked after first unlock.
+  Main-actor serialization prevents competing inbox writers. Commit session data before removing a
+  command; replay after a crash between those steps is a no-op. Corrupt inboxes are preserved.
+- Foreground, protected-data-available and normal command completion drain the inbox. Failed loads
+  retry without deleting/replacing the database. A queued Pause cancels the matching schedule even
+  if the primary store is unavailable or an earlier Done save failed. Done waits for durable merge.
+- Snooze keeps its original tap-time-plus-ten-minute deadline during retries, leaves the normal
+  cadence unchanged, and is discarded with a visible message if expired or permission/cadence is
+  unusable. A failed snooze save cancels its one-off request and retains the queued command.
+- Old category-less recurring requests show repair-required until explicitly re-armed. A healthy
+  repeated Resume leaves the existing cadence alone. New/old-session callbacks cannot revive End.
+- The system callback completes after inbox persistence and attempted processing; callbacks arriving
+  while busy may finish with their command durably queued. Pending count and retry UI explain this.
+  Before the first unlock after reboot, or when the inbox itself cannot be written, persistence is
+  not guaranteed: no completion is claimed and the next visible UI reports the failure. Physical
+  lock/force-quit/callback-deadline tests remain mandatory; simulator faults only test the logic.
+
+### Foreground state reconciliation
 
 On launch, every foreground return, and after a user-visible domain action, merge pending locked
 actions and inspect both notification settings and pending requests:
