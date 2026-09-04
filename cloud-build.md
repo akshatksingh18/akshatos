@@ -1,8 +1,8 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-4 notification actions passed PR cloud checks, domain/integration/UI tests,
-simulator/device compilation and package inspection. The downloaded build-3 preview remains the
-hash-verified local artifact; PR runs do not upload a new IPA. First AkshatOS physical installation,
+**State:** Build-4 notification actions passed PR and delivery cloud checks, domain/integration/UI
+tests, simulator/device compilation and package inspection. The build-4 IPA is downloaded and
+hash-verified; older previews are preserved. First AkshatOS physical installation,
 reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 ## Current identity and artifact
@@ -31,12 +31,28 @@ tests, one hub/settings UI test, simulator/device compilation and IPA payload in
 The feature is published on `feature/squats-notification-actions` in
 [PR #1](https://github.com/akshatksingh18/akshatos/pull/1); it is not merged into main.
 
-PR runs intentionally omit IPA upload. A successful non-PR workflow dispatch or main source build
-and checksum verification are required before installing build 4. No build-4 IPA was downloaded,
-signed, installed or promoted to a release cache. The existing downloaded build 3 below remains
-the selected historical preview. After a successful build-4 artifact is available, test Done/Pause/snooze from expanded and compact
+PR runs intentionally omit IPA upload. The same application source, on documentation revision
+`ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`, passed both
+[PR run #11](https://github.com/akshatksingh18/akshatos/actions/runs/33898795994) and
+[delivery run #12](https://github.com/akshatksingh18/akshatos/actions/runs/33899343678), including `CI Gate`.
+The latter published the downloaded artifact below. No build-4 signing, installation or durable
+release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Selected build-4 download
+
+- Version: **0.2.0 (4)**; source `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`.
+- Artifact: `akshatos-ios-12`, from delivery run #12 linked above.
+- Verified local directory:
+  `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12`.
+- File: `AkshatOS-unsigned.ipa`; keep `AkshatOS-unsigned.ipa.sha256` and `build-info.txt` beside it.
+- SHA-256: `154677be1c5b70b68cbf3a0b7e5a218409a974ffa006b4d70d7160049d40b114`.
+- Local checksum matches the cloud checksum; ZIP integrity, payload, permanent bundle ID,
+  version/build and absence of shipped tests/extensions/signing profile are checked. This is an
+  unsigned preview for manual Sideloadly testing, not a phone-verified or signing-refresh release.
+
+### Earlier preview evidence
 
 The prior expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
 [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042): source/workflow checks,
@@ -77,7 +93,7 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 
 ## First AkshatOS install (manual steps; no computer control)
 
-1. Use the verified **AkshatOS** download above, not the old smoke download; download a newer
+1. Use the selected **AkshatOS 0.2.0 (4)** download above, not an older preview or smoke download; download a newer
    successful artifact only when its source/build is intentionally selected.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
@@ -90,13 +106,15 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 6. Open **AkshatOS**: the first screen must be the app picker. Select **Squat Reminder**; test back
    navigation to the hub. Other modules must clearly say they are not available.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
-   lock the phone, receive an alert, open Squats and Done +1, Undo, Pause, Resume, snooze, End, and
-   reopen the app. Test 45 minutes too. No notification-action buttons exist in this slice.
+   lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
+   test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
+   relaunch. Repeat with 45 minutes. Confirm action ordering and that returning to the picker does
+   not stop reminders. A build-3 schedule may need one explicit Repair reminders to add the category.
 8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 
-Wi-Fi/automatic refresh, expiry recovery, in-place upgrades, full daily summary, notification
-buttons, Home geofence, Shortcuts, and export/restore are not verified/completed by this first slice.
+Wi-Fi/automatic refresh, expiry recovery, in-place upgrades and notification buttons still require
+physical verification. Full daily summary, Home geofence, Shortcuts and export/restore remain unfinished.
 Keep real irreplaceable history out until recovery is implemented.
 
 ## Previous standalone smoke evidence

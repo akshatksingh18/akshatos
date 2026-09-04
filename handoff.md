@@ -64,15 +64,16 @@ Current work is on `feature/squats-notification-actions`, published in
 `3cfea6176d43e79b8af899b579e0ac602b480715` passed
 [run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 20 domain assertions,
 24 integration tests, one hub/settings UI test, source/inventory/workflow checks, simulator/device
-compilation, IPA inspection and CI Gate. Follow-up documentation preserves this source evidence;
-inspect the current PR head/checks when resuming. PR runs do not upload an IPA. `cloud-build.md`
-owns the non-PR artifact gate and exact build evidence; no build-4 install/download is recorded.
+compilation, IPA inspection and CI Gate. Documentation revision
+`ede1e492bedf8bfbc8c76fb938a3a0676aa97b32` passed PR run #11 and delivery run #12 with unchanged
+application source. Follow-up documentation preserves this evidence; inspect current PR checks
+when resuming. `cloud-build.md` owns exact source/hash/build records and manual install instructions.
 
-The recorded hash-verified local preview is run #6, source
-`e70740d3af51e5bad288787c99f3a1430103c88e`, at:
-`C:\Users\aksha\Downloads\akshatos-module-boundaries\akshatos-ios-6\AkshatOS-unsigned.ipa`.
-Its presence was checked for this handoff; recheck SHA-256 against `cloud-build.md` before install.
-Keep its checksum and build metadata together; do not confuse equal version numbers with equal builds.
+The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
+`C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
+Its checksum, identity, version/build and payload passed local inspection. Recheck SHA-256 against
+`cloud-build.md` before install; keep checksum/build metadata together. Older build-3 and smoke
+downloads remain preserved, with their evidence in the build guide. No build-4 install is recorded.
 
 Only the old standalone Squat Reminder smoke was installed and opened on the phone. Akshat then
 deleted that disposable app. **AkshatOS installation, reminders and same-ID refresh remain pending.**

@@ -5,6 +5,8 @@ checks, Build installable IPA and CI Gate in [PR #1 run #10](https://github.com/
 All 20 domain assertions, 24 integration tests and the hub/settings UI test passed. Real PR
 triggering, failure diagnostics download and correction are exercised. Server-enforced private
 branch protection remains unavailable under the current GitHub plan.
+The unchanged application source on documentation revision `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`
+also passed PR run #11 and delivery run #12; exact artifact/hash evidence belongs in `cloud-build.md`.
 
 ## Automated checks
 

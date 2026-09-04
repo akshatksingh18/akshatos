@@ -97,6 +97,9 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
+      Build 4 passed delivery run #12 and is downloaded with matching checksum, identity/version
+      and payload checks. Physical acceptance and durable current/previous release-cache promotion
+      remain open; the Downloads preview is not yet a known-good phone release.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.

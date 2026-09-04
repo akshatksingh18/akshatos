@@ -7,6 +7,8 @@ dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separat
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
+The build-4 unsigned IPA is downloaded and hash-verified after passing cloud tests; the build guide
+contains its exact path and manual Sideloadly steps. Physical acceptance remains pending.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is private at [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos).
