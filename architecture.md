@@ -56,8 +56,9 @@ source boundaries, not independently compiled packages or OS security isolation.
 presentation/service separation and sole delegate ownership; six negative fixtures test the guard.
 It is a lightweight source scan, not a full Swift parser; compiler and review still matter.
 
-Existing schema/model names, the `Squats` store configuration, encoded payload, preference keys,
-notification IDs and Swift compilation module are unchanged. No storage migration/reset is introduced.
+Existing schema/model names, the `Squats` store configuration, preference keys, notification request
+IDs and Swift compilation module are unchanged. Optional payload fields add receipts and action
+sources without a SwiftData schema migration or reset.
 Same-ID physical upgrade remains an acceptance gate. The central coordinator owns foreground
 presentation and action routing into Squats commands; never register competing delegates from feature constructors. Retain
 background-capable services at app lifetime; load future media views/resources only on demand.

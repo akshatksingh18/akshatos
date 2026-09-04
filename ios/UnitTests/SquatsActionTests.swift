@@ -38,8 +38,15 @@ import UserNotifications
     var scheduleCount = 0
     var failSchedule = false
     var duringSchedule: (() async -> Void)?
+    var duringSnapshot: (() async -> Void)?
     func authorize() async throws -> Bool { state.allowed }
-    func snapshot() async -> ReminderSnapshot { state }
+    func snapshot() async -> ReminderSnapshot {
+        if let callback = duringSnapshot {
+            duringSnapshot = nil
+            await callback()
+        }
+        return state
+    }
     func schedule(_ session: SquatSession, snoozeUntil: Date?) async throws {
         if let callback = duringSchedule {
             duringSchedule = nil
@@ -64,7 +71,7 @@ import UserNotifications
 @MainActor final class SquatsActionTests: XCTestCase {
     private var time: Date { Date(timeIntervalSince1970: 1_788_537_600) }
     private func session() -> SquatSession {
-        SquatSession(day: SquatSession.dayKey(time), started: time.addingTimeInterval(-60),
+        SquatSession(day: SquatSession.dayKey(time), started: time.addingTimeInterval(-3600),
                      interval: 45, goal: nil, state: .running)
     }
     private func action(_ session: SquatSession, _ kind: SquatAction.Kind = .done,
@@ -162,6 +169,43 @@ import UserNotifications
         XCTAssertEqual(reminders.state.sessionID, repository.values[0].id)
     }
 
+    func testQueuedPauseCancelsEvenWhenEarlierDoneCannotSave() async throws {
+        let (repository, reminders, inbox, store) = fixture()
+        let active = repository.values[0]
+        repository.failSave = true
+        try inbox.enqueue(action(active))
+        try inbox.enqueue(action(active, .pause))
+        await store.refresh()
+        XCTAssertNil(reminders.state.sessionID)
+        XCTAssertEqual(inbox.values.count, 2)
+        repository.failSave = false
+        await store.refresh()
+        XCTAssertEqual(store.todayCount, 1)
+        XCTAssertEqual(store.active?.state, .paused)
+        XCTAssertTrue(inbox.values.isEmpty)
+    }
+
+    func testSnoozeQueuedBeforeMidnightCannotScheduleForPreviousDay() async {
+        let repository = MemoryRepository()
+        let midnight = Calendar.current.startOfDay(for: time)
+        let tap = midnight.addingTimeInterval(-60)
+        let active = SquatSession(day: SquatSession.dayKey(tap), started: tap.addingTimeInterval(-3600),
+                                  interval: 45, goal: nil, state: .running)
+        repository.values = [active]
+        let reminders = FakeReminders()
+        reminders.state.sessionID = active.id
+        reminders.state.interval = 2700
+        let inbox = MemoryInbox()
+        let store = SquatStore(repository: repository, reminders: reminders, inbox: inbox,
+                               now: { midnight.addingTimeInterval(60) })
+        let command = SquatAction(id: UUID().uuidString, sessionID: active.id, kind: .snooze,
+                                  date: tap, day: active.day, source: "notification")
+        await store.receive(command)
+        XCTAssertEqual(reminders.scheduleCount, 0)
+        XCTAssertNil(reminders.state.snooze)
+        XCTAssertEqual(store.operational, "Finish previous day")
+    }
+
     func testSnoozeReplacementPreservesCadenceAndPauseCancelsBoth() async {
         let (repository, reminders, _, store) = fixture()
         let active = repository.values[0]
@@ -224,6 +268,17 @@ import UserNotifications
         await store.resume()
         XCTAssertEqual(store.active?.state, .paused)
         XCTAssertEqual(store.active?.pauseReason, "notification")
+        XCTAssertNil(reminders.state.sessionID)
+        XCTAssertTrue(inbox.values.isEmpty)
+    }
+
+    func testActionDuringFinalReconciliationDrainsBeforeBecomingIdle() async {
+        let (repository, reminders, inbox, store) = fixture()
+        let command = action(repository.values[0], .pause)
+        reminders.duringSnapshot = { await store.receive(command) }
+        await store.refresh()
+        XCTAssertEqual(store.active?.state, .paused)
+        XCTAssertEqual(store.operational, "Paused")
         XCTAssertNil(reminders.state.sessionID)
         XCTAssertTrue(inbox.values.isEmpty)
     }

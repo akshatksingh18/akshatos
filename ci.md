@@ -40,7 +40,7 @@ Physical acceptance still owns lock-screen notifications, Focus, permission chan
 Shortcuts, force-quit/reboot, Sideloadly upgrades/expiry, performance and real data recovery.
 Android, WHOOP and unimplemented media features are not tested by this pipeline.
 
-Build-4 source adds eight domain assertions and 17 action integration tests, plus notification-help
+Build-4 source adds eight domain assertions and 20 action integration tests, plus notification-help
 UI coverage. Tests exercise routing/category order, repeated deliveries, duplicate receipts after
 Undo/restart, save/schedule/inbox faults, protected-store retry, Pause during Resume, cancellation,
 expired/denied snooze, old-category repair, atomic inbox recreation/corruption/protection attributes,

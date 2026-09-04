@@ -18,6 +18,7 @@ import SwiftUI
     private let reminders: any SquatReminders
     private let inbox: any SquatActionInbox
     private let now: () -> Date
+    private var actionRevision = 0
     var active: SquatSession? { sessions.first { $0.isActive } }
     var today: [SquatSession] { sessions.filter { $0.day == SquatSession.dayKey(now()) } }
     var todayCount: Int { today.reduce(0) { $0 + $1.count } }
@@ -63,6 +64,7 @@ import SwiftUI
     func receive(_ action: SquatAction) async {
         do {
             try inbox.enqueue(action)
+            actionRevision += 1
             pendingActionCount = try inbox.pending().count
         } catch {
             message = "The notification action could not be saved. Unlock and open Squats to check your count before trying again."
@@ -76,9 +78,18 @@ import SwiftUI
         busy = true
         defer { busy = false }
         if !storageAvailable { load() }
-        do { try await drainInbox() }
-        catch { actionFailure(error) }
-        await reconcile()
+        await settle()
+    }
+
+    private func settle() async {
+        // A response can arrive during the final settings/request await, not just scheduling.
+        // Repeat only for newly received work; a persistent storage error never spins a retry loop.
+        var observed: Int
+        repeat {
+            observed = actionRevision
+            do { try await drainInbox() } catch { actionFailure(error) }
+            await reconcile()
+        } while observed != actionRevision
     }
 
     private func drainInbox() async throws {
@@ -116,7 +127,8 @@ import SwiftUI
             let snapshot = await reminders.snapshot()
             let deadline = action.date.addingTimeInterval(600)
             // Do not resurrect expired snoozes or create a snooze without a usable regular cadence.
-            guard deadline > now(), snapshot.allowed, snapshot.sessionID == session.id,
+            guard deadline > now(), session.day == SquatSession.dayKey(now()),
+                  snapshot.allowed, snapshot.sessionID == session.id,
                   snapshot.interval == TimeInterval(session.interval * 60) else {
                 try acknowledge(action, session: session)
                 message = "That snooze is no longer available. Open Squats to check your reminder status."
@@ -174,8 +186,7 @@ import SwiftUI
             guard storageAvailable else { return }
             try await operation()
         } catch { actionFailure(error) }
-        do { try await drainInbox() } catch { actionFailure(error) }
-        await reconcile()
+        await settle()
     }
 
     func start() async {
