@@ -1,7 +1,10 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Expanded pipeline implemented; first verification of the new persistence tests and gate
-is pending. The previous build evidence remains in `cloud-build.md` until a new run passes.
+**Status:** Expanded pipeline verified on main; Source checks, Build installable IPA and CI Gate
+all passed in [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042), source
+`a31643b2375abcd3e708ca3747c9980b1a3e78b8`. All 12 domain assertions, three persistence tests and
+the hub/settings UI test passed. PR triggering and failure-artifact recovery are configured but
+have not been separately exercised by a real PR or intentionally failing cloud run.
 
 ## Automated checks
 
@@ -25,7 +28,7 @@ is pending. The previous build evidence remains in `cloud-build.md` until a new 
 
 Current automated coverage: domain event deduplication/Undo/streak/date assertions; SwiftData
 in-memory round-trip across contexts, persisted Undo/End and malformed-payload preservation;
-hub entry/back/reopen and unavailable media entries. In-memory tests do not prove disk restart,
+hub entry/back/reopen, settings open/dismiss and unavailable media entries. In-memory tests do not prove disk restart,
 migration, protected-device storage, or the full SquatStore error/reconciliation lifecycle.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
