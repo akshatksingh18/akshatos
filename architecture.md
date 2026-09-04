@@ -2,12 +2,14 @@
 
 **State:** First native hub/Squats slice implemented in source; cloud and physical acceptance are
 tracked in `cloud-build.md`. The remaining full-product contract below is not all implemented.
+Complete the remaining native v1 source and automated tests before the consolidated physical
+acceptance pass. This changes work order only; cloud checks cannot establish real device behavior.
 
 ## Current implementation
 
 - Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (4).
+  `com.akshatksingh18.akshatos`, version 0.2.0 (5).
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` across navigation. `HubRootView` adapts observed Squats state into
@@ -20,15 +22,17 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
   Only interval/goal preferences use UserDefaults.
   Store errors fail closed and preserve data rather than silently replacing the database.
 - Implemented: Start/Pause/Resume/End, dashboard Done/Undo, notification Done/Pause/ten-minute snooze,
-  one recurring local request and one replaceable snooze, permission/request reconciliation, session overview/recent history,
-  configurable goal (initially unset), same-day aggregation, and current/best streak.
+  one recurring local request and one replaceable snooze, permission/request reconciliation, daily
+  overview/history with same-date aggregation and active/paused duration, configurable goal
+  (initially unset), current/best streak, versioned JSON export/validated restore, and completed-
+  history deletion that preserves an active day.
 - Changes to interval/goal are locked while active; the first session's goal governs that date.
-  Stale prior-day sessions stop scheduling at foreground reconciliation and require explicit End.
-  Midnight is not yet automatically finalized in background. Countdown is display-only;
+  Foreground reconciliation closes a stale prior-day session at that date's next local calendar
+  boundary and cancels its schedule. Calendar-day arithmetic handles DST; no background midnight
+  launch is required or promised. Countdown is display-only;
   UserNotifications schedules delivery without relying on the dashboard or its timer.
-- Deferred: Home geofence, App Intents, export/
-  restore and history deletion, complete daily aggregate summary with active/paused durations,
-  remaining lifecycle/persistence tests, and physical/refresh acceptance. The notification category
+- Deferred: Home geofence, App Intents, remaining lifecycle/persistence/UI coverage, and physical/
+  refresh acceptance. The notification category
   exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label target-only
   behavior as implemented. No location permission/background mode is currently requested.
@@ -160,14 +164,15 @@ update stored state only after replacement succeeds.
   minimal event command in storage available for the intended locked-device use, acknowledge the
   system callback, and merge it transactionally later. Test data-protection behavior rather than
   assuming it.
-- Finalized daily summaries are derived from explicit events and stored locally. Never infer a
+- Daily summaries are derived locally from explicit stored events. Never infer a
   completed set or actual notification delivery. A date qualifies at most once when its non-undone
   completed-set total reaches that date's goal. Recompute summary and current/best streak data
   idempotently after Undo, migration, repair, or a past-day edit rather than maintaining conflicting
   counters.
-- Anchor a session to its start local day and handle crossing midnight explicitly. A stale prior-day
-  Running session must be surfaced for resolution; do not silently fabricate an end time or start a
-  second overlapping day.
+- Anchor a session to its start local day and handle crossing midnight explicitly. On the next
+  launch/foreground reconciliation, close a stale prior-day session at that date's next local
+  calendar boundary before allowing a new day. Use calendar arithmetic so DST can produce a 23- or
+  25-hour date; never start a second overlapping day.
 - Store the goal with each local date and apply configuration changes only to later dates. Streak
   tracking begins when the goal is first enabled; dates before that are neutral. The current date is
   at risk rather than failed until local-date rollover, including after its active session is ended.

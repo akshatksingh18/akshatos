@@ -10,7 +10,8 @@ import SwiftUI
     @Published private(set) var pendingActionCount = 0
     @Published private(set) var storageAvailable = false
     @Published var message: String?
-    @Published var summary: SquatSession?
+    @Published var notice: String?
+    @Published var summary: SquatDaySummary?
     @Published var interval: Int { didSet { defaults.set(interval, forKey: "squats.interval") } }
     @Published var goal: Int { didSet { defaults.set(goal, forKey: "squats.goal") } }
     private let defaults: UserDefaults
@@ -18,25 +19,32 @@ import SwiftUI
     private let reminders: any SquatReminders
     private let inbox: any SquatActionInbox
     private let now: () -> Date
+    private let calendar: Calendar
     private var actionRevision = 0
     var active: SquatSession? { sessions.first { $0.isActive } }
-    var today: [SquatSession] { sessions.filter { $0.day == SquatSession.dayKey(now()) } }
+    var today: [SquatSession] { sessions.filter { $0.day == SquatSession.dayKey(now(), calendar: calendar) } }
     var todayCount: Int { today.reduce(0) { $0 + $1.count } }
     var todayGoal: Int? {
         if let first = today.sorted(by: { $0.started < $1.started }).first { return first.goal }
         return goal > 0 ? goal : nil
     }
-    var staleDay: Bool { active.map { $0.day != SquatSession.dayKey(now()) } ?? false }
-    var streaks: (current: Int, best: Int) { SquatSession.streaks(sessions, now: now()) }
+    var staleDay: Bool { active.map { $0.day != SquatSession.dayKey(now(), calendar: calendar) } ?? false }
+    var streaks: (current: Int, best: Int) { SquatSession.streaks(sessions, now: now(), calendar: calendar) }
+    var daySummaries: [SquatDaySummary] {
+        Set(sessions.map(\.day)).compactMap { day in
+            SquatDaySummary.make(day: day, sessions: sessions, now: now(), calendar: calendar)
+        }.sorted { $0.day > $1.day }
+    }
 
     init(defaults: UserDefaults = .standard, repository: (any SquatRepository)? = nil,
          reminders: (any SquatReminders)? = nil, inbox: (any SquatActionInbox)? = nil,
-         now: @escaping () -> Date = Date.init) {
+         now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
         self.defaults = defaults
         self.repository = repository ?? SwiftDataSquatRepository()
         self.reminders = reminders ?? ReminderService()
         self.inbox = inbox ?? FileSquatActionInbox()
         self.now = now
+        self.calendar = calendar
         interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? 45))
         goal = max(0, min(100, defaults.integer(forKey: "squats.goal")))
         load()
@@ -58,6 +66,18 @@ import SwiftUI
         sessions.removeAll { $0.id == session.id }
         sessions.append(session)
         sessions.sort { $0.started > $1.started }
+    }
+
+    func daySummary(for day: String) -> SquatDaySummary? {
+        SquatDaySummary.make(day: day, sessions: sessions, now: now(), calendar: calendar)
+    }
+
+    func makeBackupData() throws -> Data {
+        try SquatsBackup(sessions: sessions, interval: interval, goal: goal).encoded()
+    }
+
+    func prepareRestore(_ data: Data) throws -> SquatsBackup {
+        try SquatsBackup.decode(data)
     }
 
     /// Called even while another command is suspended. Never discard a background response as busy.
@@ -127,7 +147,7 @@ import SwiftUI
             let snapshot = await reminders.snapshot()
             let deadline = action.date.addingTimeInterval(600)
             // Do not resurrect expired snoozes or create a snooze without a usable regular cadence.
-            guard deadline > now(), session.day == SquatSession.dayKey(now()),
+            guard deadline > now(), session.day == SquatSession.dayKey(now(), calendar: calendar),
                   snapshot.allowed, snapshot.sessionID == session.id,
                   snapshot.interval == TimeInterval(session.interval * 60) else {
                 try acknowledge(action, session: session)
@@ -153,13 +173,26 @@ import SwiftUI
         nextReminder = nil
         snoozeReminder = nil
         guard storageAvailable else { operational = "Storage unavailable"; return }
+        if var session = active, staleDay {
+            reminders.cancel()
+            session.state = .ended
+            let boundary = SquatSession.endOfDay(session.day, calendar: calendar) ?? now()
+            session.ended = max(session.started, min(now(), boundary))
+            do {
+                try save(session)
+                notice = "Your previous Squats day was closed at the local day boundary."
+            } catch {
+                actionFailure(error)
+                operational = "Storage unavailable"
+                return
+            }
+        }
         let snapshot = await reminders.snapshot()
         guard let session = active else {
             reminders.cancel()
             operational = today.isEmpty ? "Ready" : "Day complete"
             return
         }
-        if staleDay { reminders.cancel(); operational = "Finish previous day"; return }
         guard session.state == .running else { reminders.cancel(); operational = "Paused"; return }
         guard snapshot.allowed else { operational = "Notifications blocked"; return }
         guard snapshot.sessionID == session.id,
@@ -198,7 +231,7 @@ import SwiftUI
             }
             let first = today.sorted { $0.started < $1.started }.first
             let snapshot = first != nil ? first!.goal : (goal > 0 ? goal : nil)
-            var session = SquatSession(day: SquatSession.dayKey(now()), started: now(),
+            var session = SquatSession(day: SquatSession.dayKey(now(), calendar: calendar), started: now(),
                                        interval: interval, goal: snapshot)
             try save(session)
             reminders.cancel()
@@ -212,7 +245,7 @@ import SwiftUI
         await perform {
             guard let session = active, kind == .pause || !staleDay else { return }
             let action = SquatAction(id: UUID().uuidString, sessionID: session.id, kind: kind,
-                date: now(), day: SquatSession.dayKey(now()), source: "dashboard")
+                date: now(), day: SquatSession.dayKey(now(), calendar: calendar), source: "dashboard")
             try await apply(action)
         }
     }
@@ -255,7 +288,39 @@ import SwiftUI
             session.state = .ended
             session.ended = now()
             try save(session)
-            summary = session
+            summary = daySummary(for: session.day)
+        }
+    }
+
+    func restore(_ candidate: SquatsBackup) async {
+        await perform {
+            var backup = try candidate.validated()
+            reminders.cancel()
+            let pending = try inbox.pending()
+            for index in backup.sessions.indices {
+                let sessionID = backup.sessions[index].id
+                let ignored = pending.filter { $0.sessionID == sessionID }.map(\.id)
+                backup.sessions[index].actionReceipts = Array(Set(
+                    (backup.sessions[index].actionReceipts ?? []) + ignored)).sorted()
+            }
+            try repository.replaceAll(with: backup.sessions)
+            sessions = backup.sessions.sorted { $0.started > $1.started }
+            interval = backup.settings.interval
+            goal = backup.settings.goal
+            summary = nil
+            for action in pending { try? inbox.remove(action.id) }
+            pendingActionCount = (try? inbox.pending().count) ?? 0
+            notice = "Squats history and settings were restored. Resume any open day to re-arm reminders."
+        }
+    }
+
+    func deleteHistory() async {
+        await perform {
+            let ids = Set(sessions.filter { !$0.isActive }.map(\.id))
+            try repository.delete(ids: ids)
+            sessions.removeAll { ids.contains($0.id) }
+            summary = nil
+            notice = ids.isEmpty ? "There is no completed history to delete." : "Completed Squats history was deleted."
         }
     }
 }

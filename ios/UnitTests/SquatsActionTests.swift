@@ -7,6 +7,7 @@ import UserNotifications
     var values: [SquatSession] = []
     var unavailable = false
     var failSave = false
+    var failReplace = false
     func load() throws -> [SquatSession] {
         if unavailable { throw CocoaError(.fileReadNoPermission) }
         return values
@@ -15,6 +16,14 @@ import UserNotifications
         if failSave || unavailable { throw CocoaError(.fileWriteNoPermission) }
         values.removeAll { $0.id == session.id }
         values.append(session)
+    }
+    func replaceAll(with sessions: [SquatSession]) throws {
+        if failReplace || unavailable { throw CocoaError(.fileWriteNoPermission) }
+        values = sessions
+    }
+    func delete(ids: Set<UUID>) throws {
+        if failSave || unavailable { throw CocoaError(.fileWriteNoPermission) }
+        values.removeAll { ids.contains($0.id) }
     }
 }
 
@@ -203,7 +212,9 @@ import UserNotifications
         await store.receive(command)
         XCTAssertEqual(reminders.scheduleCount, 0)
         XCTAssertNil(reminders.state.snooze)
-        XCTAssertEqual(store.operational, "Finish previous day")
+        XCTAssertNil(store.active)
+        XCTAssertEqual(store.operational, "Ready")
+        XCTAssertEqual(store.sessions.first?.ended, midnight)
     }
 
     func testSnoozeReplacementPreservesCadenceAndPauseCancelsBoth() async {
@@ -289,7 +300,7 @@ import UserNotifications
         try inbox.enqueue(action(active))
         await store.end()
         XCTAssertNil(store.active)
-        XCTAssertEqual(store.summary?.count, 1)
+        XCTAssertEqual(store.summary?.completedSets, 1)
         await store.receive(action(active))
         await store.receive(action(active, .snooze))
         XCTAssertEqual(store.todayCount, 1)
@@ -400,5 +411,47 @@ import UserNotifications
         XCTAssertEqual(saved.count, 0)
         XCTAssertEqual(saved.actionReceipts, [command.id])
         XCTAssertEqual(command.applying(to: saved).count, 0)
+    }
+
+    func testRestoreReplacesHistorySettingsAndLeavesOpenDayNeedingRearm() async throws {
+        let (repository, reminders, inbox, store) = fixture()
+        try inbox.enqueue(action(repository.values[0], id: "pending-before-restore"))
+        var restored = session()
+        restored.id = UUID()
+        restored.actionReceipts = ["already-recorded"]
+        let backup = SquatsBackup(createdAt: time, sessions: [restored], interval: 30, goal: 6)
+        await store.restore(backup)
+        XCTAssertEqual(repository.values.map(\.id), [restored.id])
+        XCTAssertEqual(store.interval, 30)
+        XCTAssertEqual(store.goal, 6)
+        XCTAssertNil(reminders.state.sessionID)
+        XCTAssertEqual(store.operational, "Reminder needs repair")
+        XCTAssertTrue(inbox.values.isEmpty)
+        XCTAssertEqual(store.active?.actionReceipts, ["already-recorded"])
+    }
+
+    func testDeleteHistoryPreservesActiveDayAndSettings() async {
+        let (repository, reminders, inbox, _) = fixture()
+        var completed = session()
+        completed.id = UUID()
+        completed.state = .ended
+        completed.ended = time
+        repository.values.append(completed)
+        let store = make(repository, reminders, inbox)
+        let interval = store.interval
+        await store.deleteHistory()
+        XCTAssertEqual(repository.values.map(\.id), [store.active!.id])
+        XCTAssertEqual(store.interval, interval)
+        XCTAssertEqual(reminders.state.sessionID, store.active?.id)
+    }
+
+    func testInvalidBackupNeverReplacesExistingHistory() throws {
+        let (repository, reminders, inbox, store) = fixture()
+        let existing = repository.values
+        let invalid = Data("{\"version\":999}".utf8)
+        XCTAssertThrowsError(try store.prepareRestore(invalid))
+        XCTAssertEqual(repository.values, existing)
+        XCTAssertEqual(reminders.state.sessionID, existing[0].id)
+        XCTAssertTrue(inbox.values.isEmpty)
     }
 }

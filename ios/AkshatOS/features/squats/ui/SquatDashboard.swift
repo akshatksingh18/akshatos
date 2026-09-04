@@ -1,10 +1,17 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SquatDashboard: View {
     @EnvironmentObject private var store: SquatStore
     @State private var showSettings = false
     @State private var showEnd = false
     @State private var showRestart = false
+    @State private var showDeleteHistory = false
+    @State private var showRestore = false
+    @State private var showImporter = false
+    @State private var showExporter = false
+    @State private var exportDocument: SquatsBackupDocument?
+    @State private var pendingRestore: SquatsBackup?
 
     var body: some View {
         ScrollView {
@@ -48,7 +55,7 @@ struct SquatDashboard: View {
                 }
                 goalCard
                 timeline
-                Text("Home auto-pause and notification buttons are coming next. For now, use this dashboard to pause, log, or snooze.")
+                Text("Home auto-pause is coming next. Dashboard and notification controls remain available everywhere.")
                     .font(.footnote).foregroundStyle(Palette.muted)
                 Text("AkshatOS · Preview 0.2.0")
                     .font(.caption2).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
@@ -65,10 +72,14 @@ struct SquatDashboard: View {
         }
         .sheet(isPresented: $showSettings) { settings }
         .sheet(item: $store.summary) { session in summary(session) }
-        .alert("Could not complete action", isPresented: Binding(
+        .alert("Squats needs attention", isPresented: Binding(
             get: { store.message != nil }, set: { if !$0 { store.message = nil } })) {
                 Button("OK") { store.message = nil }
             } message: { Text(store.message ?? "") }
+        .alert("Squats", isPresented: Binding(
+            get: { store.notice != nil }, set: { if !$0 { store.notice = nil } })) {
+                Button("OK") { store.notice = nil }
+            } message: { Text(store.notice ?? "") }
         .confirmationDialog("End your day and stop reminders?", isPresented: $showEnd, titleVisibility: .visible) {
             Button("End my day", role: .destructive) { Task { await store.end() } }
         }
@@ -192,12 +203,18 @@ struct SquatDashboard: View {
                     Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
                 }.padding(.vertical, 5)
             }
-            ForEach(store.sessions.filter { !$0.isActive }.prefix(7)) { session in
-                Button { store.summary = session } label: {
+            Text("History").font(.system(.title3, design: .rounded, weight: .bold)).padding(.top, 8)
+            if store.daySummaries.isEmpty {
+                Text("Completed and active days will appear here.")
+                    .font(.subheadline).foregroundStyle(Palette.muted)
+            }
+            ForEach(store.daySummaries) { day in
+                Button { store.summary = day } label: {
                     HStack {
-                        Label(session.day, systemImage: "clock.arrow.circlepath")
+                        Label(day.started.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
+                              systemImage: "clock.arrow.circlepath")
                         Spacer()
-                        Text("\(session.count) sets")
+                        Text("\(day.completedSets) sets")
                         Image(systemName: "chevron.right")
                     }.font(.subheadline).padding(.vertical, 10)
                 }
@@ -217,9 +234,25 @@ struct SquatDashboard: View {
                     Text("Settings are locked during an active session. Each day's first session fixes that day's goal; changes apply to the next new day. A goal of zero leaves streak tracking off.")
                     settingsLink
                 }
+                Section("Data management") {
+                    Button {
+                        do {
+                            exportDocument = SquatsBackupDocument(data: try store.makeBackupData())
+                            showExporter = true
+                        } catch { store.message = error.localizedDescription }
+                    } label: { Label("Export Squats backup", systemImage: "square.and.arrow.up") }
+                        .accessibilityIdentifier("export-squats-backup")
+                    Button { showImporter = true } label: {
+                        Label("Restore Squats backup", systemImage: "square.and.arrow.down")
+                    }.accessibilityIdentifier("restore-squats-backup")
+                    Button("Delete completed history", role: .destructive) { showDeleteHistory = true }
+                        .accessibilityIdentifier("delete-squats-history")
+                    Text("Backups are versioned JSON files stored wherever you choose in Files. Restore validates the entire file before replacing local Squats data.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }.disabled(store.busy || !store.storageAvailable)
                 Section("Coming later") {
                     Label("Home auto-pause", systemImage: "house")
-                    Label("Shortcuts & data export", systemImage: "square.and.arrow.up")
+                    Label("Shortcuts", systemImage: "app.badge")
                 }.foregroundStyle(.secondary)
                 Section("Notification actions") {
                     Text("Done logs one set. Pause stops reminders until you resume. Expand a notification for Remind me in 10 min; it keeps your regular cadence.")
@@ -228,6 +261,46 @@ struct SquatDashboard: View {
             }.navigationTitle("Squat settings")
                 .toolbar { Button("Done") { showSettings = false } }
         }.tint(Palette.lime)
+            .confirmationDialog("Restore this Squats backup?", isPresented: $showRestore,
+                                titleVisibility: .visible) {
+                Button("Replace current Squats data", role: .destructive) {
+                    if let pendingRestore { Task { await store.restore(pendingRestore) } }
+                    pendingRestore = nil
+                }
+                Button("Cancel", role: .cancel) { pendingRestore = nil }
+            } message: {
+                Text("This replaces current Squats history and settings with \(pendingRestore?.sessions.count ?? 0) saved sessions and stops the current reminder schedule.")
+            }
+            .confirmationDialog("Delete completed Squats history?", isPresented: $showDeleteHistory,
+                                titleVisibility: .visible) {
+                Button("Delete completed history", role: .destructive) {
+                    Task { await store.deleteHistory() }
+                }
+            } message: {
+                Text("This keeps an active day and your settings. Export a backup first if you may need the completed history later.")
+            }
+            .fileExporter(isPresented: $showExporter, document: exportDocument,
+                          contentType: .json, defaultFilename: "squats-backup") { result in
+                if case .failure(let error) = result { store.message = error.localizedDescription }
+                exportDocument = nil
+            }
+            .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json]) { result in
+                do {
+                    let url = try result.get()
+                    let scoped = url.startAccessingSecurityScopedResource()
+                    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                    pendingRestore = try store.prepareRestore(Data(contentsOf: url, options: .mappedIfSafe))
+                    showRestore = true
+                } catch { store.message = error.localizedDescription }
+            }
+            .alert("Squats needs attention", isPresented: Binding(
+                get: { store.message != nil }, set: { if !$0 { store.message = nil } })) {
+                    Button("OK") { store.message = nil }
+                } message: { Text(store.message ?? "") }
+            .alert("Squats", isPresented: Binding(
+                get: { store.notice != nil }, set: { if !$0 { store.notice = nil } })) {
+                    Button("OK") { store.notice = nil }
+                } message: { Text(store.notice ?? "") }
     }
 
     private var settingsLink: some View {
@@ -238,23 +311,52 @@ struct SquatDashboard: View {
         }
     }
 
-    private func summary(_ session: SquatSession) -> some View {
+    private func summary(_ day: SquatDaySummary) -> some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Text("You made time\nto move.").font(.system(.largeTitle, design: .rounded, weight: .bold))
                     Surface {
-                        Text("\(session.count)").font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
-                        Text("completed sets this session").foregroundStyle(Palette.muted)
-                        Text(session.day).font(.headline)
-                        Text("Started \(session.started.formatted(date: .abbreviated, time: .shortened))")
-                        if let end = session.ended { Text("Ended \(end.formatted(date: .abbreviated, time: .shortened))") }
-                        Text("\(session.interval)-minute interval")
-                        Text("\(session.events.filter { $0.kind == .pause }.count) pauses · \(session.events.filter { $0.kind == .snooze }.count) snoozes")
-                        Text("Your daily goal uses all sessions on the same date.").font(.caption).foregroundStyle(Palette.muted)
+                        Text("\(day.completedSets)").font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
+                        Text("completed sets this day").foregroundStyle(Palette.muted)
+                        Text(day.started.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
+                            .font(.headline)
+                        Text(goalDescription(day)).foregroundStyle(Palette.muted)
+                    }
+                    Surface {
+                        Label("Time in your day", systemImage: "clock").font(.headline)
+                        Text("Started \(day.started.formatted(date: .omitted, time: .shortened))")
+                        if let end = day.ended { Text("Ended \(end.formatted(date: .omitted, time: .shortened))") }
+                        else { Text("Day still open") }
+                        Text("Active \(duration(day.activeDuration)) · Paused \(duration(day.pausedDuration))")
+                        Text("\(day.sessions.count) session\(day.sessions.count == 1 ? "" : "s") · interval \(day.intervals.map(String.init).joined(separator: ", ")) min")
+                        Text("\(day.pauseSegments.count) pauses · \(day.snoozeTimes.count) snoozes")
+                    }
+                    if !day.pauseSegments.isEmpty {
+                        Surface {
+                            Label("Pause segments", systemImage: "pause.circle").font(.headline)
+                            ForEach(day.pauseSegments) { pause in
+                                HStack {
+                                    Text("\(pause.started.formatted(date: .omitted, time: .shortened))–\(pause.ended.formatted(date: .omitted, time: .shortened))")
+                                    Spacer()
+                                    Text(duration(pause.duration)).foregroundStyle(Palette.muted)
+                                }.font(.subheadline)
+                            }
+                        }
+                    }
+                    Surface {
+                        Label("Daily timeline", systemImage: "list.bullet").font(.headline)
+                        if day.events.isEmpty { Text("No activity was logged.").foregroundStyle(Palette.muted) }
+                        ForEach(day.events) { event in
+                            HStack {
+                                Text(eventTitle(event.kind))
+                                Spacer()
+                                Text(event.date, style: .time).foregroundStyle(Palette.muted)
+                            }.font(.subheadline)
+                        }
                     }
                 }.padding(24)
-            }.background(Palette.background).navigationTitle("Session overview")
+            }.background(Palette.background).navigationTitle("Daily overview")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { Button("Done") { store.summary = nil } }
         }.tint(Palette.lime)
@@ -274,5 +376,33 @@ struct SquatDashboard: View {
         case .resume: return "Reminders resumed"
         case .snooze: return "Extra nudge requested"
         }
+    }
+
+    private func duration(_ value: TimeInterval) -> String {
+        let minutes = max(0, Int(value) / 60)
+        return minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m"
+    }
+
+    private func goalDescription(_ day: SquatDaySummary) -> String {
+        switch day.goalStatus {
+        case .notSet: return "No goal was set for this day."
+        case .reached: return "Goal reached: \(day.completedSets)/\(day.goal!) sets."
+        case .atRisk: return "Goal in progress: \(day.completedSets)/\(day.goal!) sets."
+        case .missed: return "Goal not reached: \(day.completedSets)/\(day.goal!) sets."
+        }
+    }
+}
+
+struct SquatsBackupDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+    let data: Data
+
+    init(data: Data) { self.data = data }
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else { throw SquatsBackupError.invalidFile }
+        self.data = data
+    }
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }

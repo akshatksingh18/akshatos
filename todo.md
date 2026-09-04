@@ -17,8 +17,14 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: AkshatOS opens to the hub picker, then Squats. Source implementation is underway;
-cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
+Current focus: finish the agreed native Squats v1 source and automated/cloud checks before asking
+Akshat for physical testing. Sideloading is reported working and is not a prerequisite for further
+coding. Daily overview/history and export/restore/deletion are implemented in build-5 source and
+await the exact-source cloud gate. Next: day/goal/streak edge cases; opt-in Home auto-pause;
+remaining UI/settings/accessibility and failure-path completion.
+Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
+recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
+other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
       into private `akshatksingh18/akshatos`; keep history and Android. AkshatOS uses
@@ -64,6 +70,10 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
 - [ ] **Implement local day data and overview.** Add versioned session/event persistence, pause
       segments, snooze events, Today timeline, End-my-day summary, lightweight daily history, local
       midnight/time-zone handling, migration coverage, and explicit history deletion.
+      Build-5 source now groups same-date sessions, derives active/paused duration and event detail,
+      closes stale days at the next local calendar boundary on foreground, and provides versioned
+      JSON export/validated restore plus completed-history deletion. Exact-source CI and physical
+      recovery acceptance remain open.
 - [ ] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
       at most once from explicit non-undone Done events, derive current/best streak, keep the current
       date at risk until rollover, treat skipped post-activation dates as missed, apply goal changes

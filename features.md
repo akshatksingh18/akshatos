@@ -3,8 +3,9 @@
 **State:** Accepted full Squats feature contract inside AkshatOS. The first source implementation
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
-and device evidence. Notification actions and a durable inbox passed cloud regression tests; Home automation, full daily overview/recovery, and
-physical acceptance remain outstanding. Android is an unverified fallback.
+and device evidence. Notification actions and a durable inbox passed cloud regression tests. Daily
+overview/history and local recovery are implemented in build-5 source and await its cloud gate;
+Home automation and physical acceptance remain outstanding. Android is an unverified fallback.
 
 ## Hub entry
 
@@ -205,8 +206,9 @@ settings, so only explicit user actions count as completions.
 Keep finalized daily summaries locally so the user can revisit recent days. A simple history screen
 shows daily set counts, goal result, and streak status and can open an individual day. Charts,
 achievements beyond the streak, sharing, HealthKit, and detailed workout analytics remain later
-decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and any future
-export must be explicit and local.
+decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and export/
+restore are explicit and local. Restore validates the complete versioned backup before replacing
+current Squats sessions and settings; deletion of completed history keeps an active day and preferences.
 
 ### Daily goal and streak contract
 
@@ -247,11 +249,18 @@ V1 settings are intentionally small:
   refresh recovery guidance;
 - Shortcuts setup guidance after App Intents are implemented;
 - local history deletion with destructive confirmation.
+- local versioned backup export and validated restore with replacement confirmation.
 
 Reps-per-set, an end-of-day streak-risk reminder time, scheduled quiet window, and more snooze
 durations are candidate polish—not prerequisites for the first reliable release.
 
 ## V1 scope and sequencing
+
+Finish the agreed native v1 implementation and automated/cloud regression coverage first; Akshat
+will test it on the phone afterward. Do not block unfinished coding on baseline sideload testing.
+The remaining implementation includes further day/goal/streak edge-case hardening, opt-in Home
+auto-pause, and unfinished dashboard/settings/accessibility/error-state
+behavior. Optional Shortcuts remain a follow-on, not a new prerequisite for native v1.
 
 The first usable release includes:
 

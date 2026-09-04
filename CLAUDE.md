@@ -4,7 +4,8 @@ Personal native iPhone hub: the home screen selects a feature, starting with Squ
 PageVault and ReelVault are reserved for later; WHOOP stays standalone. This repository evolved
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
-**Status:** Building — hub picker, Squats dashboard/core and durable notification actions are implemented in source.
+**Status:** Building — hub picker, Squats dashboard/core, durable notification actions, daily history,
+and local backup/restore are implemented in source. Build-5 cloud verification is pending.
 Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.
@@ -22,6 +23,10 @@ The full target feature contract below is not a claim that every feature is impl
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
 - `ios/AkshatOS/features/squats/domain/SquatAction.swift` — shared action commands and delivery receipts.
+- `ios/AkshatOS/features/squats/domain/SquatDaySummary.swift` — same-date aggregation, active/paused
+  timing, goal status and detailed daily history.
+- `ios/AkshatOS/features/squats/domain/SquatsBackup.swift` — versioned local JSON export/restore
+  contract and whole-file validation.
 - `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
 - `ios/AkshatOS/features/squats/data/SquatRepository.swift` — retryable SwiftData persistence adapter.
 - `hub-plan.md` — canonical shared packaging, source/identity ownership, feature boundaries,
@@ -66,7 +71,7 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Canonical source/build owner: this `akshatos/` repository, private GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (4)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (5)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -162,8 +167,10 @@ The full target feature contract below is not a claim that every feature is impl
 - Build the dashboard around one readable state hero, a scheduled-next-reminder treatment, a large
   sets-completed-today count, configurable daily-goal progress, current/best streak, contextual
   lifecycle controls, and a compact Today event timeline. End requires confirmation and opens a
-  summary with sets, goal/streak result, start/end, active/paused duration, completion times, pause
-  segments, snoozes, and interval. Keep finalized daily summaries local.
+  summary with sets, goal result, start/end, active/paused duration, completion times, pause
+  segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
+  Export/restore uses a versioned local JSON file selected by the user; validation completes before
+  replacement, and completed-history deletion preserves an active day and settings.
 - Treat only explicit Done actions as completion evidence. iOS does not provide a dependable count
   of every notification actually presented under Focus/Scheduled Summary, so do not display a
   fabricated delivery count or completion percentage.
@@ -353,6 +360,13 @@ current observed behavior in the applicable project document rather than relying
   state, or requiring a Shortcut.
 
 ### Phased implementation plan
+
+Execution order: finish the agreed native Squats v1 implementation and automated/cloud checks
+before asking Akshat for physical-phone testing. Sideloading is reported working; do not make
+another installation exercise a prerequisite for continued coding. Physical acceptance remains
+required after implementation, with defects found there fixed before calling the feature dependable.
+`handoff.md` and `todo.md` own the current implementation-first work order. Optional Shortcuts
+remain a follow-on; this sequencing change does not expand native v1 or activate media modules.
 
 1. **Hub transition and cloud activation:** source/repository and bundle ID are selected and the
    target/workflow is adapted. Pass cloud tests/build and physical hub-picker → Squats navigation

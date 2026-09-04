@@ -41,6 +41,15 @@ struct SquatSession: Codable, Identifiable, Equatable {
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }
 
+    static func endOfDay(_ day: String, calendar: Calendar = .current) -> Date? {
+        let pieces = day.split(separator: "-").compactMap { Int($0) }
+        guard pieces.count == 3,
+              let start = calendar.date(from: DateComponents(
+                year: pieces[0], month: pieces[1], day: pieces[2])),
+              dayKey(start, calendar: calendar) == day else { return nil }
+        return calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: start))
+    }
+
     static func streaks(_ sessions: [SquatSession], now: Date = Date(),
                         calendar: Calendar = .current) -> (current: Int, best: Int) {
         let groups = Dictionary(grouping: sessions, by: \.day)

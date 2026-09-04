@@ -27,7 +27,7 @@ material changes; do not copy child progress into root/container instructions.
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Current source version: `0.2.0 (4)`, minimum iOS 17. Preserve identity on updates.
+  Current source version: `0.2.0 (5)`, minimum iOS 17. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
@@ -46,6 +46,9 @@ material changes; do not copy child progress into root/container instructions.
 - One system-scheduled recurring local reminder; permission/pending-request reconciliation.
 - Versioned SwiftData session storage, recent session summaries, configurable daily goal,
   same-day set aggregation, and current/best streak calculation. Initial goal is deliberately unset.
+- Build-5 source adds one daily history entry across same-date sessions, active/paused duration,
+  pause/snooze/completion detail, deterministic foreground rollover at the next local calendar
+  boundary, versioned JSON export/validated restore, and completed-history deletion.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -53,8 +56,9 @@ material changes; do not copy child progress into root/container instructions.
 - Android remains an untouched, unverified fallback; no parity or successful Android build claimed.
 
 Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
-downloaded build-3 preview has no action buttons. No Home location permission or monitoring is implemented. Prior-day running sessions are stopped
-at foreground reconciliation and require explicit End; background midnight finalization is not done.
+downloaded build-3 preview has no action buttons. Build-5 daily/recovery source still needs its cloud
+gate. No Home location permission or monitoring is implemented. Rollover happens on the next app
+launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
 ## Build and device evidence
@@ -83,27 +87,30 @@ Use disposable activity until recovery and device tests pass. Do not uninstall d
 
 ## Recommended continuation order
 
-1. **Baseline phone acceptance:** follow the existing manual install guide with an intentionally
-   selected, verified artifact. Confirm picker → Squats → back, one-minute and normal 45-minute
-   reminders, dashboard lifecycle/counting/Undo/snooze, relaunch and permission changes. Record
-   actual user results in `cloud-build.md`; if hardware is unavailable, keep this gate open.
-2. **Accept notification actions:** build-4 source implements Done, Pause, then ten-minute snooze
-   in the central coordinator, shared commands, durable inbox and receipt-based replay protection.
-   Source CI passed; verify the current PR head and physical locked/background matrix. `architecture.md` owns retry,
-   expired-snooze and before-first-unlock limits; do not equate simulated failures with phone tests.
-3. **Complete day data and recovery:** daily aggregate overview with active/paused durations,
-   timeline/history, date rollover and time-zone/DST rules, migration/disk-restart tests, explicit
-   history deletion and export/restore. Harden goal snapshots, skipped dates, Undo and streaks.
-4. **Opt-in Home auto-pause:** explanatory staged permissions, Home/radius setup, one protected
+Finish the agreed native Squats v1 and automated/cloud tests before requesting physical testing.
+Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
+implementation for baseline installation. Existing device gates remain open until that later pass.
+
+1. **Accept and harden day data/recovery:** run the exact build-5 cloud gate, fix any compiler/test
+   failures, then finish remaining goal snapshots, skipped-date, clock/time-zone and streak edges.
+2. **Opt-in Home auto-pause:** explanatory staged permissions, Home/radius setup, one protected
    local geofence, source-aware pause/resume, duplicate/jitter protection, degraded-health UI and
    edit/disable/delete. Arrival may resume only a Home-auto-paused day, never a manual pause or End.
    No continuous tracking or movement trail. Manual and notification controls remain fallbacks.
-5. **Optional App Intents/Shortcuts:** only after native commands work. They are convenience
-   triggers, never the reminder engine; use the same pause-source and idempotency rules.
-6. **Deployment acceptance:** full physical matrix, same-ID USB/Wi-Fi refresh preserving data,
+3. **Finish native v1 UI and reliability coverage:** complete dashboard/settings, accessibility,
+   lifecycle/permission/error states, and remaining day/streak, persistence and service regression
+   scenarios. Existing components are partly implemented; extend them rather than recreate them.
+   Keep exact-source CI mandatory throughout, then deliver a complete candidate for phone testing.
+4. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+   dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
+   summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
+   defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
+5. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
+6. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+   never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The daily goal number still
 needs Akshat's choice; don't invent one. Reps, freezes, achievements and extra places are not committed.

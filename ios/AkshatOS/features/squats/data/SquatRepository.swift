@@ -4,6 +4,8 @@ import SwiftData
 @MainActor protocol SquatRepository {
     func load() throws -> [SquatSession]
     func save(_ session: SquatSession) throws
+    func replaceAll(with sessions: [SquatSession]) throws
+    func delete(ids: Set<UUID>) throws
 }
 
 @MainActor final class SwiftDataSquatRepository: SquatRepository {
@@ -38,6 +40,42 @@ import SwiftData
             let rows = try context.fetch(FetchDescriptor<SquatSchemaV1.SavedSession>())
             if let row = rows.first(where: { $0.id == session.id }) { row.payload = payload }
             else { context.insert(try SquatSchemaV1.SavedSession(session)) }
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    func replaceAll(with sessions: [SquatSession]) throws {
+        guard Set(sessions.map(\.id)).count == sessions.count,
+              sessions.filter(\.isActive).count <= 1 else { throw CocoaError(.fileReadCorruptFile) }
+        let context = try context()
+        do {
+            let rows = try context.fetch(FetchDescriptor<SquatSchemaV1.SavedSession>())
+            let replacements = Dictionary(uniqueKeysWithValues: sessions.map { ($0.id, $0) })
+            for row in rows {
+                if let session = replacements[row.id] { row.payload = try JSONEncoder().encode(session) }
+                else { context.delete(row) }
+            }
+            let existing = Set(rows.map(\.id))
+            for session in sessions where !existing.contains(session.id) {
+                context.insert(try SquatSchemaV1.SavedSession(session))
+            }
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    func delete(ids: Set<UUID>) throws {
+        guard !ids.isEmpty else { return }
+        let context = try context()
+        do {
+            for row in try context.fetch(FetchDescriptor<SquatSchemaV1.SavedSession>()) where ids.contains(row.id) {
+                context.delete(row)
+            }
             try context.save()
         } catch {
             context.rollback()
