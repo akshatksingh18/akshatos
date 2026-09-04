@@ -5,7 +5,8 @@ PageVault and ReelVault are reserved for later; WHOOP stays standalone. This rep
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
 **Status:** Building — hub picker, Squats dashboard/core, durable notification actions, daily history,
-and local backup/restore are implemented in source. Build-5 cloud verification is pending.
+and local backup/restore are implemented and cloud-verified in build-5 source. Physical acceptance
+and the remaining native v1 work are pending.
 Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.

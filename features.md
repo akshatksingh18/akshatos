@@ -4,7 +4,7 @@
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
 and device evidence. Notification actions and a durable inbox passed cloud regression tests. Daily
-overview/history and local recovery are implemented in build-5 source and await its cloud gate;
+overview/history and local recovery are implemented and passed the build-5 cloud gate;
 Home automation and physical acceptance remain outstanding. Android is an unverified fallback.
 
 ## Hub entry

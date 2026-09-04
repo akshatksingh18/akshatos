@@ -1,8 +1,7 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-4 notification actions passed PR and delivery cloud checks, domain/integration/UI
-tests, simulator/device compilation and package inspection. The build-4 IPA is downloaded and
-hash-verified; older previews are preserved. First AkshatOS physical installation,
+**State:** Build-5 daily history/recovery passed PR cloud checks; build-4 remains the latest
+downloaded, hash-verified IPA and older previews are preserved. First AkshatOS physical installation,
 reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -31,8 +30,11 @@ AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 Build 5 adds daily aggregation/history, active/paused timing, foreground calendar-boundary rollover,
 versioned JSON export/validated restore, completed-history deletion, and regression coverage. Its
-exact-source cloud gate is pending. Build 4 below remains the latest cloud-verified/downloaded IPA;
-do not attribute build-5 behavior to that artifact.
+exact source `2ac71a10731a73012a4726bbada4d3609fea93cf` passed
+[PR #1 run #14](https://github.com/akshatksingh18/akshatos/actions/runs/33906715819): 16-source
+boundary checks, 29 domain assertions, 29 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. PR runs do not upload IPA artifacts, so
+build 4 below remains the latest downloaded IPA; do not attribute build-5 behavior to that artifact.
 
 Build 4 adds notification actions, durable queued commands, receipt persistence and regression tests.
 Source `3cfea6176d43e79b8af899b579e0ac602b480715` passed all jobs including `CI Gate` in
@@ -125,8 +127,8 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 
 Wi-Fi/automatic refresh, expiry recovery, in-place upgrades and notification buttons still require
-physical verification. Home geofence, Shortcuts, build-5 cloud validation and physical recovery
-remain unfinished. Keep irreplaceable history disposable until export/restore is exercised on the phone.
+physical verification. Home geofence, Shortcuts and physical recovery remain unfinished. Keep
+irreplaceable history disposable until export/restore is exercised on the phone.
 
 ## Previous standalone smoke evidence
 

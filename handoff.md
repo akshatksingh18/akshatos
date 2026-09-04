@@ -56,8 +56,8 @@ material changes; do not copy child progress into root/container instructions.
 - Android remains an untouched, unverified fallback; no parity or successful Android build claimed.
 
 Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
-downloaded build-3 preview has no action buttons. Build-5 daily/recovery source still needs its cloud
-gate. No Home location permission or monitoring is implemented. Rollover happens on the next app
+downloaded build-3 preview has no action buttons. Build-5 daily/recovery source passed its cloud
+gate but has no downloaded or phone-tested artifact. No Home location permission or monitoring is implemented. Rollover happens on the next app
 launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
@@ -91,8 +91,8 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Accept and harden day data/recovery:** run the exact build-5 cloud gate, fix any compiler/test
-   failures, then finish remaining goal snapshots, skipped-date, clock/time-zone and streak edges.
+1. **Harden remaining day/streak edges:** build-5 exact-source CI is green; finish remaining goal
+   snapshots, skipped-date, clock/time-zone and streak edges before the consolidated phone pass.
 2. **Opt-in Home auto-pause:** explanatory staged permissions, Home/radius setup, one protected
    local geofence, source-aware pause/resume, duplicate/jitter protection, degraded-health UI and
    edit/disable/delete. Arrival may resume only a Home-auto-paused day, never a manual pause or End.

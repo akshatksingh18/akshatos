@@ -1,8 +1,9 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Notification-action source `3cfea6176d43e79b8af899b579e0ac602b480715` passed Source
-checks, Build installable IPA and CI Gate in [PR #1 run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498).
-All 20 domain assertions, 24 integration tests and the hub/settings UI test passed. Real PR
+**Status:** Daily-history/recovery source `2ac71a10731a73012a4726bbada4d3609fea93cf`
+passed Source checks, Build installable IPA and CI Gate in
+[PR #1 run #14](https://github.com/akshatksingh18/akshatos/actions/runs/33906715819).
+All 29 domain assertions, 29 integration/persistence tests and the hub/settings UI test passed. Real PR
 triggering, failure diagnostics download and correction are exercised. Server-enforced private
 branch protection remains unavailable under the current GitHub plan.
 The unchanged application source on documentation revision `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`
@@ -31,7 +32,9 @@ also passed PR run #11 and delivery run #12; exact artifact/hash evidence belong
 Current automated coverage: domain event deduplication/Undo/streak/date assertions; SwiftData
 in-memory round-trip across contexts, persisted Undo/End and malformed-payload preservation;
 hub entry/back/reopen, settings open/dismiss and unavailable media entries; plus the action suite
-below. File-backed reopen and legacy payload decoding now have coverage. Full schema migration,
+below. File-backed reopen, legacy payload decoding, daily aggregation/durations, DST rollover,
+versioned backup validation/round-trip, safe repository replacement/deletion, malformed restore
+preservation and data-management settings now have coverage. Full schema migration,
 OS-process/device restart and protected-device storage remain separate acceptance gates.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future

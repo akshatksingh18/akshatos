@@ -19,8 +19,8 @@ primary; Android remains a separate fallback scaffold.
 
 Current focus: finish the agreed native Squats v1 source and automated/cloud checks before asking
 Akshat for physical testing. Sideloading is reported working and is not a prerequisite for further
-coding. Daily overview/history and export/restore/deletion are implemented in build-5 source and
-await the exact-source cloud gate. Next: day/goal/streak edge cases; opt-in Home auto-pause;
+coding. Daily overview/history and export/restore/deletion are implemented and passed the exact
+build-5 source gate. Next: day/goal/streak edge cases; opt-in Home auto-pause;
 remaining UI/settings/accessibility and failure-path completion.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
 recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
@@ -72,8 +72,8 @@ other modules stay deferred.
       midnight/time-zone handling, migration coverage, and explicit history deletion.
       Build-5 source now groups same-date sessions, derives active/paused duration and event detail,
       closes stale days at the next local calendar boundary on foreground, and provides versioned
-      JSON export/validated restore plus completed-history deletion. Exact-source CI and physical
-      recovery acceptance remain open.
+      JSON export/validated restore plus completed-history deletion. Exact-source CI passed in
+      PR run #14; physical recovery acceptance remains open.
 - [ ] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
       at most once from explicit non-undone Done events, derive current/best streak, keep the current
       date at risk until rollover, treat skipped post-activation dates as missed, apply goal changes
