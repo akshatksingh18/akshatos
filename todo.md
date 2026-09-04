@@ -7,7 +7,8 @@ primary; Android remains a separate fallback scaffold.
 
 - [x] **Verify the expanded CI pipeline on main.** Source checks, workflow lint, feature domains,
       three SwiftData tests, hub/settings navigation, package inspection and `CI Gate` passed in
-      run #7. PR/failure-path configuration still needs its first real exercise (see `ci.md`).
+      run #7; notification-action PR #1 also passed run #10. Real PR triggering and failure-diagnostic
+      download/correction are exercised (see `ci.md`).
       Server-enforced private-repo protections
       are blocked by the current GitHub plan (HTTP 403); no upgrade or visibility change authorized.
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
@@ -56,8 +57,8 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
       snooze; and handle locked-device persistence and callback deadlines safely.
       Source now includes ordered categories, a shared command path, after-first-unlock atomic inbox,
       delivery receipts that survive Undo, busy-action draining, protected-store retry and matching
-      Pause cancellation. Regression tests cover replay and failure paths; exact-commit CI and physical
-      locked/force-quit/deadline acceptance remain tracked in `ci.md` and `cloud-build.md`.
+      Pause cancellation. The action suite passed exact-source CI in run #10; physical
+      locked/force-quit/deadline acceptance remains open in `ci.md` and `cloud-build.md`.
 - [ ] **Implement completed-set tracking.** Record one timestamped set per explicit Done action,
       deduplicate callbacks, offer Undo, and never infer reps or notification-delivery counts.
 - [ ] **Implement local day data and overview.** Add versioned session/event persistence, pause
@@ -126,8 +127,9 @@ Implemented source covers visual dashboard, permission/reconciliation, lifecycle
 dashboard/notification snooze, durable notification Done/Pause actions, SwiftData session storage/recent session overview, and configurable goals/streaks.
 The unchecked items above describe remaining full-contract implementation and acceptance, not an
 instruction to create second copies of those systems. Cloud domain assertions cover event dedup,
-round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Add service/persistence
-integration tests plus physical evidence before closing the larger gates. The cloud UI test covers
+round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Action service/persistence
+integration tests now pass; remaining full-contract scenarios and physical evidence are required
+before closing the larger gates. The cloud UI test covers
 picker → dashboard → back navigation and captures both screens; it does not test reminder delivery.
 
 ## Documentation synchronization

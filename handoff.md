@@ -52,21 +52,21 @@ material changes; do not copy child progress into root/container instructions.
   All compile into one Swift module. Extend these systems rather than recreating them.
 - Android remains an untouched, unverified fallback; no parity or successful Android build claimed.
 
-Important limitations: build-4 actions need exact-source cloud and physical acceptance; the existing
+Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
 downloaded build-3 preview has no action buttons. No Home location permission or monitoring is implemented. Prior-day running sessions are stopped
 at foreground reconciliation and require explicit End; background midnight finalization is not done.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
 ## Build and device evidence
 
-The resume baseline was documentation commit `db2a458` plus the uncommitted handoff/index, which
-were preserved. Build-4 notification action implementation and tests are pending cloud validation.
-Recorded expanded baseline CI success is source
-`a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
-[run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042): 12 domain assertions,
-three SwiftData persistence tests, one hub/settings UI test, source/inventory/workflow checks,
-simulator/device compilation, IPA inspection and CI Gate. This handoff did not rerun cloud CI.
-Run #7's artifact was not recorded as downloaded or phone-tested.
+Current work is on `feature/squats-notification-actions`, published in
+[PR #1](https://github.com/akshatksingh18/akshatos/pull/1), not merged into main. Build-4 source
+`3cfea6176d43e79b8af899b579e0ac602b480715` passed
+[run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 20 domain assertions,
+24 integration tests, one hub/settings UI test, source/inventory/workflow checks, simulator/device
+compilation, IPA inspection and CI Gate. Follow-up documentation preserves this source evidence;
+inspect the current PR head/checks when resuming. PR runs do not upload an IPA. `cloud-build.md`
+owns the non-PR artifact gate and exact build evidence; no build-4 install/download is recorded.
 
 The recorded hash-verified local preview is run #6, source
 `e70740d3af51e5bad288787c99f3a1430103c88e`, at:
@@ -88,7 +88,7 @@ Use disposable activity until recovery and device tests pass. Do not uninstall d
    actual user results in `cloud-build.md`; if hardware is unavailable, keep this gate open.
 2. **Accept notification actions:** build-4 source implements Done, Pause, then ten-minute snooze
    in the central coordinator, shared commands, durable inbox and receipt-based replay protection.
-   Verify exact-source CI and the physical locked/background matrix. `architecture.md` owns retry,
+   Source CI passed; verify the current PR head and physical locked/background matrix. `architecture.md` owns retry,
    expired-snooze and before-first-unlock limits; do not equate simulated failures with phone tests.
 3. **Complete day data and recovery:** daily aggregate overview with active/paused durations,
    timeline/history, date rollover and time-zone/DST rules, migration/disk-restart tests, explicit
@@ -114,7 +114,7 @@ Every feature/fix needs meaningful regression coverage. Register suites in
 the exact source commit's GitHub CI Gate before claiming cloud verification. Prefer feature branches
 and PRs. Current private-repo branch protection was blocked by the GitHub plan (HTTP 403): the pipeline
 is active, but merge/direct-push enforcement is not. No paid upgrade or public visibility is authorized.
-Real PR-trigger/failure-diagnostic paths still need exercise. Simulator tests do not prove locked
+Real PR-trigger/failure-diagnostic paths have been exercised. Simulator tests do not prove locked
 actions, actual delivery, geofences, Focus, reboot or signing refresh.
 
 Keep this handoff, its index and source changes together when publishing. Commit/PR/check evidence

@@ -1,10 +1,10 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Expanded pipeline verified on main; Source checks, Build installable IPA and CI Gate
-all passed in [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042), source
-`a31643b2375abcd3e708ca3747c9980b1a3e78b8`. All 12 domain assertions, three persistence tests and
-the hub/settings UI test passed. PR triggering and failure-artifact recovery are configured but
-have not been separately exercised by a real PR or intentionally failing cloud run.
+**Status:** Notification-action source `3cfea6176d43e79b8af899b579e0ac602b480715` passed Source
+checks, Build installable IPA and CI Gate in [PR #1 run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498).
+All 20 domain assertions, 24 integration tests and the hub/settings UI test passed. Real PR
+triggering, failure diagnostics download and correction are exercised. Server-enforced private
+branch protection remains unavailable under the current GitHub plan.
 
 ## Automated checks
 
@@ -28,8 +28,9 @@ have not been separately exercised by a real PR or intentionally failing cloud r
 
 Current automated coverage: domain event deduplication/Undo/streak/date assertions; SwiftData
 in-memory round-trip across contexts, persisted Undo/End and malformed-payload preservation;
-hub entry/back/reopen, settings open/dismiss and unavailable media entries. In-memory tests do not prove disk restart,
-migration, protected-device storage, or the full SquatStore error/reconciliation lifecycle.
+hub entry/back/reopen, settings open/dismiss and unavailable media entries; plus the action suite
+below. File-backed reopen and legacy payload decoding now have coverage. Full schema migration,
+OS-process/device restart and protected-device storage remain separate acceptance gates.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
@@ -44,11 +45,16 @@ Build-4 source adds eight domain assertions and 21 action integration tests, plu
 UI coverage. Tests exercise routing/category order, repeated deliveries, duplicate receipts after
 Undo/restart, save/schedule/inbox faults, protected-store retry, Pause during Resume, cancellation,
 expired/denied snooze, old-category repair, atomic inbox recreation/corruption/write-failure preservation,
-legacy JSON payload decoding and a file-backed SwiftData reopen. These are registered but pending
-final cloud acceptance. CI verifies the write options passed to the real file writer; actual
+legacy JSON payload decoding and a file-backed SwiftData reopen. These passed in run #10.
+CI verifies the write options passed to the real file writer; actual
 protection attributes are asserted only in device test runs because Simulator returns no metadata.
 Injected protection failures do not prove
 real locked-device access, background callback deadlines or system notification delivery.
+
+The initial PR run failed because Simulator returned no file-protection metadata. The test now
+checks actual writer options and file durability in CI while retaining the filesystem protection
+assertion for device tests. Its diagnostic artifact was successfully downloaded; no behavior check
+was disabled, no failure was accepted as a pass, and no app protection setting was relaxed.
 
 ## Branch protection limitation
 

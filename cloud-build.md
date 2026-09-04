@@ -1,7 +1,8 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Module-separated AkshatOS preview passed cloud boundary/domain/UI tests, simulator/device compilation,
-package inspection and downloaded-IPA checksum verification. First AkshatOS physical installation,
+**State:** Build-4 notification actions passed PR cloud checks, domain/integration/UI tests,
+simulator/device compilation and package inspection. The downloaded build-3 preview remains the
+hash-verified local artifact; PR runs do not upload a new IPA. First AkshatOS physical installation,
 reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 ## Current identity and artifact
@@ -22,14 +23,22 @@ AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
 
-Build 4 adds notification actions, durable queued commands, receipt persistence and regression
-tests. Its cloud validation is pending; do not install or call it verified until its exact source
-passes `CI Gate`. The existing downloaded build 3 below remains the selected historical preview.
-After a successful build-4 artifact is available, test Done/Pause/snooze from expanded and compact
+Build 4 adds notification actions, durable queued commands, receipt persistence and regression tests.
+Source `3cfea6176d43e79b8af899b579e0ac602b480715` passed all jobs including `CI Gate` in
+[PR #1 run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 14-source boundary
+checks and six negative fixtures, workflow/inventory checks, 20 domain assertions, 24 integration
+tests, one hub/settings UI test, simulator/device compilation and IPA payload inspection.
+The feature is published on `feature/squats-notification-actions` in
+[PR #1](https://github.com/akshatksingh18/akshatos/pull/1); it is not merged into main.
+
+PR runs intentionally omit IPA upload. A successful non-PR workflow dispatch or main source build
+and checksum verification are required before installing build 4. No build-4 IPA was downloaded,
+signed, installed or promoted to a release cache. The existing downloaded build 3 below remains
+the selected historical preview. After a successful build-4 artifact is available, test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
-The expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
+The prior expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
 [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042): source/workflow checks,
 12 domain assertions, three SwiftData tests, hub/settings navigation, simulator/device builds,
 IPA inspection and `CI Gate`. It produced `akshatos-ios-7` and `test-diagnostics-7-1` in Actions.

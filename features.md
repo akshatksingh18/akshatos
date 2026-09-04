@@ -3,7 +3,7 @@
 **State:** Accepted full Squats feature contract inside AkshatOS. The first source implementation
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
-and device evidence. Notification actions and a durable inbox are implemented in source; Home automation, full daily overview/recovery, and
+and device evidence. Notification actions and a durable inbox passed cloud regression tests; Home automation, full daily overview/recovery, and
 physical acceptance remain outstanding. Android is an unverified fallback.
 
 ## Hub entry
