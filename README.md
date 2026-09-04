@@ -13,6 +13,10 @@ fallback. Source is private at [akshatksingh18/akshatos](https://github.com/aksh
 
 ## First slice
 
+GitHub Actions checks feature boundaries, registered domain tests, simulator persistence/navigation,
+device compilation and IPA integrity. [CI contract](ci.md) defines coverage and the current lack of
+server-enforced branch protection on the private repository. Green CI is not physical acceptance.
+
 App composition, display-only hub, shared styling and Squats feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 

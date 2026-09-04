@@ -41,6 +41,18 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: "YES"
         SUPPORTS_MACCATALYST: "NO"
 
+  AkshatOSUnitTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: UnitTests
+    dependencies:
+      - target: AkshatOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos.unittests
+        GENERATE_INFOPLIST_FILE: "YES"
+
   AkshatOSUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -65,4 +77,5 @@ schemes:
     test:
       config: Debug
       targets:
+        - AkshatOSUnitTests
         - AkshatOSUITests

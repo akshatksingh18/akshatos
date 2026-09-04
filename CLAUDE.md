@@ -11,6 +11,12 @@ The full target feature contract below is not a claim that every feature is impl
 
 ## Files
 
+- `ci.md` — pipeline stages, feature test registration, failure handling, coverage limits, and
+  current GitHub branch-protection limitation; read before changing CI or accepting a build.
+- `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
+- `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
+- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication.
+- `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `hub-plan.md` — canonical shared packaging, source/identity ownership, feature boundaries,
   and integration gates; versioned here, with parent/sibling indexes linking to it.
 - `CLAUDE.md` — canonical project instructions and the accepted end-to-end iPhone implementation,
@@ -420,6 +426,11 @@ credentials, signing material, provisioning data, device state, or release IPAs.
 
 ## Working agreement
 
+- **Continuous verification is automatic:** every feature/fix must add or update meaningful tests,
+  register new feature suites, and pass the exact commit's GitHub Actions `CI Gate` before claiming
+  verification or promoting an IPA. Inspect failures and fix the cause; never bypass or weaken tests
+  to make a build green. Prefer PRs for subsequent code changes. Follow `ci.md`, including the
+  explicit distinction between passing CI and unavailable server-enforced branch protection.
 - Documentation synchronization is an automatic completion step; Akshat must never need to request
   it separately. Before every final response after code/configuration work, a plan decision, build or
   signing progress, or a reported phone test, audit the full applicable `CLAUDE.md` chain plus

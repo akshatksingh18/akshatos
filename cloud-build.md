@@ -22,6 +22,10 @@ AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
 
+The expanded pipeline in `ci.md` adds PR checks, feature-suite discovery, hosted SwiftData tests,
+failure diagnostics and an aggregate `CI Gate`. First verification of those additions is pending;
+the verified download below remains the previously tested source.
+
 Verified preview: **0.2.0 (3)**, [iOS Cloud Build #6](https://github.com/akshatksingh18/akshatos/actions/runs/33818156350),
 source `e70740d3af51e5bad288787c99f3a1430103c88e`, artifact `akshatos-ios-6`.
 Boundary checks over 11 Swift sources and six negative fixtures, all 12 domain assertions, and

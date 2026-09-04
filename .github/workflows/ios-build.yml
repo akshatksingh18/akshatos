@@ -2,6 +2,8 @@ name: iOS Cloud Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
   push:
     branches:
       - main
@@ -24,14 +26,34 @@ env:
   BUNDLE_ID: com.akshatksingh18.akshatos
 
 jobs:
+  checks:
+    name: Source checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+      - name: Check source boundaries and test inventory
+        run: |
+          python3 ios/scripts/check-boundaries.py
+          python3 ios/scripts/check-test-inventory.py
+      - name: Lint GitHub Actions workflows
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint" -shellcheck=""
+
   build:
     name: Build installable IPA
+    needs: checks
     runs-on: macos-26
     timeout-minutes: 30
 
     steps:
       - name: Check out source
         uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Select Xcode
         shell: bash
@@ -67,12 +89,11 @@ jobs:
       - name: Check source module boundaries
         run: python3 ios/scripts/check-boundaries.py
 
-      - name: Test Squats domain logic
+      - name: Test registered feature domains
         shell: bash
         run: |
           set -euo pipefail
-          swiftc ios/AkshatOS/features/squats/domain/SquatSession.swift ios/tests/squats/main.swift -o "$RUNNER_TEMP/squats-tests"
-          "$RUNNER_TEMP/squats-tests"
+          python3 ios/scripts/check-test-inventory.py --run
 
       - name: Compile simulator build
         shell: bash
@@ -88,7 +109,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             COMPILER_INDEX_STORE_ENABLE=NO
 
-      - name: Test hub navigation on simulator
+      - name: Test persistence and hub navigation on simulator
         shell: bash
         run: |
           set -euo pipefail
@@ -97,10 +118,28 @@ jobs:
             -destination "platform=iOS Simulator,id=$device_id" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData-simulator" \
             -resultBundlePath "$RUNNER_TEMP/HubTests.xcresult" \
+            -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Export simulator evidence
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          if [ ! -d "$RUNNER_TEMP/HubTests.xcresult" ]; then exit 0; fi
           mkdir -p "$GITHUB_WORKSPACE/artifacts/screenshots"
           xcrun xcresulttool export attachments --path "$RUNNER_TEMP/HubTests.xcresult" \
             --output-path "$GITHUB_WORKSPACE/artifacts/screenshots"
+
+      - name: Upload test diagnostics even on failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: test-diagnostics-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/HubTests.xcresult
+            artifacts/screenshots/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Build unsigned device application
         shell: bash
@@ -141,6 +180,7 @@ jobs:
           )
 
           test -s "$ipa_path"
+          python3 ios/scripts/validate-ipa.py "$ipa_path"
           shasum -a 256 "$ipa_path" | tee "$artifact_root/AkshatOS-unsigned.ipa.sha256"
           {
             echo "commit=$GITHUB_SHA"
@@ -152,6 +192,7 @@ jobs:
           } > "$artifact_root/build-info.txt"
 
       - name: Upload IPA artifact
+        if: ${{ success() && github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@v6.0.0
         with:
           name: akshatos-ios-${{ github.run_number }}
@@ -159,3 +200,19 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
+
+  gate:
+    name: CI Gate
+    needs: [checks, build]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require all prerequisite jobs to succeed
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          echo "Source checks: $CHECKS_RESULT; build/tests: $BUILD_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          test "$CHECKS_RESULT" = success
+          test "$BUILD_RESULT" = success

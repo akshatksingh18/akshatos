@@ -5,6 +5,10 @@ primary; Android remains a separate fallback scaffold.
 
 ## iPhone-primary work
 
+- [ ] **Verify the expanded CI pipeline.** PR validation, feature test inventory, workflow lint,
+      SwiftData tests, failure diagnostics, package inspection and aggregate `CI Gate` are wired;
+      verify a full cloud run before closing this item. Server-enforced private-repo protections
+      are blocked by the current GitHub plan (HTTP 403); no upgrade or visibility change authorized.
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
       metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
       Boundary checks, domain/navigation tests and both builds pass; build 3 IPA is downloaded and

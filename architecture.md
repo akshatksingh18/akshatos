@@ -44,6 +44,8 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
   `services/` (Squats scheduling) and `ui/` (dashboard/settings/summary). Features may use shared
   components, never the host or another feature's concrete types.
 - `ios/tests/squats/`: feature domain assertions; `ios/UITests/`: app navigation tests.
+- `ios/UnitTests/`: hosted SwiftData integration tests. The test inventory, CI gate, diagnostics,
+  and merge-enforcement limitations are defined in `ci.md`; tests do not ship in the IPA.
 - Future PageVault/ReelVault source belongs in sibling `features/pagevault/` and `features/reelvault/`
   areas with their own stores/tests. They are not created or implemented by this refactor.
 

@@ -16,6 +16,11 @@ final class AkshatOSUITests: XCTestCase {
         XCTAssertFalse(app.buttons["open-reelVault"].exists)
         app.buttons["open-squats"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
+        app.buttons["Squat settings"].tap()
+        XCTAssertTrue(app.navigationBars["Squat settings"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.steppers.firstMatch.exists)
+        app.navigationBars["Squat settings"].buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
     }
 
     private func capture(_ name: String) {

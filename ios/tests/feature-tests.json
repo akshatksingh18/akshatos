@@ -1,0 +1,8 @@
+{
+  "squats": {
+    "domain_sources": ["AkshatOS/features/squats/domain/SquatSession.swift"],
+    "domain_test": "tests/squats/main.swift",
+    "integration_tests": ["UnitTests/SquatsPersistenceTests.swift"],
+    "ui_tests": ["UITests/AkshatOSUITests.swift"]
+  }
+}
