@@ -340,17 +340,40 @@ import UserNotifications
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let url = root.appendingPathComponent("inbox.json")
-        let inbox = FileSquatActionInbox(url: url)
+        var writes = 0
+        let inbox = FileSquatActionInbox(url: url) { data, target, options in
+            XCTAssertTrue(options.contains(.atomic))
+            XCTAssertTrue(options.contains(.completeFileProtectionUntilFirstUserAuthentication))
+            writes += 1
+            try data.write(to: target, options: options)
+        }
         let command = action(session())
         try inbox.enqueue(command)
         try inbox.enqueue(command)
+        XCTAssertEqual(writes, 1)
         let reopened = FileSquatActionInbox(url: url)
         XCTAssertEqual(try reopened.pending(), [command])
+        #if !targetEnvironment(simulator)
+        // Simulator returns no file-protection metadata. Actual protection is a device gate.
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         XCTAssertEqual(attributes[.protectionKey] as? FileProtectionType, .completeUntilFirstUserAuthentication)
+        #endif
         try Data("corrupt".utf8).write(to: url)
         XCTAssertThrowsError(try reopened.enqueue(command))
         XCTAssertEqual(try Data(contentsOf: url), Data("corrupt".utf8))
+    }
+
+    func testFailedFileReplacementPreservesPreviouslyQueuedActions() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("inbox.json")
+        let initial = FileSquatActionInbox(url: url)
+        let command = action(session())
+        try initial.enqueue(command)
+        let failing = FileSquatActionInbox(url: url) { _, _, _ in throw CocoaError(.fileWriteOutOfSpace) }
+        XCTAssertThrowsError(try failing.enqueue(action(session())))
+        XCTAssertThrowsError(try failing.remove(command.id))
+        XCTAssertEqual(try FileSquatActionInbox(url: url).pending(), [command])
     }
 
     func testLegacyPayloadDecodesAndDiskRestartKeepsReceiptAfterUndo() throws {

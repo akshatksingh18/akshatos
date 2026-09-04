@@ -40,12 +40,14 @@ Physical acceptance still owns lock-screen notifications, Focus, permission chan
 Shortcuts, force-quit/reboot, Sideloadly upgrades/expiry, performance and real data recovery.
 Android, WHOOP and unimplemented media features are not tested by this pipeline.
 
-Build-4 source adds eight domain assertions and 20 action integration tests, plus notification-help
+Build-4 source adds eight domain assertions and 21 action integration tests, plus notification-help
 UI coverage. Tests exercise routing/category order, repeated deliveries, duplicate receipts after
 Undo/restart, save/schedule/inbox faults, protected-store retry, Pause during Resume, cancellation,
-expired/denied snooze, old-category repair, atomic inbox recreation/corruption/protection attributes,
+expired/denied snooze, old-category repair, atomic inbox recreation/corruption/write-failure preservation,
 legacy JSON payload decoding and a file-backed SwiftData reopen. These are registered but pending
-their first cloud run. Injected protection failures and simulator file attributes do not prove
+final cloud acceptance. CI verifies the write options passed to the real file writer; actual
+protection attributes are asserted only in device test runs because Simulator returns no metadata.
+Injected protection failures do not prove
 real locked-device access, background callback deadlines or system notification delivery.
 
 ## Branch protection limitation

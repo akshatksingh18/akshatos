@@ -13,8 +13,12 @@ import Foundation
         var actions: [SquatAction] = []
     }
     let url: URL
+    private let writeData: (Data, URL, Data.WritingOptions) throws -> Void
 
-    init(url: URL? = nil) {
+    init(url: URL? = nil, writeData: @escaping (Data, URL, Data.WritingOptions) throws -> Void = {
+        try $0.write(to: $1, options: $2)
+    }) {
+        self.writeData = writeData
         self.url = url ?? FileManager.default.urls(for: .applicationSupportDirectory,
             in: .userDomainMask)[0].appendingPathComponent("squats-actions/inbox.json")
     }
@@ -45,7 +49,7 @@ import Foundation
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true,
             attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
         // Only command IDs, session IDs and timestamps, never Home coordinates.
-        try JSONEncoder().encode(Envelope(actions: actions)).write(to: url,
-            options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        try writeData(JSONEncoder().encode(Envelope(actions: actions)), url,
+            [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     }
 }
