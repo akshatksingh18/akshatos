@@ -1,7 +1,6 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-6 Home automation and goal/streak source is ready for cloud validation. Build-5
-daily history/recovery passed PR cloud checks; build-4 remains the latest
+**State:** Build-6 Home automation and goal/streak source passed PR cloud checks; build-4 remains the latest
 downloaded, hash-verified IPA and older previews are preserved. First AkshatOS physical installation,
 reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
@@ -33,7 +32,11 @@ Build 6 adds staged opt-in Home selection and Always authorization, one app-life
 protected boundary/event storage, source-aware pause/resume and outside-Home choices, automation
 health/edit/delete UI, future-date streak filtering and expanded goal/streak/Home regression tests.
 It intentionally omits continuous background-location mode and excludes Home coordinates from backup
-exports. Exact-source cloud results are pending; do not treat this source as compiled or phone-verified.
+exports. Exact source `3037348257938dcd545838a7b54d5bd53dafccd1` passed
+[PR #1 run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593): 20-source
+boundary checks, 37 domain assertions, 34 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. PR runs do not upload IPA artifacts, and
+the Home geofence remains phone-unverified.
 
 Build 5 adds daily aggregation/history, active/paused timing, foreground calendar-boundary rollover,
 versioned JSON export/validated restore, completed-history deletion, and regression coverage. Its
@@ -134,7 +137,7 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 
 Wi-Fi/automatic refresh, expiry recovery, in-place upgrades and notification buttons still require
-physical verification. Build-6 Home geofence, Shortcuts and physical recovery remain unfinished. Keep
+physical verification. Home geofence physical verification, Shortcuts and physical recovery remain unfinished. Keep
 irreplaceable history disposable until export/restore is exercised on the phone.
 
 ## Previous standalone smoke evidence

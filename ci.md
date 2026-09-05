@@ -1,6 +1,9 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-6 Home/goal source awaits exact-source CI. Daily-history/recovery source `2ac71a10731a73012a4726bbada4d3609fea93cf`
+**Status:** Build-6 Home/goal source `3037348257938dcd545838a7b54d5bd53dafccd1`
+passed Source checks, Build installable IPA and CI Gate in
+[PR #1 run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593).
+Daily-history/recovery source `2ac71a10731a73012a4726bbada4d3609fea93cf`
 passed Source checks, Build installable IPA and CI Gate in
 [PR #1 run #14](https://github.com/akshatksingh18/akshatos/actions/runs/33906715819).
 All 29 domain assertions, 29 integration/persistence tests and the hub/settings UI test passed. Real PR
@@ -55,7 +58,8 @@ CI verifies the write options passed to the real file writer; actual
 protection attributes are asserted only in device test runs because Simulator returns no metadata.
 Build-6 adds pure Home decision tests for exit/entry, debounce, deliberate-pause precedence and
 same-day guards; store integration tests for automatic pause/resume, manual override, outside Resume
-suppression and same-day goal snapshots; plus a settings UI assertion. Its CI result is pending.
+suppression and same-day goal snapshots; plus a settings UI assertion. Run #18 passed all 37 domain
+assertions, 34 integration/persistence tests, the UI test, simulator/device compilation and IPA inspection.
 Injected protection failures do not prove
 real locked-device access, background callback deadlines or system notification delivery.
 

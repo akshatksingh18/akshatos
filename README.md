@@ -97,7 +97,8 @@ The implemented forgotten-away convenience is an opt-in native Home geofence. Se
 location to choose/confirm a circular Home boundary, then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
 state stay in protected local storage and are excluded from Squats backup exports; the app never
-continuously tracks location or saves a route. Build-6 cloud and physical behavior remain unverified.
+continuously tracks location or saves a route. Build-6 passed exact-source cloud checks; physical
+geofence behavior remains unverified.
 Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
 is Home-away automation. A deliberate pause always wins; an explicit run-anyway choice while outside
 temporarily suppresses repeat exit events.

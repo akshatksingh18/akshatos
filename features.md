@@ -5,7 +5,8 @@ covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and 
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
 and device evidence. Notification actions and a durable inbox passed cloud regression tests. Daily
 overview/history and local recovery are implemented and passed the build-5 cloud gate;
-Home automation and physical acceptance remain outstanding. Android is an unverified fallback.
+Home automation is implemented and cloud-verified in build-6 source; physical acceptance remains
+outstanding. Android is an unverified fallback.
 
 ## Hub entry
 
@@ -258,8 +259,8 @@ durations are candidate polish—not prerequisites for the first reliable releas
 
 Finish the agreed native v1 implementation and automated/cloud regression coverage first; Akshat
 will test it on the phone afterward. Do not block unfinished coding on baseline sideload testing.
-Build-6 source adds further day/goal/streak edge handling and opt-in Home auto-pause. Remaining work
-is cloud/physical validation plus unfinished dashboard/settings/accessibility/error-state behavior.
+Build-6 source adds cloud-verified day/goal/streak edge handling and opt-in Home auto-pause. Remaining
+work is physical validation plus unfinished dashboard/settings/accessibility/error-state behavior.
 Optional Shortcuts remain a follow-on, not a new prerequisite for native v1.
 
 The first usable release includes:

@@ -17,13 +17,13 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: validate build-6 Home automation and goal/streak source through exact-source cloud
-checks, then finish the agreed native Squats v1 before asking
+Current focus: build-6 Home automation and goal/streak source passed exact-source cloud checks;
+finish the agreed native Squats v1 before asking
 Akshat for physical testing. Sideloading is reported working and is not a prerequisite for further
 coding. Daily overview/history and export/restore/deletion are implemented and passed the exact
 build-5 source gate. Build-6 source adds clock-safe streak filtering, same-day goal-snapshot tests,
-and opt-in Home auto-pause with protected state/events and setup/status UI. Next: cloud correction if
-needed, remaining UI/settings/accessibility and failure-path completion.
+and opt-in Home auto-pause with protected state/events and setup/status UI. Its final source passed
+PR run #18. Next: remaining UI/settings/accessibility and failure-path completion.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
 recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
 other modules stay deferred.
@@ -76,20 +76,22 @@ other modules stay deferred.
       closes stale days at the next local calendar boundary on foreground, and provides versioned
       JSON export/validated restore plus completed-history deletion. Exact-source CI passed in
       PR run #14; physical recovery acceptance remains open.
-- [ ] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
+- [x] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
       at most once from explicit non-undone Done events, derive current/best streak, keep the current
       date at risk until rollover, treat skipped post-activation dates as missed, apply goal changes
       prospectively, and recompute safely after Undo or past-day edits.
       Build-6 source adds same-day goal-change, pre-activation neutral-date, future-clock-date and
-      Home-independent streak regression cases; cloud and physical calendar acceptance remain open.
-- [ ] **Implement opt-in Home auto-pause.** Add explanatory staged When In Use → Always authorization,
+      Home-independent streak regression cases; exact-source cloud tests pass and physical calendar
+      acceptance remains open.
+- [x] **Implement opt-in Home auto-pause.** Add explanatory staged When In Use → Always authorization,
       one-shot Home selection plus map/radius confirmation, one stable monitored circular region,
       protected this-device-only boundary storage, pause-reason guards, duplicate/jitter handling,
       deliberate-pause precedence, outside-Home Start/Resume handling, launch reconciliation, visible
       automation health, and edit/disable/delete. Never continuously track location or persist a
       movement trail.
       Build-6 source implements this contract without continuous background-location mode and keeps
-      Home coordinates out of backup exports. Exact-source cloud and physical geofence acceptance remain open.
+      Home coordinates out of backup exports. Exact-source cloud tests pass; physical geofence
+      acceptance remains open.
 - [ ] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
       `UserDefaults` preferences, actual notification settings,
       recurring/snooze requests, pending action inbox, day data, and Home-region configuration on

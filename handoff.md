@@ -61,8 +61,8 @@ material changes; do not copy child progress into root/container instructions.
 
 Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
 downloaded build-3 preview has no action buttons. Build-5 daily/recovery source passed its cloud
-gate but has no downloaded or phone-tested artifact. Build-6 Home source is not cloud- or phone-
-verified yet. Rollover happens on the next app
+gate but has no downloaded or phone-tested artifact. Build-6 Home source passed the cloud gate but
+is not phone-verified. Rollover happens on the next app
 launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
@@ -77,6 +77,11 @@ compilation, IPA inspection and CI Gate. Documentation revision
 `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32` passed PR run #11 and delivery run #12 with unchanged
 application source. Follow-up documentation preserves this evidence; inspect current PR checks
 when resuming. `cloud-build.md` owns exact source/hash/build records and manual install instructions.
+
+Build-6 source `3037348257938dcd545838a7b54d5bd53dafccd1` passed
+[PR run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593): 37 domain
+assertions, 34 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
+IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
 
 The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
 `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
@@ -96,21 +101,20 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Validate build 6:** run exact-source macOS compilation/domain/integration/UI/device packaging;
-   correct any Apple-framework or Home/goal regression before retaining its evidence.
-2. **Finish native v1 UI and reliability coverage:** complete dashboard/settings, accessibility,
+1. **Finish native v1 UI and reliability coverage:** build-6 exact-source CI is green; complete
+   dashboard/settings, accessibility,
    lifecycle/permission/error states, and remaining day/streak, persistence and service regression
    scenarios. Existing components are partly implemented; extend them rather than recreate them.
    Keep exact-source CI mandatory throughout, then deliver a complete candidate for phone testing.
-3. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
-4. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
+3. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-5. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The daily goal number still
