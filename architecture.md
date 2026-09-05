@@ -7,7 +7,7 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
 
 ## Current implementation
 
-- Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
+- Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, version 0.2.0 (8).
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
@@ -49,7 +49,7 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   decorative icons out of VoiceOver traversal, labels/values the goal progress bar, scales the three
   fixed-size hero numerals with `@ScaledMetric` for Dynamic Type, slows the countdown tick under
   Reduce Motion, and raises `Surface`'s border contrast under Increased Contrast.
-- Build-8 source closes three remaining gaps in that same task. `SquatStore` now persists a
+- Build-8 source introduced three remaining improvements in that same task. `SquatStore` persists a
   monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag (UserDefaults-backed, set once
   and never cleared) so a later denial can be phrased as a revocation ("turned off") instead of
   reusing first-request wording; `start()`/`resume()` and the Settings/Home sections all read it.
@@ -60,6 +60,9 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   into a fixed-width `HStack` + `Spacer`; it replaces every such row across the dashboard and daily
   summary except the one row (current/best streak) that intentionally has no `Spacer` in its
   compact layout, which instead switches to a `VStack` inline via `dynamicTypeSize.isAccessibilitySize`.
+  Post-review source `d80653d` makes the remembered notification grant independent of alert
+  availability, counts When In Use as a prior location grant, proves both flags persist across store
+  recreation, and marks Home state/event storage excluded from device backup; PR run #27 passed.
 - Deferred: App Intents, remaining lifecycle-reconciliation completion, broader automated coverage
   (permission-transition, DST/clock, migration/corruption, and new-UI test scenarios), and physical/
   refresh acceptance. The notification category
@@ -109,7 +112,8 @@ background-capable services at app lifetime; load future media views/resources o
 - `UserDefaults` for settings, stable identifiers, daily-goal configuration,
   geofence enablement/health and a small schema/version key. Pending actions use the atomic file inbox
   described below, not UserDefaults. Keep the Home coordinate/radius in protected, this-device-only local
-  storage suitable after first unlock, never in logs, analytics, or Git.
+  storage suitable after first unlock and marked excluded from device backup, never in logs,
+  analytics, or Git.
 - SwiftData for versioned day sessions, completion events, pause segments, snoozes, and finalized
   summaries—including each day's goal snapshot and qualification—when targeting iOS 17 or later.
   Derive current/best streak from those records instead of treating mutable counters as truth. Core
@@ -264,7 +268,8 @@ Squats handlers at host scope, namespace requests, and test notifications while 
 foregrounded. One hub refresh must preserve all three modules' state.
 
 
-The primary compiler is a private GitHub Actions macOS runner because no local Mac is available.
+The primary compiler is the public repository's GitHub Actions macOS runner because no local Mac
+is available.
 It selects a documented Xcode image, generates the project from `ios/project.yml`, compiles simulator
 and generic-device builds, packages a standard unsigned IPA, verifies bundle metadata/architecture,
 and publishes the IPA plus SHA-256/build metadata as a temporary artifact. The build has no Apple

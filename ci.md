@@ -1,41 +1,33 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-8 source `81bc36b58814c69e174013219d577ad5a4699f4d` (revoked-vs-denied wording, a
-dashboard automation-health icon, and Dynamic Type hardening via a shared `AdaptiveRow`) passed
-Source checks, Build installable IPA and CI Gate on its first push, in
-[PR #1 run #24](https://github.com/akshatksingh18/akshatos/actions/runs/33981449101): 37 domain
-assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device compilation
-and IPA inspection. Build-7 dashboard/Settings-UI source `995e11fd64e074eb7810f0ab1b8acfe47eee9866`
-(permission-state presentation, automation-health icons, VoiceOver/Dynamic Type/Reduce Motion/
-contrast accessibility) passed Source checks, Build installable IPA and CI Gate in
-[PR #1 run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 37 domain
-assertions, 39 integration/persistence tests, the hub/settings UI test, simulator/device
-compilation and IPA inspection. PR runs do not upload an IPA artifact. Build-6 Home/goal source
-`3037348257938dcd545838a7b54d5bd53dafccd1`
-passed Source checks, Build installable IPA and CI Gate in
-[PR #1 run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593).
-Daily-history/recovery source `2ac71a10731a73012a4726bbada4d3609fea93cf`
-passed Source checks, Build installable IPA and CI Gate in
-[PR #1 run #14](https://github.com/akshatksingh18/akshatos/actions/runs/33906715819).
-All 29 domain assertions, 29 integration/persistence tests and the hub/settings UI test passed. Real PR
-triggering, failure diagnostics download and correction are exercised. Server-enforced private
-branch protection remains unavailable under the current GitHub plan.
-The unchanged application source on documentation revision `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`
-also passed PR run #11 and delivery run #12; exact artifact/hash evidence belongs in `cloud-build.md`.
+**Status:** Permission-history and Home-backup privacy correction source
+`d80653da39433815c1d12fb9470adb9417a6f819` passed Source checks, Build installable IPA and
+`CI Gate` in [PR #1 run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032):
+37 domain assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device
+compilation and IPA inspection. The public repository's `main` branch is server-protected with a
+strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
+Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS
+build. PR runs do not upload an IPA artifact; exact downloadable build/hash evidence belongs in
+`cloud-build.md`.
 
 ## Automated checks
 
-- Every pull request to `main` runs the full pipeline, without path filters. Pushes to `main`
-  run it for `ios/**` or the workflow; manual dispatch also runs everything. Documentation-only
-  main pushes do not spend macOS build minutes. PR validation never uses `pull_request_target`.
+- Every pull request to `main` runs Source checks and `CI Gate`. On a normal PR update, a checked-out
+  full-history diff compares the previous head to the new head; a newly opened/reopened PR compares
+  its base to its head. The macOS build is skipped only when every changed path ends in `.md`; an
+  unavailable/empty comparison or any non-Markdown path runs it. Pushes to `main` run the full pipeline for
+  `ios/**` or the workflow; manual dispatch also runs everything. Documentation-only changes do not
+  spend macOS build minutes. PR validation never uses `pull_request_target`.
 - **Source checks**: logical module boundaries, feature test inventory and actionlint 1.7.12
   workflow syntax/expression checking. ShellCheck is disabled; this is not shell/security auditing.
 - **Build installable IPA**: all registered feature domain executables, simulator compilation,
   hosted XCTest persistence tests, XCUITest navigation, device Release compilation, and IPA
   payload/identity inspection. New features must register their tests in `ios/tests/feature-tests.json`;
   domain suites run automatically. The unit/UI directories are included recursively by XcodeGen.
-- **CI Gate**: succeeds only if both prerequisite jobs succeed. Failed, cancelled or unexpectedly
-  skipped prerequisites do not count as a pass. This is the stable check name to require later.
+- **CI Gate**: always runs. It requires Source checks to succeed and, when classification requires
+  macOS, requires the build to succeed. It accepts a skipped build only when the classifier output
+  is explicitly false. Failed, cancelled or unexpectedly skipped prerequisites cannot pass. This
+  is the stable required branch-protection check.
 - Simulator `.xcresult` bundles (including coverage) and screenshots are uploaded even when tests
   fail, when produced, with seven-day retention. Coverage is collected, not a numeric pass threshold.
 - IPA upload requires successful checks/tests/packaging and a non-PR run. Artifacts expire after
@@ -84,50 +76,46 @@ initial push (run #21, commit `58c6ff7`) failed because the new Notifications se
 yet in the accessibility tree when a bare `.exists` check ran; the UI test now scrolls once more
 before checking Data management buttons, matching the file's existing scroll-then-wait pattern.
 
-Build-8 adds two integration tests proving a permission that was granted at least once and later
-denied is remembered (`notificationEverAuthorized`/`homeEverAuthorized`) and phrased as a revocation
-rather than a first-time denial, for both notification and Home authorization. Domain assertions and
-UI test count are unchanged (37 and one, respectively); integration/persistence tests rise to 41.
-Run #24 passed on the first push.
+Build-8 introduced two integration tests for remembered notification/Home authorization. A security
+review found the implementation and tests too narrow: notification history depended on alert
+availability, Home history counted only Always access, and neither test reconstructed the store.
+Correction source `d80653da39433815c1d12fb9470adb9417a6f819` records granted notification enum states even
+when alerts are disabled, records both When In Use and Always location grants, and exercises the
+persisted flags plus revoked wording after store recreation. It also verifies that the Home boundary
+file and containing directory are excluded from device backup. The totals remain 37 domain
+assertions, 41 integration/persistence tests and one UI test; run #27 passed.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection
 assertion for device tests. Its diagnostic artifact was successfully downloaded; no behavior check
 was disabled, no failure was accepted as a pass, and no app protection setting was relaxed.
 
-## Branch protection limitation
+## Branch protection
 
-The repository's branch-protection and ruleset APIs return HTTP 403 on the private plan: GitHub
-requires Pro (or another eligible plan) for these protections on a private repository. No paid
-upgrade was made. **CI is active but is not a server-enforced merge/direct-push restriction.**
+GitHub now confirms a `main` branch-protection rule requiring strict/up-to-date `CI Gate`, enforcing
+the rule for administrators, and disabling force pushes and branch deletion. Pull-request reviews
+and actor restrictions are not required. Agents must still inspect the exact source SHA's
+`CI Gate`, fix red checks and wait for success before declaring code/build work verified or
+promoting an IPA. Prefer feature branches and PR validation for subsequent changes.
 
-Until that changes, agents must inspect the exact source SHA's `CI Gate`, fix red checks and wait
-for success before declaring code/build work verified or promoting an IPA. Prefer feature branches
-and PR validation for subsequent changes. A human can still bypass this agreement manually.
-If the repository becomes public (see below) or Akshat later upgrades to a paid plan, re-check
-whether branch protection is now available, then explicitly enable a `main` rule requiring
-`CI Gate`, an up-to-date branch and no force pushes/deletions; inspect/preserve existing rules
-before doing so. Do not claim this rule is enabled until the server confirms it.
-
-## GitHub Actions minutes and public-visibility decision
+## GitHub Actions minutes and repository visibility
 
 The private-plan account `akshatksingh18` was at ~94% of its 2,000 included Actions minutes this
 billing cycle (resets 2026-10-01), because this project's macOS-runner CI (Xcode simulator/device
 builds) consumes minutes quickly under GitHub's private-repo accounting; the account's Actions
 budget is already set to $0 with "stop usage," so further private-repo runs simply block rather
 than bill. GitHub Actions on standard hosted runners is free/unmetered for **public** repositories,
-so **Akshat has decided to make this repository public temporarily** to remove that cap, with the
-intent to revert it to private once the CI-minutes need has passed. Making a repo public also may
-resolve the branch-protection limitation above (public repos have historically had free branch
-protection); re-check the API once visibility actually changes rather than assuming it.
+so the repository is now **public temporarily** to remove that cap, with the intent to revert it to
+private once the CI-minutes need has passed. Before the switch, a fresh scan of every reachable
+commit plus GitHub-side collaborators, PR content, webhooks, deploy keys and representative Actions
+logs found no committed credentials, signing material, third-party personal data, or real Home
+coordinates. Akshat explicitly accepted the low-risk local username/path and project-plan exposure;
+history was not rewritten. All 26 previously retained Actions artifacts were deleted before the
+switch. Branch protection was then enabled and server-verified as described above.
 
-This is a plan-level decision, not yet executed — the repository is still private as of this
-writing. Before visibility actually changes, a full sensitive-content verification pass across the
-**entire commit history** (not just current files, and not limited to credentials) must pass, and
-Akshat must give explicit go-ahead in chat. `handoff.md` owns the exact pending task and the one
-known finding from the first review pass (local Windows path/username exposure in `cloud-build.md`/
-`handoff.md` history). Reverting to private later stops new access but cannot undo anything already
-cloned/forked/cached while public.
+When Akshat says the public-CI need has passed, return the repository to private and update these
+documents. That stops new public access but cannot undo source, logs, or artifacts already cloned,
+forked, downloaded, indexed, cached, or otherwise copied while the repository was public.
 
 ## Failure workflow
 

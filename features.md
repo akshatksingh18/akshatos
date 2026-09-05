@@ -144,7 +144,8 @@ The accepted native convenience is one optional **Home auto-pause** geofence:
 
 - Let the user choose **Use my current location as Home**, confirm the circular boundary on a map,
   and adjust a conservative radius during setup. Store the coordinate/radius only in the app's local
-  protected storage; never upload it, include it in analytics, or retain a trail of visited locations.
+  protected storage marked excluded from device backup; never upload it, include it in analytics,
+  or retain a trail of visited locations.
 - Ask for location only when Home auto-pause is enabled. Use a one-shot foreground location to set
   Home, explain why background access is needed, then request the authorization level required for
   reliable region entry/exit delivery when the app is not open.

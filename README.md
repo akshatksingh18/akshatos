@@ -1,6 +1,6 @@
 # AkshatOS
 
-A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
+A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
@@ -14,19 +14,22 @@ Build-7 source completes the dashboard/Settings UI with detailed notification an
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
 source adds revoked-vs-denied wording, a dashboard-level Home automation-health icon, and Dynamic
-Type hardening for accessibility text sizes; its exact source also passed cloud CI.
+Type hardening for accessibility text sizes. Post-review source corrects remembered-grant semantics,
+proves the flags persist across store recreation, excludes Home files from device backup, and passed
+cloud CI in run #27.
 The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
 test the complete feature on the phone. Sideloading is reported working; continued implementation
 does not wait for another installation exercise.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
-fallback. Source is private at [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos).
+fallback. Source is temporarily public at
+[akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos) for hosted macOS CI capacity.
 
 ## First slice
 
 GitHub Actions checks feature boundaries, registered domain tests, simulator persistence/navigation,
-device compilation and IPA integrity. [CI contract](ci.md) defines coverage and the current lack of
-server-enforced branch protection on the private repository. Green CI is not physical acceptance.
+device compilation and IPA integrity. [CI contract](ci.md) defines coverage, documentation-only PR
+build skipping, and the server-enforced `main` protection. Green CI is not physical acceptance.
 
 App composition, display-only hub, shared styling and Squats feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
@@ -101,8 +104,8 @@ delete completed history while retaining the active day and preferences.
 The implemented forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
 location to choose/confirm a circular Home boundary, then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
-state stay in protected local storage and are excluded from Squats backup exports; the app never
-continuously tracks location or saves a route. Build-6 passed exact-source cloud checks; physical
+state stay in protected local storage excluded from both device backups and Squats backup exports;
+the app never continuously tracks location or saves a route. Build-6 passed exact-source cloud checks; physical
 geofence behavior remains unverified.
 Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
 is Home-away automation. A deliberate pause always wins; an explicit run-anyway choice while outside
@@ -141,8 +144,8 @@ build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is o
 Squats, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
-- source is authored on Windows and a private GitHub Actions macOS/Xcode runner generates the Xcode
-  project, compiles it, and uploads an unsigned IPA plus checksum/build metadata;
+- source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates
+  the Xcode project, compiles it, and uploads an unsigned IPA plus checksum/build metadata;
 - GitHub receives no Apple credentials or signing material; Windows verifies the artifact and uses
   Sideloadly for personal signing and installation;
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;

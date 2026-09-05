@@ -1,8 +1,9 @@
 # AkshatOS session handoff
 
-**Status:** A public-visibility verification task is pending first (see below) before returning to
-Squats work. Source and cloud checks exist for Squats; first physical AkshatOS acceptance and the
-full Squats feature contract remain unfinished. This is a current-state entry point, not a separate
+**Status:** The publication/security gate is resolved and the repository is temporarily public with
+protected `main`. Permission-history and Home-backup corrections passed PR run #27. Resume the
+remaining Squats reliability work next; first physical AkshatOS acceptance and the full Squats
+feature contract remain unfinished. This is a current-state entry point, not a separate
 specification or chronological log. Update it in place when its resume guidance changes; the
 linked owning documents control detailed facts.
 
@@ -22,49 +23,26 @@ files were removed; do not recreate them. The global Codex fallback already incl
 New managed folders use `CLAUDE.md`. Automatically synchronize affected owning documentation with
 material changes; do not copy child progress into root/container instructions.
 
-## Pending: public-visibility verification (do this first, before Squats work)
+## Repository visibility and CI controls
 
-This is a separate task from the Squats feature work below. Akshat decided in the prior session to
-make this repository public temporarily, to remove the GitHub Actions minutes cap on the private
-plan (the private quota was at ~94% of 2,000 included minutes this cycle, resetting 2026-10-01;
-this project's macOS-runner CI consumes minutes quickly under private-repo accounting). The
-repository is still private as of this writing — only the decision has been made, not the switch.
+The repository is temporarily public to avoid the private-plan Actions-minute cap. Before the
+switch, a fresh scan covered every reachable commit plus commit messages, filenames, dangling local
+objects, collaborators, PR content, webhooks, deploy keys, secrets/variables and representative
+Actions logs. It found no committed credentials, Apple signing material, third-party personal data,
+real GPS coordinates, or content copied from Akshat's private workspace domains. Akshat explicitly
+accepted the low-risk Windows username/path and project-plan exposure without a history rewrite.
+All 26 then-retained Actions artifacts were deleted before public visibility was enabled.
 
-**Before changing visibility, do a full, broad sensitive-content verification pass across the
-entire commit history** (not just current files) — everything a stranger could see once the repo
-is public, not limited to credentials/secrets. A first pass already found:
-- No API keys, tokens, passwords, certificates, or provisioning profiles anywhere in history.
-- No third-party personal data: no phone numbers, physical addresses, real GPS coordinates, or
-  emails besides Akshat's own (as commit author) and the Claude co-author address.
-- No cross-references to Akshat's other private workspace folders (`financials/`, `health/`,
-  `job/`), beyond one unrelated mention of a removed `financials/AGENTS.md` file.
-- GitHub-side surfaces beyond file content: zero PR comments, only Akshat as collaborator, no
-  webhooks/deploy keys, and one spot-checked Actions run log where GitHub auto-masked the only
-  token (`GITHUB_TOKEN`) with nothing else leaking.
-- **One known finding, not yet remediated:** `cloud-build.md` and `handoff.md` contain local
-  Windows paths revealing Akshat's account name and folder structure — e.g.
-  `C:\Users\aksha\Downloads\...` and `D:\AI Important Files\...` — in 8 lines of the current files
-  and 28 places across git history. Decide with Akshat whether to accept this (low-risk, just a
-  username/folder name), scrub it from future docs only (history still keeps it), or rewrite git
-  history with something like `git filter-repo` before going public (the only way to actually
-  remove it; rewrites every commit hash, needs a force-push, and needs explicit confirmation since
-  it is destructive and this branch has an open PR).
-
-A fresh session must not treat that first pass as sufficient on its own — re-verify it, and look
-more broadly: commit messages, code comments, TODOs, and any other content that reveals opinions,
-plans, or information Akshat might not want permanently public, not just the categories above.
-
-After that pass, report findings and get Akshat's **explicit go-ahead in chat** before actually
-changing repository visibility. Once public, also make the `.github/workflows/ios-build.yml`
-docs-only-PR-skip fix that was discussed but not yet implemented (skip the macOS job on PR pushes
-that only touch `*.md` files, mirroring the existing `main`-push path filter) — worth doing
-regardless, to avoid wasting free public-repo capacity too. When Akshat says the CI-minutes need
-has passed, revert the repository to private; reverting stops new access but cannot undo anything
-already cloned, forked, or cached while public. `ci.md` owns the fuller version of this decision.
+GitHub confirms `main` protection with strict/up-to-date `CI Gate`, administrator enforcement, and
+force pushes/deletions disabled. Every PR still produces Source checks and `CI Gate`; only a PR whose
+changed paths are all Markdown skips the macOS build. When Akshat says the public-CI need has passed,
+return the repository to private and synchronize the docs. That stops new public access but cannot
+undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied while public.
+`ci.md` owns the full operational contract.
 
 ## Identity and accepted scope
 
-- Repository: private `https://github.com/akshatksingh18/akshatos`, evolved from Squat Reminder
+- Repository: temporarily public `https://github.com/akshatksingh18/akshatos`, evolved from Squat Reminder
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
@@ -74,9 +52,8 @@ already cloned, forked, or cached while public. `ci.md` owns the fuller version 
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
   `book-reader` and `reels` projects; future native source goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
-  feature folders are not separately installed apps. The repository is currently private; Akshat
-  has decided to make it temporarily public to remove the GitHub Actions minutes cap — see
-  "Pending: public-visibility verification" below before changing visibility.
+  feature folders are not separately installed apps. Repository visibility and its reversion gate
+  are recorded above.
 - Local-only, single-user data; no backend, analytics, accounts or cloud sync. Windows authors
   source; GitHub macOS/Xcode builds; Sideloadly signs locally. Never put Apple secrets or IPAs in Git.
 
@@ -107,6 +84,10 @@ already cloned, forked, or cached while public. `ci.md` owns the fuller version 
   ("turned off") rather than reusing first-request wording, an icon-based Home automation-health row
   on the main dashboard itself, and a shared `AdaptiveRow` component that stacks label/value rows
   vertically at accessibility Dynamic Type sizes. Its exact source `81bc36b58814c69e174013219d577ad5a4699f4d` passed PR run #24.
+- Post-review source corrects the remembered-grant semantics for provisional/alerts-disabled
+  notifications and When In Use location, proves both flags and revoked wording survive store
+  recreation, and excludes the protected Home files/directory from device backup. Exact source
+  `d80653da39433815c1d12fb9470adb9417a6f819` passed PR run #27.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -153,6 +134,11 @@ Build-8 source `81bc36b58814c69e174013219d577ad5a4699f4d` passed
 37 domain assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device
 compilation, IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
 
+Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` passed
+[PR run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032): 37 domain
+assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
+IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
+
 The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
 `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
 Its checksum, identity, version/build and payload passed local inspection. Recheck SHA-256 against
@@ -174,8 +160,9 @@ implementation for baseline installation. Existing device gates remain open unti
 1. **Finish native v1 reliability coverage:** build-7 completes the dashboard/Settings UI task
    (permission-state presentation, automation-health icons, and VoiceOver/Dynamic Type/Reduce
    Motion/contrast accessibility); its exact source passed CI Gate in PR run #22. Build-8 closes a
-   follow-up review's three remaining gaps (revoked-vs-denied wording, a dashboard automation-health
-   icon, Dynamic Type hardening); its exact source passed CI Gate in PR run #24. Remaining work
+   follow-up review's three UI gaps (revoked-vs-denied wording, a dashboard automation-health icon,
+   Dynamic Type hardening); post-review permission-history and Home-backup corrections passed CI Gate
+   in PR run #27. Remaining work
    is foreground-reconciliation completion (SwiftData intent vs. actual notification/Home-region
    state, stale-request cancellation) and broader day/streak, persistence, migration and permission-
    transition regression scenarios, plus UI coverage for the new settings/permission/accessibility
@@ -200,9 +187,8 @@ needs Akshat's choice; don't invent one. Reps, freezes, achievements and extra p
 Every feature/fix needs meaningful regression coverage. Register suites in
 `ios/tests/feature-tests.json`; run boundary and inventory checks plus relevant tests, then inspect
 the exact source commit's GitHub CI Gate before claiming cloud verification. Prefer feature branches
-and PRs. Current private-repo branch protection was blocked by the GitHub plan (HTTP 403): the pipeline
-is active, but merge/direct-push enforcement is not. No paid upgrade is authorized; Akshat has
-decided to make the repository public (see "Pending: public-visibility verification" below).
+and PRs. The public repository's `main` protection requires a strict/up-to-date `CI Gate`, applies
+to administrators, and disables force pushes/deletion. Docs-only PRs skip macOS but retain the gate.
 Real PR-trigger/failure-diagnostic paths have been exercised. Simulator tests do not prove locked
 actions, actual delivery, geofences, Focus, reboot or signing refresh.
 

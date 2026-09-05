@@ -48,7 +48,8 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 
 ## Source, identity, and build activation gate
 
-The canonical private hub repository is **akshatksingh18/akshatos**, evolved from the existing
+The canonical hub repository is **akshatksingh18/akshatos**, currently public temporarily for hosted
+macOS CI capacity and evolved from the existing
 Squat Reminder repository with history preserved. Its local folder is `personal-project/akshatos`.
 There is no second hub repository or duplicate Squats implementation. PageVault/ReelVault keep
 their feature plans and Android fallbacks in their existing folders; their future iOS source goes
@@ -63,7 +64,7 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
 - Launch into a hub app-selection screen, then select **Squat Reminder** for its dashboard.
   PageVault/ReelVault may appear as clearly unavailable planned cards; they do not open fake apps.
   Returning to the hub must leave the Squats session and scheduling untouched.
-- Generate one AkshatOS Xcode target from `akshatos/ios/project.yml` and build through its private
+- Generate one AkshatOS Xcode target from `akshatos/ios/project.yml` and build through its
   macOS workflow. Ordinary Release IPA, payload inspection and SHA-256, no signing secrets in CI.
   Simulator-only test targets do not ship in the device IPA.
 - `architecture.md` owns exact implemented versus target behavior. Finish Squats before
@@ -115,4 +116,4 @@ This file owns cross-project packaging; `../CLAUDE.md` provides container routin
 Feature folders own product behavior and individual progress. Update this plan when integration
 decisions or gates change, not for routine feature milestones; link to evidence instead of copying
 it. Keep planned/implemented/physically verified states distinct and repositories private unless
-explicitly changed.
+explicitly changed; AkshatOS is the current temporary public exception recorded in `ci.md`.

@@ -9,10 +9,9 @@ primary; Android remains a separate fallback scaffold.
       three SwiftData tests, hub/settings navigation, package inspection and `CI Gate` passed in
       run #7; notification-action PR #1 also passed run #10. Real PR triggering and failure-diagnostic
       download/correction are exercised (see `ci.md`).
-      Server-enforced private-repo protections
-      are blocked by the current GitHub plan (HTTP 403); no paid upgrade is authorized. Akshat has
-      decided to make the repository public temporarily to remove the private-repo Actions-minutes
-      cap; see `ci.md` for that decision and the pending pre-visibility verification task.
+      The repository is temporarily public for hosted macOS CI capacity. GitHub confirms `main`
+      protection requiring strict/up-to-date `CI Gate`, including administrators, with force pushes
+      and deletion disabled. Docs-only PRs retain the gate and skip the macOS job; see `ci.md`.
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
       metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
       Boundary checks, domain/navigation tests and both builds pass; build 3 IPA is downloaded and
@@ -29,7 +28,9 @@ PR run #18. Build-7 source completes the dashboard/Settings UI task (permission-
 automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility); its exact
 source passed PR run #22. Build-8 source closes three gaps found in a follow-up review of that same
 task: revoked-vs-denied wording, an icon-based dashboard automation-health row, and Dynamic Type
-hardening for accessibility text sizes; its exact source passed PR run #24. Next:
+hardening for accessibility text sizes; its exact source passed PR run #24. Post-review source
+corrects the remembered notification/location grant semantics and device-backup exclusion for
+Home state; exact source `d80653d` passed PR run #27. Next:
 foreground-reconciliation completion and broader day/streak, persistence, migration and
 permission-transition test coverage.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
@@ -37,7 +38,8 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
 other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
-      into private `akshatksingh18/akshatos`; keep history and Android. AkshatOS uses
+      into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
+      CI capacity. AkshatOS uses
       `com.akshatksingh18.akshatos`. Physical provisioning of this identity is still a gate.
 - [ ] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
       picker → Squats → back navigation; verify reminders continue while the picker is shown.
@@ -80,8 +82,9 @@ other modules stay deferred.
       to the correct Settings screen via a `SettingsRoute` rather than showing a bare OK button. Never
       displays a false Running state. Exact source `995e11f` passed PR run #22. Build-8 source adds a
       monotonic, UserDefaults-backed `notificationEverAuthorized`/`homeEverAuthorized` flag so a later
-      denial is phrased as a revocation ("turned off") instead of reusing first-request wording;
-      exact source `81bc36b` passed PR run #24.
+      denial is phrased as a revocation ("turned off") instead of reusing first-request wording.
+      Correction source `d80653d` records provisional/alerts-disabled notification grants and When
+      In Use location grants, and proves both flags plus wording survive store recreation; run #27 passed.
 - [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
       stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
@@ -115,7 +118,7 @@ other modules stay deferred.
       automation health, and edit/disable/delete. Never continuously track location or persist a
       movement trail.
       Build-6 source implements this contract without continuous background-location mode and keeps
-      Home coordinates out of backup exports. Exact-source cloud tests pass; physical geofence
+      Home coordinates out of device backups and backup exports. Exact-source cloud tests pass; physical geofence
       acceptance remains open.
 - [ ] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
       `UserDefaults` preferences, actual notification settings,
@@ -182,8 +185,9 @@ Build-7 source adds five integration tests covering notification/Home authorizat
 in the registered suite) plus one new UI-test assertion for the Notifications settings section;
 exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22. Build-8 source adds two
 more integration tests covering the revoked-vs-denied wording for both notification and Home
-authorization (37 domain assertions, 41 integration/persistence tests, one UI test); exact source
-`81bc36b58814c69e174013219d577ad5a4699f4d` passed PR run #24 on its first push.
+authorization (37 domain assertions, 41 integration/persistence tests, one UI test). Correction source
+`d80653da39433815c1d12fb9470adb9417a6f819` strengthens those same tests across store recreation,
+fixes their grant semantics, and verifies Home backup exclusion; PR run #27 passed.
 
 ## Documentation synchronization
 

@@ -1,9 +1,9 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-8 source (version `0.2.0 (8)`), closing three follow-up gaps in the build-7
-dashboard/Settings-UI task, passed PR cloud checks. Build-4 remains the latest downloaded,
-hash-verified IPA and older previews are preserved — PR runs intentionally omit IPA upload, so no
-build-7 or build-8 artifact has been downloaded yet. First AkshatOS physical installation, reminder
+**State:** Permission-history and Home-backup privacy correction source
+`d80653da39433815c1d12fb9470adb9417a6f819` (version `0.2.0 (8)`) passed PR cloud checks in
+run #27. Build-4 remains the latest downloaded, hash-verified IPA and older local previews are
+preserved — PR runs intentionally omit IPA upload. First AkshatOS physical installation, reminder
 behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -14,7 +14,7 @@ implementation and automated checks; the manual steps below are for that accepta
 
 ## Current identity and artifact
 
-- Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
+- Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (8)**; minimum iOS 17.
@@ -29,6 +29,15 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` decouples remembered
+notification grants from alert availability, counts both When In Use and Always as prior location
+authorization, proves both flags survive store recreation and drive revoked wording, and marks the
+protected Home configuration/event files and directory as excluded from device backup. It also adds
+docs-only PR classification while keeping `CI Gate` present. It passed
+[PR #1 run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032): 20-source
+boundary checks, 37 domain assertions, 41 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. The PR run did not upload an IPA.
 
 Build 8 closes three gaps found in a follow-up review of the build-7 dashboard/Settings UI task: a
 monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag so a permission that was granted at
@@ -104,9 +113,10 @@ and updating an old category-less schedule through Repair reminders. None has ph
 The prior expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
 [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042): source/workflow checks,
 12 domain assertions, three SwiftData tests, hub/settings navigation, simulator/device builds,
-IPA inspection and `CI Gate`. It produced `akshatos-ios-7` and `test-diagnostics-7-1` in Actions.
-That new artifact was not downloaded or physically tested; the verified local download below
-remains run #6. No production app behavior or version changed in this CI-only task.
+IPA inspection and `CI Gate`. It originally produced `akshatos-ios-7` and `test-diagnostics-7-1`;
+those and all other retained Actions artifacts were deleted before the repository became public.
+That IPA was not downloaded or physically tested; the verified local download below remains run #6.
+No production app behavior or version changed in this CI-only task.
 
 Verified preview: **0.2.0 (3)**, [iOS Cloud Build #6](https://github.com/akshatksingh18/akshatos/actions/runs/33818156350),
 source `e70740d3af51e5bad288787c99f3a1430103c88e`, artifact `akshatos-ios-6`.
@@ -135,7 +145,7 @@ and bundle ID. Physical same-ID upgrade/data preservation and reminders still ne
 5. Upload a 14-day Actions artifact. Download and checksum it before signing. Keep a durable copy
    outside Git after physical acceptance; temporary Actions storage is not the release cache.
 
-No local Mac is available. Windows edits source; macOS/Xcode in the private cloud build compiles.
+No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
 ## First AkshatOS install (manual steps; no computer control)
