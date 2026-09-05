@@ -15,8 +15,8 @@ dashboard/Settings UI gaps: a distinct "turned off"/revoked wording once notific
 access has been granted at least once (instead of reusing first-denial wording), an icon-based
 automation-health row on the main dashboard rather than a plain muted line, and Dynamic Type
 hardening (a reusable `AdaptiveRow` that stacks label/value rows vertically at accessibility text
-sizes instead of squeezing them into a fixed-width row); its exact source has not yet passed cloud
-CI. Physical acceptance plus the
+sizes instead of squeezing them into a fixed-width row); its exact source passed cloud CI (see
+`ci.md`). Physical acceptance plus the
 remaining native v1 work (foreground reconciliation completion, broader automated coverage) are
 pending. Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.

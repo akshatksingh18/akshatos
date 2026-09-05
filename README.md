@@ -14,7 +14,7 @@ Build-7 source completes the dashboard/Settings UI with detailed notification an
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
 source adds revoked-vs-denied wording, a dashboard-level Home automation-health icon, and Dynamic
-Type hardening for accessibility text sizes; its exact source has not yet passed cloud CI.
+Type hardening for accessibility text sizes; its exact source also passed cloud CI.
 The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
 test the complete feature on the phone. Sideloading is reported working; continued implementation
 does not wait for another installation exercise.

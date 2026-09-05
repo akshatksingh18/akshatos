@@ -63,7 +63,7 @@ material changes; do not copy child progress into root/container instructions.
   `notificationEverAuthorized`/`homeEverAuthorized` flag so a later denial reads as a revocation
   ("turned off") rather than reusing first-request wording, an icon-based Home automation-health row
   on the main dashboard itself, and a shared `AdaptiveRow` component that stacks label/value rows
-  vertically at accessibility Dynamic Type sizes. Its exact source has not yet been pushed through CI.
+  vertically at accessibility Dynamic Type sizes. Its exact source `81bc36b58814c69e174013219d577ad5a4699f4d` passed PR run #24.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -75,8 +75,8 @@ downloaded build-3 preview has no action buttons. Build-5 daily/recovery source 
 gate but has no downloaded or phone-tested artifact. Build-6 Home source passed the cloud gate but
 is not phone-verified. Build-7 dashboard/Settings-UI source passed its cloud gate (PR run #22) but
 is not phone-verified either. Build-8 source (revoked-vs-denied wording, dashboard automation-health
-icon, Dynamic Type hardening) has not yet been pushed through CI; do not call it cloud-verified until
-`ci.md`'s CI Gate for its exact commit is inspected and green. Rollover happens on the next app
+icon, Dynamic Type hardening) passed its cloud gate (PR run #24) but is not phone-verified either.
+Rollover happens on the next app
 launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
@@ -105,6 +105,11 @@ test because the new Notifications settings section pushed a Data-management but
 Form's initial fold; the test was fixed to scroll once more before checking that section, and the
 corrected commit passed cleanly. The PR run intentionally did not upload an IPA.
 
+Build-8 source `81bc36b58814c69e174013219d577ad5a4699f4d` passed
+[PR run #24](https://github.com/akshatksingh18/akshatos/actions/runs/33981449101) on its first push:
+37 domain assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device
+compilation, IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
+
 The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
 `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
 Its checksum, identity, version/build and payload passed local inspection. Recheck SHA-256 against
@@ -127,7 +132,7 @@ implementation for baseline installation. Existing device gates remain open unti
    (permission-state presentation, automation-health icons, and VoiceOver/Dynamic Type/Reduce
    Motion/contrast accessibility); its exact source passed CI Gate in PR run #22. Build-8 closes a
    follow-up review's three remaining gaps (revoked-vs-denied wording, a dashboard automation-health
-   icon, Dynamic Type hardening) and still needs its CI Gate inspected. Remaining work
+   icon, Dynamic Type hardening); its exact source passed CI Gate in PR run #24. Remaining work
    is foreground-reconciliation completion (SwiftData intent vs. actual notification/Home-region
    state, stale-request cancellation) and broader day/streak, persistence, migration and permission-
    transition regression scenarios, plus UI coverage for the new settings/permission/accessibility

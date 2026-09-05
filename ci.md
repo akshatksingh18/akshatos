@@ -1,10 +1,11 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-8 source (revoked-vs-denied wording, a dashboard automation-health icon, and
-Dynamic Type hardening via a shared `AdaptiveRow`) is implemented locally with 37 domain assertions,
-41 integration/persistence tests and the hub/settings UI test registered; it has not yet been pushed
-or run through CI. Do not call it cloud-verified until this exact commit's CI Gate is inspected and
-green. Build-7 dashboard/Settings-UI source `995e11fd64e074eb7810f0ab1b8acfe47eee9866`
+**Status:** Build-8 source `81bc36b58814c69e174013219d577ad5a4699f4d` (revoked-vs-denied wording, a
+dashboard automation-health icon, and Dynamic Type hardening via a shared `AdaptiveRow`) passed
+Source checks, Build installable IPA and CI Gate on its first push, in
+[PR #1 run #24](https://github.com/akshatksingh18/akshatos/actions/runs/33981449101): 37 domain
+assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device compilation
+and IPA inspection. Build-7 dashboard/Settings-UI source `995e11fd64e074eb7810f0ab1b8acfe47eee9866`
 (permission-state presentation, automation-health icons, VoiceOver/Dynamic Type/Reduce Motion/
 contrast accessibility) passed Source checks, Build installable IPA and CI Gate in
 [PR #1 run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 37 domain
@@ -87,6 +88,7 @@ Build-8 adds two integration tests proving a permission that was granted at leas
 denied is remembered (`notificationEverAuthorized`/`homeEverAuthorized`) and phrased as a revocation
 rather than a first-time denial, for both notification and Home authorization. Domain assertions and
 UI test count are unchanged (37 and one, respectively); integration/persistence tests rise to 41.
+Run #24 passed on the first push.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection

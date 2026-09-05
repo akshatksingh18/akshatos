@@ -1,11 +1,10 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-7 dashboard/Settings-UI source passed PR cloud checks; build-8 (version `0.2.0 (8)`)
-closes three follow-up gaps in that same task and exists locally, not yet pushed through cloud CI.
-Build-4 remains the latest downloaded, hash-verified IPA and older previews are preserved — PR runs
-intentionally omit IPA upload, so no build-7 or build-8 artifact has been downloaded yet. First
-AkshatOS physical installation, reminder behavior and refresh acceptance remain pending. This file
-owns the build evidence.
+**State:** Build-8 source (version `0.2.0 (8)`), closing three follow-up gaps in the build-7
+dashboard/Settings-UI task, passed PR cloud checks. Build-4 remains the latest downloaded,
+hash-verified IPA and older previews are preserved — PR runs intentionally omit IPA upload, so no
+build-7 or build-8 artifact has been downloaded yet. First AkshatOS physical installation, reminder
+behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -19,7 +18,6 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (8)**; minimum iOS 17.
-  Build 8 has not yet been pushed through cloud CI; build 7 is the latest CI-verified source.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -31,6 +29,17 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Build 8 closes three gaps found in a follow-up review of the build-7 dashboard/Settings UI task: a
+monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag so a permission that was granted at
+least once and later denied is phrased as a revocation rather than a first-time denial, an icon-based
+Home automation-health row on the main dashboard itself (previously a plain muted line), and a shared
+`AdaptiveRow` component that stacks label/value rows vertically at accessibility Dynamic Type sizes.
+Exact source `81bc36b58814c69e174013219d577ad5a4699f4d` passed
+[PR #1 run #24](https://github.com/akshatksingh18/akshatos/actions/runs/33981449101) on its first
+push: 20-source boundary checks, 37 domain assertions, 41 integration/persistence tests, one
+hub/settings UI test, simulator/device compilation, IPA inspection and CI Gate. PR runs do not
+upload IPA artifacts, so build 4 below remains the latest downloaded IPA; this work is phone-unverified.
 
 Build 7 completes the dashboard/Settings UI: authoritative `NotificationAuthorization` and
 `HomeAuthorization` tracking on `SquatStore` (replacing a boolean and fragile status-string

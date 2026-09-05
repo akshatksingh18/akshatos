@@ -27,7 +27,7 @@ PR run #18. Build-7 source completes the dashboard/Settings UI task (permission-
 automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility); its exact
 source passed PR run #22. Build-8 source closes three gaps found in a follow-up review of that same
 task: revoked-vs-denied wording, an icon-based dashboard automation-health row, and Dynamic Type
-hardening for accessibility text sizes; its exact source has not yet been pushed through CI. Next:
+hardening for accessibility text sizes; its exact source passed PR run #24. Next:
 foreground-reconciliation completion and broader day/streak, persistence, migration and
 permission-transition test coverage.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
@@ -67,8 +67,8 @@ other modules stay deferred.
       Increased-Contrast-aware `Surface` border. Exact source `995e11f` passed PR run #22. Build-8
       source adds an icon-based Home automation-health row on the main dashboard itself (previously a
       plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
-      row vertically at accessibility Dynamic Type sizes instead of squeezing them; its exact source
-      has not yet been pushed through CI.
+      row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
+      `81bc36b` passed PR run #24.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
@@ -78,8 +78,8 @@ other modules stay deferred.
       to the correct Settings screen via a `SettingsRoute` rather than showing a bare OK button. Never
       displays a false Running state. Exact source `995e11f` passed PR run #22. Build-8 source adds a
       monotonic, UserDefaults-backed `notificationEverAuthorized`/`homeEverAuthorized` flag so a later
-      denial is phrased as a revocation ("turned off") instead of reusing first-request wording; its
-      exact source has not yet been pushed through CI.
+      denial is phrased as a revocation ("turned off") instead of reusing first-request wording;
+      exact source `81bc36b` passed PR run #24.
 - [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
       stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
@@ -180,8 +180,8 @@ Build-7 source adds five integration tests covering notification/Home authorizat
 in the registered suite) plus one new UI-test assertion for the Notifications settings section;
 exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22. Build-8 source adds two
 more integration tests covering the revoked-vs-denied wording for both notification and Home
-authorization (37 domain assertions, 41 integration/persistence tests, one UI test); this has not
-yet been run through CI.
+authorization (37 domain assertions, 41 integration/persistence tests, one UI test); exact source
+`81bc36b58814c69e174013219d577ad5a4699f4d` passed PR run #24 on its first push.
 
 ## Documentation synchronization
 
