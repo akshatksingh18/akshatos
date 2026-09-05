@@ -119,14 +119,15 @@ import UserNotifications
     }
     private func make(_ repository: MemoryRepository, _ reminders: FakeReminders,
                       _ inbox: any SquatActionInbox,
-                      home: MemoryHomePersistence = MemoryHomePersistence(),
-                      homeInbox: MemoryHomeInbox = MemoryHomeInbox(),
-                      monitor: FakeHomeMonitor = FakeHomeMonitor()) -> SquatStore {
+                      home: MemoryHomePersistence? = nil,
+                      homeInbox: MemoryHomeInbox? = nil,
+                      monitor: FakeHomeMonitor? = nil) -> SquatStore {
         let clock = time
         let defaults = UserDefaults(suiteName: "SquatsActionTests.\(UUID().uuidString)")!
         return SquatStore(defaults: defaults, repository: repository, reminders: reminders,
-                          inbox: inbox, homePersistence: home, homeInbox: homeInbox,
-                          homeMonitor: monitor, now: { clock })
+                          inbox: inbox, homePersistence: home ?? MemoryHomePersistence(),
+                          homeInbox: homeInbox ?? MemoryHomeInbox(),
+                          homeMonitor: monitor ?? FakeHomeMonitor(), now: { clock })
     }
 
     func testHomeExitPausesAndMatchingEntryResumesSameDay() async {
