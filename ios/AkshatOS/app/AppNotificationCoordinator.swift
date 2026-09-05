@@ -94,9 +94,15 @@ import UIKit
     }
 
     func snapshot() -> HomeRegionSnapshot {
-        HomeRegionSnapshot(authorization: Self.authorization(manager.authorizationStatus),
+        let monitored = manager.monitoredRegions.first {
+            $0.identifier == HomeAutomationState.regionIdentifier
+        } as? CLCircularRegion
+        let boundary = monitored.map {
+            HomeBoundary(latitude: $0.center.latitude, longitude: $0.center.longitude, radius: $0.radius)
+        }
+        return HomeRegionSnapshot(authorization: Self.authorization(manager.authorizationStatus),
             monitoringAvailable: CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self),
-            monitored: manager.monitoredRegions.contains { $0.identifier == HomeAutomationState.regionIdentifier },
+            monitoredBoundary: boundary,
             backgroundAccess: Self.backgroundAccess(UIApplication.shared.backgroundRefreshStatus))
     }
 

@@ -46,6 +46,7 @@ import UserNotifications
     var state = ReminderSnapshot(allowed: true, authorization: .authorized)
     var scheduleCount = 0
     var failSchedule = false
+    var cancelSnoozeCount = 0
     var duringSchedule: (() async -> Void)?
     var duringSnapshot: (() async -> Void)?
     func authorize() async throws -> Bool { state.allowed }
@@ -63,7 +64,12 @@ import UserNotifications
         }
         if failSchedule { throw CocoaError(.fileWriteUnknown) }
         scheduleCount += 1
-        if let date = snoozeUntil { state.snooze = date }
+        if let date = snoozeUntil {
+            state.hasSnooze = true
+            state.snoozeSessionID = session.id
+            state.snoozeActionable = true
+            state.snooze = date
+        }
         else {
             state.sessionID = session.id
             state.interval = TimeInterval(session.interval * 60)
@@ -72,9 +78,13 @@ import UserNotifications
         }
     }
     func cancel() {
-        state.sessionID = nil; state.interval = nil; state.next = nil; state.snooze = nil
+        state.sessionID = nil; state.interval = nil; state.next = nil
+        state.hasSnooze = false; state.snoozeSessionID = nil; state.snooze = nil
     }
-    func cancelSnooze() { state.snooze = nil }
+    func cancelSnooze() {
+        cancelSnoozeCount += 1
+        state.hasSnooze = false; state.snoozeSessionID = nil; state.snooze = nil
+    }
 }
 
 @MainActor private final class MemoryHomePersistence: HomeAutomationPersistence {
@@ -97,13 +107,18 @@ import UserNotifications
     var eventHandler: ((HomeBoundaryEvent) -> Void)?
     var failureHandler: ((String) -> Void)?
     var state = HomeRegionSnapshot(authorization: .always, monitoringAvailable: true,
-                                   monitored: true, backgroundAccess: .available)
+        monitoredBoundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150),
+        backgroundAccess: .available)
+    var startCount = 0
     func requestWhenInUse() async -> HomeAuthorization { state.authorization }
     func requestAlways() async -> HomeAuthorization { state.authorization }
     func currentLocation() async throws -> (latitude: Double, longitude: Double) { (41.0, -87.0) }
     func snapshot() -> HomeRegionSnapshot { state }
-    func startMonitoring(_ boundary: HomeBoundary) throws { state.monitored = true }
-    func stopMonitoring() { state.monitored = false }
+    func startMonitoring(_ boundary: HomeBoundary) throws {
+        startCount += 1
+        state.monitoredBoundary = boundary
+    }
+    func stopMonitoring() { state.monitoredBoundary = nil }
 }
 
 @MainActor final class SquatsActionTests: XCTestCase {
@@ -199,8 +214,64 @@ import UserNotifications
         let reminders = FakeReminders()
         reminders.state.sessionID = repository.values[0].id
         reminders.state.interval = 2700
+        reminders.state.next = time.addingTimeInterval(2700)
         let inbox = MemoryInbox()
         return (repository, reminders, inbox, make(repository, reminders, inbox))
+    }
+
+    func testInitializationRepairsInvalidIdlePreferences() {
+        let suite = "SquatsActionTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(-50, forKey: "squats.interval")
+        defaults.set(500, forKey: "squats.goal")
+        let store = make(MemoryRepository(), FakeReminders(), MemoryInbox(), defaults: defaults)
+        XCTAssertEqual(store.interval, 1)
+        XCTAssertEqual(store.goal, 100)
+        XCTAssertEqual(defaults.integer(forKey: "squats.interval"), 1)
+        XCTAssertEqual(defaults.integer(forKey: "squats.goal"), 100)
+    }
+
+    func testForegroundReconciliationRemovesForeignSnoozeButPreservesHealthyCadence() async {
+        let (repository, reminders, _, store) = fixture()
+        reminders.state.hasSnooze = true
+        reminders.state.snoozeSessionID = UUID()
+        reminders.state.snooze = time.addingTimeInterval(600)
+        await store.refresh()
+        XCTAssertEqual(store.operational, "Running")
+        XCTAssertEqual(reminders.state.sessionID, repository.values[0].id)
+        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
+        XCTAssertNil(store.snoozeReminder)
+    }
+
+    func testForegroundReconciliationKeepsValidCurrentSessionSnooze() async {
+        let (repository, reminders, _, store) = fixture()
+        let deadline = time.addingTimeInterval(600)
+        reminders.state.hasSnooze = true
+        reminders.state.snoozeSessionID = repository.values[0].id
+        reminders.state.snooze = deadline
+        await store.refresh()
+        XCTAssertEqual(store.operational, "Running")
+        XCTAssertEqual(reminders.cancelSnoozeCount, 0)
+        XCTAssertEqual(store.snoozeReminder, deadline)
+    }
+
+    func testForegroundReconciliationReplacesMismatchedHomeBoundaryAndForgetsPresence() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        let home = MemoryHomePersistence()
+        let expected = HomeBoundary(latitude: 41, longitude: -87, radius: 250)
+        home.value = HomeAutomationState(boundary: expected, presence: .outside,
+                                         lastEventDate: time.addingTimeInterval(-300))
+        let monitor = FakeHomeMonitor()
+        monitor.state.monitoredBoundary = HomeBoundary(latitude: 42, longitude: -88, radius: 100)
+        let store = make(repository, reminders, MemoryInbox(), home: home, monitor: monitor)
+        await store.refresh()
+        XCTAssertEqual(monitor.startCount, 1)
+        XCTAssertEqual(monitor.state.monitoredBoundary, expected)
+        XCTAssertEqual(home.value?.presence, .unknown)
+        XCTAssertNil(home.value?.lastEventDate)
+        XCTAssertEqual(store.homeHealth, "Checking Home boundary")
     }
 
     func testDuplicateDoneAndUndoSurviveStoreRestart() async throws {

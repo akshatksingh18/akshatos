@@ -13,6 +13,12 @@ struct HomeBoundary: Codable, Equatable {
               Self.allowedRadius.contains(radius) else { throw HomeAutomationError.invalidBoundary }
         return self
     }
+
+    func matches(_ other: HomeBoundary) -> Bool {
+        abs(latitude - other.latitude) <= 0.000_001 &&
+        abs(longitude - other.longitude) <= 0.000_001 &&
+        abs(radius - other.radius) <= 1
+    }
 }
 
 enum HomePresence: String, Codable { case unknown, inside, outside }
@@ -22,7 +28,7 @@ enum HomeBackgroundAccess: String, Codable { case available, denied, restricted 
 struct HomeRegionSnapshot: Equatable {
     var authorization: HomeAuthorization
     var monitoringAvailable: Bool
-    var monitored: Bool
+    var monitoredBoundary: HomeBoundary?
     var backgroundAccess: HomeBackgroundAccess
 }
 

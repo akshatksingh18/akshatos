@@ -68,6 +68,9 @@ import SwiftUI
         self.calendar = calendar
         interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? 45))
         goal = max(0, min(100, defaults.integer(forKey: "squats.goal")))
+        // Canonicalize old/corrupt idle preferences so every subsequent launch sees the repaired values.
+        defaults.set(interval, forKey: "squats.interval")
+        defaults.set(goal, forKey: "squats.goal")
         notificationEverAuthorized = defaults.bool(forKey: "squats.notificationEverAuthorized")
         homeEverAuthorized = defaults.bool(forKey: "squats.homeEverAuthorized")
         load()
@@ -345,14 +348,27 @@ import SwiftUI
             return
         }
         guard session.state == .running else { reminders.cancel(); operational = "Paused"; return }
-        guard snapshot.allowed else { operational = "Notifications blocked"; return }
+        guard snapshot.allowed else {
+            if snapshot.hasSnooze { reminders.cancelSnooze() }
+            operational = "Notifications blocked"
+            return
+        }
         guard snapshot.sessionID == session.id,
-              snapshot.interval == TimeInterval(session.interval * 60), snapshot.actionable else {
+              snapshot.interval == TimeInterval(session.interval * 60), snapshot.actionable,
+              snapshot.next != nil else {
+            if snapshot.hasSnooze { reminders.cancelSnooze() }
             operational = "Reminder needs repair"
             return
         }
         nextReminder = snapshot.next
-        snoozeReminder = snapshot.snooze
+        if snapshot.hasSnooze {
+            if snapshot.snoozeSessionID == session.id, snapshot.snoozeActionable,
+               let snooze = snapshot.snooze, snooze > now() {
+                snoozeReminder = snooze
+            } else {
+                reminders.cancelSnooze()
+            }
+        }
         operational = "Running"
     }
 
@@ -368,7 +384,7 @@ import SwiftUI
     }
 
     private func reconcileHomeMonitoring() async {
-        guard let state = homeState, state.enabled else {
+        guard var state = homeState, state.enabled else {
             homeHealth = "Off"
             return
         }
@@ -389,7 +405,17 @@ import SwiftUI
             return
         }
         do {
-            if !snapshot.monitored { try homeMonitor.startMonitoring(state.boundary) }
+            if snapshot.monitoredBoundary.map({ state.boundary.matches($0) }) != true {
+                // A missing or changed system registration invalidates the last observed presence.
+                // Persist Unknown before re-registering so a failed repair never looks healthy.
+                state.presence = .unknown
+                state.lastEventDate = nil
+                try homePersistence.save(state)
+                homeState = state
+                try homeMonitor.startMonitoring(state.boundary)
+                homeHealth = "Checking Home boundary"
+                return
+            }
             homeHealth = state.presence == .unknown ? "Checking Home boundary" :
                 (state.presence == .inside ? "At Home" : "Away from Home")
             if state.presence == .inside, active?.state == .paused,
@@ -547,8 +573,7 @@ import SwiftUI
         busy = true
         defer { busy = false }
         do {
-            var state = HomeAutomationState(boundary: try boundary.validated())
-            if let current = homeState { state.presence = current.presence }
+            let state = HomeAutomationState(boundary: try boundary.validated())
             try homePersistence.save(state)
             homeState = state
             homeDraft = nil

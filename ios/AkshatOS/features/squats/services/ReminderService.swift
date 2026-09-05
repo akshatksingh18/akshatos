@@ -7,6 +7,9 @@ struct ReminderSnapshot {
     var sessionID: UUID?
     var interval: TimeInterval?
     var actionable: Bool = true
+    var snoozeSessionID: UUID?
+    var snoozeActionable: Bool = true
+    var hasSnooze = false
     var next: Date?
     var snooze: Date?
 }
@@ -66,12 +69,15 @@ struct ReminderSnapshot {
         let regular = requests.first { $0.identifier == Self.regular }
         let trigger = regular?.trigger as? UNTimeIntervalNotificationTrigger
         let sessionID = (regular?.content.userInfo["session"] as? String).flatMap(UUID.init(uuidString:))
-        let snooze = requests.first { $0.identifier == Self.snooze &&
-            $0.content.userInfo["session"] as? String == sessionID?.uuidString }
+        let snooze = requests.first { $0.identifier == Self.snooze }
+        let snoozeSessionID = (snooze?.content.userInfo["session"] as? String).flatMap(UUID.init(uuidString:))
         return ReminderSnapshot(allowed: Self.allowed(settings.authorizationStatus) && settings.alertSetting == .enabled,
             authorization: Self.authorization(settings.authorizationStatus),
             sessionID: sessionID, interval: trigger?.repeats == true ? trigger?.timeInterval : nil,
             actionable: regular?.content.categoryIdentifier == Self.categoryID,
+            snoozeSessionID: snoozeSessionID,
+            snoozeActionable: snooze?.content.categoryIdentifier == Self.categoryID,
+            hasSnooze: snooze != nil,
             next: trigger?.nextTriggerDate(), snooze: (snooze?.trigger as? UNTimeIntervalNotificationTrigger)?.nextTriggerDate())
     }
 

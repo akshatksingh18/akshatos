@@ -22,7 +22,7 @@ import Foundation
     }
     func snapshot() -> HomeRegionSnapshot {
         HomeRegionSnapshot(authorization: .restricted, monitoringAvailable: false,
-                           monitored: false, backgroundAccess: .restricted)
+                           monitoredBoundary: nil, backgroundAccess: .restricted)
     }
     func startMonitoring(_ boundary: HomeBoundary) throws { throw HomeAutomationError.monitoringUnavailable }
     func stopMonitoring() { }
