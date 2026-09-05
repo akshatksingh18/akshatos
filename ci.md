@@ -1,10 +1,12 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-7 dashboard/Settings-UI source (permission-state presentation, automation-health
-icons, VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility) is implemented locally with 37
-domain assertions, 39 integration/persistence tests and the hub/settings UI test registered; it has
-not yet been pushed or run through CI. Do not call it cloud-verified until this exact commit's CI
-Gate is inspected and green. Build-6 Home/goal source `3037348257938dcd545838a7b54d5bd53dafccd1`
+**Status:** Build-7 dashboard/Settings-UI source `995e11fd64e074eb7810f0ab1b8acfe47eee9866`
+(permission-state presentation, automation-health icons, VoiceOver/Dynamic Type/Reduce Motion/
+contrast accessibility) passed Source checks, Build installable IPA and CI Gate in
+[PR #1 run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 37 domain
+assertions, 39 integration/persistence tests, the hub/settings UI test, simulator/device
+compilation and IPA inspection. PR runs do not upload an IPA artifact. Build-6 Home/goal source
+`3037348257938dcd545838a7b54d5bd53dafccd1`
 passed Source checks, Build installable IPA and CI Gate in
 [PR #1 run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593).
 Daily-history/recovery source `2ac71a10731a73012a4726bbada4d3609fea93cf`
@@ -66,6 +68,16 @@ suppression and same-day goal snapshots; plus a settings UI assertion. Run #18 p
 assertions, 34 integration/persistence tests, the UI test, simulator/device compilation and IPA inspection.
 Injected protection failures do not prove
 real locked-device access, background callback deadlines or system notification delivery.
+
+Build-7 adds five integration tests covering `NotificationAuthorization`/`HomeAuthorization` tracking
+on `SquatStore` (denied vs. restricted location, denied notifications) and `SettingsRoute` message
+routing for Start/Resume-without-permission and Home-setup-denied paths, plus one UI-test assertion
+for the new Notifications settings section. Run #22 passed all 37 domain assertions, 39
+integration/persistence tests, the UI test, simulator/device compilation and IPA inspection. An
+initial push (run #21, commit `58c6ff7`) failed because the new Notifications section pushed
+`delete-squats-history` below the Settings form's initial fold, so the lazily rendered row was not
+yet in the accessibility tree when a bare `.exists` check ran; the UI test now scrolls once more
+before checking Data management buttons, matching the file's existing scroll-then-wait pattern.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection

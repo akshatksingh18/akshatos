@@ -58,7 +58,7 @@ material changes; do not copy child progress into root/container instructions.
   Notifications settings section, Focus/Scheduled Summary/banner caveats, distinct denied/restricted/
   when-in-use Home messaging, a `SettingsRoute`-driven one-tap action on blocking alerts, per-state
   hero icons, and VoiceOver/Dynamic Type/Reduce Motion/Increased Contrast accessibility behavior.
-  Its exact source has not yet passed cloud CI.
+  Its exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -68,9 +68,8 @@ material changes; do not copy child progress into root/container instructions.
 Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
 downloaded build-3 preview has no action buttons. Build-5 daily/recovery source passed its cloud
 gate but has no downloaded or phone-tested artifact. Build-6 Home source passed the cloud gate but
-is not phone-verified. Build-7 dashboard/Settings-UI source has not yet been pushed through CI; do not
-call it cloud-verified until `ci.md`'s CI Gate for its exact commit is inspected and green. Rollover
-happens on the next app
+is not phone-verified. Build-7 dashboard/Settings-UI source passed its cloud gate (PR run #22) but
+is not phone-verified either. Rollover happens on the next app
 launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
@@ -90,6 +89,14 @@ Build-6 source `3037348257938dcd545838a7b54d5bd53dafccd1` passed
 [PR run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593): 37 domain
 assertions, 34 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
 IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
+
+Build-7 source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed
+[PR run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 37 domain
+assertions, 39 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
+IPA inspection and CI Gate. An initial push of this feature (commit `58c6ff7`) failed run #21's UI
+test because the new Notifications settings section pushed a Data-management button below the
+Form's initial fold; the test was fixed to scroll once more before checking that section, and the
+corrected commit passed cleanly. The PR run intentionally did not upload an IPA.
 
 The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
 `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
@@ -111,7 +118,7 @@ implementation for baseline installation. Existing device gates remain open unti
 
 1. **Finish native v1 reliability coverage:** build-7 completes the dashboard/Settings UI task
    (permission-state presentation, automation-health icons, and VoiceOver/Dynamic Type/Reduce
-   Motion/contrast accessibility); its CI Gate still needs to be inspected and green. Remaining work
+   Motion/contrast accessibility); its exact source passed CI Gate in PR run #22. Remaining work
    is foreground-reconciliation completion (SwiftData intent vs. actual notification/Home-region
    state, stale-request cancellation) and broader day/streak, persistence, migration and permission-
    transition regression scenarios, plus UI coverage for the new settings/permission/accessibility

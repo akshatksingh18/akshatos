@@ -25,7 +25,7 @@ build-5 source gate. Build-6 source adds clock-safe streak filtering, same-day g
 and opt-in Home auto-pause with protected state/events and setup/status UI. Its final source passed
 PR run #18. Build-7 source completes the dashboard/Settings UI task (permission-state presentation,
 automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility); its exact
-source has not yet been pushed through CI. Next: foreground-reconciliation completion and broader
+source passed PR run #22. Next: foreground-reconciliation completion and broader
 day/streak, persistence, migration and permission-transition test coverage.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
 recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
@@ -61,7 +61,7 @@ other modules stay deferred.
       (a stable "next reminder around HH:MM" summary instead of a per-second announcement, combined
       decorative icons hidden from the accessibility tree), `@ScaledMetric` Dynamic Type scaling for
       the three fixed-size hero numerals, a Reduce-Motion-aware slower countdown tick, and an
-      Increased-Contrast-aware `Surface` border. Exact-source CI has not yet been inspected.
+      Increased-Contrast-aware `Surface` border. Exact source `995e11f` passed PR run #22.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
@@ -69,7 +69,7 @@ other modules stay deferred.
       "Notifications" section covering every status plus Focus/Scheduled Summary/banner caveats, gives
       Home auto-pause distinct denied/restricted/when-in-use explanations, and routes blocking alerts
       to the correct Settings screen via a `SettingsRoute` rather than showing a bare OK button. Never
-      displays a false Running state. Exact-source CI has not yet been inspected.
+      displays a false Running state. Exact source `995e11f` passed PR run #22.
 - [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
       stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
@@ -167,8 +167,8 @@ before closing the larger gates. The cloud UI test covers
 picker → dashboard → back navigation and captures both screens; it does not test reminder delivery.
 Build-7 source adds five integration tests covering notification/Home authorization tracking and
 `SettingsRoute` message routing (37 domain assertions, 39 integration/persistence tests, one UI test
-in the registered suite) plus one new UI-test assertion for the Notifications settings section; this
-has not yet been run through CI.
+in the registered suite) plus one new UI-test assertion for the Notifications settings section;
+exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22.
 
 ## Documentation synchronization
 

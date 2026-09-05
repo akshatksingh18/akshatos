@@ -1,10 +1,10 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-6 Home automation and goal/streak source passed PR cloud checks; build-4 remains the latest
-downloaded, hash-verified IPA and older previews are preserved. Build-7 dashboard/Settings-UI source
-exists locally (version `0.2.0 (7)`) and has not yet been pushed through cloud CI or built into an
-artifact. First AkshatOS physical installation, reminder behavior and refresh acceptance remain
-pending. This file owns the build evidence.
+**State:** Build-7 dashboard/Settings-UI source (version `0.2.0 (7)`) passed PR cloud checks; build-4
+remains the latest downloaded, hash-verified IPA and older previews are preserved — PR runs
+intentionally omit IPA upload, so no build-7 artifact has been downloaded yet. First AkshatOS
+physical installation, reminder behavior and refresh acceptance remain pending. This file owns the
+build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -18,7 +18,6 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (7)**; minimum iOS 17.
-  Build 7 has not yet been pushed through cloud CI; build 6 is the latest CI-verified source.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -30,6 +29,17 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Build 7 completes the dashboard/Settings UI: authoritative `NotificationAuthorization` and
+`HomeAuthorization` tracking on `SquatStore` (replacing a boolean and fragile status-string
+matching), a `SettingsRoute`-driven one-tap action on blocking alerts, a dedicated Notifications
+settings section with Focus/Scheduled Summary/banner caveats, distinct denied/restricted/when-in-use
+Home messaging, per-state hero icons, and VoiceOver/Dynamic Type/Reduce Motion/Increased-Contrast
+accessibility behavior. Exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed
+[PR #1 run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 20-source
+boundary checks, 37 domain assertions, 39 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. PR runs do not upload IPA artifacts, so
+build 4 below remains the latest downloaded IPA; this UI/permission work is phone-unverified.
 
 Build 6 adds staged opt-in Home selection and Always authorization, one app-lifetime circular region,
 protected boundary/event storage, source-aware pause/resume and outside-Home choices, automation

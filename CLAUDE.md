@@ -10,7 +10,7 @@ verified in build-6 source. Build-7 source completes the dashboard/Settings UI: 
 (not-determined/authorized/provisional/ephemeral/denied) and location (not-determined/when-in-use/
 always/denied/restricted) permission presentation with proactive Settings routing, per-state
 automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/increased-contrast accessibility
-behavior; its exact source has not yet passed cloud CI (see `ci.md`). Physical acceptance plus the
+behavior; its exact source passed cloud CI (see `ci.md`). Physical acceptance plus the
 remaining native v1 work (foreground reconciliation completion, broader automated coverage) are
 pending. Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.

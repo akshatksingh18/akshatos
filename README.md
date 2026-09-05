@@ -12,7 +12,7 @@ The build-4 unsigned IPA is downloaded and hash-verified after passing cloud tes
 contains its exact path and manual Sideloadly steps. Physical acceptance remains pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
-Motion/contrast accessibility behavior; it has not yet passed cloud CI.
+Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`).
 The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
 test the complete feature on the phone. Sideloading is reported working; continued implementation
 does not wait for another installation exercise.
