@@ -107,6 +107,16 @@ import SwiftUI
         defaults.set(true, forKey: "squats.homeEverAuthorized")
     }
 
+    private func rememberNotificationAuthorization(_ authorization: NotificationAuthorization) {
+        if authorization == .authorized || authorization == .provisional || authorization == .ephemeral {
+            markNotificationAuthorized()
+        }
+    }
+
+    private func rememberHomeAuthorization(_ authorization: HomeAuthorization) {
+        if authorization == .whenInUse || authorization == .always { markHomeAuthorized() }
+    }
+
     private func load() {
         do {
             sessions = try repository.load()
@@ -328,7 +338,7 @@ import SwiftUI
         }
         let snapshot = await reminders.snapshot()
         notificationAuthorization = snapshot.authorization
-        if snapshot.allowed { markNotificationAuthorized() }
+        rememberNotificationAuthorization(snapshot.authorization)
         guard let session = active else {
             reminders.cancel()
             operational = today.isEmpty ? "Ready" : "Day complete"
@@ -364,7 +374,7 @@ import SwiftUI
         }
         let snapshot = homeMonitor.snapshot()
         homeAuthorization = snapshot.authorization
-        if snapshot.authorization == .always { markHomeAuthorized() }
+        rememberHomeAuthorization(snapshot.authorization)
         guard snapshot.authorization == .always else {
             homeMonitor.stopMonitoring()
             homeHealth = homeAccessHealth(snapshot.authorization)
@@ -509,7 +519,7 @@ import SwiftUI
         defer { busy = false }
         let authorization = await homeMonitor.requestWhenInUse()
         homeAuthorization = authorization
-        if authorization == .always { markHomeAuthorized() }
+        rememberHomeAuthorization(authorization)
         guard authorization == .whenInUse || authorization == .always else {
             homeHealth = homeAccessHealth(authorization)
             message = "Allow location access while using AkshatOS so you can choose and confirm Home."
@@ -544,7 +554,7 @@ import SwiftUI
             homeDraft = nil
             let authorization = await homeMonitor.requestAlways()
             homeAuthorization = authorization
-            if authorization == .always { markHomeAuthorized() }
+            rememberHomeAuthorization(authorization)
             guard authorization == .always else {
                 homeHealth = homeAccessHealth(authorization)
                 message = "Home is saved, but Always location access is required for automatic boundary events. You can enable it in iOS Settings."

@@ -30,10 +30,39 @@ jobs:
     name: Source checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      build_required: ${{ steps.changes.outputs.build_required }}
     steps:
       - uses: actions/checkout@v6.0.2
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Classify pull request changes
+        id: changes
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          build_required=true
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            mapfile -d '' changed_files < <(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA")
+            build_required=false
+            if [[ ${#changed_files[@]} -eq 0 ]]; then
+              build_required=true
+            else
+              for path in "${changed_files[@]}"; do
+                if [[ "${path,,}" != *.md ]]; then
+                  build_required=true
+                  break
+                fi
+              done
+            fi
+          fi
+          echo "build_required=$build_required" >> "$GITHUB_OUTPUT"
+          echo "macOS build required: $build_required" >> "$GITHUB_STEP_SUMMARY"
       - name: Check source boundaries and test inventory
         run: |
           python3 ios/scripts/check-boundaries.py
@@ -46,6 +75,7 @@ jobs:
   build:
     name: Build installable IPA
     needs: checks
+    if: ${{ needs.checks.outputs.build_required == 'true' }}
     runs-on: macos-26
     timeout-minutes: 30
 
@@ -212,7 +242,13 @@ jobs:
         env:
           CHECKS_RESULT: ${{ needs.checks.result }}
           BUILD_RESULT: ${{ needs.build.result }}
+          BUILD_REQUIRED: ${{ needs.checks.outputs.build_required }}
         run: |
-          echo "Source checks: $CHECKS_RESULT; build/tests: $BUILD_RESULT" >> "$GITHUB_STEP_SUMMARY"
+          echo "Source checks: $CHECKS_RESULT; macOS build required: $BUILD_REQUIRED; build/tests: $BUILD_RESULT" >> "$GITHUB_STEP_SUMMARY"
           test "$CHECKS_RESULT" = success
-          test "$BUILD_RESULT" = success
+          if [[ "$BUILD_REQUIRED" == true ]]; then
+            test "$BUILD_RESULT" = success
+          else
+            test "$BUILD_REQUIRED" = false
+            test "$BUILD_RESULT" = skipped
+          fi

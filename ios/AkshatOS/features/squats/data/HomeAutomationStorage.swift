@@ -36,6 +36,7 @@ import Foundation
         try Self.prepare(url)
         try JSONEncoder().encode(Envelope(state: state)).write(to: url,
             options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        try Self.excludeFromBackup(url)
     }
 
     func delete() throws {
@@ -45,9 +46,18 @@ import Foundation
     }
 
     fileprivate static func prepare(_ url: URL) throws {
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+        let directory = url.deletingLastPathComponent()
+        try FileManager.default.createDirectory(at: directory,
             withIntermediateDirectories: true,
             attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
+        try excludeFromBackup(directory)
+    }
+
+    fileprivate static func excludeFromBackup(_ url: URL) throws {
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        var protectedURL = url
+        try protectedURL.setResourceValues(resourceValues)
     }
 }
 
@@ -82,5 +92,6 @@ import Foundation
         try FileHomeAutomationPersistence.prepare(url)
         try JSONEncoder().encode(Envelope(events: events)).write(to: url,
             options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        try FileHomeAutomationPersistence.excludeFromBackup(url)
     }
 }

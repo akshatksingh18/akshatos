@@ -43,7 +43,7 @@ import UserNotifications
 }
 
 @MainActor private final class FakeReminders: SquatReminders {
-    var state = ReminderSnapshot(allowed: true)
+    var state = ReminderSnapshot(allowed: true, authorization: .authorized)
     var scheduleCount = 0
     var failSchedule = false
     var duringSchedule: (() async -> Void)?
@@ -121,10 +121,11 @@ import UserNotifications
                       _ inbox: any SquatActionInbox,
                       home: MemoryHomePersistence? = nil,
                       homeInbox: MemoryHomeInbox? = nil,
-                      monitor: FakeHomeMonitor? = nil) -> SquatStore {
+                      monitor: FakeHomeMonitor? = nil,
+                      defaults: UserDefaults? = nil) -> SquatStore {
         let clock = time
-        let defaults = UserDefaults(suiteName: "SquatsActionTests.\(UUID().uuidString)")!
-        return SquatStore(defaults: defaults, repository: repository, reminders: reminders,
+        let resolvedDefaults = defaults ?? UserDefaults(suiteName: "SquatsActionTests.\(UUID().uuidString)")!
+        return SquatStore(defaults: resolvedDefaults, repository: repository, reminders: reminders,
                           inbox: inbox, homePersistence: home ?? MemoryHomePersistence(),
                           homeInbox: homeInbox ?? MemoryHomeInbox(),
                           homeMonitor: monitor ?? FakeHomeMonitor(), now: { clock })
@@ -441,30 +442,42 @@ import UserNotifications
     }
 
     func testNotificationRevocationIsRememberedAfterBeingGrantedAndPhrasedDifferentlyThanFirstDenial() async {
-        let (_, reminders, _, store) = fixture()
-        reminders.state.authorization = .authorized
+        let suite = "SquatsActionTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        reminders.state.allowed = false
+        reminders.state.authorization = .provisional
+        let store = make(repository, reminders, MemoryInbox(), defaults: defaults)
         await store.refresh()
         XCTAssertTrue(store.notificationEverAuthorized)
-        reminders.state.allowed = false
         reminders.state.authorization = .denied
-        await store.refresh()
-        XCTAssertTrue(store.notificationEverAuthorized, "Revocation must not clear the ever-authorized history")
-        XCTAssertEqual(store.operational, "Notifications blocked")
+        let reopened = make(repository, reminders, MemoryInbox(), defaults: defaults)
+        await reopened.start()
+        XCTAssertTrue(reopened.notificationEverAuthorized, "Revocation must survive store recreation")
+        XCTAssertEqual(reopened.message,
+            "Notifications were turned off. Allow them again in iOS Settings before starting your day.")
     }
 
     func testHomeAccessRevocationIsRememberedAfterBeingGrantedAndPhrasedDifferentlyThanFirstDenial() async {
+        let suite = "SquatsActionTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
         let repository = MemoryRepository()
         let reminders = FakeReminders()
         let home = MemoryHomePersistence()
         home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150))
         let monitor = FakeHomeMonitor()
-        let store = make(repository, reminders, MemoryInbox(), home: home, monitor: monitor)
+        monitor.state.authorization = .whenInUse
+        let store = make(repository, reminders, MemoryInbox(), home: home, monitor: monitor, defaults: defaults)
         await store.refresh()
         XCTAssertTrue(store.homeEverAuthorized)
         monitor.state.authorization = .denied
-        await store.refresh()
-        XCTAssertTrue(store.homeEverAuthorized, "Revocation must not clear the ever-authorized history")
-        XCTAssertEqual(store.homeHealth, "Location access turned off")
+        let reopened = make(repository, reminders, MemoryInbox(), home: home, monitor: monitor, defaults: defaults)
+        await reopened.refresh()
+        XCTAssertTrue(reopened.homeEverAuthorized, "Revocation must survive store recreation")
+        XCTAssertEqual(reopened.homeHealth, "Location access turned off")
     }
 
     func testActionDuringResumeIsQueuedThenPauseWins() async {
@@ -593,6 +606,8 @@ import UserNotifications
                                         presence: .outside, suppressExitUntilEntry: true)
         try persistence.save(state)
         XCTAssertEqual(try FileHomeAutomationPersistence(url: configURL).load(), state)
+        XCTAssertEqual(try configURL.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
+        XCTAssertEqual(try root.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
         let inbox = FileHomeEventInbox(url: eventsURL)
         let event = HomeBoundaryEvent(id: "home-event", kind: .entered, date: time,
                                       regionIdentifier: HomeAutomationState.regionIdentifier)
