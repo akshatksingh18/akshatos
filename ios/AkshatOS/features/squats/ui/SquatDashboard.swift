@@ -248,6 +248,22 @@ struct SquatDashboard: View {
                     Text("Settings are locked during an active session. Each day's first session fixes that day's goal; changes apply to the next new day. A goal of zero leaves streak tracking off.")
                     settingsLink
                 }
+                Section("Data management") {
+                    Button {
+                        do {
+                            exportDocument = SquatsBackupDocument(data: try store.makeBackupData())
+                            showExporter = true
+                        } catch { store.message = error.localizedDescription }
+                    } label: { Label("Export Squats backup", systemImage: "square.and.arrow.up") }
+                        .accessibilityIdentifier("export-squats-backup")
+                    Button { showImporter = true } label: {
+                        Label("Restore Squats backup", systemImage: "square.and.arrow.down")
+                    }.accessibilityIdentifier("restore-squats-backup")
+                    Button("Delete completed history", role: .destructive) { showDeleteHistory = true }
+                        .accessibilityIdentifier("delete-squats-history")
+                    Text("Backups are versioned JSON files stored wherever you choose in Files. Restore validates the entire file before replacing local Squats data.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }.disabled(store.busy || !store.storageAvailable)
                 Section("Home auto-pause") {
                     Label(store.homeHealth, systemImage: store.homeEnabled ? "house.fill" : "house")
                     if store.homeEnabled {
@@ -279,22 +295,6 @@ struct SquatDashboard: View {
                         }
                     }
                 }.disabled(store.busy)
-                Section("Data management") {
-                    Button {
-                        do {
-                            exportDocument = SquatsBackupDocument(data: try store.makeBackupData())
-                            showExporter = true
-                        } catch { store.message = error.localizedDescription }
-                    } label: { Label("Export Squats backup", systemImage: "square.and.arrow.up") }
-                        .accessibilityIdentifier("export-squats-backup")
-                    Button { showImporter = true } label: {
-                        Label("Restore Squats backup", systemImage: "square.and.arrow.down")
-                    }.accessibilityIdentifier("restore-squats-backup")
-                    Button("Delete completed history", role: .destructive) { showDeleteHistory = true }
-                        .accessibilityIdentifier("delete-squats-history")
-                    Text("Backups are versioned JSON files stored wherever you choose in Files. Restore validates the entire file before replacing local Squats data.")
-                        .font(.caption).foregroundStyle(.secondary)
-                }.disabled(store.busy || !store.storageAvailable)
                 Section("Coming later") {
                     Label("Shortcuts", systemImage: "app.badge")
                 }.foregroundStyle(.secondary)
