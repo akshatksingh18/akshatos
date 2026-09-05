@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct SquatDashboard: View {
     @EnvironmentObject private var store: SquatStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showSettings = false
     @State private var showEnd = false
     @State private var showRestart = false
@@ -65,8 +66,15 @@ struct SquatDashboard: View {
                 }
                 goalCard
                 timeline
-                Text(store.homeEnabled ? "Home auto-pause: \(store.homeHealth)." : "Home auto-pause is optional and currently off.")
-                    .font(.footnote).foregroundStyle(Palette.muted)
+                HStack(spacing: 6) {
+                    Image(systemName: homeHealthIcon)
+                        .font(.footnote)
+                        .foregroundStyle(homeHealthIsDegraded ? Color.orange : Palette.muted)
+                        .accessibilityHidden(true)
+                    Text(store.homeEnabled ? "Home auto-pause: \(store.homeHealth)." : "Home auto-pause is optional and currently off.")
+                        .font(.footnote).foregroundStyle(Palette.muted)
+                }
+                .accessibilityElement(children: .combine)
                 Text("AkshatOS · Preview 0.2.0")
                     .font(.caption2).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
             }.padding(22)
@@ -114,10 +122,10 @@ struct SquatDashboard: View {
     private var hero: some View {
         Surface {
             Group {
-                HStack {
+                AdaptiveRow {
                     Label(store.operational, systemImage: stateIcon)
                         .font(.headline).foregroundStyle(Palette.lime)
-                    Spacer()
+                } trailing: {
                     if store.busy { ProgressView().tint(Palette.lime) }
                 }
                 if let date = store.nextReminder {
@@ -184,7 +192,7 @@ struct SquatDashboard: View {
         switch store.operational {
         case "Paused": return "Take your time. Your day stays open until you're ready to return."
         case "Day complete": return "Good work showing up. Your sets are saved for today."
-        case "Notifications blocked": return "Enable notifications in iOS Settings to receive reminders."
+        case "Notifications blocked": return "Notifications were turned off after your day started. Reminders won't arrive until you allow them again in iOS Settings."
         case "Reminder needs repair": return "The saved schedule is missing or needs the current action buttons. Re-arm it to continue."
         case "Storage unavailable": return "Local storage needs attention. Keep the app installed to preserve your data."
         default: return "Start when you're ready. Your first reminder comes one full interval later."
@@ -195,9 +203,9 @@ struct SquatDashboard: View {
         Surface {
             Label("Keep showing up", systemImage: "flame").font(.headline)
             if let goal = store.todayGoal {
-                HStack {
+                AdaptiveRow {
                     Text(store.todayCount >= goal ? "Today's goal reached" : "\(max(0, goal - store.todayCount)) more sets to your goal")
-                    Spacer()
+                } trailing: {
                     Text("\(store.todayCount)/\(goal)").monospacedDigit()
                 }.font(.subheadline).foregroundStyle(Palette.muted)
                     .accessibilityElement(children: .combine)
@@ -212,9 +220,16 @@ struct SquatDashboard: View {
                 Text("Choose a daily set goal in Settings to begin your streak. No target is chosen for you.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
             }
-            HStack(spacing: 32) {
-                stat("\(store.streaks.current)", "day streak")
-                stat("\(store.streaks.best)", "personal best")
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 12) {
+                    stat("\(store.streaks.current)", "day streak")
+                    stat("\(store.streaks.best)", "personal best")
+                }
+            } else {
+                HStack(spacing: 32) {
+                    stat("\(store.streaks.current)", "day streak")
+                    stat("\(store.streaks.best)", "personal best")
+                }
             }
         }
     }
@@ -228,11 +243,13 @@ struct SquatDashboard: View {
                     .font(.subheadline).foregroundStyle(Palette.muted)
             }
             ForEach(Array(events.prefix(12))) { event in
-                HStack(spacing: 12) {
-                    Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
-                        .foregroundStyle(Palette.lime).accessibilityHidden(true)
-                    Text(eventTitle(event.kind)).font(.subheadline)
-                    Spacer()
+                AdaptiveRow(spacing: 12) {
+                    HStack(spacing: 12) {
+                        Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
+                            .foregroundStyle(Palette.lime).accessibilityHidden(true)
+                        Text(eventTitle(event.kind)).font(.subheadline)
+                    }
+                } trailing: {
                     Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
                 }.padding(.vertical, 5)
                     .accessibilityElement(children: .combine)
@@ -244,12 +261,14 @@ struct SquatDashboard: View {
             }
             ForEach(store.daySummaries) { day in
                 Button { store.summary = day } label: {
-                    HStack {
+                    AdaptiveRow {
                         Label(day.started.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
                               systemImage: "clock.arrow.circlepath")
-                        Spacer()
-                        Text("\(day.completedSets) sets")
-                        Image(systemName: "chevron.right").accessibilityHidden(true)
+                    } trailing: {
+                        HStack {
+                            Text("\(day.completedSets) sets")
+                            Image(systemName: "chevron.right").accessibilityHidden(true)
+                        }
                     }.font(.subheadline).padding(.vertical, 10)
                         .accessibilityElement(children: .combine)
                 }
@@ -273,7 +292,9 @@ struct SquatDashboard: View {
                         .accessibilityIdentifier("notification-permission-status")
                     switch store.notificationAuthorization {
                     case .denied:
-                        Text("Notifications were turned off. Reminders cannot be delivered until you allow them again in iOS Settings.")
+                        Text(store.notificationEverAuthorized
+                             ? "Notifications were turned off. Reminders cannot be delivered until you allow them again in iOS Settings."
+                             : "Notifications were denied. Allow them in iOS Settings to receive reminders.")
                             .font(.caption).foregroundStyle(.secondary)
                         settingsLink
                     case .notDetermined:
@@ -332,7 +353,9 @@ struct SquatDashboard: View {
                     if store.homeEnabled {
                         switch store.homeAuthorization {
                         case .denied:
-                            Text("Location access was denied. Enable it in iOS Settings to use Home auto-pause.")
+                            Text(store.homeEverAuthorized
+                                 ? "Location access was turned off after being granted. Enable it again in iOS Settings to use Home auto-pause."
+                                 : "Location access was denied. Enable it in iOS Settings to use Home auto-pause.")
                                 .font(.caption).foregroundStyle(.secondary)
                             settingsLinkLocation
                         case .restricted:
@@ -436,7 +459,7 @@ struct SquatDashboard: View {
         case .authorized: return "Notifications allowed"
         case .provisional: return "Notifications allowed quietly"
         case .ephemeral: return "Notifications allowed temporarily"
-        case .denied: return "Notifications turned off"
+        case .denied: return store.notificationEverAuthorized ? "Notifications turned off" : "Notifications denied"
         case .notDetermined: return "Notifications not yet requested"
         }
     }
@@ -459,6 +482,17 @@ struct SquatDashboard: View {
         case "Storage unavailable": return "externaldrive.badge.exclamationmark"
         default: return "sun.max"
         }
+    }
+
+    private static let homeHealthValues: Set<String> = ["At Home", "Away from Home", "Checking Home boundary", "Confirm Home boundary"]
+
+    private var homeHealthIcon: String {
+        guard store.homeEnabled else { return "house" }
+        return Self.homeHealthValues.contains(store.homeHealth) ? "house.fill" : "exclamationmark.triangle"
+    }
+
+    private var homeHealthIsDegraded: Bool {
+        store.homeEnabled && homeHealthIcon == "exclamationmark.triangle"
     }
 
     private var heroAccessibilityLabel: String {
@@ -505,9 +539,9 @@ struct SquatDashboard: View {
                         Surface {
                             Label("Pause segments", systemImage: "pause.circle").font(.headline)
                             ForEach(day.pauseSegments) { pause in
-                                HStack {
+                                AdaptiveRow {
                                     Text("\(pause.started.formatted(date: .omitted, time: .shortened))–\(pause.ended.formatted(date: .omitted, time: .shortened))")
-                                    Spacer()
+                                } trailing: {
                                     Text(duration(pause.duration)).foregroundStyle(Palette.muted)
                                 }.font(.subheadline)
                             }
@@ -517,9 +551,9 @@ struct SquatDashboard: View {
                         Label("Daily timeline", systemImage: "list.bullet").font(.headline)
                         if day.events.isEmpty { Text("No activity was logged.").foregroundStyle(Palette.muted) }
                         ForEach(day.events) { event in
-                            HStack {
+                            AdaptiveRow {
                                 Text(eventTitle(event.kind))
-                                Spacer()
+                            } trailing: {
                                 Text(event.date, style: .time).foregroundStyle(Palette.muted)
                             }.font(.subheadline)
                         }

@@ -9,7 +9,7 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
 
 - Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (7).
+  `com.akshatksingh18.akshatos`, version 0.2.0 (8).
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -49,6 +49,17 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   decorative icons out of VoiceOver traversal, labels/values the goal progress bar, scales the three
   fixed-size hero numerals with `@ScaledMetric` for Dynamic Type, slows the countdown tick under
   Reduce Motion, and raises `Surface`'s border contrast under Increased Contrast.
+- Build-8 source closes three remaining gaps in that same task. `SquatStore` now persists a
+  monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag (UserDefaults-backed, set once
+  and never cleared) so a later denial can be phrased as a revocation ("turned off") instead of
+  reusing first-request wording; `start()`/`resume()` and the Settings/Home sections all read it.
+  The main dashboard's Home automation-health line is now an icon+text row (`house`/`house.fill`/
+  `exclamationmark.triangle` for off/healthy/degraded) instead of a plain muted `Text`, matching the
+  hero's per-state icon treatment. A new shared `AdaptiveRow` component (in `shared/design-system/`)
+  stacks label/value rows vertically at accessibility Dynamic Type sizes instead of squeezing them
+  into a fixed-width `HStack` + `Spacer`; it replaces every such row across the dashboard and daily
+  summary except the one row (current/best streak) that intentionally has no `Spacer` in its
+  compact layout, which instead switches to a `VStack` inline via `dynamicTypeSize.isAccessibilitySize`.
 - Deferred: App Intents, remaining lifecycle-reconciliation completion, broader automated coverage
   (permission-transition, DST/clock, migration/corruption, and new-UI test scenarios), and physical/
   refresh acceptance. The notification category

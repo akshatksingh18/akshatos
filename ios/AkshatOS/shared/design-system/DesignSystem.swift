@@ -20,6 +20,23 @@ struct Surface<Content: View>: View {
     }
 }
 
+/// A label/value row that lays out side-by-side normally, but stacks vertically at accessibility
+/// Dynamic Type sizes so neither side is squeezed or clipped by a fixed-width `HStack` + `Spacer`.
+struct AdaptiveRow<Leading: View, Trailing: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    var spacing: CGFloat = 8
+    @ViewBuilder var leading: Leading
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 4) { leading; trailing }
+        } else {
+            HStack(spacing: spacing) { leading; Spacer(); trailing }
+        }
+    }
+}
+
 struct ActionStyle: ButtonStyle {
     var primary = false
     @Environment(\.isEnabled) private var isEnabled

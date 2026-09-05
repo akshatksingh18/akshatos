@@ -25,8 +25,11 @@ build-5 source gate. Build-6 source adds clock-safe streak filtering, same-day g
 and opt-in Home auto-pause with protected state/events and setup/status UI. Its final source passed
 PR run #18. Build-7 source completes the dashboard/Settings UI task (permission-state presentation,
 automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility); its exact
-source passed PR run #22. Next: foreground-reconciliation completion and broader
-day/streak, persistence, migration and permission-transition test coverage.
+source passed PR run #22. Build-8 source closes three gaps found in a follow-up review of that same
+task: revoked-vs-denied wording, an icon-based dashboard automation-health row, and Dynamic Type
+hardening for accessibility text sizes; its exact source has not yet been pushed through CI. Next:
+foreground-reconciliation completion and broader day/streak, persistence, migration and
+permission-transition test coverage.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
 recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
 other modules stay deferred.
@@ -61,7 +64,11 @@ other modules stay deferred.
       (a stable "next reminder around HH:MM" summary instead of a per-second announcement, combined
       decorative icons hidden from the accessibility tree), `@ScaledMetric` Dynamic Type scaling for
       the three fixed-size hero numerals, a Reduce-Motion-aware slower countdown tick, and an
-      Increased-Contrast-aware `Surface` border. Exact source `995e11f` passed PR run #22.
+      Increased-Contrast-aware `Surface` border. Exact source `995e11f` passed PR run #22. Build-8
+      source adds an icon-based Home automation-health row on the main dashboard itself (previously a
+      plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
+      row vertically at accessibility Dynamic Type sizes instead of squeezing them; its exact source
+      has not yet been pushed through CI.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
@@ -69,7 +76,10 @@ other modules stay deferred.
       "Notifications" section covering every status plus Focus/Scheduled Summary/banner caveats, gives
       Home auto-pause distinct denied/restricted/when-in-use explanations, and routes blocking alerts
       to the correct Settings screen via a `SettingsRoute` rather than showing a bare OK button. Never
-      displays a false Running state. Exact source `995e11f` passed PR run #22.
+      displays a false Running state. Exact source `995e11f` passed PR run #22. Build-8 source adds a
+      monotonic, UserDefaults-backed `notificationEverAuthorized`/`homeEverAuthorized` flag so a later
+      denial is phrased as a revocation ("turned off") instead of reusing first-request wording; its
+      exact source has not yet been pushed through CI.
 - [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
       stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
@@ -168,7 +178,10 @@ picker → dashboard → back navigation and captures both screens; it does not 
 Build-7 source adds five integration tests covering notification/Home authorization tracking and
 `SettingsRoute` message routing (37 domain assertions, 39 integration/persistence tests, one UI test
 in the registered suite) plus one new UI-test assertion for the Notifications settings section;
-exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22.
+exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22. Build-8 source adds two
+more integration tests covering the revoked-vs-denied wording for both notification and Home
+authorization (37 domain assertions, 41 integration/persistence tests, one UI test); this has not
+yet been run through CI.
 
 ## Documentation synchronization
 

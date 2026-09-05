@@ -1,6 +1,10 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-7 dashboard/Settings-UI source `995e11fd64e074eb7810f0ab1b8acfe47eee9866`
+**Status:** Build-8 source (revoked-vs-denied wording, a dashboard automation-health icon, and
+Dynamic Type hardening via a shared `AdaptiveRow`) is implemented locally with 37 domain assertions,
+41 integration/persistence tests and the hub/settings UI test registered; it has not yet been pushed
+or run through CI. Do not call it cloud-verified until this exact commit's CI Gate is inspected and
+green. Build-7 dashboard/Settings-UI source `995e11fd64e074eb7810f0ab1b8acfe47eee9866`
 (permission-state presentation, automation-health icons, VoiceOver/Dynamic Type/Reduce Motion/
 contrast accessibility) passed Source checks, Build installable IPA and CI Gate in
 [PR #1 run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 37 domain
@@ -78,6 +82,11 @@ initial push (run #21, commit `58c6ff7`) failed because the new Notifications se
 `delete-squats-history` below the Settings form's initial fold, so the lazily rendered row was not
 yet in the accessibility tree when a bare `.exists` check ran; the UI test now scrolls once more
 before checking Data management buttons, matching the file's existing scroll-then-wait pattern.
+
+Build-8 adds two integration tests proving a permission that was granted at least once and later
+denied is remembered (`notificationEverAuthorized`/`homeEverAuthorized`) and phrased as a revocation
+rather than a first-time denial, for both notification and Home authorization. Domain assertions and
+UI test count are unchanged (37 and one, respectively); integration/persistence tests rise to 41.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection

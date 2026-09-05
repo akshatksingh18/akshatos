@@ -10,6 +10,7 @@ import SwiftUI
     @Published private(set) var pendingActionCount = 0
     @Published private(set) var storageAvailable = false
     @Published private(set) var notificationAuthorization: NotificationAuthorization = .notDetermined
+    @Published private(set) var notificationEverAuthorized: Bool
     @Published var message: String?
     @Published var messageRoute: SettingsRoute?
     @Published var notice: String?
@@ -18,6 +19,7 @@ import SwiftUI
     @Published private(set) var homeDraft: HomeBoundary?
     @Published private(set) var homeHealth = "Off"
     @Published private(set) var homeAuthorization: HomeAuthorization = .notDetermined
+    @Published private(set) var homeEverAuthorized: Bool
     @Published var interval: Int { didSet { defaults.set(interval, forKey: "squats.interval") } }
     @Published var goal: Int { didSet { defaults.set(goal, forKey: "squats.goal") } }
     private let defaults: UserDefaults
@@ -66,6 +68,8 @@ import SwiftUI
         self.calendar = calendar
         interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? 45))
         goal = max(0, min(100, defaults.integer(forKey: "squats.goal")))
+        notificationEverAuthorized = defaults.bool(forKey: "squats.notificationEverAuthorized")
+        homeEverAuthorized = defaults.bool(forKey: "squats.homeEverAuthorized")
         load()
         loadHome()
         self.homeMonitor.eventHandler = { [weak self] event in
@@ -79,15 +83,28 @@ import SwiftUI
     }
 
     /// Distinguishes denied (user can fix in Settings) from restricted (parental controls/
-    /// management profile; Settings cannot help) instead of collapsing both into one message.
-    private static func homeAccessHealth(_ authorization: HomeAuthorization) -> String {
+    /// management profile; Settings cannot help) and, once granted at least once, phrases a later
+    /// denial as a revocation rather than reusing first-request wording.
+    private func homeAccessHealth(_ authorization: HomeAuthorization) -> String {
         switch authorization {
-        case .denied: return "Location access denied"
+        case .denied: return homeEverAuthorized ? "Location access turned off" : "Location access denied"
         case .restricted: return "Location access restricted"
         case .notDetermined: return "Location access needed"
         case .whenInUse: return "Always access needed"
         case .always: return "Location access ready"
         }
+    }
+
+    private func markNotificationAuthorized() {
+        guard !notificationEverAuthorized else { return }
+        notificationEverAuthorized = true
+        defaults.set(true, forKey: "squats.notificationEverAuthorized")
+    }
+
+    private func markHomeAuthorized() {
+        guard !homeEverAuthorized else { return }
+        homeEverAuthorized = true
+        defaults.set(true, forKey: "squats.homeEverAuthorized")
     }
 
     private func load() {
@@ -311,6 +328,7 @@ import SwiftUI
         }
         let snapshot = await reminders.snapshot()
         notificationAuthorization = snapshot.authorization
+        if snapshot.allowed { markNotificationAuthorized() }
         guard let session = active else {
             reminders.cancel()
             operational = today.isEmpty ? "Ready" : "Day complete"
@@ -346,9 +364,10 @@ import SwiftUI
         }
         let snapshot = homeMonitor.snapshot()
         homeAuthorization = snapshot.authorization
+        if snapshot.authorization == .always { markHomeAuthorized() }
         guard snapshot.authorization == .always else {
             homeMonitor.stopMonitoring()
-            homeHealth = Self.homeAccessHealth(snapshot.authorization)
+            homeHealth = homeAccessHealth(snapshot.authorization)
             return
         }
         guard snapshot.monitoringAvailable else {
@@ -391,7 +410,9 @@ import SwiftUI
         await perform {
             guard active == nil, (1...180).contains(interval) else { return }
             guard try await reminders.authorize() else {
-                message = "Allow notifications in iOS Settings before starting your day."
+                message = notificationEverAuthorized
+                    ? "Notifications were turned off. Allow them again in iOS Settings before starting your day."
+                    : "Allow notifications in iOS Settings before starting your day."
                 messageRoute = .notifications
                 return
             }
@@ -438,7 +459,9 @@ import SwiftUI
             if session.state == .running && snapshot.allowed && snapshot.sessionID == session.id &&
                 snapshot.interval == TimeInterval(session.interval * 60) && snapshot.actionable { return }
             guard try await reminders.authorize() else {
-                message = "Notifications are disabled. Enable them in iOS Settings."
+                message = notificationEverAuthorized
+                    ? "Notifications were turned off while paused. Allow them again in iOS Settings to resume."
+                    : "Notifications are disabled. Enable them in iOS Settings."
                 messageRoute = .notifications
                 return
             }
@@ -486,8 +509,9 @@ import SwiftUI
         defer { busy = false }
         let authorization = await homeMonitor.requestWhenInUse()
         homeAuthorization = authorization
+        if authorization == .always { markHomeAuthorized() }
         guard authorization == .whenInUse || authorization == .always else {
-            homeHealth = Self.homeAccessHealth(authorization)
+            homeHealth = homeAccessHealth(authorization)
             message = "Allow location access while using AkshatOS so you can choose and confirm Home."
             messageRoute = .location
             return
@@ -520,8 +544,9 @@ import SwiftUI
             homeDraft = nil
             let authorization = await homeMonitor.requestAlways()
             homeAuthorization = authorization
+            if authorization == .always { markHomeAuthorized() }
             guard authorization == .always else {
-                homeHealth = Self.homeAccessHealth(authorization)
+                homeHealth = homeAccessHealth(authorization)
                 message = "Home is saved, but Always location access is required for automatic boundary events. You can enable it in iOS Settings."
                 messageRoute = .location
                 return

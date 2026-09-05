@@ -10,7 +10,13 @@ verified in build-6 source. Build-7 source completes the dashboard/Settings UI: 
 (not-determined/authorized/provisional/ephemeral/denied) and location (not-determined/when-in-use/
 always/denied/restricted) permission presentation with proactive Settings routing, per-state
 automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/increased-contrast accessibility
-behavior; its exact source passed cloud CI (see `ci.md`). Physical acceptance plus the
+behavior; its exact source passed cloud CI (see `ci.md`). Build-8 source closes three remaining
+dashboard/Settings UI gaps: a distinct "turned off"/revoked wording once notification or location
+access has been granted at least once (instead of reusing first-denial wording), an icon-based
+automation-health row on the main dashboard rather than a plain muted line, and Dynamic Type
+hardening (a reusable `AdaptiveRow` that stacks label/value rows vertically at accessibility text
+sizes instead of squeezing them into a fixed-width row); its exact source has not yet passed cloud
+CI. Physical acceptance plus the
 remaining native v1 work (foreground reconciliation completion, broader automated coverage) are
 pending. Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
@@ -84,7 +90,7 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Canonical source/build owner: this `akshatos/` repository, private GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (7)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (8)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the

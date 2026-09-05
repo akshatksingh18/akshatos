@@ -1,10 +1,11 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-7 dashboard/Settings-UI source (version `0.2.0 (7)`) passed PR cloud checks; build-4
-remains the latest downloaded, hash-verified IPA and older previews are preserved — PR runs
-intentionally omit IPA upload, so no build-7 artifact has been downloaded yet. First AkshatOS
-physical installation, reminder behavior and refresh acceptance remain pending. This file owns the
-build evidence.
+**State:** Build-7 dashboard/Settings-UI source passed PR cloud checks; build-8 (version `0.2.0 (8)`)
+closes three follow-up gaps in that same task and exists locally, not yet pushed through cloud CI.
+Build-4 remains the latest downloaded, hash-verified IPA and older previews are preserved — PR runs
+intentionally omit IPA upload, so no build-7 or build-8 artifact has been downloaded yet. First
+AkshatOS physical installation, reminder behavior and refresh acceptance remain pending. This file
+owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -17,7 +18,8 @@ implementation and automated checks; the manual steps below are for that accepta
 - Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (7)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (8)**; minimum iOS 17.
+  Build 8 has not yet been pushed through cloud CI; build 7 is the latest CI-verified source.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.

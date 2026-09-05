@@ -440,6 +440,33 @@ import UserNotifications
         XCTAssertNil(store.homeDraft)
     }
 
+    func testNotificationRevocationIsRememberedAfterBeingGrantedAndPhrasedDifferentlyThanFirstDenial() async {
+        let (_, reminders, _, store) = fixture()
+        reminders.state.authorization = .authorized
+        await store.refresh()
+        XCTAssertTrue(store.notificationEverAuthorized)
+        reminders.state.allowed = false
+        reminders.state.authorization = .denied
+        await store.refresh()
+        XCTAssertTrue(store.notificationEverAuthorized, "Revocation must not clear the ever-authorized history")
+        XCTAssertEqual(store.operational, "Notifications blocked")
+    }
+
+    func testHomeAccessRevocationIsRememberedAfterBeingGrantedAndPhrasedDifferentlyThanFirstDenial() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150))
+        let monitor = FakeHomeMonitor()
+        let store = make(repository, reminders, MemoryInbox(), home: home, monitor: monitor)
+        await store.refresh()
+        XCTAssertTrue(store.homeEverAuthorized)
+        monitor.state.authorization = .denied
+        await store.refresh()
+        XCTAssertTrue(store.homeEverAuthorized, "Revocation must not clear the ever-authorized history")
+        XCTAssertEqual(store.homeHealth, "Location access turned off")
+    }
+
     func testActionDuringResumeIsQueuedThenPauseWins() async {
         let (repository, reminders, inbox, store) = fixture()
         await store.pause()

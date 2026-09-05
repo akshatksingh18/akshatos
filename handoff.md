@@ -27,7 +27,7 @@ material changes; do not copy child progress into root/container instructions.
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Current source version: `0.2.0 (7)`, minimum iOS 17. Preserve identity on updates.
+  Current source version: `0.2.0 (8)`, minimum iOS 17. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
@@ -59,6 +59,11 @@ material changes; do not copy child progress into root/container instructions.
   when-in-use Home messaging, a `SettingsRoute`-driven one-tap action on blocking alerts, per-state
   hero icons, and VoiceOver/Dynamic Type/Reduce Motion/Increased Contrast accessibility behavior.
   Its exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22.
+- Build-8 source closes three gaps identified in a follow-up review of that same task: a monotonic
+  `notificationEverAuthorized`/`homeEverAuthorized` flag so a later denial reads as a revocation
+  ("turned off") rather than reusing first-request wording, an icon-based Home automation-health row
+  on the main dashboard itself, and a shared `AdaptiveRow` component that stacks label/value rows
+  vertically at accessibility Dynamic Type sizes. Its exact source has not yet been pushed through CI.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -69,7 +74,9 @@ Important limitations: build-4 actions passed cloud checks but still need physic
 downloaded build-3 preview has no action buttons. Build-5 daily/recovery source passed its cloud
 gate but has no downloaded or phone-tested artifact. Build-6 Home source passed the cloud gate but
 is not phone-verified. Build-7 dashboard/Settings-UI source passed its cloud gate (PR run #22) but
-is not phone-verified either. Rollover happens on the next app
+is not phone-verified either. Build-8 source (revoked-vs-denied wording, dashboard automation-health
+icon, Dynamic Type hardening) has not yet been pushed through CI; do not call it cloud-verified until
+`ci.md`'s CI Gate for its exact commit is inspected and green. Rollover happens on the next app
 launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
@@ -118,7 +125,9 @@ implementation for baseline installation. Existing device gates remain open unti
 
 1. **Finish native v1 reliability coverage:** build-7 completes the dashboard/Settings UI task
    (permission-state presentation, automation-health icons, and VoiceOver/Dynamic Type/Reduce
-   Motion/contrast accessibility); its exact source passed CI Gate in PR run #22. Remaining work
+   Motion/contrast accessibility); its exact source passed CI Gate in PR run #22. Build-8 closes a
+   follow-up review's three remaining gaps (revoked-vs-denied wording, a dashboard automation-health
+   icon, Dynamic Type hardening) and still needs its CI Gate inspected. Remaining work
    is foreground-reconciliation completion (SwiftData intent vs. actual notification/Home-region
    state, stale-request cancellation) and broader day/streak, persistence, migration and permission-
    transition regression scenarios, plus UI coverage for the new settings/permission/accessibility
