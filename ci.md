@@ -9,6 +9,9 @@ strict required `CI Gate`, administrator enforcement, and force pushes/deletions
 Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS
 build. PR runs do not upload an IPA artifact; exact downloadable build/hash evidence belongs in
 `cloud-build.md`.
+Final classifier/documentation source `d3864970a2beb2ebcc463bf73fca0574542ca942` passed the full
+pipeline in [PR #1 run #28](https://github.com/akshatksingh18/akshatos/actions/runs/33986900743);
+that update contained the workflow itself, so classification correctly required macOS.
 
 ## Automated checks
 

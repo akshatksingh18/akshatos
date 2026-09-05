@@ -38,6 +38,9 @@ docs-only PR classification while keeping `CI Gate` present. It passed
 [PR #1 run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032): 20-source
 boundary checks, 37 domain assertions, 41 integration/persistence tests, one hub/settings UI test,
 simulator/device compilation, IPA inspection and CI Gate. The PR run did not upload an IPA.
+Final classifier/documentation source `d3864970a2beb2ebcc463bf73fca0574542ca942` then passed
+[PR #1 run #28](https://github.com/akshatksingh18/akshatos/actions/runs/33986900743), including the
+full macOS job because that update changed the workflow. Application source remained `d80653d`.
 
 Build 8 closes three gaps found in a follow-up review of the build-7 dashboard/Settings UI task: a
 monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag so a permission that was granted at
