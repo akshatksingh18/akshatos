@@ -97,16 +97,37 @@ was disabled, no failure was accepted as a pass, and no app protection setting w
 
 ## Branch protection limitation
 
-The repository's branch-protection and ruleset APIs return HTTP 403: GitHub requires Pro (or another
-eligible plan) for these protections on this private repository. No upgrade or visibility change
-was made. **CI is active but is not a server-enforced merge/direct-push restriction.**
+The repository's branch-protection and ruleset APIs return HTTP 403 on the private plan: GitHub
+requires Pro (or another eligible plan) for these protections on a private repository. No paid
+upgrade was made. **CI is active but is not a server-enforced merge/direct-push restriction.**
 
 Until that changes, agents must inspect the exact source SHA's `CI Gate`, fix red checks and wait
 for success before declaring code/build work verified or promoting an IPA. Prefer feature branches
 and PR validation for subsequent changes. A human can still bypass this agreement manually.
-If Akshat later upgrades, explicitly enable a `main` rule requiring `CI Gate`, an up-to-date branch
-and no force pushes/deletions; inspect/preserve existing rules before doing so. Do not claim this
-rule is enabled until the server confirms it.
+If the repository becomes public (see below) or Akshat later upgrades to a paid plan, re-check
+whether branch protection is now available, then explicitly enable a `main` rule requiring
+`CI Gate`, an up-to-date branch and no force pushes/deletions; inspect/preserve existing rules
+before doing so. Do not claim this rule is enabled until the server confirms it.
+
+## GitHub Actions minutes and public-visibility decision
+
+The private-plan account `akshatksingh18` was at ~94% of its 2,000 included Actions minutes this
+billing cycle (resets 2026-10-01), because this project's macOS-runner CI (Xcode simulator/device
+builds) consumes minutes quickly under GitHub's private-repo accounting; the account's Actions
+budget is already set to $0 with "stop usage," so further private-repo runs simply block rather
+than bill. GitHub Actions on standard hosted runners is free/unmetered for **public** repositories,
+so **Akshat has decided to make this repository public temporarily** to remove that cap, with the
+intent to revert it to private once the CI-minutes need has passed. Making a repo public also may
+resolve the branch-protection limitation above (public repos have historically had free branch
+protection); re-check the API once visibility actually changes rather than assuming it.
+
+This is a plan-level decision, not yet executed — the repository is still private as of this
+writing. Before visibility actually changes, a full sensitive-content verification pass across the
+**entire commit history** (not just current files, and not limited to credentials) must pass, and
+Akshat must give explicit go-ahead in chat. `handoff.md` owns the exact pending task and the one
+known finding from the first review pass (local Windows path/username exposure in `cloud-build.md`/
+`handoff.md` history). Reverting to private later stops new access but cannot undo anything already
+cloned/forked/cached while public.
 
 ## Failure workflow
 

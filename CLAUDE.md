@@ -458,10 +458,14 @@ The iPhone path can be described as working only when all of the following are t
 
 ## Repository and hosting
 
-The project is backed up to the private GitHub repository
-<https://github.com/akshatksingh18/akshatos>; local `main` tracks `origin/main` after the first
-push. Keep it private unless Akshat explicitly decides to make it public after a separate privacy,
-licensing, history, and secret review. GitHub stores source and documentation only—not Apple
+The project is backed up to the GitHub repository
+<https://github.com/akshatksingh18/akshatos> (currently private); local `main` tracks `origin/main`
+after the first push. Akshat has decided to make it public temporarily, to remove the GitHub
+Actions minutes cap that applies to private repositories, with the intent to revert to private once
+that need has passed. A full privacy/secret/history verification across the entire commit history
+must pass, and Akshat must give explicit go-ahead in chat, before visibility actually changes —
+`ci.md` owns that decision and constraint, `handoff.md` owns the exact pending task and the one
+known finding from the first review pass. GitHub stores source and documentation only—not Apple
 credentials, signing material, provisioning data, device state, or release IPAs.
 
 ## Working agreement

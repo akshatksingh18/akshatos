@@ -10,7 +10,9 @@ primary; Android remains a separate fallback scaffold.
       run #7; notification-action PR #1 also passed run #10. Real PR triggering and failure-diagnostic
       download/correction are exercised (see `ci.md`).
       Server-enforced private-repo protections
-      are blocked by the current GitHub plan (HTTP 403); no upgrade or visibility change authorized.
+      are blocked by the current GitHub plan (HTTP 403); no paid upgrade is authorized. Akshat has
+      decided to make the repository public temporarily to remove the private-repo Actions-minutes
+      cap; see `ci.md` for that decision and the pending pre-visibility verification task.
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
       metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
       Boundary checks, domain/navigation tests and both builds pass; build 3 IPA is downloaded and

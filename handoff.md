@@ -1,9 +1,10 @@
 # AkshatOS session handoff
 
-**Status:** Continue the existing hub and finish Squat Reminder first. Source and cloud checks
-exist; first physical AkshatOS acceptance and the full Squats feature contract remain unfinished.
-This is a current-state entry point, not a separate specification or chronological log. Update it
-in place when its resume guidance changes; the linked owning documents control detailed facts.
+**Status:** A public-visibility verification task is pending first (see below) before returning to
+Squats work. Source and cloud checks exist for Squats; first physical AkshatOS acceptance and the
+full Squats feature contract remain unfinished. This is a current-state entry point, not a separate
+specification or chronological log. Update it in place when its resume guidance changes; the
+linked owning documents control detailed facts.
 
 ## Start here
 
@@ -21,6 +22,46 @@ files were removed; do not recreate them. The global Codex fallback already incl
 New managed folders use `CLAUDE.md`. Automatically synchronize affected owning documentation with
 material changes; do not copy child progress into root/container instructions.
 
+## Pending: public-visibility verification (do this first, before Squats work)
+
+This is a separate task from the Squats feature work below. Akshat decided in the prior session to
+make this repository public temporarily, to remove the GitHub Actions minutes cap on the private
+plan (the private quota was at ~94% of 2,000 included minutes this cycle, resetting 2026-10-01;
+this project's macOS-runner CI consumes minutes quickly under private-repo accounting). The
+repository is still private as of this writing — only the decision has been made, not the switch.
+
+**Before changing visibility, do a full, broad sensitive-content verification pass across the
+entire commit history** (not just current files) — everything a stranger could see once the repo
+is public, not limited to credentials/secrets. A first pass already found:
+- No API keys, tokens, passwords, certificates, or provisioning profiles anywhere in history.
+- No third-party personal data: no phone numbers, physical addresses, real GPS coordinates, or
+  emails besides Akshat's own (as commit author) and the Claude co-author address.
+- No cross-references to Akshat's other private workspace folders (`financials/`, `health/`,
+  `job/`), beyond one unrelated mention of a removed `financials/AGENTS.md` file.
+- GitHub-side surfaces beyond file content: zero PR comments, only Akshat as collaborator, no
+  webhooks/deploy keys, and one spot-checked Actions run log where GitHub auto-masked the only
+  token (`GITHUB_TOKEN`) with nothing else leaking.
+- **One known finding, not yet remediated:** `cloud-build.md` and `handoff.md` contain local
+  Windows paths revealing Akshat's account name and folder structure — e.g.
+  `C:\Users\aksha\Downloads\...` and `D:\AI Important Files\...` — in 8 lines of the current files
+  and 28 places across git history. Decide with Akshat whether to accept this (low-risk, just a
+  username/folder name), scrub it from future docs only (history still keeps it), or rewrite git
+  history with something like `git filter-repo` before going public (the only way to actually
+  remove it; rewrites every commit hash, needs a force-push, and needs explicit confirmation since
+  it is destructive and this branch has an open PR).
+
+A fresh session must not treat that first pass as sufficient on its own — re-verify it, and look
+more broadly: commit messages, code comments, TODOs, and any other content that reveals opinions,
+plans, or information Akshat might not want permanently public, not just the categories above.
+
+After that pass, report findings and get Akshat's **explicit go-ahead in chat** before actually
+changing repository visibility. Once public, also make the `.github/workflows/ios-build.yml`
+docs-only-PR-skip fix that was discussed but not yet implemented (skip the macOS job on PR pushes
+that only touch `*.md` files, mirroring the existing `main`-push path filter) — worth doing
+regardless, to avoid wasting free public-repo capacity too. When Akshat says the CI-minutes need
+has passed, revert the repository to private; reverting stops new access but cannot undo anything
+already cloned, forked, or cached while public. `ci.md` owns the fuller version of this decision.
+
 ## Identity and accepted scope
 
 - Repository: private `https://github.com/akshatksingh18/akshatos`, evolved from Squat Reminder
@@ -33,7 +74,9 @@ material changes; do not copy child progress into root/container instructions.
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
   `book-reader` and `reels` projects; future native source goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
-  feature folders are not separately installed apps. Keep the repository private.
+  feature folders are not separately installed apps. The repository is currently private; Akshat
+  has decided to make it temporarily public to remove the GitHub Actions minutes cap — see
+  "Pending: public-visibility verification" below before changing visibility.
 - Local-only, single-user data; no backend, analytics, accounts or cloud sync. Windows authors
   source; GitHub macOS/Xcode builds; Sideloadly signs locally. Never put Apple secrets or IPAs in Git.
 
@@ -158,7 +201,8 @@ Every feature/fix needs meaningful regression coverage. Register suites in
 `ios/tests/feature-tests.json`; run boundary and inventory checks plus relevant tests, then inspect
 the exact source commit's GitHub CI Gate before claiming cloud verification. Prefer feature branches
 and PRs. Current private-repo branch protection was blocked by the GitHub plan (HTTP 403): the pipeline
-is active, but merge/direct-push enforcement is not. No paid upgrade or public visibility is authorized.
+is active, but merge/direct-push enforcement is not. No paid upgrade is authorized; Akshat has
+decided to make the repository public (see "Pending: public-visibility verification" below).
 Real PR-trigger/failure-diagnostic paths have been exercised. Simulator tests do not prove locked
 actions, actual delivery, geofences, Focus, reboot or signing refresh.
 
