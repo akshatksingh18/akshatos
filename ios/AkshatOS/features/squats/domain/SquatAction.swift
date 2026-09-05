@@ -1,5 +1,13 @@
 import Foundation
 
+/// Mirrors `UNAuthorizationStatus` without importing UserNotifications into domain code.
+enum NotificationAuthorization: String, Codable, Equatable {
+    case notDetermined, authorized, denied, provisional, ephemeral
+}
+
+/// Where a blocking message's follow-up action, if any, should route the user.
+enum SettingsRoute: Equatable { case notifications, location }
+
 struct SquatAction: Codable, Equatable {
     enum Kind: String, Codable { case done, pause, snooze }
     var id: String

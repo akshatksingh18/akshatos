@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct SquatDashboard: View {
     @EnvironmentObject private var store: SquatStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showSettings = false
     @State private var showEnd = false
     @State private var showRestart = false
@@ -15,6 +16,9 @@ struct SquatDashboard: View {
     @State private var showHomeSetup = false
     @State private var showDisableHome = false
     @State private var showOutsideStart = false
+    @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 48
+    @ScaledMetric(relativeTo: .largeTitle) private var todayCountSize: CGFloat = 56
+    @ScaledMetric(relativeTo: .largeTitle) private var summaryCountSize: CGFloat = 64
 
     var body: some View {
         ScrollView {
@@ -37,12 +41,15 @@ struct SquatDashboard: View {
                 }
                 Surface {
                     HStack(alignment: .firstTextBaseline) {
-                        Text("\(store.todayCount)").font(.system(size: 56, weight: .bold, design: .rounded))
+                        Text("\(store.todayCount)").font(.system(size: todayCountSize, weight: .bold, design: .rounded))
                             .monospacedDigit()
                         Text("sets today").foregroundStyle(Palette.muted)
                         Spacer()
                         Image(systemName: "figure.strengthtraining.traditional").font(.title).foregroundStyle(Palette.lime)
+                            .accessibilityHidden(true)
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(store.todayCount) sets today")
                     Button { Task { await store.done() } } label: {
                         Label("Done +1", systemImage: "checkmark")
                     }.buttonStyle(ActionStyle(primary: true))
@@ -76,8 +83,13 @@ struct SquatDashboard: View {
         .sheet(isPresented: $showSettings) { settings }
         .sheet(item: $store.summary) { session in summary(session) }
         .alert("Squats needs attention", isPresented: Binding(
-            get: { store.message != nil }, set: { if !$0 { store.message = nil } })) {
-                Button("OK") { store.message = nil }
+            get: { store.message != nil }, set: { if !$0 { store.message = nil; store.messageRoute = nil } })) {
+                if store.messageRoute == .notifications {
+                    Button("Open Notification Settings") { openNotificationSettings(); store.message = nil; store.messageRoute = nil }
+                } else if store.messageRoute == .location {
+                    Button("Open Location Settings") { openLocationSettings(); store.message = nil; store.messageRoute = nil }
+                }
+                Button("OK") { store.message = nil; store.messageRoute = nil }
             } message: { Text(store.message ?? "") }
         .alert("Squats", isPresented: Binding(
             get: { store.notice != nil }, set: { if !$0 { store.notice = nil } })) {
@@ -101,32 +113,36 @@ struct SquatDashboard: View {
 
     private var hero: some View {
         Surface {
-            HStack {
-                Label(store.operational, systemImage: store.operational == "Running" ? "bell.badge" : "sun.max")
-                    .font(.headline).foregroundStyle(Palette.lime)
-                Spacer()
-                if store.busy { ProgressView().tint(Palette.lime) }
-            }
-            if let date = store.nextReminder {
-                VStack(alignment: .leading, spacing: 5) {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
-                        let interval = TimeInterval((store.active?.interval ?? 45) * 60)
-                        let elapsed = max(0, context.date.timeIntervalSince(date))
-                        let next = date > context.date ? date : date.addingTimeInterval((floor(elapsed / interval) + 1) * interval)
-                        let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
-                        Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
-                            .font(.system(size: 48, weight: .medium, design: .rounded)).monospacedDigit()
+            Group {
+                HStack {
+                    Label(store.operational, systemImage: stateIcon)
+                        .font(.headline).foregroundStyle(Palette.lime)
+                    Spacer()
+                    if store.busy { ProgressView().tint(Palette.lime) }
+                }
+                if let date = store.nextReminder {
+                    VStack(alignment: .leading, spacing: 5) {
+                        TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
+                            let interval = TimeInterval((store.active?.interval ?? 45) * 60)
+                            let elapsed = max(0, context.date.timeIntervalSince(date))
+                            let next = date > context.date ? date : date.addingTimeInterval((floor(elapsed / interval) + 1) * interval)
+                            let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
+                            Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
+                                .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
+                        }
+                        Text("until the next scheduled reminder")
+                            .font(.caption).foregroundStyle(Palette.muted)
                     }
-                    Text("until the next scheduled reminder")
-                        .font(.caption).foregroundStyle(Palette.muted)
+                    if let snooze = store.snoozeReminder {
+                        Text("Extra nudge at \(snooze.formatted(date: .omitted, time: .shortened))")
+                            .font(.caption).foregroundStyle(Palette.lime)
+                    }
+                } else {
+                    Text(heroDescription).font(.body).foregroundStyle(Palette.muted)
                 }
-                if let snooze = store.snoozeReminder {
-                    Text("Extra nudge at \(snooze.formatted(date: .omitted, time: .shortened))")
-                        .font(.caption).foregroundStyle(Palette.lime)
-                }
-            } else {
-                Text(heroDescription).font(.body).foregroundStyle(Palette.muted)
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(heroAccessibilityLabel)
             if let active = store.active {
                 if !store.staleDay {
                     Button {
@@ -184,7 +200,10 @@ struct SquatDashboard: View {
                     Spacer()
                     Text("\(store.todayCount)/\(goal)").monospacedDigit()
                 }.font(.subheadline).foregroundStyle(Palette.muted)
+                    .accessibilityElement(children: .combine)
                 ProgressView(value: Double(min(store.todayCount, goal)), total: Double(goal)).tint(Palette.lime)
+                    .accessibilityLabel("Progress toward today's goal")
+                    .accessibilityValue("\(min(store.todayCount, goal)) of \(goal) sets")
                 if store.todayCount < goal {
                     Text("Today is at risk; your existing streak remains intact until the local day ends.")
                         .font(.caption).foregroundStyle(Palette.muted)
@@ -211,11 +230,12 @@ struct SquatDashboard: View {
             ForEach(Array(events.prefix(12))) { event in
                 HStack(spacing: 12) {
                     Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
-                        .foregroundStyle(Palette.lime)
+                        .foregroundStyle(Palette.lime).accessibilityHidden(true)
                     Text(eventTitle(event.kind)).font(.subheadline)
                     Spacer()
                     Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
                 }.padding(.vertical, 5)
+                    .accessibilityElement(children: .combine)
             }
             Text("History").font(.system(.title3, design: .rounded, weight: .bold)).padding(.top, 8)
             if store.daySummaries.isEmpty {
@@ -229,8 +249,9 @@ struct SquatDashboard: View {
                               systemImage: "clock.arrow.circlepath")
                         Spacer()
                         Text("\(day.completedSets) sets")
-                        Image(systemName: "chevron.right")
+                        Image(systemName: "chevron.right").accessibilityHidden(true)
                     }.font(.subheadline).padding(.vertical, 10)
+                        .accessibilityElement(children: .combine)
                 }
             }
         }
@@ -246,14 +267,35 @@ struct SquatDashboard: View {
                 }.disabled(store.active != nil || store.busy)
                 Section {
                     Text("Settings are locked during an active session. Each day's first session fixes that day's goal; changes apply to the next new day. A goal of zero leaves streak tracking off.")
-                    settingsLink
+                }
+                Section("Notifications") {
+                    Label(notificationStatusText, systemImage: notificationStatusIcon)
+                        .accessibilityIdentifier("notification-permission-status")
+                    switch store.notificationAuthorization {
+                    case .denied:
+                        Text("Notifications were turned off. Reminders cannot be delivered until you allow them again in iOS Settings.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        settingsLink
+                    case .notDetermined:
+                        Text("You'll be asked to allow notifications the first time you tap Start my day.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    case .provisional:
+                        Text("Notifications currently deliver quietly, without a banner or sound. Change this in iOS Settings for the usual alert.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        settingsLink
+                    case .authorized, .ephemeral:
+                        EmptyView()
+                    }
+                    Text("Focus modes can silence or defer reminders, Scheduled Summary can bundle them, and per-app sound/banner settings can make an accepted request appear not to work. AkshatOS can only show what iOS reports; it cannot override these choices.")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("notification-permission-caveats")
                 }
                 Section("Data management") {
                     Button {
                         do {
                             exportDocument = SquatsBackupDocument(data: try store.makeBackupData())
                             showExporter = true
-                        } catch { store.message = error.localizedDescription }
+                        } catch { store.message = error.localizedDescription; store.messageRoute = nil }
                     } label: { Label("Export Squats backup", systemImage: "square.and.arrow.up") }
                         .accessibilityIdentifier("export-squats-backup")
                     Button { showImporter = true } label: {
@@ -266,6 +308,7 @@ struct SquatDashboard: View {
                 }.disabled(store.busy || !store.storageAvailable)
                 Section("Home auto-pause") {
                     Label(store.homeHealth, systemImage: store.homeEnabled ? "house.fill" : "house")
+                        .accessibilityIdentifier("home-automation-status")
                     if store.homeEnabled {
                         Text("AkshatOS stores one circular Home boundary on this phone. Leaving pauses a running day; arriving resumes only a same-day pause caused by Home departure.")
                             .font(.caption).foregroundStyle(.secondary)
@@ -286,12 +329,21 @@ struct SquatDashboard: View {
                             }
                         }.accessibilityIdentifier("set-home-location")
                     }
-                    if store.homeHealth.contains("denied") || store.homeHealth.contains("needed") ||
-                        store.homeHealth.contains("restricted") {
-                        Button("Open iOS location settings") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                UIApplication.shared.open(url)
-                            }
+                    if store.homeEnabled {
+                        switch store.homeAuthorization {
+                        case .denied:
+                            Text("Location access was denied. Enable it in iOS Settings to use Home auto-pause.")
+                                .font(.caption).foregroundStyle(.secondary)
+                            settingsLinkLocation
+                        case .restricted:
+                            Text("Location access is restricted by parental controls or a management profile on this device and can't be changed from within AkshatOS.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        case .whenInUse:
+                            Text("Always access is needed so Home auto-pause can work while AkshatOS is closed.")
+                                .font(.caption).foregroundStyle(.secondary)
+                            settingsLinkLocation
+                        case .notDetermined, .always:
+                            EmptyView()
                         }
                     }
                 }.disabled(store.busy)
@@ -332,7 +384,7 @@ struct SquatDashboard: View {
             }
             .fileExporter(isPresented: $showExporter, document: exportDocument,
                           contentType: .json, defaultFilename: "squats-backup") { result in
-                if case .failure(let error) = result { store.message = error.localizedDescription }
+                if case .failure(let error) = result { store.message = error.localizedDescription; store.messageRoute = nil }
                 exportDocument = nil
             }
             .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json]) { result in
@@ -342,11 +394,16 @@ struct SquatDashboard: View {
                     defer { if scoped { url.stopAccessingSecurityScopedResource() } }
                     pendingRestore = try store.prepareRestore(Data(contentsOf: url, options: .mappedIfSafe))
                     showRestore = true
-                } catch { store.message = error.localizedDescription }
+                } catch { store.message = error.localizedDescription; store.messageRoute = nil }
             }
             .alert("Squats needs attention", isPresented: Binding(
-                get: { store.message != nil }, set: { if !$0 { store.message = nil } })) {
-                    Button("OK") { store.message = nil }
+                get: { store.message != nil }, set: { if !$0 { store.message = nil; store.messageRoute = nil } })) {
+                    if store.messageRoute == .notifications {
+                        Button("Open Notification Settings") { openNotificationSettings(); store.message = nil; store.messageRoute = nil }
+                    } else if store.messageRoute == .location {
+                        Button("Open Location Settings") { openLocationSettings(); store.message = nil; store.messageRoute = nil }
+                    }
+                    Button("OK") { store.message = nil; store.messageRoute = nil }
                 } message: { Text(store.message ?? "") }
             .alert("Squats", isPresented: Binding(
                 get: { store.notice != nil }, set: { if !$0 { store.notice = nil } })) {
@@ -355,11 +412,67 @@ struct SquatDashboard: View {
     }
 
     private var settingsLink: some View {
-        Button("Open iOS notification settings") {
-            if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
-                UIApplication.shared.open(url)
-            }
+        Button("Open iOS notification settings") { openNotificationSettings() }
+    }
+
+    private var settingsLinkLocation: some View {
+        Button("Open iOS location settings") { openLocationSettings() }
+    }
+
+    private func openNotificationSettings() {
+        if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+            UIApplication.shared.open(url)
         }
+    }
+
+    private func openLocationSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private var notificationStatusText: String {
+        switch store.notificationAuthorization {
+        case .authorized: return "Notifications allowed"
+        case .provisional: return "Notifications allowed quietly"
+        case .ephemeral: return "Notifications allowed temporarily"
+        case .denied: return "Notifications turned off"
+        case .notDetermined: return "Notifications not yet requested"
+        }
+    }
+
+    private var notificationStatusIcon: String {
+        switch store.notificationAuthorization {
+        case .authorized, .provisional, .ephemeral: return "bell.badge"
+        case .denied: return "bell.slash"
+        case .notDetermined: return "bell"
+        }
+    }
+
+    private var stateIcon: String {
+        switch store.operational {
+        case "Running": return "bell.badge"
+        case "Paused": return "pause.circle"
+        case "Day complete": return "checkmark.seal"
+        case "Notifications blocked": return "bell.slash"
+        case "Reminder needs repair": return "exclamationmark.triangle"
+        case "Storage unavailable": return "externaldrive.badge.exclamationmark"
+        default: return "sun.max"
+        }
+    }
+
+    private var heroAccessibilityLabel: String {
+        var parts = [store.operational]
+        if let date = store.nextReminder {
+            parts.append("Next reminder around \(date.formatted(date: .omitted, time: .shortened))")
+        } else {
+            parts.append(heroDescription)
+        }
+        if let snooze = store.snoozeReminder {
+            parts.append("Extra nudge around \(snooze.formatted(date: .omitted, time: .shortened))")
+        }
+        if store.busy { parts.append("Working") }
+        return parts.joined(separator: ". ")
     }
 
     private func startRequested() {
@@ -373,7 +486,7 @@ struct SquatDashboard: View {
                 VStack(alignment: .leading, spacing: 24) {
                     Text("You made time\nto move.").font(.system(.largeTitle, design: .rounded, weight: .bold))
                     Surface {
-                        Text("\(day.completedSets)").font(.system(size: 64, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
+                        Text("\(day.completedSets)").font(.system(size: summaryCountSize, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
                         Text("completed sets this day").foregroundStyle(Palette.muted)
                         Text(day.started.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
                             .font(.headline)
@@ -423,6 +536,7 @@ struct SquatDashboard: View {
             Text(value).font(.system(.title, design: .rounded, weight: .bold))
             Text(label).font(.caption).foregroundStyle(Palette.muted)
         }
+        .accessibilityElement(children: .combine)
     }
 
     private func eventTitle(_ kind: SquatEvent.Kind) -> String {

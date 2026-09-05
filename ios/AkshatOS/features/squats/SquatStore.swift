@@ -9,12 +9,15 @@ import SwiftUI
     @Published private(set) var snoozeReminder: Date?
     @Published private(set) var pendingActionCount = 0
     @Published private(set) var storageAvailable = false
+    @Published private(set) var notificationAuthorization: NotificationAuthorization = .notDetermined
     @Published var message: String?
+    @Published var messageRoute: SettingsRoute?
     @Published var notice: String?
     @Published var summary: SquatDaySummary?
     @Published private(set) var homeState: HomeAutomationState?
     @Published private(set) var homeDraft: HomeBoundary?
     @Published private(set) var homeHealth = "Off"
+    @Published private(set) var homeAuthorization: HomeAuthorization = .notDetermined
     @Published var interval: Int { didSet { defaults.set(interval, forKey: "squats.interval") } }
     @Published var goal: Int { didSet { defaults.set(goal, forKey: "squats.goal") } }
     private let defaults: UserDefaults
@@ -71,6 +74,19 @@ import SwiftUI
         self.homeMonitor.failureHandler = { [weak self] detail in
             self?.homeHealth = "Region monitoring failed"
             self?.message = "Home auto-pause is degraded: \(detail). Manual reminder controls still work."
+            self?.messageRoute = nil
+        }
+    }
+
+    /// Distinguishes denied (user can fix in Settings) from restricted (parental controls/
+    /// management profile; Settings cannot help) instead of collapsing both into one message.
+    private static func homeAccessHealth(_ authorization: HomeAuthorization) -> String {
+        switch authorization {
+        case .denied: return "Location access denied"
+        case .restricted: return "Location access restricted"
+        case .notDetermined: return "Location access needed"
+        case .whenInUse: return "Always access needed"
+        case .always: return "Location access ready"
         }
     }
 
@@ -82,6 +98,7 @@ import SwiftUI
             storageAvailable = false
             operational = "Storage unavailable"
             message = "Your local data could not be opened. Nothing was erased. Unlock your phone and return to retry; keep the app installed."
+            messageRoute = nil
         }
     }
 
@@ -95,6 +112,7 @@ import SwiftUI
             homeDataAvailable = false
             homeHealth = "Home data unavailable"
             message = "Home auto-pause data could not be opened. Unlock your phone and return to retry."
+            messageRoute = nil
         }
     }
 
@@ -125,6 +143,7 @@ import SwiftUI
             pendingActionCount = try inbox.pending().count
         } catch {
             message = "The notification action could not be saved. Unlock and open Squats to check your count before trying again."
+            messageRoute = nil
             return
         }
         await refresh()
@@ -137,6 +156,7 @@ import SwiftUI
             actionRevision += 1
         } catch {
             message = "A Home boundary event could not be saved. Open Squats after unlocking to reconcile it."
+            messageRoute = nil
             if event.presence == .outside { reminders.cancel() }
             return
         }
@@ -253,6 +273,7 @@ import SwiftUI
                   snapshot.interval == TimeInterval(session.interval * 60) else {
                 try acknowledge(action, session: session)
                 message = "That snooze is no longer available. Open Squats to check your reminder status."
+                messageRoute = nil
                 return
             }
             try await reminders.schedule(session, snoozeUntil: deadline)
@@ -289,6 +310,7 @@ import SwiftUI
             }
         }
         let snapshot = await reminders.snapshot()
+        notificationAuthorization = snapshot.authorization
         guard let session = active else {
             reminders.cancel()
             operational = today.isEmpty ? "Ready" : "Day complete"
@@ -308,11 +330,13 @@ import SwiftUI
 
     private func actionFailure(_ error: Error) {
         message = "Could not complete that action: \(error.localizedDescription). Saved history and queued notification actions were kept. Unlock and return to retry."
+        messageRoute = nil
     }
 
     private func homeFailure(_ error: Error) {
         homeHealth = "Needs attention"
         message = "Home auto-pause needs attention: \(error.localizedDescription). Manual reminder controls still work."
+        messageRoute = nil
     }
 
     private func reconcileHomeMonitoring() async {
@@ -321,10 +345,10 @@ import SwiftUI
             return
         }
         let snapshot = homeMonitor.snapshot()
+        homeAuthorization = snapshot.authorization
         guard snapshot.authorization == .always else {
             homeMonitor.stopMonitoring()
-            homeHealth = snapshot.authorization == .denied || snapshot.authorization == .restricted
-                ? "Location access denied" : "Always access needed"
+            homeHealth = Self.homeAccessHealth(snapshot.authorization)
             return
         }
         guard snapshot.monitoringAvailable else {
@@ -368,6 +392,7 @@ import SwiftUI
             guard active == nil, (1...180).contains(interval) else { return }
             guard try await reminders.authorize() else {
                 message = "Allow notifications in iOS Settings before starting your day."
+                messageRoute = .notifications
                 return
             }
             let first = today.sorted { $0.started < $1.started }.first
@@ -414,6 +439,7 @@ import SwiftUI
                 snapshot.interval == TimeInterval(session.interval * 60) && snapshot.actionable { return }
             guard try await reminders.authorize() else {
                 message = "Notifications are disabled. Enable them in iOS Settings."
+                messageRoute = .notifications
                 return
             }
             if var state = homeState, state.enabled, state.presence == .outside {
@@ -459,10 +485,11 @@ import SwiftUI
         busy = true
         defer { busy = false }
         let authorization = await homeMonitor.requestWhenInUse()
+        homeAuthorization = authorization
         guard authorization == .whenInUse || authorization == .always else {
-            homeHealth = authorization == .denied || authorization == .restricted
-                ? "Location access denied" : "Location access needed"
+            homeHealth = Self.homeAccessHealth(authorization)
             message = "Allow location access while using AkshatOS so you can choose and confirm Home."
+            messageRoute = .location
             return
         }
         do {
@@ -492,10 +519,11 @@ import SwiftUI
             homeState = state
             homeDraft = nil
             let authorization = await homeMonitor.requestAlways()
+            homeAuthorization = authorization
             guard authorization == .always else {
-                homeHealth = authorization == .denied || authorization == .restricted
-                    ? "Location access denied" : "Always access needed"
+                homeHealth = Self.homeAccessHealth(authorization)
                 message = "Home is saved, but Always location access is required for automatic boundary events. You can enable it in iOS Settings."
+                messageRoute = .location
                 return
             }
             try homeMonitor.startMonitoring(state.boundary)

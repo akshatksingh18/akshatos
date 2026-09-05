@@ -9,12 +9,14 @@ enum Palette {
 
 struct Surface<Content: View>: View {
     @ViewBuilder var content: Content
+    @Environment(\.colorSchemeContrast) private var contrast
     var body: some View {
         VStack(alignment: .leading, spacing: 18) { content }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(22)
             .background(Palette.card, in: RoundedRectangle(cornerRadius: 26))
-            .overlay(RoundedRectangle(cornerRadius: 26).stroke(.white.opacity(0.06)))
+            .overlay(RoundedRectangle(cornerRadius: 26)
+                .stroke(.white.opacity(contrast == .increased ? 0.35 : 0.06)))
     }
 }
 

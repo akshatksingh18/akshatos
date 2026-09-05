@@ -27,7 +27,7 @@ material changes; do not copy child progress into root/container instructions.
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Current source version: `0.2.0 (6)`, minimum iOS 17. Preserve identity on updates.
+  Current source version: `0.2.0 (7)`, minimum iOS 17. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
@@ -53,6 +53,12 @@ material changes; do not copy child progress into root/container instructions.
   plus staged Home setup, map/radius confirmation, one app-lifetime region monitor, protected local
   boundary/event files, source-aware away pause/arrival resume, outside-Home choices, truthful health,
   and edit/disable/delete. It requests no continuous background-location mode.
+- Build-7 source completes the dashboard/Settings UI task: authoritative notification/location
+  permission enums (replacing a boolean and fragile status-string matching) with a dedicated
+  Notifications settings section, Focus/Scheduled Summary/banner caveats, distinct denied/restricted/
+  when-in-use Home messaging, a `SettingsRoute`-driven one-tap action on blocking alerts, per-state
+  hero icons, and VoiceOver/Dynamic Type/Reduce Motion/Increased Contrast accessibility behavior.
+  Its exact source has not yet passed cloud CI.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -62,7 +68,9 @@ material changes; do not copy child progress into root/container instructions.
 Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
 downloaded build-3 preview has no action buttons. Build-5 daily/recovery source passed its cloud
 gate but has no downloaded or phone-tested artifact. Build-6 Home source passed the cloud gate but
-is not phone-verified. Rollover happens on the next app
+is not phone-verified. Build-7 dashboard/Settings-UI source has not yet been pushed through CI; do not
+call it cloud-verified until `ci.md`'s CI Gate for its exact commit is inspected and green. Rollover
+happens on the next app
 launch/foreground entry; the app does not claim a background midnight execution.
 Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
 
@@ -101,10 +109,13 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Finish native v1 UI and reliability coverage:** build-6 exact-source CI is green; complete
-   dashboard/settings, accessibility,
-   lifecycle/permission/error states, and remaining day/streak, persistence and service regression
-   scenarios. Existing components are partly implemented; extend them rather than recreate them.
+1. **Finish native v1 reliability coverage:** build-7 completes the dashboard/Settings UI task
+   (permission-state presentation, automation-health icons, and VoiceOver/Dynamic Type/Reduce
+   Motion/contrast accessibility); its CI Gate still needs to be inspected and green. Remaining work
+   is foreground-reconciliation completion (SwiftData intent vs. actual notification/Home-region
+   state, stale-request cancellation) and broader day/streak, persistence, migration and permission-
+   transition regression scenarios, plus UI coverage for the new settings/permission/accessibility
+   paths. Existing components are partly implemented; extend them rather than recreate them.
    Keep exact-source CI mandatory throughout, then deliver a complete candidate for phone testing.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day

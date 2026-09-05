@@ -21,10 +21,13 @@ struct HomeSetupView: View {
                                 longitude: boundary.longitude), radius: boundary.radius)
                                 .foregroundStyle(.green.opacity(0.22))
                         }.frame(height: 280).clipShape(RoundedRectangle(cornerRadius: 16))
+                            .accessibilityLabel("Map showing the chosen Home boundary")
+                            .accessibilityValue("Radius \(Int(boundary.radius)) meters")
                         Stepper("Radius: \(Int(boundary.radius)) m",
                                 value: Binding(get: { boundary.radius },
                                     set: { store.updateHomeDraftRadius($0) }),
                                 in: HomeBoundary.allowedRadius, step: 25)
+                            .accessibilityIdentifier("home-radius-stepper")
                     } else {
                         ContentUnavailableView("Location unavailable", systemImage: "location.slash")
                     }

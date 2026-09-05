@@ -4,12 +4,15 @@ A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and ente
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (6)**,
+recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (7)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
 The build-4 unsigned IPA is downloaded and hash-verified after passing cloud tests; the build guide
 contains its exact path and manual Sideloadly steps. Physical acceptance remains pending.
+Build-7 source completes the dashboard/Settings UI with detailed notification and location
+permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
+Motion/contrast accessibility behavior; it has not yet passed cloud CI.
 The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
 test the complete feature on the phone. Sideloading is reported working; continued implementation
 does not wait for another installation exercise.

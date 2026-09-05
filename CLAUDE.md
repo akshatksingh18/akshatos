@@ -6,8 +6,13 @@ from Squat Reminder with history preserved. Android Squats remains an untouched,
 
 **Status:** Building — hub picker, Squats dashboard/core, durable notification actions, daily history,
 local backup/restore, Home auto-pause, and expanded goal/streak edges are implemented and cloud-
-verified in build-6 source. Physical acceptance plus the remaining native v1 work are pending.
-Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
+verified in build-6 source. Build-7 source completes the dashboard/Settings UI: distinct notification
+(not-determined/authorized/provisional/ephemeral/denied) and location (not-determined/when-in-use/
+always/denied/restricted) permission presentation with proactive Settings routing, per-state
+automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/increased-contrast accessibility
+behavior; its exact source has not yet passed cloud CI (see `ci.md`). Physical acceptance plus the
+remaining native v1 work (foreground reconciliation completion, broader automated coverage) are
+pending. Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.
 
@@ -79,7 +84,7 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Canonical source/build owner: this `akshatos/` repository, private GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (6)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (7)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the

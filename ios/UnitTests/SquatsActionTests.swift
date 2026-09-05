@@ -359,15 +359,85 @@ import UserNotifications
         let (repository, reminders, _, store) = fixture()
         let denied = action(repository.values[0], .snooze)
         reminders.state.allowed = false
+        reminders.state.authorization = .denied
         await store.receive(denied)
         XCTAssertEqual(store.operational, "Notifications blocked")
+        XCTAssertEqual(store.notificationAuthorization, .denied)
         reminders.state.allowed = true
+        reminders.state.authorization = .authorized
         await store.receive(denied)
         var expired = action(repository.values[0], .snooze)
         expired.date = time.addingTimeInterval(-700)
         await store.receive(expired)
         XCTAssertNil(reminders.state.snooze)
         XCTAssertEqual(reminders.scheduleCount, 0)
+    }
+
+    func testStartWithoutNotificationPermissionRoutesMessageToNotificationSettings() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        reminders.state.allowed = false
+        reminders.state.authorization = .denied
+        let inbox = MemoryInbox()
+        let store = make(repository, reminders, inbox)
+        await store.start()
+        XCTAssertNil(store.active)
+        XCTAssertEqual(store.messageRoute, .notifications)
+        XCTAssertEqual(store.message, "Allow notifications in iOS Settings before starting your day.")
+    }
+
+    func testResumeWithoutNotificationPermissionRoutesMessageToNotificationSettings() async {
+        let repository = MemoryRepository()
+        var paused = session(); paused.state = .paused; paused.pauseReason = "dashboard"
+        repository.values = [paused]
+        let reminders = FakeReminders()
+        reminders.state.allowed = false
+        reminders.state.authorization = .denied
+        let store = make(repository, reminders, MemoryInbox())
+        await store.resume()
+        XCTAssertEqual(store.messageRoute, .notifications)
+        XCTAssertEqual(store.active?.state, .paused)
+    }
+
+    func testNotificationAuthorizationTracksSnapshotForPermissionUI() async {
+        let (_, reminders, _, store) = fixture()
+        reminders.state.authorization = .authorized
+        await store.refresh()
+        XCTAssertEqual(store.notificationAuthorization, .authorized)
+        reminders.state.allowed = false
+        reminders.state.authorization = .denied
+        await store.refresh()
+        XCTAssertEqual(store.notificationAuthorization, .denied)
+        XCTAssertEqual(store.operational, "Notifications blocked")
+    }
+
+    func testHomeAuthorizationDistinguishesDeniedFromRestricted() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150))
+        let monitor = FakeHomeMonitor()
+        monitor.state.authorization = .denied
+        let store = make(repository, reminders, MemoryInbox(), home: home, monitor: monitor)
+        await store.refresh()
+        XCTAssertEqual(store.homeAuthorization, .denied)
+        XCTAssertEqual(store.homeHealth, "Location access denied")
+        monitor.state.authorization = .restricted
+        await store.refresh()
+        XCTAssertEqual(store.homeAuthorization, .restricted)
+        XCTAssertEqual(store.homeHealth, "Location access restricted")
+    }
+
+    func testChooseHomeLocationDeniedRoutesMessageToLocationSettings() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        let monitor = FakeHomeMonitor()
+        monitor.state.authorization = .denied
+        let store = make(repository, reminders, MemoryInbox(), monitor: monitor)
+        await store.chooseCurrentLocationAsHome()
+        XCTAssertEqual(store.messageRoute, .location)
+        XCTAssertEqual(store.homeAuthorization, .denied)
+        XCTAssertNil(store.homeDraft)
     }
 
     func testActionDuringResumeIsQueuedThenPauseWins() async {

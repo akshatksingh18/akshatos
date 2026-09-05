@@ -9,7 +9,7 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
 
 - Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (6).
+  `com.akshatksingh18.akshatos`, version 0.2.0 (7).
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -37,7 +37,20 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   stable circular region, protected local config/event files, launch/foreground reconciliation,
   debounce, pause-reason guards, outside-Home choices, degraded health, and boundary deletion.
   It declares location usage strings without continuous background-location mode.
-- Deferred: App Intents, remaining lifecycle/persistence/UI coverage, and physical/
+- Build-7 source completes the dashboard/Settings UI: `SquatStore` now tracks the real
+  `NotificationAuthorization` (not-determined/authorized/provisional/ephemeral/denied) and
+  `HomeAuthorization` (not-determined/when-in-use/always/denied/restricted) rather than a boolean or
+  fragile status-string match, and blocking messages carry an explicit `SettingsRoute` so an alert
+  can offer a direct one-tap route to the correct iOS Settings screen. Settings shows a dedicated
+  Notifications section (status, Focus/Scheduled Summary/banner caveats, Settings link) alongside
+  the existing Home auto-pause section, and the Home section now gives denied/restricted/when-in-use
+  distinct explanations. The dashboard groups per-state hero/countdown text into one VoiceOver
+  summary (a stable "next reminder around HH:MM" rather than a ticking announcement), combines
+  decorative icons out of VoiceOver traversal, labels/values the goal progress bar, scales the three
+  fixed-size hero numerals with `@ScaledMetric` for Dynamic Type, slows the countdown tick under
+  Reduce Motion, and raises `Surface`'s border contrast under Increased Contrast.
+- Deferred: App Intents, remaining lifecycle-reconciliation completion, broader automated coverage
+  (permission-transition, DST/clock, migration/corruption, and new-UI test scenarios), and physical/
   refresh acceptance. The notification category
   exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-

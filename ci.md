@@ -1,6 +1,10 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-6 Home/goal source `3037348257938dcd545838a7b54d5bd53dafccd1`
+**Status:** Build-7 dashboard/Settings-UI source (permission-state presentation, automation-health
+icons, VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility) is implemented locally with 37
+domain assertions, 39 integration/persistence tests and the hub/settings UI test registered; it has
+not yet been pushed or run through CI. Do not call it cloud-verified until this exact commit's CI
+Gate is inspected and green. Build-6 Home/goal source `3037348257938dcd545838a7b54d5bd53dafccd1`
 passed Source checks, Build installable IPA and CI Gate in
 [PR #1 run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593).
 Daily-history/recovery source `2ac71a10731a73012a4726bbada4d3609fea93cf`

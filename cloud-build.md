@@ -1,8 +1,10 @@
 # AkshatOS cloud build and iPhone installation
 
 **State:** Build-6 Home automation and goal/streak source passed PR cloud checks; build-4 remains the latest
-downloaded, hash-verified IPA and older previews are preserved. First AkshatOS physical installation,
-reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
+downloaded, hash-verified IPA and older previews are preserved. Build-7 dashboard/Settings-UI source
+exists locally (version `0.2.0 (7)`) and has not yet been pushed through cloud CI or built into an
+artifact. First AkshatOS physical installation, reminder behavior and refresh acceptance remain
+pending. This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -15,7 +17,8 @@ implementation and automated checks; the manual steps below are for that accepta
 - Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (6)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (7)**; minimum iOS 17.
+  Build 7 has not yet been pushed through cloud CI; build 6 is the latest CI-verified source.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.

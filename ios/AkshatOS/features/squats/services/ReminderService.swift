@@ -3,6 +3,7 @@ import UserNotifications
 
 struct ReminderSnapshot {
     var allowed: Bool
+    var authorization: NotificationAuthorization = .notDetermined
     var sessionID: UUID?
     var interval: TimeInterval?
     var actionable: Bool = true
@@ -48,6 +49,17 @@ struct ReminderSnapshot {
         status == .authorized || status == .provisional || status == .ephemeral
     }
 
+    static func authorization(_ status: UNAuthorizationStatus) -> NotificationAuthorization {
+        switch status {
+        case .authorized: return .authorized
+        case .denied: return .denied
+        case .provisional: return .provisional
+        case .ephemeral: return .ephemeral
+        case .notDetermined: return .notDetermined
+        @unknown default: return .denied
+        }
+    }
+
     func snapshot() async -> ReminderSnapshot {
         let settings = await center.notificationSettings()
         let requests = await center.pendingNotificationRequests()
@@ -57,6 +69,7 @@ struct ReminderSnapshot {
         let snooze = requests.first { $0.identifier == Self.snooze &&
             $0.content.userInfo["session"] as? String == sessionID?.uuidString }
         return ReminderSnapshot(allowed: Self.allowed(settings.authorizationStatus) && settings.alertSetting == .enabled,
+            authorization: Self.authorization(settings.authorizationStatus),
             sessionID: sessionID, interval: trigger?.repeats == true ? trigger?.timeInterval : nil,
             actionable: regular?.content.categoryIdentifier == Self.categoryID,
             next: trigger?.nextTriggerDate(), snooze: (snooze?.trigger as? UNTimeIntervalNotificationTrigger)?.nextTriggerDate())
