@@ -5,8 +5,9 @@ PageVault and ReelVault are reserved for later; WHOOP stays standalone. This rep
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
 **Status:** Building — hub picker, Squats dashboard/core, durable notification actions, daily history,
-and local backup/restore are implemented and cloud-verified in build-5 source. Physical acceptance
-and the remaining native v1 work are pending.
+local backup/restore, Home auto-pause, and expanded goal/streak edges are implemented in build-6
+source. Build-5 is the latest cloud-verified source; build-6 cloud and physical acceptance plus the
+remaining native v1 work are pending.
 Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.
@@ -29,6 +30,13 @@ The full target feature contract below is not a claim that every feature is impl
 - `ios/AkshatOS/features/squats/domain/SquatsBackup.swift` — versioned local JSON export/restore
   contract and whole-file validation.
 - `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
+- `ios/AkshatOS/features/squats/domain/HomeAutomation.swift` — pure Home-boundary state, debounce,
+  and source-aware pause/resume decisions.
+- `ios/AkshatOS/features/squats/data/HomeAutomationStorage.swift` — protected this-device-only Home
+  configuration and durable minimal boundary-event inbox.
+- `ios/AkshatOS/features/squats/services/HomeRegionService.swift` — feature-owned protocol and
+  inactive test/preview adapter; the app coordinator owns the Core Location delegate implementation.
+- `ios/AkshatOS/features/squats/ui/HomeSetupView.swift` — one-shot Home map/radius confirmation UI.
 - `ios/AkshatOS/features/squats/data/SquatRepository.swift` — retryable SwiftData persistence adapter.
 - `hub-plan.md` — canonical shared packaging, source/identity ownership, feature boundaries,
   and integration gates; versioned here, with parent/sibling indexes linking to it.
@@ -72,7 +80,7 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Canonical source/build owner: this `akshatos/` repository, private GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (5)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (6)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -138,8 +146,8 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Keep idle interval/goal preferences in `UserDefaults`. Lifecycle intent belongs in the same
   versioned SwiftData session payload as its events, avoiding a separate divergent intent copy.
-  Future geofence enablement/health and identifiers may use namespaced preferences. Store the Home coordinate/radius in
-  protected local storage, never logs or remote services. Use a local versioned SwiftData store for
+  Home configuration and minimal pending region events use separate protected, atomic files. Store
+  the Home coordinate/radius in protected local storage, never logs, backups, or remote services. Use a local versioned SwiftData store for
   active/finalized day sessions, completion timestamps, pause segments, snooze events, per-day goal
   snapshots, and streak qualification when the final deployment target is iOS 17 or later; fall back
   to Core Data or SQLite only if the activation toolchain/device makes SwiftData unsuitable.

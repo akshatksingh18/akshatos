@@ -258,9 +258,9 @@ durations are candidate polish—not prerequisites for the first reliable releas
 
 Finish the agreed native v1 implementation and automated/cloud regression coverage first; Akshat
 will test it on the phone afterward. Do not block unfinished coding on baseline sideload testing.
-The remaining implementation includes further day/goal/streak edge-case hardening, opt-in Home
-auto-pause, and unfinished dashboard/settings/accessibility/error-state
-behavior. Optional Shortcuts remain a follow-on, not a new prerequisite for native v1.
+Build-6 source adds further day/goal/streak edge handling and opt-in Home auto-pause. Remaining work
+is cloud/physical validation plus unfinished dashboard/settings/accessibility/error-state behavior.
+Optional Shortcuts remain a follow-on, not a new prerequisite for native v1.
 
 The first usable release includes:
 

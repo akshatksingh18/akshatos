@@ -1,6 +1,7 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-5 daily history/recovery passed PR cloud checks; build-4 remains the latest
+**State:** Build-6 Home automation and goal/streak source is ready for cloud validation. Build-5
+daily history/recovery passed PR cloud checks; build-4 remains the latest
 downloaded, hash-verified IPA and older previews are preserved. First AkshatOS physical installation,
 reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
 
@@ -15,7 +16,7 @@ implementation and automated checks; the manual steps below are for that accepta
 - Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (5)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (6)**; minimum iOS 17.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -27,6 +28,12 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Build 6 adds staged opt-in Home selection and Always authorization, one app-lifetime circular region,
+protected boundary/event storage, source-aware pause/resume and outside-Home choices, automation
+health/edit/delete UI, future-date streak filtering and expanded goal/streak/Home regression tests.
+It intentionally omits continuous background-location mode and excludes Home coordinates from backup
+exports. Exact-source cloud results are pending; do not treat this source as compiled or phone-verified.
 
 Build 5 adds daily aggregation/history, active/paused timing, foreground calendar-boundary rollover,
 versioned JSON export/validated restore, completed-history deletion, and regression coverage. Its
@@ -127,7 +134,7 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 
 Wi-Fi/automatic refresh, expiry recovery, in-place upgrades and notification buttons still require
-physical verification. Home geofence, Shortcuts and physical recovery remain unfinished. Keep
+physical verification. Build-6 Home geofence, Shortcuts and physical recovery remain unfinished. Keep
 irreplaceable history disposable until export/restore is exercised on the phone.
 
 ## Previous standalone smoke evidence

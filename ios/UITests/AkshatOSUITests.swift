@@ -23,6 +23,8 @@ final class AkshatOSUITests: XCTestCase {
         XCTAssertTrue(app.buttons["restore-squats-backup"].exists)
         XCTAssertTrue(app.buttons["delete-squats-history"].exists)
         app.swipeUp()
+        XCTAssertTrue(app.buttons["set-home-location"].waitForExistence(timeout: 5))
+        app.swipeUp()
         XCTAssertTrue(app.staticTexts["notification-actions-help"].waitForExistence(timeout: 5))
         app.navigationBars["Squat settings"].buttons["Done"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))

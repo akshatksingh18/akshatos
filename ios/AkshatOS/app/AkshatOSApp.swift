@@ -21,7 +21,8 @@ struct AkshatOSApp: App {
     let notifications: AppNotificationCoordinator
 
     init() {
-        squats = SquatStore()
+        let home = HomeRegionService()
+        squats = SquatStore(homeMonitor: home)
         notifications = AppNotificationCoordinator(squats: squats)
     }
 }

@@ -52,8 +52,11 @@ struct SquatSession: Codable, Identifiable, Equatable {
 
     static func streaks(_ sessions: [SquatSession], now: Date = Date(),
                         calendar: Calendar = .current) -> (current: Int, best: Int) {
+        let today = dayKey(now, calendar: calendar)
         let groups = Dictionary(grouping: sessions, by: \.day)
         let qualified = Set(groups.compactMap { day, values -> String? in
+            // A clock correction must not let future-dated records inflate today's streak.
+            guard day <= today else { return nil }
             guard let goal = values.sorted(by: { $0.started < $1.started }).first?.goal,
                   values.reduce(0, { $0 + $1.count }) >= goal else { return nil }
             return day
@@ -63,6 +66,7 @@ struct SquatSession: Codable, Identifiable, Equatable {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = calendar.timeZone
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.isLenient = false
         var best = 0
         var length = 0
         var previous: Date?
@@ -76,7 +80,7 @@ struct SquatSession: Codable, Identifiable, Equatable {
             previous = date
         }
         var cursor = calendar.startOfDay(for: now)
-        if !qualified.contains(dayKey(cursor, calendar: calendar)) {
+        if !qualified.contains(today) {
             cursor = calendar.date(byAdding: .day, value: -1, to: cursor)!
         }
         var current = 0

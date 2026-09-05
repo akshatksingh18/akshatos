@@ -77,6 +77,35 @@ import UserNotifications
     func cancelSnooze() { state.snooze = nil }
 }
 
+@MainActor private final class MemoryHomePersistence: HomeAutomationPersistence {
+    var value: HomeAutomationState?
+    func load() throws -> HomeAutomationState? { value }
+    func save(_ state: HomeAutomationState) throws { value = state }
+    func delete() throws { value = nil }
+}
+
+@MainActor private final class MemoryHomeInbox: HomeEventInbox {
+    var values: [HomeBoundaryEvent] = []
+    func pending() throws -> [HomeBoundaryEvent] { values }
+    func enqueue(_ event: HomeBoundaryEvent) throws {
+        if !values.contains(where: { $0.id == event.id }) { values.append(event) }
+    }
+    func remove(_ id: String) throws { values.removeAll { $0.id == id } }
+}
+
+@MainActor private final class FakeHomeMonitor: HomeRegionMonitoring {
+    var eventHandler: ((HomeBoundaryEvent) -> Void)?
+    var failureHandler: ((String) -> Void)?
+    var state = HomeRegionSnapshot(authorization: .always, monitoringAvailable: true,
+                                   monitored: true, backgroundAccess: .available)
+    func requestWhenInUse() async -> HomeAuthorization { state.authorization }
+    func requestAlways() async -> HomeAuthorization { state.authorization }
+    func currentLocation() async throws -> (latitude: Double, longitude: Double) { (41.0, -87.0) }
+    func snapshot() -> HomeRegionSnapshot { state }
+    func startMonitoring(_ boundary: HomeBoundary) throws { state.monitored = true }
+    func stopMonitoring() { state.monitored = false }
+}
+
 @MainActor final class SquatsActionTests: XCTestCase {
     private var time: Date { Date(timeIntervalSince1970: 1_788_537_600) }
     private func session() -> SquatSession {
@@ -89,11 +118,78 @@ import UserNotifications
                     day: session.day, source: "notification")
     }
     private func make(_ repository: MemoryRepository, _ reminders: FakeReminders,
-                      _ inbox: any SquatActionInbox) -> SquatStore {
+                      _ inbox: any SquatActionInbox,
+                      home: MemoryHomePersistence = MemoryHomePersistence(),
+                      homeInbox: MemoryHomeInbox = MemoryHomeInbox(),
+                      monitor: FakeHomeMonitor = FakeHomeMonitor()) -> SquatStore {
         let clock = time
         let defaults = UserDefaults(suiteName: "SquatsActionTests.\(UUID().uuidString)")!
         return SquatStore(defaults: defaults, repository: repository, reminders: reminders,
-                          inbox: inbox, now: { clock })
+                          inbox: inbox, homePersistence: home, homeInbox: homeInbox,
+                          homeMonitor: monitor, now: { clock })
+    }
+
+    func testHomeExitPausesAndMatchingEntryResumesSameDay() async {
+        let repository = MemoryRepository(); repository.values = [session()]
+        let reminders = FakeReminders(); reminders.state.sessionID = repository.values[0].id; reminders.state.interval = 2700
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150), presence: .inside)
+        let store = make(repository, reminders, MemoryInbox(), home: home)
+        await store.receive(HomeBoundaryEvent(kind: .exited, date: time,
+            regionIdentifier: HomeAutomationState.regionIdentifier))
+        XCTAssertEqual(store.active?.state, .paused)
+        XCTAssertEqual(store.active?.pauseReason, "homeAwayAutomation")
+        XCTAssertNil(reminders.state.sessionID)
+        await store.receive(HomeBoundaryEvent(kind: .entered, date: time.addingTimeInterval(180),
+            regionIdentifier: HomeAutomationState.regionIdentifier))
+        XCTAssertEqual(store.active?.state, .running)
+        XCTAssertNil(store.active?.pauseReason)
+        XCTAssertEqual(reminders.state.sessionID, store.active?.id)
+    }
+
+    func testDeliberatePauseWhileAwayPreventsArrivalResume() async {
+        let repository = MemoryRepository(); repository.values = [session()]
+        let reminders = FakeReminders(); reminders.state.sessionID = repository.values[0].id; reminders.state.interval = 2700
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150), presence: .inside)
+        let store = make(repository, reminders, MemoryInbox(), home: home)
+        await store.receive(HomeBoundaryEvent(kind: .exited, date: time,
+            regionIdentifier: HomeAutomationState.regionIdentifier))
+        await store.pause()
+        XCTAssertEqual(store.active?.pauseReason, "dashboard")
+        await store.receive(HomeBoundaryEvent(kind: .entered, date: time.addingTimeInterval(180),
+            regionIdentifier: HomeAutomationState.regionIdentifier))
+        XCTAssertEqual(store.active?.state, .paused)
+        XCTAssertNil(reminders.state.sessionID)
+    }
+
+    func testManualResumeOutsideSuppressesExitUntilEntryOrEnd() async {
+        let repository = MemoryRepository(); var paused = session(); paused.state = .paused; paused.pauseReason = "dashboard"; repository.values = [paused]
+        let reminders = FakeReminders()
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150), presence: .outside)
+        let store = make(repository, reminders, MemoryInbox(), home: home)
+        await store.resume()
+        XCTAssertTrue(home.value!.suppressExitUntilEntry)
+        await store.receive(HomeBoundaryEvent(kind: .exited, date: time.addingTimeInterval(180),
+            regionIdentifier: HomeAutomationState.regionIdentifier))
+        XCTAssertEqual(store.active?.state, .running)
+        await store.end()
+        XCTAssertFalse(home.value!.suppressExitUntilEntry)
+    }
+
+    func testSameDayGoalSnapshotSurvivesSettingChangeAndRestart() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        let inbox = MemoryInbox()
+        let store = make(repository, reminders, inbox)
+        store.goal = 4
+        await store.start()
+        await store.end()
+        store.goal = 8
+        await store.start()
+        XCTAssertEqual(store.todayGoal, 4)
+        XCTAssertEqual(store.active?.goal, 4)
     }
     private func fixture() -> (MemoryRepository, FakeReminders, MemoryInbox, SquatStore) {
         let repository = MemoryRepository()
@@ -206,6 +302,8 @@ import UserNotifications
         reminders.state.interval = 2700
         let inbox = MemoryInbox()
         let store = SquatStore(repository: repository, reminders: reminders, inbox: inbox,
+                               homePersistence: MemoryHomePersistence(), homeInbox: MemoryHomeInbox(),
+                               homeMonitor: FakeHomeMonitor(),
                                now: { midnight.addingTimeInterval(60) })
         let command = SquatAction(id: UUID().uuidString, sessionID: active.id, kind: .snooze,
                                   date: tap, day: active.day, source: "notification")
@@ -385,6 +483,26 @@ import UserNotifications
         XCTAssertThrowsError(try failing.enqueue(action(session())))
         XCTAssertThrowsError(try failing.remove(command.id))
         XCTAssertEqual(try FileSquatActionInbox(url: url).pending(), [command])
+    }
+
+    func testProtectedHomeStateAndEventInboxSurviveRecreation() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let configURL = root.appendingPathComponent("config.json")
+        let eventsURL = root.appendingPathComponent("events.json")
+        let persistence = FileHomeAutomationPersistence(url: configURL)
+        let state = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 175),
+                                        presence: .outside, suppressExitUntilEntry: true)
+        try persistence.save(state)
+        XCTAssertEqual(try FileHomeAutomationPersistence(url: configURL).load(), state)
+        let inbox = FileHomeEventInbox(url: eventsURL)
+        let event = HomeBoundaryEvent(id: "home-event", kind: .entered, date: time,
+                                      regionIdentifier: HomeAutomationState.regionIdentifier)
+        try inbox.enqueue(event)
+        try inbox.enqueue(event)
+        XCTAssertEqual(try FileHomeEventInbox(url: eventsURL).pending(), [event])
+        try persistence.delete()
+        XCTAssertNil(try persistence.load())
     }
 
     func testLegacyPayloadDecodesAndDiskRestartKeepsReceiptAfterUndo() throws {

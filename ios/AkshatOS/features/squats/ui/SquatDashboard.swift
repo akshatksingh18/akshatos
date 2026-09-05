@@ -12,6 +12,9 @@ struct SquatDashboard: View {
     @State private var showExporter = false
     @State private var exportDocument: SquatsBackupDocument?
     @State private var pendingRestore: SquatsBackup?
+    @State private var showHomeSetup = false
+    @State private var showDisableHome = false
+    @State private var showOutsideStart = false
 
     var body: some View {
         ScrollView {
@@ -55,7 +58,7 @@ struct SquatDashboard: View {
                 }
                 goalCard
                 timeline
-                Text("Home auto-pause is coming next. Dashboard and notification controls remain available everywhere.")
+                Text(store.homeEnabled ? "Home auto-pause: \(store.homeHealth)." : "Home auto-pause is optional and currently off.")
                     .font(.footnote).foregroundStyle(Palette.muted)
                 Text("AkshatOS · Preview 0.2.0")
                     .font(.caption2).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
@@ -85,7 +88,14 @@ struct SquatDashboard: View {
         }
         .confirmationDialog("Start another session today? Your earlier sets still count.",
                             isPresented: $showRestart, titleVisibility: .visible) {
-            Button("Start another session") { Task { await store.start() } }
+            Button("Start another session") { startRequested() }
+        }
+        .confirmationDialog("You are outside Home", isPresented: $showOutsideStart,
+                            titleVisibility: .visible) {
+            Button("Start paused until I arrive Home") { Task { await store.start(pausedForHome: true) } }
+            Button("Run reminders anyway") { Task { await store.start() } }
+        } message: {
+            Text("Choose whether this day should wait for your return or run while you are away.")
         }
     }
 
@@ -143,7 +153,7 @@ struct SquatDashboard: View {
                     .frame(maxWidth: .infinity).disabled(store.busy || !store.storageAvailable)
             } else {
                 Button {
-                    if store.today.isEmpty { Task { await store.start() } }
+                    if store.today.isEmpty { startRequested() }
                     else { showRestart = true }
                 } label: { Text(store.today.isEmpty ? "Start my day" : "Start another session") }
                     .buttonStyle(ActionStyle(primary: true)).disabled(store.busy || !store.storageAvailable)
@@ -175,6 +185,10 @@ struct SquatDashboard: View {
                     Text("\(store.todayCount)/\(goal)").monospacedDigit()
                 }.font(.subheadline).foregroundStyle(Palette.muted)
                 ProgressView(value: Double(min(store.todayCount, goal)), total: Double(goal)).tint(Palette.lime)
+                if store.todayCount < goal {
+                    Text("Today is at risk; your existing streak remains intact until the local day ends.")
+                        .font(.caption).foregroundStyle(Palette.muted)
+                }
             } else {
                 Text("Choose a daily set goal in Settings to begin your streak. No target is chosen for you.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
@@ -234,6 +248,37 @@ struct SquatDashboard: View {
                     Text("Settings are locked during an active session. Each day's first session fixes that day's goal; changes apply to the next new day. A goal of zero leaves streak tracking off.")
                     settingsLink
                 }
+                Section("Home auto-pause") {
+                    Label(store.homeHealth, systemImage: store.homeEnabled ? "house.fill" : "house")
+                    if store.homeEnabled {
+                        Text("AkshatOS stores one circular Home boundary on this phone. Leaving pauses a running day; arriving resumes only a same-day pause caused by Home departure.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Button("Update Home from my current location") {
+                            Task {
+                                await store.editHome()
+                                showHomeSetup = store.homeDraft != nil
+                            }
+                        }
+                        Button("Disable and delete Home", role: .destructive) { showDisableHome = true }
+                    } else {
+                        Text("Optional. Setup asks for location in two stages and never saves a movement trail.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Button("Use my current location as Home") {
+                            Task {
+                                await store.chooseCurrentLocationAsHome()
+                                showHomeSetup = store.homeDraft != nil
+                            }
+                        }.accessibilityIdentifier("set-home-location")
+                    }
+                    if store.homeHealth.contains("denied") || store.homeHealth.contains("needed") ||
+                        store.homeHealth.contains("restricted") {
+                        Button("Open iOS location settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                    }
+                }.disabled(store.busy)
                 Section("Data management") {
                     Button {
                         do {
@@ -251,7 +296,6 @@ struct SquatDashboard: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }.disabled(store.busy || !store.storageAvailable)
                 Section("Coming later") {
-                    Label("Home auto-pause", systemImage: "house")
                     Label("Shortcuts", systemImage: "app.badge")
                 }.foregroundStyle(.secondary)
                 Section("Notification actions") {
@@ -261,6 +305,7 @@ struct SquatDashboard: View {
             }.navigationTitle("Squat settings")
                 .toolbar { Button("Done") { showSettings = false } }
         }.tint(Palette.lime)
+            .sheet(isPresented: $showHomeSetup) { HomeSetupView() }
             .confirmationDialog("Restore this Squats backup?", isPresented: $showRestore,
                                 titleVisibility: .visible) {
                 Button("Replace current Squats data", role: .destructive) {
@@ -278,6 +323,12 @@ struct SquatDashboard: View {
                 }
             } message: {
                 Text("This keeps an active day and your settings. Export a backup first if you may need the completed history later.")
+            }
+            .confirmationDialog("Disable Home auto-pause and delete its boundary?",
+                                isPresented: $showDisableHome, titleVisibility: .visible) {
+                Button("Disable and delete Home", role: .destructive) {
+                    Task { await store.disableHome() }
+                }
             }
             .fileExporter(isPresented: $showExporter, document: exportDocument,
                           contentType: .json, defaultFilename: "squats-backup") { result in
@@ -309,6 +360,11 @@ struct SquatDashboard: View {
                 UIApplication.shared.open(url)
             }
         }
+    }
+
+    private func startRequested() {
+        if store.shouldOfferOutsideStart { showOutsideStart = true }
+        else { Task { await store.start() } }
     }
 
     private func summary(_ day: SquatDaySummary) -> some View {

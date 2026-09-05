@@ -12,15 +12,22 @@ import SwiftUI
     @Published var message: String?
     @Published var notice: String?
     @Published var summary: SquatDaySummary?
+    @Published private(set) var homeState: HomeAutomationState?
+    @Published private(set) var homeDraft: HomeBoundary?
+    @Published private(set) var homeHealth = "Off"
     @Published var interval: Int { didSet { defaults.set(interval, forKey: "squats.interval") } }
     @Published var goal: Int { didSet { defaults.set(goal, forKey: "squats.goal") } }
     private let defaults: UserDefaults
     private let repository: any SquatRepository
     private let reminders: any SquatReminders
     private let inbox: any SquatActionInbox
+    private let homePersistence: any HomeAutomationPersistence
+    private let homeInbox: any HomeEventInbox
+    private let homeMonitor: any HomeRegionMonitoring
     private let now: () -> Date
     private let calendar: Calendar
     private var actionRevision = 0
+    private var homeDataAvailable = true
     var active: SquatSession? { sessions.first { $0.isActive } }
     var today: [SquatSession] { sessions.filter { $0.day == SquatSession.dayKey(now(), calendar: calendar) } }
     var todayCount: Int { today.reduce(0) { $0 + $1.count } }
@@ -29,6 +36,9 @@ import SwiftUI
         return goal > 0 ? goal : nil
     }
     var staleDay: Bool { active.map { $0.day != SquatSession.dayKey(now(), calendar: calendar) } ?? false }
+    var homeEnabled: Bool { homeState?.enabled == true }
+    var homePresence: HomePresence { homeState?.presence ?? .unknown }
+    var shouldOfferOutsideStart: Bool { homeEnabled && homePresence == .outside }
     var streaks: (current: Int, best: Int) { SquatSession.streaks(sessions, now: now(), calendar: calendar) }
     var daySummaries: [SquatDaySummary] {
         Set(sessions.map(\.day)).compactMap { day in
@@ -38,16 +48,30 @@ import SwiftUI
 
     init(defaults: UserDefaults = .standard, repository: (any SquatRepository)? = nil,
          reminders: (any SquatReminders)? = nil, inbox: (any SquatActionInbox)? = nil,
+         homePersistence: (any HomeAutomationPersistence)? = nil,
+         homeInbox: (any HomeEventInbox)? = nil,
+         homeMonitor: (any HomeRegionMonitoring)? = nil,
          now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
         self.defaults = defaults
         self.repository = repository ?? SwiftDataSquatRepository()
         self.reminders = reminders ?? ReminderService()
         self.inbox = inbox ?? FileSquatActionInbox()
+        self.homePersistence = homePersistence ?? FileHomeAutomationPersistence()
+        self.homeInbox = homeInbox ?? FileHomeEventInbox()
+        self.homeMonitor = homeMonitor ?? InactiveHomeRegionMonitor()
         self.now = now
         self.calendar = calendar
         interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? 45))
         goal = max(0, min(100, defaults.integer(forKey: "squats.goal")))
         load()
+        loadHome()
+        self.homeMonitor.eventHandler = { [weak self] event in
+            Task { @MainActor in await self?.receive(event) }
+        }
+        self.homeMonitor.failureHandler = { [weak self] detail in
+            self?.homeHealth = "Region monitoring failed"
+            self?.message = "Home auto-pause is degraded: \(detail). Manual reminder controls still work."
+        }
     }
 
     private func load() {
@@ -58,6 +82,19 @@ import SwiftUI
             storageAvailable = false
             operational = "Storage unavailable"
             message = "Your local data could not be opened. Nothing was erased. Unlock your phone and return to retry; keep the app installed."
+        }
+    }
+
+    private func loadHome() {
+        do {
+            homeState = try homePersistence.load()
+            homeDataAvailable = true
+        }
+        catch {
+            homeState = nil
+            homeDataAvailable = false
+            homeHealth = "Home data unavailable"
+            message = "Home auto-pause data could not be opened. Unlock your phone and return to retry."
         }
     }
 
@@ -93,11 +130,25 @@ import SwiftUI
         await refresh()
     }
 
+    /// Region callbacks are persisted before session data is touched so protected-data launches replay safely.
+    func receive(_ event: HomeBoundaryEvent) async {
+        do {
+            try homeInbox.enqueue(event)
+            actionRevision += 1
+        } catch {
+            message = "A Home boundary event could not be saved. Open Squats after unlocking to reconcile it."
+            if event.presence == .outside { reminders.cancel() }
+            return
+        }
+        await refresh()
+    }
+
     func refresh() async {
         guard !busy else { return }
         busy = true
         defer { busy = false }
         if !storageAvailable { load() }
+        if !homeDataAvailable { loadHome() }
         await settle()
     }
 
@@ -108,8 +159,58 @@ import SwiftUI
         repeat {
             observed = actionRevision
             do { try await drainInbox() } catch { actionFailure(error) }
+            do { try await drainHomeInbox() } catch { homeFailure(error) }
             await reconcile()
+            await reconcileHomeMonitoring()
         } while observed != actionRevision
+    }
+
+    private func drainHomeInbox() async throws {
+        while let event = try homeInbox.pending().first {
+            guard storageAvailable, homeDataAvailable else { return }
+            guard var state = homeState else {
+                // A callback racing with Disable must not become a permanent pending event.
+                try homeInbox.remove(event.id)
+                continue
+            }
+            let currentDay = SquatSession.dayKey(now(), calendar: calendar)
+            let decision = state.accept(event, activeDay: active?.day, activeState: active?.state,
+                                        pauseReason: active?.pauseReason, currentDay: currentDay)
+            switch decision {
+            case .none: break
+            case .pause:
+                guard let session = active else { break }
+                reminders.cancel()
+                let action = SquatAction(id: event.id, sessionID: session.id, kind: .pause,
+                    date: event.date, day: currentDay, source: "homeAwayAutomation")
+                try save(action.applying(to: session))
+                notice = "Reminders paused because you left Home."
+            case .resume:
+                try await resumeFromHome(event)
+            }
+            // Commit observed Home state only after the matching session transition succeeds.
+            // If either write fails, the durable event safely replays against its action receipt/state.
+            try homePersistence.save(state)
+            homeState = state
+            try homeInbox.remove(event.id)
+        }
+    }
+
+    private func resumeFromHome(_ event: HomeBoundaryEvent) async throws {
+        guard var session = active, session.day == SquatSession.dayKey(now(), calendar: calendar),
+              session.state == .paused, session.pauseReason == "homeAwayAutomation" else { return }
+        let snapshot = await reminders.snapshot()
+        guard snapshot.allowed else {
+            homeHealth = "Needs notification access"
+            return
+        }
+        reminders.cancel()
+        try await reminders.schedule(session, snoozeUntil: nil)
+        session.state = .running
+        session.pauseReason = nil
+        session.log(SquatEvent(date: event.date, kind: .resume, source: "homeAwayAutomation"))
+        do { try save(session) } catch { reminders.cancel(); throw error }
+        notice = "You arrived Home, so reminders resumed."
     }
 
     private func drainInbox() async throws {
@@ -209,20 +310,60 @@ import SwiftUI
         message = "Could not complete that action: \(error.localizedDescription). Saved history and queued notification actions were kept. Unlock and return to retry."
     }
 
+    private func homeFailure(_ error: Error) {
+        homeHealth = "Needs attention"
+        message = "Home auto-pause needs attention: \(error.localizedDescription). Manual reminder controls still work."
+    }
+
+    private func reconcileHomeMonitoring() async {
+        guard let state = homeState, state.enabled else {
+            homeHealth = "Off"
+            return
+        }
+        let snapshot = homeMonitor.snapshot()
+        guard snapshot.authorization == .always else {
+            homeMonitor.stopMonitoring()
+            homeHealth = snapshot.authorization == .denied || snapshot.authorization == .restricted
+                ? "Location access denied" : "Always access needed"
+            return
+        }
+        guard snapshot.monitoringAvailable else {
+            homeHealth = "Region monitoring unavailable"
+            return
+        }
+        guard snapshot.backgroundAccess == .available else {
+            homeHealth = "Background refresh restricted"
+            return
+        }
+        do {
+            if !snapshot.monitored { try homeMonitor.startMonitoring(state.boundary) }
+            homeHealth = state.presence == .unknown ? "Checking Home boundary" :
+                (state.presence == .inside ? "At Home" : "Away from Home")
+            if state.presence == .inside, active?.state == .paused,
+               active?.pauseReason == "homeAwayAutomation",
+               active?.day == SquatSession.dayKey(now(), calendar: calendar) {
+                try? await resumeFromHome(HomeBoundaryEvent(kind: .stateInside, date: now(),
+                    regionIdentifier: HomeAutomationState.regionIdentifier))
+            }
+        } catch { homeHealth = "Needs attention" }
+    }
+
     private func perform(_ operation: () async throws -> Void) async {
         guard !busy else { return }
         busy = true
         defer { busy = false }
         if !storageAvailable { load() }
+        if !homeDataAvailable { loadHome() }
         do {
             try await drainInbox()
+            try await drainHomeInbox()
             guard storageAvailable else { return }
             try await operation()
         } catch { actionFailure(error) }
         await settle()
     }
 
-    func start() async {
+    func start(pausedForHome: Bool = false) async {
         await perform {
             guard active == nil, (1...180).contains(interval) else { return }
             guard try await reminders.authorize() else {
@@ -233,8 +374,19 @@ import SwiftUI
             let snapshot = first != nil ? first!.goal : (goal > 0 ? goal : nil)
             var session = SquatSession(day: SquatSession.dayKey(now(), calendar: calendar), started: now(),
                                        interval: interval, goal: snapshot)
+            if shouldOfferOutsideStart {
+                if pausedForHome {
+                    session.pauseReason = "homeAwayAutomation"
+                    session.log(SquatEvent(date: now(), kind: .pause, source: "homeAwayAutomation"))
+                } else if var state = homeState {
+                    state.suppressExitUntilEntry = true
+                    try homePersistence.save(state)
+                    homeState = state
+                }
+            }
             try save(session)
             reminders.cancel()
+            if pausedForHome { return }
             try await reminders.schedule(session, snoozeUntil: nil)
             session.state = .running
             do { try save(session) } catch { reminders.cancel(); throw error }
@@ -264,6 +416,11 @@ import SwiftUI
                 message = "Notifications are disabled. Enable them in iOS Settings."
                 return
             }
+            if var state = homeState, state.enabled, state.presence == .outside {
+                state.suppressExitUntilEntry = true
+                try homePersistence.save(state)
+                homeState = state
+            }
             reminders.cancel()
             try await reminders.schedule(session, snoozeUntil: nil)
             session.state = .running
@@ -288,8 +445,85 @@ import SwiftUI
             session.state = .ended
             session.ended = now()
             try save(session)
+            if var state = homeState, state.suppressExitUntilEntry {
+                state.suppressExitUntilEntry = false
+                try homePersistence.save(state)
+                homeState = state
+            }
             summary = daySummary(for: session.day)
         }
+    }
+
+    func chooseCurrentLocationAsHome() async {
+        guard !busy else { return }
+        busy = true
+        defer { busy = false }
+        let authorization = await homeMonitor.requestWhenInUse()
+        guard authorization == .whenInUse || authorization == .always else {
+            homeHealth = authorization == .denied || authorization == .restricted
+                ? "Location access denied" : "Location access needed"
+            message = "Allow location access while using AkshatOS so you can choose and confirm Home."
+            return
+        }
+        do {
+            let location = try await homeMonitor.currentLocation()
+            homeDraft = try HomeBoundary(latitude: location.latitude, longitude: location.longitude,
+                radius: homeState?.boundary.radius ?? HomeBoundary.defaultRadius).validated()
+            homeHealth = "Confirm Home boundary"
+        } catch { homeFailure(error) }
+    }
+
+    func updateHomeDraftRadius(_ radius: Double) {
+        guard var draft = homeDraft else { return }
+        draft.radius = min(max(radius, HomeBoundary.allowedRadius.lowerBound), HomeBoundary.allowedRadius.upperBound)
+        homeDraft = draft
+    }
+
+    func cancelHomeDraft() { homeDraft = nil }
+
+    func confirmHome() async {
+        guard !busy, let boundary = homeDraft else { return }
+        busy = true
+        defer { busy = false }
+        do {
+            var state = HomeAutomationState(boundary: try boundary.validated())
+            if let current = homeState { state.presence = current.presence }
+            try homePersistence.save(state)
+            homeState = state
+            homeDraft = nil
+            let authorization = await homeMonitor.requestAlways()
+            guard authorization == .always else {
+                homeHealth = authorization == .denied || authorization == .restricted
+                    ? "Location access denied" : "Always access needed"
+                message = "Home is saved, but Always location access is required for automatic boundary events. You can enable it in iOS Settings."
+                return
+            }
+            try homeMonitor.startMonitoring(state.boundary)
+            await reconcileHomeMonitoring()
+            notice = "Home auto-pause is on. AkshatOS stores only this boundary, never a movement trail."
+        } catch { homeFailure(error) }
+    }
+
+    func editHome() async { await chooseCurrentLocationAsHome() }
+
+    func disableHome() async {
+        guard !busy else { return }
+        busy = true
+        defer { busy = false }
+        homeMonitor.stopMonitoring()
+        do {
+            try homePersistence.delete()
+            homeState = nil
+            homeDraft = nil
+            homeHealth = "Off"
+            if var session = active, session.state == .paused,
+               session.pauseReason == "homeAwayAutomation" {
+                session.pauseReason = "homeAutomationDisabled"
+                try save(session)
+            }
+            for event in (try? homeInbox.pending()) ?? [] { try? homeInbox.remove(event.id) }
+            notice = "Home auto-pause is off and the saved Home boundary was deleted."
+        } catch { homeFailure(error) }
     }
 
     func restore(_ candidate: SquatsBackup) async {

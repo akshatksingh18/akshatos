@@ -9,10 +9,11 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
 
 - Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (5).
+  `com.akshatksingh18.akshatos`, version 0.2.0 (6).
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
-  `AppNotificationCoordinator` across navigation. `HubRootView` adapts observed Squats state into
+  `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
+  `HubRootView` adapts observed Squats state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats.
   PageVault/ReelVault are noninteractive planned cards. WHOOP remains separate.
@@ -30,12 +31,17 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   Foreground reconciliation closes a stale prior-day session at that date's next local calendar
   boundary and cancels its schedule. Calendar-day arithmetic handles DST; no background midnight
   launch is required or promised. Countdown is display-only;
-  UserNotifications schedules delivery without relying on the dashboard or its timer.
-- Deferred: Home geofence, App Intents, remaining lifecycle/persistence/UI coverage, and physical/
+  UserNotifications schedules delivery without relying on the dashboard or its timer. Future-dated
+  clock artifacts are excluded from current/best streaks until their local date arrives.
+- Home auto-pause source now includes staged When In Use/Always setup, map/radius confirmation, one
+  stable circular region, protected local config/event files, launch/foreground reconciliation,
+  debounce, pause-reason guards, outside-Home choices, degraded health, and boundary deletion.
+  It declares location usage strings without continuous background-location mode.
+- Deferred: App Intents, remaining lifecycle/persistence/UI coverage, and physical/
   refresh acceptance. The notification category
   exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
-- Review the intended contract below before extending these areas. Do not label target-only
-  behavior as implemented. No location permission/background mode is currently requested.
+- Review the intended contract below before extending these areas. Do not label cloud- or device-
+  unverified behavior as accepted.
 
 ## Target iPhone architecture
 

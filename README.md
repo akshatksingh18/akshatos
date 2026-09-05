@@ -3,8 +3,8 @@
 A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
-**Current state:** hub/Squats implementation with notification actions, daily history and local
-recovery, source version **0.2.0 (5)**,
+**Current state:** hub/Squats implementation with notification actions, daily history, local
+recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (6)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
@@ -34,9 +34,11 @@ App composition, display-only hub, shared styling and Squats feature are separat
 - Configurable daily goal (unset initially), current/best streak and today's progress.
 - Same-date daily overview with active/paused duration, event/pause detail, local-midnight rollover,
   versioned JSON export/restore, and confirmed deletion of completed history.
-- No location access, server, telemetry, account, or embedded WHOOP.
+- Optional staged Home setup with one protected local geofence, pause-source guards, outside-Home
+  Start/Resume choices, visible health, and edit/disable/delete. No route history is retained.
+- No server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** Home auto-pause, Shortcuts, remaining v1 UI/reliability work and physical
+**Still deferred:** Shortcuts, remaining v1 UI/reliability work and physical
 acceptance testing. The full intended scope below remains the
 target, not a list of completed features. Until recovery and device tests pass, use disposable
 test activity only.
@@ -91,10 +93,11 @@ the boundary uses calendar arithmetic for DST and does not require a background 
 export a versioned JSON backup, validate and restore it before replacing current Squats data, or
 delete completed history while retaining the active day and preferences.
 
-The accepted forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
+The implemented forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
 location to choose/confirm a circular Home boundary, then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
-state stay in protected local storage; the app never continuously tracks location or saves a route.
+state stay in protected local storage and are excluded from Squats backup exports; the app never
+continuously tracks location or saves a route. Build-6 cloud and physical behavior remain unverified.
 Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
 is Home-away automation. A deliberate pause always wins; an explicit run-anyway choice while outside
 temporarily suppresses repeat exit events.

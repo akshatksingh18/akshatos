@@ -43,7 +43,46 @@ assert(SquatSession.streaks([a, b], now: dst, calendar: calendar).current == 2, 
 let dstStart = calendar.startOfDay(for: dst)
 let dstEnd = SquatSession.endOfDay(SquatSession.dayKey(dstStart, calendar: calendar), calendar: calendar)!
 assert(dstEnd.timeIntervalSince(dstStart) == 90000, "Fall DST day closes at the next local midnight")
-print("PASS: 13 domain assertions (events, persistence, goal, streak, skipped day, DST)")
+let future = session(9, count: 2)
+assert(SquatSession.streaks([future], now: date(4), calendar: calendar).best == 0,
+       "A future clock-created day must not inflate the current best")
+var firstGoal = session(4, count: 4, goal: 4)
+firstGoal.started = date(4).addingTimeInterval(-3600)
+var changedGoal = session(4, count: 0, goal: 8)
+changedGoal.started = date(4)
+assert(SquatSession.streaks([firstGoal, changedGoal], now: date(4), calendar: calendar).current == 1,
+       "The first session snapshots the date goal")
+let neutral = session(1, count: 20, goal: nil)
+assert(SquatSession.streaks([neutral, session(3, count: 2)], now: date(4), calendar: calendar).current == 1,
+       "Goal-free dates before activation are neutral")
+print("PASS: 16 domain assertions (events, persistence, goal, streak, skipped day, clock, DST)")
+
+let boundary = HomeBoundary(latitude: 41, longitude: -87, radius: 150)
+var home = HomeAutomationState(boundary: boundary, presence: .inside)
+let exit = HomeBoundaryEvent(kind: .exited, date: date(4),
+                             regionIdentifier: HomeAutomationState.regionIdentifier)
+assert(home.accept(exit, activeDay: "2026-09-04", activeState: .running,
+                   pauseReason: nil, currentDay: "2026-09-04") == .pause,
+       "Leaving Home pauses only a running day")
+let duplicateExit = HomeBoundaryEvent(kind: .stateOutside, date: date(4).addingTimeInterval(30),
+                                      regionIdentifier: HomeAutomationState.regionIdentifier)
+assert(home.accept(duplicateExit, activeDay: "2026-09-04", activeState: .paused,
+                   pauseReason: "homeAwayAutomation", currentDay: "2026-09-04") == .none,
+       "Boundary jitter is debounced")
+let entry = HomeBoundaryEvent(kind: .entered, date: date(4).addingTimeInterval(180),
+                              regionIdentifier: HomeAutomationState.regionIdentifier)
+assert(home.accept(entry, activeDay: "2026-09-04", activeState: .paused,
+                   pauseReason: "homeAwayAutomation", currentDay: "2026-09-04") == .resume,
+       "Arrival resumes the same day only after Home automation paused it")
+var manual = HomeAutomationState(boundary: boundary, presence: .outside)
+assert(manual.accept(entry, activeDay: "2026-09-04", activeState: .paused,
+                     pauseReason: "dashboard", currentDay: "2026-09-04") == .none,
+       "Arrival cannot override a deliberate pause")
+var priorDay = HomeAutomationState(boundary: boundary, presence: .outside)
+assert(priorDay.accept(entry, activeDay: "2026-09-03", activeState: .paused,
+                       pauseReason: "homeAwayAutomation", currentDay: "2026-09-04") == .none,
+       "Arrival cannot revive a prior day")
+print("PASS: 5 Home automation assertions (pause, debounce, reason, same-day resume)")
 
 var actionSession = session(4, count: 0)
 actionSession.state = .running
