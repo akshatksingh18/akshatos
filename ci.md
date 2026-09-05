@@ -12,6 +12,11 @@ build. PR runs do not upload an IPA artifact; exact downloadable build/hash evid
 Final classifier/documentation source `d3864970a2beb2ebcc463bf73fca0574542ca942` passed the full
 pipeline in [PR #1 run #28](https://github.com/akshatksingh18/akshatos/actions/runs/33986900743);
 that update contained the workflow itself, so classification correctly required macOS.
+The subsequent Markdown-only source `931d3a568d5540167dbf9734020a1715a3cd3420` passed Source
+checks and the required `CI Gate` in
+[PR #1 run #29](https://github.com/akshatksingh18/akshatos/actions/runs/33987404033) while `Build
+installable IPA` concluded `skipped`, directly verifying that the protected check does not remain
+pending when a PR update changes only documentation.
 
 ## Automated checks
 

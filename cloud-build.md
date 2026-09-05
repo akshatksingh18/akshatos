@@ -41,6 +41,11 @@ simulator/device compilation, IPA inspection and CI Gate. The PR run did not upl
 Final classifier/documentation source `d3864970a2beb2ebcc463bf73fca0574542ca942` then passed
 [PR #1 run #28](https://github.com/akshatksingh18/akshatos/actions/runs/33986900743), including the
 full macOS job because that update changed the workflow. Application source remained `d80653d`.
+The subsequent Markdown-only source `931d3a568d5540167dbf9734020a1715a3cd3420` passed Source
+checks and the required `CI Gate` in
+[PR #1 run #29](https://github.com/akshatksingh18/akshatos/actions/runs/33987404033) while `Build
+installable IPA` was skipped, proving the required check still resolves without spending macOS
+minutes on a documentation-only PR update.
 
 Build 8 closes three gaps found in a follow-up review of the build-7 dashboard/Settings UI task: a
 monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag so a permission that was granted at
