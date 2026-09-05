@@ -68,11 +68,11 @@ import SwiftUI
         self.calendar = calendar
         interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? 45))
         goal = max(0, min(100, defaults.integer(forKey: "squats.goal")))
+        notificationEverAuthorized = defaults.bool(forKey: "squats.notificationEverAuthorized")
+        homeEverAuthorized = defaults.bool(forKey: "squats.homeEverAuthorized")
         // Canonicalize old/corrupt idle preferences so every subsequent launch sees the repaired values.
         defaults.set(interval, forKey: "squats.interval")
         defaults.set(goal, forKey: "squats.goal")
-        notificationEverAuthorized = defaults.bool(forKey: "squats.notificationEverAuthorized")
-        homeEverAuthorized = defaults.bool(forKey: "squats.homeEverAuthorized")
         load()
         loadHome()
         self.homeMonitor.eventHandler = { [weak self] event in
