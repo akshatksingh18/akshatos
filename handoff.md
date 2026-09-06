@@ -1,8 +1,8 @@
 # AkshatOS session handoff
 
-**Status:** The publication/security gate is resolved and the repository is temporarily public with
-protected `main`. Permission-history and Home-backup corrections passed PR run #27. Resume the
-remaining Squats reliability work next; first physical AkshatOS acceptance and the full Squats
+**Status:** The repository is temporarily public with protected `main`. Foreground reconciliation
+source `8c1cc96` passed PR run #32 and PR #1 merged it to `main` as `1996004`. Resume broader
+native-v1 regression coverage next; first physical AkshatOS acceptance and the full Squats
 feature contract remain unfinished. This is a current-state entry point, not a separate
 specification or chronological log. Update it in place when its resume guidance changes; the
 linked owning documents control detailed facts.
@@ -88,6 +88,11 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   notifications and When In Use location, proves both flags and revoked wording survive store
   recreation, and excludes the protected Home files/directory from device backup. Exact source
   `d80653da39433815c1d12fb9470adb9417a6f819` passed PR run #27.
+- Foreground reconciliation canonicalizes invalid idle preferences, validates the expected
+  recurring request and current-session snooze, removes stale/malformed snoozes, and compares the
+  actual monitored Home circle with protected configuration. Missing/mismatched Home registration
+  resets stale presence to Unknown before automatic re-registration. Exact source `8c1cc96` passed
+  PR run #32 and was merged through PR #1.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -106,8 +111,7 @@ Many unchecked TODOs are full-contract acceptance gates for partially implemente
 
 ## Build and device evidence
 
-Current work is on `feature/squats-notification-actions`, published in
-[PR #1](https://github.com/akshatksingh18/akshatos/pull/1), not merged into main. Build-4 source
+PR #1 is merged into `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`. Build-4 source
 `3cfea6176d43e79b8af899b579e0ac602b480715` passed
 [run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 20 domain assertions,
 24 integration tests, one hub/settings UI test, source/inventory/workflow checks, simulator/device
@@ -139,6 +143,11 @@ Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` passed
 assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
 IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
 
+Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` passed
+[PR run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820): 37 domain
+assertions, 45 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
+IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally did not upload an IPA.
+
 The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
 `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
 Its checksum, identity, version/build and payload passed local inspection. Recheck SHA-256 against
@@ -157,16 +166,10 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Finish native v1 reliability coverage:** build-7 completes the dashboard/Settings UI task
-   (permission-state presentation, automation-health icons, and VoiceOver/Dynamic Type/Reduce
-   Motion/contrast accessibility); its exact source passed CI Gate in PR run #22. Build-8 closes a
-   follow-up review's three UI gaps (revoked-vs-denied wording, a dashboard automation-health icon,
-   Dynamic Type hardening); post-review permission-history and Home-backup corrections passed CI Gate
-   in PR run #27. Remaining work
-   is foreground-reconciliation completion (SwiftData intent vs. actual notification/Home-region
-   state, stale-request cancellation) and broader day/streak, persistence, migration and permission-
-   transition regression scenarios, plus UI coverage for the new settings/permission/accessibility
-   paths. Existing components are partly implemented; extend them rather than recreate them.
+1. **Finish native v1 reliability coverage:** foreground reconciliation passed CI Gate in PR run
+   #32 and is merged. Remaining source work is broader day/streak, persistence, migration and
+   permission-transition regression scenarios, plus UI coverage for the newer settings/permission/
+   accessibility paths. Existing components are implemented; extend them rather than recreate them.
    Keep exact-source CI mandatory throughout, then deliver a complete candidate for phone testing.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day

@@ -15,8 +15,11 @@ permission presentation, per-state automation-health icons, and VoiceOver/Dynami
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
 source adds revoked-vs-denied wording, a dashboard-level Home automation-health icon, and Dynamic
 Type hardening for accessibility text sizes. Post-review source corrects remembered-grant semantics,
-proves the flags persist across store recreation, excludes Home files from device backup, and passed
-cloud CI in run #27.
+proves the flags persist across store recreation, and excludes Home files from device backup.
+Foreground reconciliation now repairs invalid idle preferences, removes stale or malformed snoozes,
+requires the expected recurring-request identity/interval/category, and replaces a missing or
+mismatched system Home boundary without trusting stale presence. Exact source `8c1cc96` passed the
+full cloud gate in run #32 and was merged to `main` through PR #1.
 The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
 test the complete feature on the phone. Sideloading is reported working; continued implementation
 does not wait for another installation exercise.

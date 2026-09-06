@@ -1,8 +1,8 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Permission-history and Home-backup privacy correction source
-`d80653da39433815c1d12fb9470adb9417a6f819` (version `0.2.0 (8)`) passed PR cloud checks in
-run #27. Build-4 remains the latest downloaded, hash-verified IPA and older local previews are
+**State:** Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2`
+(version `0.2.0 (8)`) passed PR cloud checks in run #32 and was merged to `main` through PR #1.
+Build-4 remains the latest downloaded, hash-verified IPA and older local previews are
 preserved — PR runs intentionally omit IPA upload. First AkshatOS physical installation, reminder
 behavior and refresh acceptance remain pending. This file owns the build evidence.
 
@@ -29,6 +29,14 @@ in it; no migration is implemented. Do not reuse deletion as the workflow for fu
 AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
+
+Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` repairs invalid idle
+preferences, validates the active recurring request and current-session snooze, removes stale
+snoozes, and compares/replaces the actual monitored Home circle while resetting stale presence.
+[PR #1 run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820) passed 20-source
+boundary checks, 37 domain assertions, 45 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and `CI Gate`. The PR run did not upload an IPA. PR #1
+merged the source to `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`.
 
 Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` decouples remembered
 notification grants from alert availability, counts both When In Use and Always as prior location
@@ -92,8 +100,8 @@ Source `3cfea6176d43e79b8af899b579e0ac602b480715` passed all jobs including `CI 
 [PR #1 run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 14-source boundary
 checks and six negative fixtures, workflow/inventory checks, 20 domain assertions, 24 integration
 tests, one hub/settings UI test, simulator/device compilation and IPA payload inspection.
-The feature is published on `feature/squats-notification-actions` in
-[PR #1](https://github.com/akshatksingh18/akshatos/pull/1); it is not merged into main.
+These changes are included in [PR #1](https://github.com/akshatksingh18/akshatos/pull/1), now merged
+into `main`.
 
 PR runs intentionally omit IPA upload. The same application source, on documentation revision
 `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`, passed both

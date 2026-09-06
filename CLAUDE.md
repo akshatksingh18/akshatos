@@ -16,11 +16,13 @@ access has been granted at least once (instead of reusing first-denial wording),
 automation-health row on the main dashboard rather than a plain muted line, and Dynamic Type
 hardening (a reusable `AdaptiveRow` that stacks label/value rows vertically at accessibility text
 sizes instead of squeezing them into a fixed-width row). Security-review correction source
-`d80653da39433815c1d12fb9470adb9417a6f819` makes the remembered grants accurate and persistent,
-excludes protected Home state from device backup, and passed cloud CI (see `ci.md`). Physical
-acceptance plus the
-remaining native v1 work (foreground reconciliation completion, broader automated coverage) are
-pending. Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
+`d80653da39433815c1d12fb9470adb9417a6f819` makes the remembered grants accurate and persistent
+and excludes protected Home state from device backup. Foreground-reconciliation source
+`8c1cc96469ea6f74fe81e60de1690064181bbac2` canonicalizes idle preferences, validates the actual
+recurring and snooze requests, removes stale snoozes, and replaces a missing or mismatched system
+Home boundary while invalidating stale presence; it passed cloud CI and was merged to `main` in
+PR #1. Physical acceptance plus broader native-v1 automated coverage are pending. Cloud
+compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.
 

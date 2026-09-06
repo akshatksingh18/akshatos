@@ -1,9 +1,10 @@
 # AkshatOS and Squats architecture
 
-**State:** First native hub/Squats slice implemented in source; cloud and physical acceptance are
-tracked in `cloud-build.md`. The remaining full-product contract below is not all implemented.
-Complete the remaining native v1 source and automated tests before the consolidated physical
-acceptance pass. This changes work order only; cloud checks cannot establish real device behavior.
+**State:** Native hub/Squats lifecycle, actions, history, Home automation, and foreground
+reconciliation are implemented and cloud-verified; physical acceptance is tracked in
+`cloud-build.md`. The remaining full-product contract below is not all implemented. Complete the
+remaining native-v1 automated coverage before the consolidated physical acceptance pass. Cloud
+checks cannot establish real device behavior.
 
 ## Current implementation
 
@@ -33,10 +34,15 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   launch is required or promised. Countdown is display-only;
   UserNotifications schedules delivery without relying on the dashboard or its timer. Future-dated
   clock artifacts are excluded from current/best streaks until their local date arrives.
+- Foreground reconciliation canonicalizes out-of-range idle interval/goal preferences, drains both
+  durable inboxes, validates the current recurring request and any one-off snooze against the active
+  session/category/deadline, and removes stale snoozes without moving a healthy cadence.
 - Home auto-pause source now includes staged When In Use/Always setup, map/radius confirmation, one
   stable circular region, protected local config/event files, launch/foreground reconciliation,
   debounce, pause-reason guards, outside-Home choices, degraded health, and boundary deletion.
-  It declares location usage strings without continuous background-location mode.
+  Reconciliation compares the actual monitored circle with the protected expected boundary;
+  missing/mismatched registration invalidates stale presence and is replaced before health can be
+  shown as known. It declares location usage strings without continuous background-location mode.
 - Build-7 source completes the dashboard/Settings UI: `SquatStore` now tracks the real
   `NotificationAuthorization` (not-determined/authorized/provisional/ephemeral/denied) and
   `HomeAuthorization` (not-determined/when-in-use/always/denied/restricted) rather than a boolean or
@@ -63,7 +69,7 @@ acceptance pass. This changes work order only; cloud checks cannot establish rea
   Post-review source `d80653d` makes the remembered notification grant independent of alert
   availability, counts When In Use as a prior location grant, proves both flags persist across store
   recreation, and marks Home state/event storage excluded from device backup; PR run #27 passed.
-- Deferred: App Intents, remaining lifecycle-reconciliation completion, broader automated coverage
+- Deferred: App Intents, broader automated coverage
   (permission-transition, DST/clock, migration/corruption, and new-UI test scenarios), and physical/
   refresh acceptance. The notification category
   exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
@@ -180,6 +186,13 @@ actions and inspect both notification settings and pending requests:
   carefully tested foreground repair);
 - desired paused/ended/not-started + unexpected recurring request = cancel stale request;
 - disabled/revoked permission = blocked state even if a request remains pending.
+
+The implementation also rejects a recurring request without a usable next trigger, removes a
+snooze for another session or with the wrong category/deadline, and canonicalizes invalid idle
+preferences. Home reconciliation compares the registered circular region's center/radius with the
+protected saved boundary. A missing or mismatched registration resets presence to Unknown and
+re-registers the saved boundary; permission, monitoring, background-refresh, or repair failures stay
+visibly degraded.
 
 The SwiftData session records lifecycle intent, not system truth. Interval edits remain unavailable while Running or
 Paused so one active day keeps one interval. If that decision changes, replace the active request and

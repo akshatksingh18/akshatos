@@ -1,10 +1,11 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Permission-history and Home-backup privacy correction source
-`d80653da39433815c1d12fb9470adb9417a6f819` passed Source checks, Build installable IPA and
-`CI Gate` in [PR #1 run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032):
-37 domain assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device
-compilation and IPA inspection. The public repository's `main` branch is server-protected with a
+**Status:** Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2`
+passed Source checks, Build installable IPA and `CI Gate` in
+[PR #1 run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820): 37 domain
+assertions, 45 integration/persistence tests, the hub/settings UI test, simulator/device compilation
+and IPA inspection. PR #1 merged it to `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`.
+The public repository's `main` branch is server-protected with a
 strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
 Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS
 build. PR runs do not upload an IPA artifact; exact downloadable build/hash evidence belongs in
@@ -92,6 +93,12 @@ when alerts are disabled, records both When In Use and Always location grants, a
 persisted flags plus revoked wording after store recreation. It also verifies that the Home boundary
 file and containing directory are excluded from device backup. The totals remain 37 domain
 assertions, 41 integration/persistence tests and one UI test; run #27 passed.
+
+Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` adds four integration
+tests for canonical repair of invalid idle preferences, preservation/removal of valid/foreign
+snoozes, and replacement of a mismatched monitored Home boundary with stale presence reset. Run #32
+passed 37 domain assertions, 45 integration/persistence tests, one UI test, simulator/device
+compilation, IPA inspection and `CI Gate`; PR #1 merged it to `main`.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection
