@@ -1,12 +1,11 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2`
-passed Source checks, Build installable IPA and `CI Gate` in
-[PR #1 run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820): 37 domain
-assertions, 45 integration/persistence tests, the hub/settings UI test, simulator/device compilation
-and IPA inspection. PR #1 merged it to `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`.
-The resulting [main delivery run #33](https://github.com/akshatksingh18/akshatos/actions/runs/34000405465)
-also passed the complete pipeline and uploaded the expected `akshatos-ios-33` artifact.
+**Status:** Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expands the
+native-v1 suite to 47 domain assertions, 55 integration/persistence tests and the hub/settings UI
+test. Its app-logic parent `db9c59f1ad23ec7f5f5199e2a3216ccd10490c56` passed Source checks,
+both builds, all tests, IPA inspection and `CI Gate` in
+[PR #4 run #36](https://github.com/akshatksingh18/akshatos/actions/runs/34002015676); exact build-9
+verification remains pending after the build-number/documentation update.
 The public repository's `main` branch is server-protected with a
 strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
 Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS
@@ -51,8 +50,9 @@ in-memory round-trip across contexts, persisted Undo/End and malformed-payload p
 hub entry/back/reopen, settings open/dismiss and unavailable media entries; plus the action suite
 below. File-backed reopen, legacy payload decoding, daily aggregation/durations, DST rollover,
 versioned backup validation/round-trip, safe repository replacement/deletion, malformed restore
-preservation and data-management settings now have coverage. Full schema migration,
-OS-process/device restart and protected-device storage remain separate acceptance gates.
+preservation and data-management settings now have coverage. Future schema-version migrations must
+add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
+remain separate acceptance gates.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
@@ -101,6 +101,15 @@ tests for canonical repair of invalid idle preferences, preservation/removal of 
 snoozes, and replacement of a mismatched monitored Home boundary with stale presence reset. Run #32
 passed 37 domain assertions, 45 integration/persistence tests, one UI test, simulator/device
 compilation, IPA inspection and `CI Gate`; PR #1 merged it to `main`.
+
+Build-9 source adds ten domain assertions for spring DST, cross-time-zone day ownership, Home
+defaults/validation/monitor rounding, explicit Done while paused, ended-action rejection, open-pause
+duration and conflicting-active-session backup rejection. Ten integration tests cover fresh defaults
+and explicit goal opt-out, Home-radius clamping, lifecycle idempotency/settings snapshots, schedule-
+failure recovery, stale requests, missing-next-trigger repair, malformed snooze cleanup, alerts-
+disabled permission behavior, degraded Home health and safe Home disable. The UI test now verifies
+the eight-set default plus notification/Home status surfaces. The expanded totals are 47 domain
+assertions, 55 integration/persistence tests and one UI test.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection

@@ -1,16 +1,16 @@
 # AkshatOS and Squats architecture
 
-**State:** Native hub/Squats lifecycle, actions, history, Home automation, and foreground
-reconciliation are implemented and cloud-verified; physical acceptance is tracked in
-`cloud-build.md`. The remaining full-product contract below is not all implemented. Complete the
-remaining native-v1 automated coverage before the consolidated physical acceptance pass. Cloud
-checks cannot establish real device behavior.
+**State:** Native hub/Squats lifecycle, actions, history, Home automation, foreground
+reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
+Exact build-9 verification is tracked in `ci.md`; physical acceptance remains in `cloud-build.md`.
+The remaining full-product contract below is not all implemented, and cloud checks cannot establish
+real device behavior.
 
 ## Current implementation
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (8).
+  `com.akshatksingh18.akshatos`, version 0.2.0 (9).
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -25,8 +25,8 @@ checks cannot establish real device behavior.
   Store errors fail closed and preserve data rather than silently replacing the database.
 - Implemented: Start/Pause/Resume/End, dashboard Done/Undo, notification Done/Pause/ten-minute snooze,
   one recurring local request and one replaceable snooze, permission/request reconciliation, daily
-  overview/history with same-date aggregation and active/paused duration, configurable goal
-  (initially unset), current/best streak, versioned JSON export/validated restore, and completed-
+  overview/history with same-date aggregation and active/paused duration, configurable eight-set
+  initial goal, current/best streak, versioned JSON export/validated restore, and completed-
   history deletion that preserves an active day.
 - Changes to interval/goal are locked while active; the first session's goal governs that date.
   Foreground reconciliation closes a stale prior-day session at that date's next local calendar
@@ -69,9 +69,11 @@ checks cannot establish real device behavior.
   Post-review source `d80653d` makes the remembered notification grant independent of alert
   availability, counts When In Use as a prior location grant, proves both flags persist across store
   recreation, and marks Home state/event storage excluded from device backup; PR run #27 passed.
-- Deferred: App Intents, broader automated coverage
-  (permission-transition, DST/clock, migration/corruption, and new-UI test scenarios), and physical/
-  refresh acceptance. The notification category
+- Build-9 source expands lifecycle/idempotency, preference/default, permission-transition,
+  reconciliation/repair, snooze cleanup, Home-health/disable, DST/time-zone, summary/recovery,
+  legacy-payload and Settings UI coverage. It also requires a non-nil next fire date before Resume
+  treats an existing repeating request as healthy.
+- Deferred: App Intents and physical/refresh acceptance. The notification category
   exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-
   unverified behavior as accepted.
@@ -115,7 +117,8 @@ background-capable services at app lifetime; load future media views/resources o
 - Core Location geographic-region monitoring for the optional Home boundary and a one-shot
   foreground location only while the user sets or edits Home. Use MapKit/SwiftUI Map for boundary
   confirmation; do not run continuous GPS or retain a movement trail.
-- `UserDefaults` for settings, stable identifiers, daily-goal configuration,
+- `UserDefaults` for settings, stable identifiers, daily-goal configuration (eight sets by default,
+  with zero as explicit opt-out),
   geofence enablement/health and a small schema/version key. Pending actions use the atomic file inbox
   described below, not UserDefaults. Keep the Home coordinate/radius in protected, this-device-only local
   storage suitable after first unlock and marked excluded from device backup, never in logs,

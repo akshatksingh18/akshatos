@@ -7,8 +7,9 @@ and device evidence. Notification actions and a durable inbox passed cloud regre
 overview/history and local recovery are implemented and passed the build-5 cloud gate. Home
 automation and full foreground reconciliation are implemented and cloud-verified: saved lifecycle
 intent is compared with notification permission plus recurring/snooze requests, and the protected
-Home boundary is compared with the actual system registration. Physical acceptance remains
-outstanding. Android is an unverified fallback.
+Home boundary is compared with the actual system registration. Build 9 chooses an eight-set
+initial goal and a 150-meter initial Home radius and expands native-v1 automated coverage.
+Physical acceptance remains outstanding. Android is an unverified fallback.
 
 ## Hub entry
 
@@ -145,9 +146,11 @@ workflows possible without making Shortcuts a runtime dependency.
 The accepted native convenience is one optional **Home auto-pause** geofence:
 
 - Let the user choose **Use my current location as Home**, confirm the circular boundary on a map,
-  and adjust a conservative radius during setup. Store the coordinate/radius only in the app's local
-  protected storage marked excluded from device backup; never upload it, include it in analytics,
-  or retain a trail of visited locations.
+  and adjust the conservative 150-meter initial radius during setup. That radius is intended to
+  absorb ordinary location jitter without representing a broad neighborhood; physical testing owns
+  the final suitability check. Store the coordinate/radius only in the app's local protected storage
+  marked excluded from device backup; never upload it, include it in analytics, or retain a trail of
+  visited locations.
 - Ask for location only when Home auto-pause is enabled. Use a one-shot foreground location to set
   Home, explain why background access is needed, then request the authorization level required for
   reliable region entry/exit delivery when the app is not open.
@@ -217,8 +220,10 @@ current Squats sessions and settings; deletion of completed history keeps an act
 ### Daily goal and streak contract
 
 - A day qualifies when its explicit, non-undone completed-set count is **greater than or equal to**
-  the configured daily set goal. The exact initial goal is intentionally undecided and must be chosen
-  before implementation acceptance; do not hide a hard-coded threshold in the app.
+  the configured daily set goal. New installs start at **eight completed sets**; the setting remains
+  configurable from zero through 100, and zero explicitly turns streak tracking off. Eight targets
+  roughly one completed movement break per working hour without requiring every 45-minute reminder
+  to become a completed set.
 - A qualifying local calendar day contributes at most one streak day, no matter how far above the
   goal the count goes or how many same-day sessions are started.
 - Show **current streak**, **best streak**, today's `completed / goal` progress, and the number of
@@ -248,7 +253,7 @@ V1 settings are intentionally small:
 - notification permission/status and a route to iOS Settings;
 - sound/haptic preference only where ordinary notification APIs permit it;
 - optional reminder-message variation toggle;
-- daily completed-set goal for streak qualification; its initial value is still to be decided;
+- daily completed-set goal for streak qualification, initially eight sets with zero as opt-out;
 - Home auto-pause setup/status, Home boundary edit/disable/delete, and clear location/background-
   refresh recovery guidance;
 - Shortcuts setup guidance after App Intents are implemented;

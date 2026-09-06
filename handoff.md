@@ -1,11 +1,11 @@
 # AkshatOS session handoff
 
-**Status:** The repository is temporarily public with protected `main`. Foreground reconciliation
-source `8c1cc96` passed PR run #32, PR #1 merged it to `main` as `1996004`, and main delivery run
-#33 passed. Resume broader native-v1 regression coverage next; first physical AkshatOS acceptance
-and the full Squats feature contract remain unfinished. This is a current-state entry point, not a
-separate specification or chronological log. Update it in place when its resume guidance changes;
-the linked owning documents control detailed facts.
+**Status:** The repository is temporarily public with protected `main`. Build-9 application source
+`e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
+repair of a repeating request without a next fire date. Exact-source PR #4 verification is pending;
+after it passes, first physical AkshatOS acceptance is next. This is a current-state entry point,
+not a separate specification or chronological log. Update it in place when its resume guidance
+changes; the linked owning documents control detailed facts.
 
 ## Start here
 
@@ -46,7 +46,7 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Current source version: `0.2.0 (8)`, minimum iOS 17. Preserve identity on updates.
+  Current source version: `0.2.0 (9)`, minimum iOS 17. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
@@ -65,7 +65,8 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   receipt persistence surviving Undo, shared commands, protected-store retry and queued-action UI.
 - One system-scheduled recurring local reminder; permission/pending-request reconciliation.
 - Versioned SwiftData session storage, recent session summaries, configurable daily goal,
-  same-day set aggregation, and current/best streak calculation. Initial goal is deliberately unset.
+  same-day set aggregation, and current/best streak calculation. New installs start at eight sets;
+  zero turns tracking off.
 - Build-5 source adds one daily history entry across same-date sessions, active/paused duration,
   pause/snooze/completion detail, deterministic foreground rollover at the next local calendar
   boundary, versioned JSON export/validated restore, and completed-history deletion.
@@ -93,6 +94,9 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   actual monitored Home circle with protected configuration. Missing/mismatched Home registration
   resets stale presence to Unknown before automatic re-registration. Exact source `8c1cc96` passed
   PR run #32 and was merged through PR #1.
+- Build-9 source expands lifecycle/idempotency, preference/default, permission, request/snooze,
+  Home-health/disable, DST/time-zone, recovery and Settings-status coverage. A repair action now
+  re-arms a repeating request whose trigger has no next fire date.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
@@ -169,11 +173,8 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Finish native v1 reliability coverage:** foreground reconciliation passed CI Gate in PR run
-   #32 and is merged. Remaining source work is broader day/streak, persistence, migration and
-   permission-transition regression scenarios, plus UI coverage for the newer settings/permission/
-   accessibility paths. Existing components are implemented; extend them rather than recreate them.
-   Keep exact-source CI mandatory throughout, then deliver a complete candidate for phone testing.
+1. **Finish build-9 verification:** wait for PR #4's exact-source macOS job and required `CI Gate`,
+   fix any regression, merge only while the exact head is green, and retain the main delivery result.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
@@ -185,8 +186,9 @@ implementation for baseline installation. Existing device gates remain open unti
 4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
-V1 counts completed sets/breaks, not reps or notification deliveries. The daily goal number still
-needs Akshat's choice; don't invent one. Reps, freezes, achievements and extra places are not committed.
+V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
+eight sets and the chosen initial Home radius is 150 meters; both remain configurable. Reps,
+freezes, achievements and extra places are not committed.
 
 ## Verification and handoff discipline
 
