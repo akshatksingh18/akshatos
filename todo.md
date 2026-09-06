@@ -64,10 +64,11 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
       plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
       row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
       `81bc36b` passed PR run #24.
-- [ ] **Prioritize a pending ten-minute nudge in the countdown.** While a snooze is pending, make its
-      nearer deadline the prominent countdown and show the unaffected next regular reminder beneath
-      it. Restore the regular reminder as primary after the snooze fires or is cancelled, including
-      accurate VoiceOver wording and regression/UI coverage.
+- [ ] **Verify the Build-10 countdown and completion-list fixes in cloud CI and on the phone.** Source
+      now makes a pending ten-minute deadline the single main countdown, filters **Your day so far**
+      to Done events, and persists the regular cadence anchor so close/reopen cannot reset the clock.
+      Add/confirm UI coverage, pass the exact commit's CI Gate, install the new IPA over Build 9, and
+      verify both displayed and delivered deadlines through background/foreground and relaunch.
 - [ ] **Make Your day so far completion-only.** Render only non-undone Done events and their times;
       omit pause, resume, snooze and reminder-maintenance events from the dashboard list while
       retaining them internally for lifecycle reconciliation, durations and finalized summaries.

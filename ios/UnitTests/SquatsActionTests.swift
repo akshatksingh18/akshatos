@@ -354,6 +354,60 @@ import UserNotifications
         XCTAssertNotNil(store.nextReminder)
     }
 
+    func testForegroundAndRelaunchKeepPersistedCadenceInsteadOfResettingFromTriggerSnapshot() async {
+        let repository = MemoryRepository()
+        var active = session()
+        let originalDeadline = time.addingTimeInterval(1_200)
+        active.reminderCadenceAnchor = originalDeadline
+        repository.values = [active]
+        let reminders = FakeReminders()
+        reminders.state.sessionID = active.id
+        reminders.state.interval = 2_700
+        reminders.state.next = time.addingTimeInterval(2_700)
+
+        let first = make(repository, reminders, MemoryInbox())
+        await first.refresh()
+        XCTAssertEqual(first.nextReminder, originalDeadline)
+
+        reminders.state.next = time.addingTimeInterval(5_400)
+        let reopened = make(repository, reminders, MemoryInbox())
+        await reopened.refresh()
+        XCTAssertEqual(reopened.nextReminder, originalDeadline,
+                       "Closing and reopening must not restart the displayed interval")
+    }
+
+    func testSnoozeOwnsPrimaryCountdownAndDashboardTimelineContainsOnlyCompletions() async {
+        let (repository, reminders, _, _) = fixture()
+        var active = repository.values[0]
+        active.log(SquatEvent(date: time.addingTimeInterval(-120), kind: .pause, source: "dashboard"))
+        active.log(SquatEvent(date: time.addingTimeInterval(-60), kind: .done, source: "dashboard"))
+        repository.values = [active]
+        let snooze = time.addingTimeInterval(600)
+        reminders.state.hasSnooze = true
+        reminders.state.snoozeSessionID = active.id
+        reminders.state.snooze = snooze
+
+        let reopened = make(repository, reminders, MemoryInbox())
+        await reopened.refresh()
+        XCTAssertTrue(reopened.primaryReminderIsSnooze)
+        XCTAssertEqual(reopened.primaryReminder, snooze)
+        XCTAssertEqual(reopened.todayCompletions.map(\.kind), [.done])
+    }
+
+    func testLegacyRunningSessionAdoptsTriggerDeadlineOnlyOnce() async {
+        let (repository, reminders, _, store) = fixture()
+        let adopted = time.addingTimeInterval(900)
+        reminders.state.next = adopted
+        await store.refresh()
+        XCTAssertEqual(store.nextReminder, adopted)
+        XCTAssertEqual(repository.values[0].reminderCadenceAnchor, adopted)
+
+        reminders.state.next = time.addingTimeInterval(2_700)
+        let reopened = make(repository, reminders, MemoryInbox())
+        await reopened.refresh()
+        XCTAssertEqual(reopened.nextReminder, adopted)
+    }
+
     func testForegroundRemovesExpiredAndNonActionableCurrentSnoozes() async {
         let (repository, reminders, _, store) = fixture()
         reminders.state.hasSnooze = true
