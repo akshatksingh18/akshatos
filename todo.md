@@ -14,15 +14,15 @@ primary; Android remains a separate fallback scaffold.
       and deletion disabled. Docs-only PRs retain the gate and skip the macOS job; see `ci.md`.
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
       metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
-      Boundary checks, domain/navigation tests and both builds pass; build 3 IPA is downloaded and
+      Boundary checks, domain/navigation tests and both builds pass; Build 9 is downloaded and
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
 Current focus: the agreed native Squats lifecycle, dashboard/Settings UI, notification actions,
 daily overview/recovery, Home automation, foreground reconciliation, chosen defaults and expanded
-native-v1 regression coverage are implemented in build-9 source. Finish exact-source PR #4 cloud
-verification, then deliver the candidate for phone acceptance, fix observed defects and prove
-refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+native-v1 regression coverage are implemented in Build-9 source. PR #4 is merged and main run #39
+produced the downloaded, checksum-verified candidate. Install it for phone acceptance, fix observed
+defects, and prove refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -38,17 +38,18 @@ refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidenc
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [ ] **Promote the verified smoke artifact to a durable cache.** Preserve the Downloads IPA,
-      checksum, and build metadata outside Git; choose the stable cache location before moving
-      or deleting that download. No stable-cache copy has been verified yet.
+- [x] **Retire obsolete preview artifacts.** Build 9 plus its checksum, metadata and screenshots are
+      the selected candidate; Build 4 is retained as the immediate fallback. Builds 2 and 3 and the
+      separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
+      cache remains part of deployment acceptance after phone verification.
 - [x] **Choose the product constants before behavior acceptance.** New installs start with an
       eight-completed-set daily goal and a configurable 150-meter Home boundary. Goal zero remains
       an explicit opt-out and existing saved choices survive relaunch. Automated default/range tests
       pass; physical Home-radius suitability remains part of the phone matrix rather than the choice.
-- [ ] **Build the native hub host and Squats module.** After resolving source/identity ownership,
-      the target/workflow and picker/dashboard now exist in source, with reserved later modules and
-      Android preserved. Finish and physically verify the hub IPA. Keep notifications/geofences at host
-      scope; test actions while PDFs/reels are visible and namespace all module data/requests.
+- [x] **Build the native hub host and Squats module in source.** The target/workflow and
+      picker/dashboard exist with reserved later modules and Android preserved. Notifications and
+      geofences remain at host scope and module data/requests are namespaced. Physical verification
+      remains in the first-hub-build and device-matrix gates.
 
 - [x] **Build the visual dashboard foundation.** Reusable colors/type/spacing/components, the state
       hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak card,
@@ -74,19 +75,19 @@ refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidenc
       denial is phrased as a revocation ("turned off") instead of reusing first-request wording.
       Correction source `d80653d` records provisional/alerts-disabled notification grants and When
       In Use location grants, and proves both flags plus wording survive store recreation; run #27 passed.
-- [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
+- [x] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
       stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
-- [ ] **Implement actionable notifications and snooze.** Register Done, Pause, and Remind me in 10
+- [x] **Implement actionable notifications and snooze.** Register Done, Pause, and Remind me in 10
       min in that priority order; route them through shared commands; allow only one stable one-off
       snooze; and handle locked-device persistence and callback deadlines safely.
       Source now includes ordered categories, a shared command path, after-first-unlock atomic inbox,
       delivery receipts that survive Undo, busy-action draining, protected-store retry and matching
       Pause cancellation. The action suite passed exact-source CI in run #10; physical
       locked/force-quit/deadline acceptance remains open in `ci.md` and `cloud-build.md`.
-- [ ] **Implement completed-set tracking.** Record one timestamped set per explicit Done action,
+- [x] **Implement completed-set tracking.** Record one timestamped set per explicit Done action,
       deduplicate callbacks, offer Undo, and never infer reps or notification-delivery counts.
-- [ ] **Implement local day data and overview.** Add versioned session/event persistence, pause
+- [x] **Implement local day data and overview.** Add versioned session/event persistence, pause
       segments, snooze events, Today timeline, End-my-day summary, lightweight daily history, local
       midnight/time-zone handling, migration coverage, and explicit history deletion.
       Build-5 source now groups same-date sessions, derives active/paused duration and event detail,
@@ -142,9 +143,10 @@ refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidenc
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
-      Build 4 passed delivery run #12 and is downloaded with matching checksum, identity/version
-      and payload checks. Physical acceptance and durable current/previous release-cache promotion
-      remain open; the Downloads preview is not yet a known-good phone release.
+      Build 9 passed main delivery run #39 and is downloaded with matching checksum, identity/version,
+      payload and screenshot checks; Build 4 is retained as the fallback. Physical acceptance and
+      durable current/previous release-cache promotion remain open, so Build 9 is not yet a known-good
+      phone release.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.

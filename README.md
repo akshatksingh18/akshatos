@@ -8,8 +8,9 @@ recovery, Home auto-pause and expanded goal/streak edge handling, source version
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
-The build-4 unsigned IPA is downloaded and hash-verified after passing cloud tests; the build guide
-contains its exact path and manual Sideloadly steps. Physical acceptance remains pending.
+The Build-9 unsigned IPA is downloaded and hash-verified after main delivery run #39; Build 4 is
+retained as the fallback. The build guide contains the exact paths and manual Sideloadly steps.
+Physical acceptance remains pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -22,8 +23,8 @@ mismatched system Home boundary without trusting stale presence. Exact source `8
 full cloud gate in run #32 and was merged to `main` through PR #1.
 Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
 permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
-and fixes repair of a repeating request with no next fire date. Its exact cloud verification passed
-in the rerun of PR #4 run #37; the next acceptance phase is the complete physical-iPhone matrix.
+and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
+run #39 produced the checksum-verified Build-9 IPA; the next phase is physical-iPhone acceptance.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
