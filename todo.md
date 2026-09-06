@@ -21,8 +21,9 @@ primary; Android remains a separate fallback scaffold.
 Current focus: the agreed native Squats lifecycle, dashboard/Settings UI, notification actions,
 daily overview/recovery, Home automation, foreground reconciliation, chosen defaults and expanded
 native-v1 regression coverage are implemented in Build-9 source. PR #4 is merged and main run #39
-produced the downloaded, checksum-verified candidate. Install it for phone acceptance, fix observed
-defects, and prove refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+produced the downloaded, checksum-verified candidate. Phone review identified two accepted dashboard
+refinements below; implement and cloud-verify them, then resume phone acceptance and prove refresh/
+recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -63,6 +64,13 @@ defects, and prove refresh/recovery. Optional Shortcuts remain follow-on work. C
       plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
       row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
       `81bc36b` passed PR run #24.
+- [ ] **Prioritize a pending ten-minute nudge in the countdown.** While a snooze is pending, make its
+      nearer deadline the prominent countdown and show the unaffected next regular reminder beneath
+      it. Restore the regular reminder as primary after the snooze fires or is cancelled, including
+      accurate VoiceOver wording and regression/UI coverage.
+- [ ] **Make Your day so far completion-only.** Render only non-undone Done events and their times;
+      omit pause, resume, snooze and reminder-maintenance events from the dashboard list while
+      retaining them internally for lifecycle reconciliation, durations and finalized summaries.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

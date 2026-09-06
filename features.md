@@ -9,7 +9,8 @@ automation and full foreground reconciliation are implemented and cloud-verified
 intent is compared with notification permission plus recurring/snooze requests, and the protected
 Home boundary is compared with the actual system registration. Build 9 chooses an eight-set
 initial goal and a 150-meter initial Home radius and expands native-v1 automated coverage.
-Build-9 cloud verification passed in PR #4 run #37. Physical acceptance remains outstanding.
+Build-9 cloud verification passed in PR #4 run #37. Phone review accepted the pending countdown and
+completion-list refinements specified below; physical acceptance remains outstanding.
 Android is an unverified fallback.
 
 ## Hub entry
@@ -71,8 +72,11 @@ form. The first implementation should establish a small reusable visual system i
 one-off styling.
 
 - A large hero card shows the current state, a circular time-until-next-reminder treatment while
-  running, and a clear paused/blocked/ended illustration in other states. The time is labelled as
-  **scheduled**, because Focus and other iOS settings can delay actual presentation.
+  running, and a clear paused/blocked/ended illustration in other states. With no snooze pending,
+  the prominent countdown shows the next regular reminder. While a ten-minute nudge is pending,
+  that nearer nudge becomes the prominent countdown and the next regular reminder appears beneath
+  it as secondary context. Both times are labelled as **scheduled**, because Focus and other iOS
+  settings can delay actual presentation.
 - A prominent count card shows **sets completed today** with a one-tap **Done +1** control. An Undo
   affordance is available after an accidental tap and from the day's event list.
 - A motivating streak card shows progress toward the daily set goal, the current streak, and the
@@ -80,8 +84,9 @@ one-off styling.
   threshold it changes to a clear protected/completed state without inflating the count again.
 - The primary lifecycle control changes with state: Start my day, Pause, Resume, or View summary.
   **End my day** remains visually separate and requires confirmation so it is not hit accidentally.
-- A compact Today timeline lists completion times plus pause/resume/snooze events. It should be
-  useful at a glance without turning the app into a detailed workout tracker.
+- The compact **Your day so far** list shows only completed sets and their completion times. Pause,
+  resume, snooze and other reminder-maintenance events remain internal lifecycle/history data and
+  must not clutter this dashboard list. Undo remains available for the most recent completed set.
 - Small quick controls expose Remind me in 10 min, Pause, Resume, and notification settings only
   when relevant. Disabled controls explain why they are unavailable.
 - Motion, gradients, haptics, and celebratory feedback may add warmth, but respect Reduce Motion,

@@ -2,7 +2,9 @@
 
 **State:** Native hub/Squats lifecycle, actions, history, Home automation, foreground
 reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
-Exact Build-9 verification passed in PR #4 run #37; physical acceptance remains in `cloud-build.md`.
+Exact Build-9 verification passed in PR #4 run #37. Phone review accepted two pending presentation
+changes: snooze-first countdown priority and a completion-only dashboard timeline. Physical
+acceptance remains in `cloud-build.md`.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -234,11 +236,16 @@ update stored state only after replacement succeeds.
 - Keep view state derived from a central app/session model rather than letting buttons directly edit
   preferences or notifications. Views issue domain commands and render reconciled state.
 - Build reusable visual tokens and components for the state hero, scheduled countdown, completed-set
-  count, daily-goal progress, current/best streak, lifecycle controls, event timeline, automation
+  count, daily-goal progress, current/best streak, lifecycle controls, completion timeline, automation
   health, and daily summary. Respect Dynamic Type, VoiceOver, Reduce Motion, contrast, and non-color
   state indicators from the first scaffold.
-- Label the countdown as the next **scheduled** reminder. Focus, Scheduled Summary, and system/user
-  settings mean the app cannot promise the exact visible delivery time.
+- Label countdowns as **scheduled** because Focus, Scheduled Summary, and system/user settings mean
+  the app cannot promise exact visible delivery. Normally the regular cadence owns the prominent
+  countdown. While a one-off snooze is pending, show its earlier deadline as the prominent countdown
+  and the unaffected next regular reminder beneath it.
+- Keep the dashboard's **Your day so far** list completion-only: one row per non-undone Done event
+  with its time. Continue persisting pause/resume/snooze events for lifecycle reconciliation,
+  durations and summaries, but do not render them in this at-a-glance list.
 - End requires confirmation; Done offers Undo; paused/blocked/repair states present the one relevant
   recovery action without clutter.
 

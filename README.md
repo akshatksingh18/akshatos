@@ -24,7 +24,9 @@ full cloud gate in run #32 and was merged to `main` through PR #1.
 Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
 permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
 and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
-run #39 produced the checksum-verified Build-9 IPA; the next phase is physical-iPhone acceptance.
+run #39 produced the checksum-verified Build-9 IPA. Phone review accepted two pending dashboard
+refinements: prioritize a pending ten-minute nudge in the countdown and keep **Your day so far**
+completion-only. Implement and rebuild those before continuing physical acceptance.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
@@ -69,7 +71,9 @@ disposable test activity only.
 - Use **Pause** while away and **Resume** when ready. Resume begins a fresh 45-minute interval.
 - Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
   only that same day if the geofence caused the pause. Manual controls remain available at all times.
-- Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day.
+- Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day. While
+  it is pending, its countdown is prominent and the unaffected regular reminder appears underneath.
+- **Your day so far** shows only completed sets and their times, not pause/resume/snooze bookkeeping.
 - End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
   a completion timeline. A below-goal current date stays marked at risk until that date ends.
 - Keep lightweight daily summaries locally. There is no account, cloud sync, remote analytics,
