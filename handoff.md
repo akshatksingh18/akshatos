@@ -2,8 +2,8 @@
 
 **Status:** The repository is temporarily public with protected `main`. Build-9 application source
 `e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
-repair of a repeating request without a next fire date. Exact-source PR #4 run #37 passed its
-macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate`; first
+repair of a repeating request without a next fire date. PR #4 is merged; main delivery run #39
+passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. First
 physical AkshatOS acceptance is next. This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -156,11 +156,11 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
-`C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
-Its checksum, identity, version/build and payload passed local inspection. Recheck SHA-256 against
-`cloud-build.md` before install; keep checksum/build metadata together. Older build-3 and smoke
-downloads remain preserved, with their evidence in the build guide. No build-4 install is recorded.
+The selected hash-verified candidate is **0.2.0 (9)** from main delivery run #39, at:
+`C:\Users\aksha\Downloads\akshatos-build-9\akshatos-ios-39\AkshatOS-unsigned.ipa`.
+Its checksum, identity, version/build, payload and screenshots passed local inspection. Build 4 is
+retained as the immediate fallback. Builds 2 and 3 plus the obsolete standalone smoke artifact were
+sent to the Windows Recycle Bin and are recoverable until it is emptied. No AkshatOS install is recorded.
 
 Only the old standalone Squat Reminder smoke was installed and opened on the phone. Akshat then
 deleted that disposable app. **AkshatOS installation, reminders and same-ID refresh remain pending.**
@@ -178,11 +178,11 @@ implementation for baseline installation. Existing device gates remain open unti
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
-3. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
+2. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+3. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is

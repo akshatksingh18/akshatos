@@ -2,12 +2,13 @@
 
 **State:** Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` chooses the
 eight-set/150-meter defaults, expands regression coverage and fixes missing-next-trigger repair.
-The exact Build-9 source/documentation head `b11623ed50c1fdc77b0897b1a74a98cbd57a9cf5` passed
-the macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate` in the
-[rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377).
-PR validation does not upload an IPA; Build-4 remains the latest downloaded, hash-verified IPA and older local
-previews are preserved. First AkshatOS physical installation, reminder behavior and refresh
-acceptance remain pending. This file owns the build evidence.
+PR #4 merged as `87003204292dec58210432479a3522abc2cc6bf7`. Its
+[main delivery run #39](https://github.com/akshatksingh18/akshatos/actions/runs/34042431950)
+passed the macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate`,
+then uploaded Build 9. The downloaded IPA matches its published checksum and package identity.
+Build 4 is retained as the immediate fallback; Builds 2 and 3 plus the obsolete standalone smoke
+artifact were sent to the Windows Recycle Bin. First AkshatOS physical installation, reminder
+behavior and refresh acceptance remain pending. This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -41,6 +42,9 @@ next fire date. The app-logic parent passed
 builds and IPA inspection. The exact source/documentation head `b11623e` passed the same checks in
 the [rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377);
 as a PR run, it did not upload an IPA artifact.
+[Main delivery run #39](https://github.com/akshatksingh18/akshatos/actions/runs/34042431950)
+then passed the complete pipeline on merge commit `87003204292dec58210432479a3522abc2cc6bf7`
+and uploaded `akshatos-ios-39`.
 
 Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` repairs invalid idle
 preferences, validates the active recurring request and current-session snooze, removes stale
@@ -128,7 +132,20 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
-### Selected build-4 download
+### Selected Build-9 download
+
+- Version: **0.2.0 (9)**; merge source `87003204292dec58210432479a3522abc2cc6bf7`.
+- Artifact: `akshatos-ios-39`, from main delivery run #39 linked above.
+- Verified local directory:
+  `C:\Users\aksha\Downloads\akshatos-build-9\akshatos-ios-39`.
+- File: `AkshatOS-unsigned.ipa`; keep its checksum, `build-info.txt` and screenshots together.
+- SHA-256: `906a5316d60d0861f804c652e6de970b0f01f27882ea16a78f55827e73433a24`.
+- The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
+  minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
+  both exported simulator screenshots were visually inspected. This remains an unsigned,
+  phone-unverified candidate.
+
+### Retained Build-4 fallback
 
 - Version: **0.2.0 (4)**; source `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`.
 - Artifact: `akshatos-ios-12`, from delivery run #12 linked above.
@@ -159,15 +176,10 @@ screenshots were visually inspected; this is not physical-phone evidence. Simula
 unsigned device Release build and IPA packaging passed. The downloaded package contains
 `Payload/AkshatOS.app` with the app executable/plist, without a test runner, extension or profile.
 
-Verified extracted download: `C:\Users\aksha\Downloads\akshatos-module-boundaries\akshatos-ios-6`.
-`AkshatOS-unsigned.ipa` SHA-256:
-`add44c15fc4a7ba03b0b0f3bc0f6bf524da5ecac4879ab4d3f3248253eae3631`.
-The local hash matches the cloud checksum. Keep the IPA, checksum and `build-info.txt` together.
-Screenshots are in its `screenshots/` directory. No durable release-cache promotion or signing
-has been performed for this preview.
-The prior build-2 preview remains in `C:\Users\aksha\Downloads\akshatos-ios-5` as a previous
-artifact; it was not deleted or relabeled. This refactor preserves the schema, store name, keys,
-and bundle ID. Physical same-ID upgrade/data preservation and reminders still need testing.
+The locally verified Build-3 and Build-2 previews were superseded by Builds 4 and 9 and sent to the
+Windows Recycle Bin together with their checksum/build metadata. They are recoverable until the bin
+is emptied and remain reproducible from Git history. Physical same-ID upgrade/data preservation and
+reminders still need testing.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
 2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (20 assertions).
@@ -182,8 +194,7 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 
 ## First AkshatOS install (manual steps; no computer control)
 
-1. Use the selected **AkshatOS 0.2.0 (4)** download above, not an older preview or smoke download; download a newer
-   successful artifact only when its source/build is intentionally selected.
+1. Use the selected **AkshatOS 0.2.0 (9)** download above, not the Build-4 fallback or an older preview.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
@@ -224,10 +235,9 @@ Historical smoke artifact (not AkshatOS):
 This old artifact passed the physical smoke open test. It is not a functional product release;
 promotion to a stable local release cache remains pending.
 
-The verified extracted files are kept together at
-`C:\Users\aksha\Downloads\squat-reminder-ios-3`; redundant downloaded ZIPs have been removed. Keep
-the IPA, its checksum, and `build-info.txt` together as the verified smoke artifact; do not delete
-the download before a stable cache copy is chosen and verified.
+The obsolete standalone artifact folder was sent to the Windows Recycle Bin after Build 9 became
+the checksum-verified AkshatOS candidate. It is recoverable until the bin is emptied and its source
+remains in Git history; it is not part of the current/fallback AkshatOS pair.
 
 
 

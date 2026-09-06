@@ -9,6 +9,9 @@ Build-9 source/documentation head `b11623ed50c1fdc77b0897b1a74a98cbd57a9cf5` pas
 macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate` in the
 [rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377);
 the PR correctly did not upload an IPA artifact.
+[Main delivery run #39](https://github.com/akshatksingh18/akshatos/actions/runs/34042431950)
+passed the complete pipeline on merge commit `87003204292dec58210432479a3522abc2cc6bf7`
+and uploaded the checksum-verified Build-9 artifact recorded in `cloud-build.md`.
 The public repository's `main` branch is server-protected with a
 strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
 Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS
