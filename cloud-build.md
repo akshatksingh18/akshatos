@@ -1,10 +1,11 @@
 # AkshatOS cloud build and iPhone installation
 
 **State:** Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2`
-(version `0.2.0 (8)`) passed PR cloud checks in run #32 and was merged to `main` through PR #1.
-Build-4 remains the latest downloaded, hash-verified IPA and older local previews are
-preserved — PR runs intentionally omit IPA upload. First AkshatOS physical installation, reminder
-behavior and refresh acceptance remain pending. This file owns the build evidence.
+(version `0.2.0 (8)`) passed PR cloud checks in run #32 and was merged to `main` through PR #1;
+main delivery run #33 then passed and uploaded `akshatos-ios-33`. Build-4 remains the latest
+downloaded, hash-verified IPA and older local previews are preserved. First AkshatOS physical
+installation, reminder behavior and refresh acceptance remain pending. This file owns the build
+evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -37,6 +38,10 @@ snoozes, and compares/replaces the actual monitored Home circle while resetting 
 boundary checks, 37 domain assertions, 45 integration/persistence tests, one hub/settings UI test,
 simulator/device compilation, IPA inspection and `CI Gate`. The PR run did not upload an IPA. PR #1
 merged the source to `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`.
+[Main delivery run #33](https://github.com/akshatksingh18/akshatos/actions/runs/34000405465)
+then passed the same complete pipeline for that merge commit and uploaded the unexpired
+`akshatos-ios-33` artifact. That artifact has not been downloaded or hash-verified locally, so it
+does not replace build 4 as the selected local preview.
 
 Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` decouples remembered
 notification grants from alert availability, counts both When In Use and Always as prior location
