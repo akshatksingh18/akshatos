@@ -4,8 +4,9 @@
 `e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
 repair of a repeating request without a next fire date. PR #4 is merged; main delivery run #39
 passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Phone review
-identified two accepted dashboard refinements—snooze-first countdown presentation and a completion-
-only **Your day so far** list—which must be implemented and rebuilt before acceptance continues. This is a current-state entry point,
+identified a close/reopen countdown reset in addition to the accepted snooze-first countdown and
+completion-only **Your day so far** refinements. Build-10 working source implements all three with a
+persisted regular-cadence anchor, but still needs cloud verification and a replacement IPA. This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
 
@@ -48,7 +49,8 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Current source version: `0.2.0 (9)`, minimum iOS 17. Preserve identity on updates.
+  Working source version: `0.2.0 (10)`, minimum iOS 17. Build 9 remains the selected installed artifact;
+  preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
 - Finish Squats before implementing either media module. Their requirements remain in the sibling
@@ -175,10 +177,10 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Implement the two accepted phone-review UI refinements:** make a pending ten-minute nudge the
-   prominent countdown with the regular cadence underneath, and make **Your day so far** list only
-   completed sets with their times. Preserve the two independent schedules and internal lifecycle
-   events; add regression/UI coverage and produce a new verified build before resuming acceptance.
+1. **Verify and build the Build-10 phone-review fixes:** the pending ten-minute deadline now owns the
+   single main countdown, **Your day so far** shows only completed sets/times, and a persisted cadence
+   anchor prevents close/reopen from resetting the regular clock. Complete regression/UI coverage,
+   pass the exact commit's CI Gate, and produce/install a replacement IPA before resuming acceptance.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix

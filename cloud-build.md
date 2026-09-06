@@ -7,8 +7,11 @@ PR #4 merged as `87003204292dec58210432479a3522abc2cc6bf7`. Its
 passed the macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate`,
 then uploaded Build 9. The downloaded IPA matches its published checksum and package identity.
 Build 4 is retained as the immediate fallback; Builds 2 and 3 plus the obsolete standalone smoke
-artifact were sent to the Windows Recycle Bin. First AkshatOS physical installation, reminder
-behavior and refresh acceptance remain pending. This file owns the build evidence.
+artifact were sent to the Windows Recycle Bin. Akshat installed Build 9 and confirmed that the app
+requests notification and location access. Phone testing also found that closing/reopening resets the
+displayed countdown; Build-10 working source fixes that with a persisted cadence anchor and includes
+the accepted countdown/timeline refinements. Its cloud build and replacement IPA remain pending.
+This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
 for continued development; do not require another baseline installation before finishing code.
@@ -21,7 +24,8 @@ implementation and automated checks; the manual steps below are for that accepta
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (9)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (10)**; minimum iOS 17.
+  Build 9 remains the latest downloaded and phone-installed artifact.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.

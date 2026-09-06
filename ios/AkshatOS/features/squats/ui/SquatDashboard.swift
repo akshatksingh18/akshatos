@@ -128,22 +128,20 @@ struct SquatDashboard: View {
                 } trailing: {
                     if store.busy { ProgressView().tint(Palette.lime) }
                 }
-                if let date = store.nextReminder {
+                if let date = store.primaryReminder {
                     VStack(alignment: .leading, spacing: 5) {
                         TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
                             let interval = TimeInterval((store.active?.interval ?? 45) * 60)
                             let elapsed = max(0, context.date.timeIntervalSince(date))
-                            let next = date > context.date ? date : date.addingTimeInterval((floor(elapsed / interval) + 1) * interval)
+                            let next = store.primaryReminderIsSnooze ? date :
+                                (date > context.date ? date : date.addingTimeInterval((floor(elapsed / interval) + 1) * interval))
                             let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
                             Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
                                 .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
                         }
-                        Text("until the next scheduled reminder")
+                        Text(!store.primaryReminderIsSnooze ? "until the next scheduled reminder" :
+                             "until your reminder in 10 minutes")
                             .font(.caption).foregroundStyle(Palette.muted)
-                    }
-                    if let snooze = store.snoozeReminder {
-                        Text("Extra nudge at \(snooze.formatted(date: .omitted, time: .shortened))")
-                            .font(.caption).foregroundStyle(Palette.lime)
                     }
                 } else {
                     Text(heroDescription).font(.body).foregroundStyle(Palette.muted)
@@ -237,7 +235,7 @@ struct SquatDashboard: View {
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Your day, so far").font(.system(.title3, design: .rounded, weight: .bold))
-            let events = store.today.flatMap(\.events).sorted { $0.date > $1.date }
+            let events = store.todayCompletions
             if events.isEmpty {
                 Text("A fresh page. Your movement breaks will appear here.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
@@ -374,7 +372,7 @@ struct SquatDashboard: View {
                     Label("Shortcuts", systemImage: "app.badge")
                 }.foregroundStyle(.secondary)
                 Section("Notification actions") {
-                    Text("Done logs one set. Pause stops reminders until you resume. Expand a notification for Remind me in 10 min; it keeps your regular cadence.")
+                    Text("Done logs one set. Pause stops reminders until you resume. Remind me in 10 min temporarily replaces the main countdown.")
                         .accessibilityIdentifier("notification-actions-help")
                 }
             }.navigationTitle("Squat settings")
@@ -497,13 +495,12 @@ struct SquatDashboard: View {
 
     private var heroAccessibilityLabel: String {
         var parts = [store.operational]
-        if let date = store.nextReminder {
+        if let snooze = store.snoozeReminder {
+            parts.append("Reminder in 10 minutes around \(snooze.formatted(date: .omitted, time: .shortened))")
+        } else if let date = store.nextReminder {
             parts.append("Next reminder around \(date.formatted(date: .omitted, time: .shortened))")
         } else {
             parts.append(heroDescription)
-        }
-        if let snooze = store.snoozeReminder {
-            parts.append("Extra nudge around \(snooze.formatted(date: .omitted, time: .shortened))")
         }
         if store.busy { parts.append("Working") }
         return parts.joined(separator: ". ")

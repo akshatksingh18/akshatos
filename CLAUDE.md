@@ -10,9 +10,10 @@ application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` chooses configurab
 eight completed sets and a 150-meter Home boundary, expands the native-v1 regression suite, and
 repairs a repeating request that has no next fire date instead of incorrectly treating it as
 healthy. PR #4 is merged, and main delivery run #39 produced the downloaded, checksum-verified
-Build-9 IPA. Phone review accepted two pending dashboard refinements: a snooze-first countdown and
-a completion-only **Your day so far** list. Implement and rebuild them before continuing physical
-feature, Home and refresh acceptance in `cloud-build.md`. The removed standalone smoke app proved
+Build-9 IPA. Phone testing confirmed notification/location prompts and exposed a close/reopen
+countdown reset. Build-10 working source persists the cadence anchor and implements a snooze-first
+single countdown plus a completion-only **Your day so far** list. Verify and rebuild it before
+continuing physical feature, Home and refresh acceptance in `cloud-build.md`. The removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 
@@ -85,7 +86,8 @@ feature is physically verified.
 
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (9)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
+  `0.2.0 (10)`; Build 9 remains the latest installed artifact.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -184,9 +186,10 @@ feature is physically verified.
   sets-completed-today count, configurable daily-goal progress, current/best streak, contextual
   lifecycle controls, and a compact completion-only **Your day so far** list showing Done events and
   their times. Do not show pause, resume, snooze or reminder-maintenance events in that dashboard
-  list, though they remain persisted for lifecycle reconciliation, durations and summaries. While a
-  ten-minute snooze is pending, its earlier deadline owns the prominent countdown and the unaffected
-  next regular reminder appears beneath it. End requires confirmation and opens a
+  list, though they remain persisted for lifecycle reconciliation, durations and summaries. Persist
+  each Start/Resume cadence anchor so close/reopen cannot restart the displayed interval. While a
+  ten-minute snooze is pending, its earlier deadline replaces the regular countdown as the single
+  main clock. End requires confirmation and opens a
   summary with sets, goal result, start/end, active/paused duration, completion times, pause
   segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
   Export/restore uses a versioned local JSON file selected by the user; validation completes before

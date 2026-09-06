@@ -2,9 +2,10 @@
 
 **State:** Native hub/Squats lifecycle, actions, history, Home automation, foreground
 reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
-Exact Build-9 verification passed in PR #4 run #37. Phone review accepted two pending presentation
-changes: snooze-first countdown priority and a completion-only dashboard timeline. Physical
-acceptance remains in `cloud-build.md`.
+Exact Build-9 verification passed in PR #4 run #37. Build-10 source implements snooze-first countdown
+priority and a completion-only dashboard timeline. It also persists a cadence anchor after phone
+testing showed Build 9 resetting the displayed countdown on close/reopen. Build-10 cloud and physical
+acceptance remain in `cloud-build.md`.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -12,7 +13,7 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (9).
+  `com.akshatksingh18.akshatos`, working source version 0.2.0 (10); Build 9 remains the installed artifact.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -138,6 +139,9 @@ background-capable services at app lifetime; load future media views/resources o
 ### Scheduling and action model
 
 - Keep one stable recurring-request identifier and one stable one-off snooze identifier.
+- Persist the first deadline of each Start/Resume cadence in the active session. Derive later regular
+  deadlines from that anchor; use the system trigger's next date only once to migrate an active
+  Build-9 session. Foreground reconciliation must never restart the displayed interval.
 - Start validates a whole-minute interval (45 minutes by default), requests authorization when
   undetermined, creates an active day, removes stale project requests, and adds exactly one repeating
   `UNTimeIntervalNotificationTrigger`. The repeating interval is at least 60 seconds. Store/display
@@ -240,9 +244,9 @@ update stored state only after replacement succeeds.
   health, and daily summary. Respect Dynamic Type, VoiceOver, Reduce Motion, contrast, and non-color
   state indicators from the first scaffold.
 - Label countdowns as **scheduled** because Focus, Scheduled Summary, and system/user settings mean
-  the app cannot promise exact visible delivery. Normally the regular cadence owns the prominent
-  countdown. While a one-off snooze is pending, show its earlier deadline as the prominent countdown
-  and the unaffected next regular reminder beneath it.
+  the app cannot promise exact visible delivery. Normally the persisted regular cadence owns the
+  prominent countdown. While a one-off snooze is pending, its earlier deadline replaces that clock;
+  do not render a competing secondary countdown.
 - Keep the dashboard's **Your day so far** list completion-only: one row per non-undone Done event
   with its time. Continue persisting pause/resume/snooze events for lifecycle reconciliation,
   durations and summaries, but do not render them in this at-a-glance list.

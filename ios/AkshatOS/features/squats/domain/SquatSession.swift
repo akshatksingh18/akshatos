@@ -22,6 +22,10 @@ struct SquatSession: Codable, Identifiable, Equatable {
     // Optional additions decode older V1 payloads without rewriting their history.
     var actionReceipts: [String]? = nil
     var pauseReason: String? = nil
+    /// First deadline in the current regular cadence. The dashboard derives later occurrences from
+    /// this persisted anchor instead of treating `UNTimeIntervalNotificationTrigger.nextTriggerDate()`
+    /// as stable across app launches.
+    var reminderCadenceAnchor: Date? = nil
 
     var count: Int { events.filter { $0.kind == .done }.count }
     var isActive: Bool { state != .ended }

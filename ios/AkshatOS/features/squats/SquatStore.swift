@@ -38,6 +38,11 @@ import SwiftUI
     private var homeDataAvailable = true
     var active: SquatSession? { sessions.first { $0.isActive } }
     var today: [SquatSession] { sessions.filter { $0.day == SquatSession.dayKey(now(), calendar: calendar) } }
+    var todayCompletions: [SquatEvent] {
+        today.flatMap(\.events).filter { $0.kind == .done }.sorted { $0.date > $1.date }
+    }
+    var primaryReminder: Date? { snoozeReminder ?? nextReminder }
+    var primaryReminderIsSnooze: Bool { snoozeReminder != nil }
     var todayCount: Int { today.reduce(0) { $0 + $1.count } }
     var todayGoal: Int? {
         if let first = today.sorted(by: { $0.started < $1.started }).first { return first.goal }
@@ -261,6 +266,7 @@ import SwiftUI
         try await reminders.schedule(session, snoozeUntil: nil)
         session.state = .running
         session.pauseReason = nil
+        session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
         session.log(SquatEvent(date: event.date, kind: .resume, source: "homeAwayAutomation"))
         do { try save(session) } catch { reminders.cancel(); throw error }
         notice = "You arrived Home, so reminders resumed."
@@ -363,7 +369,19 @@ import SwiftUI
             operational = "Reminder needs repair"
             return
         }
-        nextReminder = snapshot.next
+        let cadence = TimeInterval(session.interval * 60)
+        if let anchor = session.reminderCadenceAnchor {
+            let elapsed = max(0, now().timeIntervalSince(anchor))
+            nextReminder = anchor > now() ? anchor :
+                anchor.addingTimeInterval((floor(elapsed / cadence) + 1) * cadence)
+        } else if let fallback = snapshot.next {
+            // A Build-9 session has no anchor. Adopt the OS value once during migration, persist it,
+            // and use that stable value on every later foreground reconciliation.
+            var migrated = session
+            migrated.reminderCadenceAnchor = fallback
+            do { try save(migrated) } catch { actionFailure(error) }
+            nextReminder = fallback
+        }
         if snapshot.hasSnooze {
             if snapshot.snoozeSessionID == session.id, snapshot.snoozeActionable,
                let snooze = snapshot.snooze, snooze > now() {
@@ -474,6 +492,7 @@ import SwiftUI
             if pausedForHome { return }
             try await reminders.schedule(session, snoozeUntil: nil)
             session.state = .running
+            session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
             do { try save(session) } catch { reminders.cancel(); throw error }
         }
     }
@@ -514,6 +533,7 @@ import SwiftUI
             try await reminders.schedule(session, snoozeUntil: nil)
             session.state = .running
             session.pauseReason = nil
+            session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
             session.log(SquatEvent(date: now(), kind: .resume, source: "dashboard"))
             do { try save(session) } catch { reminders.cancel(); throw error }
         }

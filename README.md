@@ -4,13 +4,16 @@ A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and ente
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (9)**,
+recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (10)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
 The Build-9 unsigned IPA is downloaded and hash-verified after main delivery run #39; Build 4 is
 retained as the fallback. The build guide contains the exact paths and manual Sideloadly steps.
-Physical acceptance remains pending.
+Physical testing confirmed that notification and location permission prompts appear, but also found
+that closing and reopening Build 9 resets the displayed regular countdown. Build-10 source persists
+the cadence anchor so foreground reconciliation cannot restart that clock; cloud build and replacement
+IPA verification remain pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -24,9 +27,9 @@ full cloud gate in run #32 and was merged to `main` through PR #1.
 Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
 permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
 and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
-run #39 produced the checksum-verified Build-9 IPA. Phone review accepted two pending dashboard
-refinements: prioritize a pending ten-minute nudge in the countdown and keep **Your day so far**
-completion-only. Implement and rebuild those before continuing physical acceptance.
+run #39 produced the checksum-verified Build-9 IPA. Build-10 source prioritizes a pending ten-minute
+nudge in the main countdown, keeps **Your day so far** completion-only, and fixes the phone-observed
+close/reopen countdown reset with a persisted cadence anchor. Rebuild before continuing acceptance.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
@@ -71,8 +74,9 @@ disposable test activity only.
 - Use **Pause** while away and **Resume** when ready. Resume begins a fresh 45-minute interval.
 - Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
   only that same day if the geofence caused the pause. Manual controls remain available at all times.
-- Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day. While
-  it is pending, its countdown is prominent and the unaffected regular reminder appears underneath.
+- Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day. Its
+  ten-minute deadline temporarily becomes the single main countdown. Exact post-nudge cadence
+  delivery remains a Build-10 physical acceptance gate.
 - **Your day so far** shows only completed sets and their times, not pause/resume/snooze bookkeeping.
 - End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
   a completion timeline. A below-goal current date stays marked at risk until that date ends.
@@ -99,7 +103,8 @@ the schedule. Snooze expires ten minutes from its tap, even during recovery. Bef
 after reboot or on inbox-write failure, saving an action cannot be guaranteed; check the visible
 error and your count after opening Squats. These conditions still need physical-phone acceptance.
 
-Interval/goal settings live in `UserDefaults`; current session intent and events live in the
+Interval/goal settings live in `UserDefaults`; the current session also persists the regular cadence
+anchor so closing or foregrounding the app cannot restart the displayed interval. Session intent and events live in the
 versioned SwiftData store. Versioned local session/event storage owns
 completion timestamps, pause segments, each date's goal snapshot/qualification, and daily summaries.
 Current and best streak are derived from those records. On launch and foreground return the app must
