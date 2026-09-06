@@ -1,33 +1,53 @@
 # AkshatOS
 
-A private, native iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
+A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
-**Current state:** source-module-separated hub/Squats implementation, version **0.2.0 (3)**,
+**Current state:** hub/Squats implementation with notification actions, daily history, local
+recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (8)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
+The build-4 unsigned IPA is downloaded and hash-verified after passing cloud tests; the build guide
+contains its exact path and manual Sideloadly steps. Physical acceptance remains pending.
+Build-7 source completes the dashboard/Settings UI with detailed notification and location
+permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
+Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
+source adds revoked-vs-denied wording, a dashboard-level Home automation-health icon, and Dynamic
+Type hardening for accessibility text sizes. Post-review source corrects remembered-grant semantics,
+proves the flags persist across store recreation, excludes Home files from device backup, and passed
+cloud CI in run #27.
+The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
+test the complete feature on the phone. Sideloading is reported working; continued implementation
+does not wait for another installation exercise.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
-fallback. Source is private at [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos).
+fallback. Source is temporarily public at
+[akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos) for hosted macOS CI capacity.
 
 ## First slice
 
 GitHub Actions checks feature boundaries, registered domain tests, simulator persistence/navigation,
-device compilation and IPA integrity. [CI contract](ci.md) defines coverage and the current lack of
-server-enforced branch protection on the private repository. Green CI is not physical acceptance.
+device compilation and IPA integrity. [CI contract](ci.md) defines coverage, documentation-only PR
+build skipping, and the server-enforced `main` protection. Green CI is not physical acceptance.
 
 App composition, display-only hub, shared styling and Squats feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
 - Hub app picker; Squats dashboard; visibly planned PageVault/ReelVault entries.
-- Start/Pause/Resume/End, Done +1/Undo and dashboard 10-minute snooze.
-- One system-scheduled recurring reminder; local versioned SwiftData sessions and recent summaries.
+- Start/Pause/Resume/End, Done +1/Undo and ten-minute snooze from dashboard or notification.
+- Notification actions ordered Done, Pause, then snooze; durable inbox, replay protection after Undo,
+  and queued-action retry UI. Locked-device behavior still needs physical verification.
+- One system-scheduled recurring reminder; local versioned SwiftData sessions and daily summaries.
 - Configurable daily goal (unset initially), current/best streak and today's progress.
-- No location access, server, telemetry, account, or embedded WHOOP.
+- Same-date daily overview with active/paused duration, event/pause detail, local-midnight rollover,
+  versioned JSON export/restore, and confirmed deletion of completed history.
+- Optional staged Home setup with one protected local geofence, pause-source guards, outside-Home
+  Start/Resume choices, visible health, and edit/disable/delete. No route history is retained.
+- No server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** notification action buttons, Home auto-pause, Shortcuts, export/restore,
-full daily aggregate overview and acceptance testing. The full intended scope below remains the
+**Still deferred:** Shortcuts, remaining v1 UI/reliability work and physical
+acceptance testing. The full intended scope below remains the
 target, not a list of completed features. Until recovery and device tests pass, use disposable
 test activity only.
 
@@ -60,9 +80,15 @@ Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPh
 iOS schedules delivery, so the app does not need a background timer, PWA, or push server. Repeating
 intervals must be at least 60 seconds.
 
-The next notification phase will add a category exposing Done, Pause, and Remind me in 10 min. Compact notification
+The notification category exposes Done, Pause, and Remind me in 10 min. Compact notification
 space may show only Done and Pause; expand the notification for the third action. Dashboard and
 notification controls use the same idempotent lifecycle commands.
+An old preview's schedule may show Repair reminders after update; re-arm it once to attach the
+current buttons. Actions are queued before processing and receipts survive Undo. If protected
+session data is unavailable, logging waits for unlock and merge; a matching Pause can still cancel
+the schedule. Snooze expires ten minutes from its tap, even during recovery. Before first unlock
+after reboot or on inbox-write failure, saving an action cannot be guaranteed; check the visible
+error and your count after opening Squats. These conditions still need physical-phone acceptance.
 
 Interval/goal settings live in `UserDefaults`; current session intent and events live in the
 versioned SwiftData store. Versioned local session/event storage owns
@@ -70,11 +96,17 @@ completion timestamps, pause segments, each date's goal snapshot/qualification, 
 Current and best streak are derived from those records. On launch and foreground return the app must
 query actual notification permission and pending requests, merge any locked-device actions,
 reconcile them with stored intent, and show Running only when system state supports that claim.
+An unended earlier local date is closed at its next local calendar boundary during that reconciliation;
+the boundary uses calendar arithmetic for DST and does not require a background timer. Settings can
+export a versioned JSON backup, validate and restore it before replacing current Squats data, or
+delete completed history while retaining the active day and preferences.
 
-The accepted forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
+The implemented forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
 location to choose/confirm a circular Home boundary, then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
-state stay in protected local storage; the app never continuously tracks location or saves a route.
+state stay in protected local storage excluded from both device backups and Squats backup exports;
+the app never continuously tracks location or saves a route. Build-6 passed exact-source cloud checks; physical
+geofence behavior remains unverified.
 Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
 is Home-away automation. A deliberate pause always wins; an explicit run-anyway choice while outside
 temporarily suppresses repeat exit events.
@@ -112,8 +144,8 @@ build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is o
 Squats, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
-- source is authored on Windows and a private GitHub Actions macOS/Xcode runner generates the Xcode
-  project, compiles it, and uploads an unsigned IPA plus checksum/build metadata;
+- source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates
+  the Xcode project, compiles it, and uploads an unsigned IPA plus checksum/build metadata;
 - GitHub receives no Apple credentials or signing material; Windows verifies the artifact and uses
   Sideloadly for personal signing and installation;
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;

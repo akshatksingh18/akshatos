@@ -9,12 +9,31 @@ enum Palette {
 
 struct Surface<Content: View>: View {
     @ViewBuilder var content: Content
+    @Environment(\.colorSchemeContrast) private var contrast
     var body: some View {
         VStack(alignment: .leading, spacing: 18) { content }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(22)
             .background(Palette.card, in: RoundedRectangle(cornerRadius: 26))
-            .overlay(RoundedRectangle(cornerRadius: 26).stroke(.white.opacity(0.06)))
+            .overlay(RoundedRectangle(cornerRadius: 26)
+                .stroke(.white.opacity(contrast == .increased ? 0.35 : 0.06)))
+    }
+}
+
+/// A label/value row that lays out side-by-side normally, but stacks vertically at accessibility
+/// Dynamic Type sizes so neither side is squeezed or clipped by a fixed-width `HStack` + `Spacer`.
+struct AdaptiveRow<Leading: View, Trailing: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    var spacing: CGFloat = 8
+    @ViewBuilder var leading: Leading
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 4) { leading; trailing }
+        } else {
+            HStack(spacing: spacing) { leading; Spacer(); trailing }
+        }
     }
 }
 

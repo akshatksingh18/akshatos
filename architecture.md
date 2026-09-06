@@ -2,14 +2,18 @@
 
 **State:** First native hub/Squats slice implemented in source; cloud and physical acceptance are
 tracked in `cloud-build.md`. The remaining full-product contract below is not all implemented.
+Complete the remaining native v1 source and automated tests before the consolidated physical
+acceptance pass. This changes work order only; cloud checks cannot establish real device behavior.
 
 ## Current implementation
 
-- Canonical owner: `personal-project/akshatos`, private `akshatksingh18/akshatos`; repository
+- Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, version 0.2.0 (3).
-- `app/AkshatOSApp.swift` retains `AppServices`, which owns one `SquatStore` and the sole
-  `AppNotificationCoordinator` across navigation. `HubRootView` adapts observed Squats state into
+  `com.akshatksingh18.akshatos`, version 0.2.0 (8).
+- `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
+  completes, including background launches. It owns one `SquatStore` and the sole
+  `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
+  `HubRootView` adapts observed Squats state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats.
   PageVault/ReelVault are noninteractive planned cards. WHOOP remains separate.
@@ -18,19 +22,53 @@ tracked in `cloud-build.md`. The remaining full-product contract below is not al
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
   Only interval/goal preferences use UserDefaults.
   Store errors fail closed and preserve data rather than silently replacing the database.
-- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, one recurring local request and one
-  replaceable dashboard snooze, permission/request reconciliation, session overview/recent history,
-  configurable goal (initially unset), same-day aggregation, and current/best streak.
+- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, notification Done/Pause/ten-minute snooze,
+  one recurring local request and one replaceable snooze, permission/request reconciliation, daily
+  overview/history with same-date aggregation and active/paused duration, configurable goal
+  (initially unset), current/best streak, versioned JSON export/validated restore, and completed-
+  history deletion that preserves an active day.
 - Changes to interval/goal are locked while active; the first session's goal governs that date.
-  Stale prior-day sessions stop scheduling at foreground reconciliation and require explicit End.
-  Midnight is not yet automatically finalized in background. Countdown is display-only;
-  UserNotifications schedules delivery without relying on the dashboard or its timer.
-- Deferred: notification action buttons/locked-action inbox, Home geofence, App Intents, export/
-  restore and history deletion, complete daily aggregate summary with active/paused durations,
-  expanded lifecycle/persistence tests, and physical/refresh acceptance. Notifications currently
-  open the app; logging, pausing and snoozing use the dashboard.
-- Review the intended contract below before extending these areas. Do not label target-only
-  behavior as implemented. No location permission/background mode is currently requested.
+  Foreground reconciliation closes a stale prior-day session at that date's next local calendar
+  boundary and cancels its schedule. Calendar-day arithmetic handles DST; no background midnight
+  launch is required or promised. Countdown is display-only;
+  UserNotifications schedules delivery without relying on the dashboard or its timer. Future-dated
+  clock artifacts are excluded from current/best streaks until their local date arrives.
+- Home auto-pause source now includes staged When In Use/Always setup, map/radius confirmation, one
+  stable circular region, protected local config/event files, launch/foreground reconciliation,
+  debounce, pause-reason guards, outside-Home choices, degraded health, and boundary deletion.
+  It declares location usage strings without continuous background-location mode.
+- Build-7 source completes the dashboard/Settings UI: `SquatStore` now tracks the real
+  `NotificationAuthorization` (not-determined/authorized/provisional/ephemeral/denied) and
+  `HomeAuthorization` (not-determined/when-in-use/always/denied/restricted) rather than a boolean or
+  fragile status-string match, and blocking messages carry an explicit `SettingsRoute` so an alert
+  can offer a direct one-tap route to the correct iOS Settings screen. Settings shows a dedicated
+  Notifications section (status, Focus/Scheduled Summary/banner caveats, Settings link) alongside
+  the existing Home auto-pause section, and the Home section now gives denied/restricted/when-in-use
+  distinct explanations. The dashboard groups per-state hero/countdown text into one VoiceOver
+  summary (a stable "next reminder around HH:MM" rather than a ticking announcement), combines
+  decorative icons out of VoiceOver traversal, labels/values the goal progress bar, scales the three
+  fixed-size hero numerals with `@ScaledMetric` for Dynamic Type, slows the countdown tick under
+  Reduce Motion, and raises `Surface`'s border contrast under Increased Contrast.
+- Build-8 source introduced three remaining improvements in that same task. `SquatStore` persists a
+  monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag (UserDefaults-backed, set once
+  and never cleared) so a later denial can be phrased as a revocation ("turned off") instead of
+  reusing first-request wording; `start()`/`resume()` and the Settings/Home sections all read it.
+  The main dashboard's Home automation-health line is now an icon+text row (`house`/`house.fill`/
+  `exclamationmark.triangle` for off/healthy/degraded) instead of a plain muted `Text`, matching the
+  hero's per-state icon treatment. A new shared `AdaptiveRow` component (in `shared/design-system/`)
+  stacks label/value rows vertically at accessibility Dynamic Type sizes instead of squeezing them
+  into a fixed-width `HStack` + `Spacer`; it replaces every such row across the dashboard and daily
+  summary except the one row (current/best streak) that intentionally has no `Spacer` in its
+  compact layout, which instead switches to a `VStack` inline via `dynamicTypeSize.isAccessibilitySize`.
+  Post-review source `d80653d` makes the remembered notification grant independent of alert
+  availability, counts When In Use as a prior location grant, proves both flags persist across store
+  recreation, and marks Home state/event storage excluded from device backup; PR run #27 passed.
+- Deferred: App Intents, remaining lifecycle-reconciliation completion, broader automated coverage
+  (permission-transition, DST/clock, migration/corruption, and new-UI test scenarios), and physical/
+  refresh acceptance. The notification category
+  exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
+- Review the intended contract below before extending these areas. Do not label cloud- or device-
+  unverified behavior as accepted.
 
 ## Target iPhone architecture
 
@@ -55,11 +93,11 @@ source boundaries, not independently compiled packages or OS security isolation.
 presentation/service separation and sole delegate ownership; six negative fixtures test the guard.
 It is a lightweight source scan, not a full Swift parser; compiler and review still matter.
 
-Existing schema/model names, the `Squats` store configuration, encoded payload, preference keys,
-notification IDs and Swift compilation module are unchanged. No storage migration/reset is introduced.
-Same-ID physical upgrade remains an acceptance gate. Notification action routing is still deferred:
-the central coordinator currently preserves foreground presentation only. Add future callbacks there
-and route to feature commands; never register competing delegates from feature constructors. Retain
+Existing schema/model names, the `Squats` store configuration, preference keys, notification request
+IDs and Swift compilation module are unchanged. Optional payload fields add receipts and action
+sources without a SwiftData schema migration or reset.
+Same-ID physical upgrade remains an acceptance gate. The central coordinator owns foreground
+presentation and action routing into Squats commands; never register competing delegates from feature constructors. Retain
 background-capable services at app lifetime; load future media views/resources only on demand.
 
 ### Stack and source boundary
@@ -72,9 +110,10 @@ background-capable services at app lifetime; load future media views/resources o
   foreground location only while the user sets or edits Home. Use MapKit/SwiftUI Map for boundary
   confirmation; do not run continuous GPS or retain a movement trail.
 - `UserDefaults` for settings, stable identifiers, daily-goal configuration,
-  geofence enablement/health, a small schema/version key, and a lock-safe pending-action inbox when
-  primary data is inaccessible. Keep the Home coordinate/radius in protected, this-device-only local
-  storage suitable after first unlock, never in logs, analytics, or Git.
+  geofence enablement/health and a small schema/version key. Pending actions use the atomic file inbox
+  described below, not UserDefaults. Keep the Home coordinate/radius in protected, this-device-only local
+  storage suitable after first unlock and marked excluded from device backup, never in logs,
+  analytics, or Git.
 - SwiftData for versioned day sessions, completion events, pause segments, snoozes, and finalized
   summaries—including each day's goal snapshot and qualification—when targeting iOS 17 or later.
   Derive current/best streak from those records instead of treating mutable counters as truth. Core
@@ -104,7 +143,34 @@ background-capable services at app lifetime; load future media views/resources o
 - Do not use an in-process timer, background loop, unbounded list of future notifications, Web Push,
   a Shortcut/Personal Automation as the reminder engine, or a server.
 
-### State reconciliation
+### Implemented notification durability
+
+- The coordinator registers the namespaced category before launch completes. Default open/dismiss,
+  unrelated requests, incorrect categories and malformed session IDs cannot log a set.
+- A command receipt combines session ID, stable request ID, notification delivery timestamp and
+  action ID; successive deliveries of the same repeating request remain distinct. The receipt is
+  saved with the event in the session payload and survives Undo. Optional receipt/source/pause-reason
+  fields decode existing V1 payloads without changing SwiftData model identity or resetting data.
+- Every notification callback writes its command to `Application Support/squats-actions/inbox.json`
+  before awaiting service work or checking the store's busy state. Atomic replacement and
+  `completeUntilFirstUserAuthentication` protection retain commands while locked after first unlock.
+  Main-actor serialization prevents competing inbox writers. Commit session data before removing a
+  command; replay after a crash between those steps is a no-op. Corrupt inboxes are preserved.
+- Foreground, protected-data-available and normal command completion drain the inbox. Failed loads
+  retry without deleting/replacing the database. A queued Pause cancels the matching schedule even
+  if the primary store is unavailable or an earlier Done save failed. Done waits for durable merge.
+- Snooze keeps its original tap-time-plus-ten-minute deadline during retries, leaves the normal
+  cadence unchanged, and is discarded with a visible message if expired or permission/cadence is
+  unusable. A failed snooze save cancels its one-off request and retains the queued command.
+- Old category-less recurring requests show repair-required until explicitly re-armed. A healthy
+  repeated Resume leaves the existing cadence alone. New/old-session callbacks cannot revive End.
+- The system callback completes after inbox persistence and attempted processing; callbacks arriving
+  while busy may finish with their command durably queued. Pending count and retry UI explain this.
+  Before the first unlock after reboot, or when the inbox itself cannot be written, persistence is
+  not guaranteed: no completion is claimed and the next visible UI reports the failure. Physical
+  lock/force-quit/callback-deadline tests remain mandatory; simulator faults only test the logic.
+
+### Foreground state reconciliation
 
 On launch, every foreground return, and after a user-visible domain action, merge pending locked
 actions and inspect both notification settings and pending requests:
@@ -132,14 +198,15 @@ update stored state only after replacement succeeds.
   minimal event command in storage available for the intended locked-device use, acknowledge the
   system callback, and merge it transactionally later. Test data-protection behavior rather than
   assuming it.
-- Finalized daily summaries are derived from explicit events and stored locally. Never infer a
+- Daily summaries are derived locally from explicit stored events. Never infer a
   completed set or actual notification delivery. A date qualifies at most once when its non-undone
   completed-set total reaches that date's goal. Recompute summary and current/best streak data
   idempotently after Undo, migration, repair, or a past-day edit rather than maintaining conflicting
   counters.
-- Anchor a session to its start local day and handle crossing midnight explicitly. A stale prior-day
-  Running session must be surfaced for resolution; do not silently fabricate an end time or start a
-  second overlapping day.
+- Anchor a session to its start local day and handle crossing midnight explicitly. On the next
+  launch/foreground reconciliation, close a stale prior-day session at that date's next local
+  calendar boundary before allowing a new day. Use calendar arithmetic so DST can produce a 23- or
+  25-hour date; never start a second overlapping day.
 - Store the goal with each local date and apply configuration changes only to later dates. Streak
   tracking begins when the goal is first enabled; dates before that are neutral. The current date is
   at risk rather than failed until local-date rollover, including after its active session is ended.
@@ -201,7 +268,8 @@ Squats handlers at host scope, namespace requests, and test notifications while 
 foregrounded. One hub refresh must preserve all three modules' state.
 
 
-The primary compiler is a private GitHub Actions macOS runner because no local Mac is available.
+The primary compiler is the public repository's GitHub Actions macOS runner because no local Mac
+is available.
 It selects a documented Xcode image, generates the project from `ios/project.yml`, compiles simulator
 and generic-device builds, packages a standard unsigned IPA, verifies bundle metadata/architecture,
 and publishes the IPA plus SHA-256/build metadata as a temporary artifact. The build has no Apple

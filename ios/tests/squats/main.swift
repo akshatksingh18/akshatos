@@ -40,4 +40,105 @@ let prior = calendar.date(byAdding: .day, value: -1, to: dst)!
 var a = session(1, count: 2); a.day = SquatSession.dayKey(prior, calendar: calendar); a.started = prior
 var b = session(2, count: 2); b.day = SquatSession.dayKey(dst, calendar: calendar); b.started = dst
 assert(SquatSession.streaks([a, b], now: dst, calendar: calendar).current == 2, "Calendar days, not 86400-second arithmetic")
-print("PASS: 12 domain assertions (events, persistence, goal, streak, skipped day, DST)")
+let dstStart = calendar.startOfDay(for: dst)
+let dstEnd = SquatSession.endOfDay(SquatSession.dayKey(dstStart, calendar: calendar), calendar: calendar)!
+assert(dstEnd.timeIntervalSince(dstStart) == 90000, "Fall DST day closes at the next local midnight")
+let future = session(9, count: 2)
+assert(SquatSession.streaks([future], now: date(4), calendar: calendar).best == 0,
+       "A future clock-created day must not inflate the current best")
+var firstGoal = session(4, count: 4, goal: 4)
+firstGoal.started = date(4).addingTimeInterval(-3600)
+var changedGoal = session(4, count: 0, goal: 8)
+changedGoal.started = date(4)
+assert(SquatSession.streaks([firstGoal, changedGoal], now: date(4), calendar: calendar).current == 1,
+       "The first session snapshots the date goal")
+let neutral = session(1, count: 20, goal: nil)
+assert(SquatSession.streaks([neutral, session(3, count: 2)], now: date(4), calendar: calendar).current == 1,
+       "Goal-free dates before activation are neutral")
+print("PASS: 16 domain assertions (events, persistence, goal, streak, skipped day, clock, DST)")
+
+let boundary = HomeBoundary(latitude: 41, longitude: -87, radius: 150)
+var home = HomeAutomationState(boundary: boundary, presence: .inside)
+let exit = HomeBoundaryEvent(kind: .exited, date: date(4),
+                             regionIdentifier: HomeAutomationState.regionIdentifier)
+assert(home.accept(exit, activeDay: "2026-09-04", activeState: .running,
+                   pauseReason: nil, currentDay: "2026-09-04") == .pause,
+       "Leaving Home pauses only a running day")
+let duplicateExit = HomeBoundaryEvent(kind: .stateOutside, date: date(4).addingTimeInterval(30),
+                                      regionIdentifier: HomeAutomationState.regionIdentifier)
+assert(home.accept(duplicateExit, activeDay: "2026-09-04", activeState: .paused,
+                   pauseReason: "homeAwayAutomation", currentDay: "2026-09-04") == .none,
+       "Boundary jitter is debounced")
+let entry = HomeBoundaryEvent(kind: .entered, date: date(4).addingTimeInterval(180),
+                              regionIdentifier: HomeAutomationState.regionIdentifier)
+assert(home.accept(entry, activeDay: "2026-09-04", activeState: .paused,
+                   pauseReason: "homeAwayAutomation", currentDay: "2026-09-04") == .resume,
+       "Arrival resumes the same day only after Home automation paused it")
+var manual = HomeAutomationState(boundary: boundary, presence: .outside)
+assert(manual.accept(entry, activeDay: "2026-09-04", activeState: .paused,
+                     pauseReason: "dashboard", currentDay: "2026-09-04") == .none,
+       "Arrival cannot override a deliberate pause")
+var priorDay = HomeAutomationState(boundary: boundary, presence: .outside)
+assert(priorDay.accept(entry, activeDay: "2026-09-03", activeState: .paused,
+                       pauseReason: "homeAwayAutomation", currentDay: "2026-09-04") == .none,
+       "Arrival cannot revive a prior day")
+print("PASS: 5 Home automation assertions (pause, debounce, reason, same-day resume)")
+
+var actionSession = session(4, count: 0)
+actionSession.state = .running
+let done = SquatAction(id: "delivery-1", sessionID: actionSession.id, kind: .done,
+                      date: date(4), day: actionSession.day, source: "notification")
+actionSession = done.applying(to: actionSession)
+assert(done.applying(to: actionSession).count == 1, "Duplicate notification counts once")
+actionSession.undo()
+assert(done.applying(to: actionSession).count == 0, "Undo must preserve the delivery receipt")
+let restoredActionSession = try JSONDecoder().decode(SquatSession.self, from: JSONEncoder().encode(actionSession))
+assert(done.applying(to: restoredActionSession).count == 0, "Receipt survives serialization")
+let pause = SquatAction(id: "pause-1", sessionID: actionSession.id, kind: .pause,
+                       date: date(4), day: actionSession.day, source: "notification")
+actionSession = pause.applying(to: actionSession)
+assert(actionSession.state == .paused && actionSession.pauseReason == "notification", "Pause retains deliberate source")
+assert(pause.applying(to: actionSession) == actionSession, "Pause replay is idempotent")
+var expiredDay = done
+expiredDay.id = "tomorrow"
+expiredDay.day = "2026-09-05"
+assert(!expiredDay.canApply(to: actionSession), "A prior-day notification cannot log today's set")
+var foreign = done
+foreign.sessionID = UUID()
+assert(!foreign.canApply(to: actionSession), "Wrong session cannot be changed")
+let firstDelivery = SquatAction.notificationID(session: actionSession.id, request: "regular", delivered: date(4), action: "done")
+let secondDelivery = SquatAction.notificationID(session: actionSession.id, request: "regular", delivered: date(4).addingTimeInterval(2700), action: "done")
+assert(firstDelivery != secondDelivery, "Repeating deliveries must not share an action receipt")
+print("PASS: 8 notification action assertions (replay, Undo, persistence, pause source, stale day, delivery identity)")
+
+var morning = session(4, count: 0, goal: 3)
+morning.started = date(4).addingTimeInterval(-7200)
+morning.log(SquatEvent(date: morning.started.addingTimeInterval(600), kind: .done))
+morning.log(SquatEvent(date: morning.started.addingTimeInterval(1200), kind: .pause))
+morning.log(SquatEvent(date: morning.started.addingTimeInterval(1800), kind: .resume))
+morning.state = .ended
+morning.ended = date(4).addingTimeInterval(-3600)
+var afternoon = session(4, count: 0, goal: 3)
+afternoon.id = UUID()
+afternoon.started = date(4).addingTimeInterval(-1800)
+afternoon.log(SquatEvent(date: afternoon.started.addingTimeInterval(300), kind: .done))
+afternoon.log(SquatEvent(date: afternoon.started.addingTimeInterval(900), kind: .snooze))
+afternoon.state = .ended
+afternoon.ended = date(4)
+let daily = SquatDaySummary.make(day: morning.day, sessions: [morning, afternoon], now: date(4), calendar: calendar)!
+assert(daily.completedSets == 2 && daily.sessions.count == 2, "Daily history aggregates same-day sessions")
+assert(daily.activeDuration == 4800 && daily.pausedDuration == 600, "Daily durations exclude paired pauses")
+assert(daily.pauseSegments.count == 1 && daily.snoozeTimes.count == 1, "Daily timeline retains pauses and snoozes")
+assert(daily.goalStatus == .atRisk, "Current incomplete goal is at risk")
+let laterDaily = SquatDaySummary.make(day: morning.day, sessions: [morning, afternoon], now: date(5), calendar: calendar)!
+assert(laterDaily.goalStatus == .missed, "Past incomplete goal is missed")
+
+afternoon.actionReceipts = ["notification-receipt"]
+let backup = SquatsBackup(createdAt: date(5), sessions: [morning, afternoon], interval: 30, goal: 3)
+let restoredBackup = try SquatsBackup.decode(backup.encoded())
+assert(restoredBackup == backup, "Backup round trip preserves history, settings and receipts")
+var invalidBackup = backup
+invalidBackup.sessions.append(afternoon)
+assert((try? invalidBackup.validated()) == nil, "Duplicate session IDs invalidate the whole backup")
+assert((try? SquatsBackup.decode(Data("not-json".utf8))) == nil, "Malformed backup is rejected")
+print("PASS: 8 history and recovery assertions (daily aggregation, durations, status, backup validation)")

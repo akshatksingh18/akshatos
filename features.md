@@ -3,8 +3,10 @@
 **State:** Accepted full Squats feature contract inside AkshatOS. The first source implementation
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
-and device evidence. Notification actions, Home automation, full daily overview/recovery, and
-physical acceptance remain outstanding. Android is an unverified fallback.
+and device evidence. Notification actions and a durable inbox passed cloud regression tests. Daily
+overview/history and local recovery are implemented and passed the build-5 cloud gate;
+Home automation is implemented and cloud-verified in build-6 source; physical acceptance remains
+outstanding. Android is an unverified fallback.
 
 ## Hub entry
 
@@ -110,6 +112,12 @@ target iPhone.
 Notification actions run through the same domain commands as dashboard buttons. Action handling must
 be safe while the phone is locked, persist an idempotent event before returning control to iOS, and
 merge any small pending-action inbox into the main day log on the next foreground reconciliation.
+The implemented inbox uses atomic protected files available after first unlock. Receipt persistence
+survives Undo and process restart; busy callbacks queue instead of disappearing. If primary storage
+is temporarily unavailable, Done waits for merge, Pause cancels a matching schedule, and snooze may
+be delayed until storage recovers (never beyond its original ten-minute deadline). The dashboard
+shows queued actions and a retry control. Inbox write failure is reported rather than represented
+as a completed set; reboot-before-first-unlock and locked delivery still require device testing.
 
 Only one normal recurring request and one snooze request may exist. Pause cancels the normal request
 and any obsolete snooze. End cancels all project-owned pending and delivered reminders. A delivery
@@ -136,7 +144,8 @@ The accepted native convenience is one optional **Home auto-pause** geofence:
 
 - Let the user choose **Use my current location as Home**, confirm the circular boundary on a map,
   and adjust a conservative radius during setup. Store the coordinate/radius only in the app's local
-  protected storage; never upload it, include it in analytics, or retain a trail of visited locations.
+  protected storage marked excluded from device backup; never upload it, include it in analytics,
+  or retain a trail of visited locations.
 - Ask for location only when Home auto-pause is enabled. Use a one-shot foreground location to set
   Home, explain why background access is needed, then request the authorization level required for
   reliable region entry/exit delivery when the app is not open.
@@ -199,8 +208,9 @@ settings, so only explicit user actions count as completions.
 Keep finalized daily summaries locally so the user can revisit recent days. A simple history screen
 shows daily set counts, goal result, and streak status and can open an individual day. Charts,
 achievements beyond the streak, sharing, HealthKit, and detailed workout analytics remain later
-decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and any future
-export must be explicit and local.
+decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and export/
+restore are explicit and local. Restore validates the complete versioned backup before replacing
+current Squats sessions and settings; deletion of completed history keeps an active day and preferences.
 
 ### Daily goal and streak contract
 
@@ -241,11 +251,21 @@ V1 settings are intentionally small:
   refresh recovery guidance;
 - Shortcuts setup guidance after App Intents are implemented;
 - local history deletion with destructive confirmation.
+- local versioned backup export and validated restore with replacement confirmation.
 
 Reps-per-set, an end-of-day streak-risk reminder time, scheduled quiet window, and more snooze
 durations are candidate polish—not prerequisites for the first reliable release.
 
 ## V1 scope and sequencing
+
+Finish the agreed native v1 implementation and automated/cloud regression coverage first; Akshat
+will test it on the phone afterward. Do not block unfinished coding on baseline sideload testing.
+Build-6 source adds cloud-verified day/goal/streak edge handling and opt-in Home auto-pause. Build-7
+source completes the dashboard/Settings UI and permission/accessibility behavior described above and
+under Settings, and its exact source passed its own CI Gate. Remaining work is physical validation
+plus foreground-reconciliation completion and broader automated coverage. Optional Shortcuts remain
+a follow-on, not
+a new prerequisite for native v1.
 
 The first usable release includes:
 

@@ -7,20 +7,39 @@ primary; Android remains a separate fallback scaffold.
 
 - [x] **Verify the expanded CI pipeline on main.** Source checks, workflow lint, feature domains,
       three SwiftData tests, hub/settings navigation, package inspection and `CI Gate` passed in
-      run #7. PR/failure-path configuration still needs its first real exercise (see `ci.md`).
-      Server-enforced private-repo protections
-      are blocked by the current GitHub plan (HTTP 403); no upgrade or visibility change authorized.
+      run #7; notification-action PR #1 also passed run #10. Real PR triggering and failure-diagnostic
+      download/correction are exercised (see `ci.md`).
+      The repository is temporarily public for hosted macOS CI capacity. GitHub confirms `main`
+      protection requiring strict/up-to-date `CI Gate`, including administrators, with force pushes
+      and deletion disabled. Docs-only PRs retain the gate and skip the macOS job; see `ci.md`.
 - [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
       metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
       Boundary checks, domain/navigation tests and both builds pass; build 3 IPA is downloaded and
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: AkshatOS opens to the hub picker, then Squats. Source implementation is underway;
-cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
+Current focus: build-6 Home automation and goal/streak source passed exact-source cloud checks;
+finish the agreed native Squats v1 before asking
+Akshat for physical testing. Sideloading is reported working and is not a prerequisite for further
+coding. Daily overview/history and export/restore/deletion are implemented and passed the exact
+build-5 source gate. Build-6 source adds clock-safe streak filtering, same-day goal-snapshot tests,
+and opt-in Home auto-pause with protected state/events and setup/status UI. Its final source passed
+PR run #18. Build-7 source completes the dashboard/Settings UI task (permission-state presentation,
+automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility); its exact
+source passed PR run #22. Build-8 source closes three gaps found in a follow-up review of that same
+task: revoked-vs-denied wording, an icon-based dashboard automation-health row, and Dynamic Type
+hardening for accessibility text sizes; its exact source passed PR run #24. Post-review source
+corrects the remembered notification/location grant semantics and device-backup exclusion for
+Home state; exact source `d80653d` passed PR run #27. Next:
+foreground-reconciliation completion and broader day/streak, persistence, migration and
+permission-transition test coverage.
+Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
+recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
+other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
-      into private `akshatksingh18/akshatos`; keep history and Android. AkshatOS uses
+      into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
+      CI capacity. AkshatOS uses
       `com.akshatksingh18.akshatos`. Physical provisioning of this identity is still a gate.
 - [ ] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
       picker → Squats → back navigation; verify reminders continue while the picker is shown.
@@ -42,33 +61,65 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
       Android preserved. Finish and physically verify the hub IPA. Keep notifications/geofences at host
       scope; test actions while PDFs/reels are visible and namespace all module data/requests.
 
-- [ ] **Build the visual dashboard foundation.** Add reusable colors/type/spacing/components, the
-      state hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak
-      card, contextual lifecycle controls, Today timeline, automation-health surface, accessibility
-      labels, Dynamic Type, contrast, and Reduce Motion behavior.
-- [ ] **Implement permission/status UI.** Cover not-determined, authorized, denied, later-revoked,
-      Focus/Summary caveats, and the Settings route without displaying a false Running state.
+- [x] **Build the visual dashboard foundation.** Reusable colors/type/spacing/components, the state
+      hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak card,
+      contextual lifecycle controls, and Today timeline were already implemented. Build-7 source adds
+      per-state hero icons, an automation-health-aware Home settings section, VoiceOver labels/values
+      (a stable "next reminder around HH:MM" summary instead of a per-second announcement, combined
+      decorative icons hidden from the accessibility tree), `@ScaledMetric` Dynamic Type scaling for
+      the three fixed-size hero numerals, a Reduce-Motion-aware slower countdown tick, and an
+      Increased-Contrast-aware `Surface` border. Exact source `995e11f` passed PR run #22. Build-8
+      source adds an icon-based Home automation-health row on the main dashboard itself (previously a
+      plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
+      row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
+      `81bc36b` passed PR run #24.
+- [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
+      flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
+      (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
+      when-in-use/always/denied/restricted) enums tracked on `SquatStore`, adds a dedicated Settings
+      "Notifications" section covering every status plus Focus/Scheduled Summary/banner caveats, gives
+      Home auto-pause distinct denied/restricted/when-in-use explanations, and routes blocking alerts
+      to the correct Settings screen via a `SettingsRoute` rather than showing a bare OK button. Never
+      displays a false Running state. Exact source `995e11f` passed PR run #22. Build-8 source adds a
+      monotonic, UserDefaults-backed `notificationEverAuthorized`/`homeEverAuthorized` flag so a later
+      denial is phrased as a revocation ("turned off") instead of reusing first-request wording.
+      Correction source `d80653d` records provisional/alerts-disabled notification grants and When
+      In Use location grants, and proves both flags plus wording survive store recreation; run #27 passed.
 - [ ] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
       stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
 - [ ] **Implement actionable notifications and snooze.** Register Done, Pause, and Remind me in 10
       min in that priority order; route them through shared commands; allow only one stable one-off
       snooze; and handle locked-device persistence and callback deadlines safely.
+      Source now includes ordered categories, a shared command path, after-first-unlock atomic inbox,
+      delivery receipts that survive Undo, busy-action draining, protected-store retry and matching
+      Pause cancellation. The action suite passed exact-source CI in run #10; physical
+      locked/force-quit/deadline acceptance remains open in `ci.md` and `cloud-build.md`.
 - [ ] **Implement completed-set tracking.** Record one timestamped set per explicit Done action,
       deduplicate callbacks, offer Undo, and never infer reps or notification-delivery counts.
 - [ ] **Implement local day data and overview.** Add versioned session/event persistence, pause
       segments, snooze events, Today timeline, End-my-day summary, lightweight daily history, local
       midnight/time-zone handling, migration coverage, and explicit history deletion.
-- [ ] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
+      Build-5 source now groups same-date sessions, derives active/paused duration and event detail,
+      closes stale days at the next local calendar boundary on foreground, and provides versioned
+      JSON export/validated restore plus completed-history deletion. Exact-source CI passed in
+      PR run #14; physical recovery acceptance remains open.
+- [x] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
       at most once from explicit non-undone Done events, derive current/best streak, keep the current
       date at risk until rollover, treat skipped post-activation dates as missed, apply goal changes
       prospectively, and recompute safely after Undo or past-day edits.
-- [ ] **Implement opt-in Home auto-pause.** Add explanatory staged When In Use → Always authorization,
+      Build-6 source adds same-day goal-change, pre-activation neutral-date, future-clock-date and
+      Home-independent streak regression cases; exact-source cloud tests pass and physical calendar
+      acceptance remains open.
+- [x] **Implement opt-in Home auto-pause.** Add explanatory staged When In Use → Always authorization,
       one-shot Home selection plus map/radius confirmation, one stable monitored circular region,
       protected this-device-only boundary storage, pause-reason guards, duplicate/jitter handling,
       deliberate-pause precedence, outside-Home Start/Resume handling, launch reconciliation, visible
       automation health, and edit/disable/delete. Never continuously track location or persist a
       movement trail.
+      Build-6 source implements this contract without continuous background-location mode and keeps
+      Home coordinates out of device backups and backup exports. Exact-source cloud tests pass; physical geofence
+      acceptance remains open.
 - [ ] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
       `UserDefaults` preferences, actual notification settings,
       recurring/snooze requests, pending action inbox, day data, and Home-region configuration on
@@ -92,6 +143,9 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
+      Build 4 passed delivery run #12 and is downloaded with matching checksum, identity/version
+      and payload checks. Physical acceptance and durable current/previous release-cache promotion
+      remain open; the Downloads preview is not yet a known-good phone release.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.
@@ -119,12 +173,21 @@ cloud/device evidence lives in `cloud-build.md`. Other modules stay deferred.
 ## First-slice source coverage (not acceptance)
 
 Implemented source covers visual dashboard, permission/reconciliation, lifecycle, Done/Undo,
-dashboard snooze, SwiftData session storage/recent session overview, and configurable goals/streaks.
+dashboard/notification snooze, durable notification Done/Pause actions, SwiftData session storage/recent session overview, and configurable goals/streaks.
 The unchecked items above describe remaining full-contract implementation and acceptance, not an
 instruction to create second copies of those systems. Cloud domain assertions cover event dedup,
-round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Add service/persistence
-integration tests plus physical evidence before closing the larger gates. The cloud UI test covers
+round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Action service/persistence
+integration tests now pass; remaining full-contract scenarios and physical evidence are required
+before closing the larger gates. The cloud UI test covers
 picker → dashboard → back navigation and captures both screens; it does not test reminder delivery.
+Build-7 source adds five integration tests covering notification/Home authorization tracking and
+`SettingsRoute` message routing (37 domain assertions, 39 integration/persistence tests, one UI test
+in the registered suite) plus one new UI-test assertion for the Notifications settings section;
+exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22. Build-8 source adds two
+more integration tests covering the revoked-vs-denied wording for both notification and Home
+authorization (37 domain assertions, 41 integration/persistence tests, one UI test). Correction source
+`d80653da39433815c1d12fb9470adb9417a6f819` strengthens those same tests across store recreation,
+fixes their grant semantics, and verifies Home backup exclusion; PR run #27 passed.
 
 ## Documentation synchronization
 

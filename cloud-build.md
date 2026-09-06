@@ -1,15 +1,23 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Module-separated AkshatOS preview passed cloud boundary/domain/UI tests, simulator/device compilation,
-package inspection and downloaded-IPA checksum verification. First AkshatOS physical installation,
-reminder behavior and refresh acceptance remain pending. This file owns the build evidence.
+**State:** Permission-history and Home-backup privacy correction source
+`d80653da39433815c1d12fb9470adb9417a6f819` (version `0.2.0 (8)`) passed PR cloud checks in
+run #27. Build-4 remains the latest downloaded, hash-verified IPA and older local previews are
+preserved — PR runs intentionally omit IPA upload. First AkshatOS physical installation, reminder
+behavior and refresh acceptance remain pending. This file owns the build evidence.
+
+Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
+for continued development; do not require another baseline installation before finishing code.
+No specific new AkshatOS build/feature test or automated-refresh result was supplied with that
+report, so it does not close those acceptance gates. Akshat will test the complete native v1 after
+implementation and automated checks; the manual steps below are for that acceptance phase.
 
 ## Current identity and artifact
 
-- Private source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
+- Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; version/build: **0.2.0 (3)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; current source version/build: **0.2.0 (8)**; minimum iOS 17.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -22,12 +30,101 @@ AkshatOS updates. Same-ID refresh/data preservation is still unverified.
 
 ## Cloud validation and delivery
 
-The expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
+Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` decouples remembered
+notification grants from alert availability, counts both When In Use and Always as prior location
+authorization, proves both flags survive store recreation and drive revoked wording, and marks the
+protected Home configuration/event files and directory as excluded from device backup. It also adds
+docs-only PR classification while keeping `CI Gate` present. It passed
+[PR #1 run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032): 20-source
+boundary checks, 37 domain assertions, 41 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. The PR run did not upload an IPA.
+Final classifier/documentation source `d3864970a2beb2ebcc463bf73fca0574542ca942` then passed
+[PR #1 run #28](https://github.com/akshatksingh18/akshatos/actions/runs/33986900743), including the
+full macOS job because that update changed the workflow. Application source remained `d80653d`.
+The subsequent Markdown-only source `931d3a568d5540167dbf9734020a1715a3cd3420` passed Source
+checks and the required `CI Gate` in
+[PR #1 run #29](https://github.com/akshatksingh18/akshatos/actions/runs/33987404033) while `Build
+installable IPA` was skipped, proving the required check still resolves without spending macOS
+minutes on a documentation-only PR update.
+
+Build 8 closes three gaps found in a follow-up review of the build-7 dashboard/Settings UI task: a
+monotonic `notificationEverAuthorized`/`homeEverAuthorized` flag so a permission that was granted at
+least once and later denied is phrased as a revocation rather than a first-time denial, an icon-based
+Home automation-health row on the main dashboard itself (previously a plain muted line), and a shared
+`AdaptiveRow` component that stacks label/value rows vertically at accessibility Dynamic Type sizes.
+Exact source `81bc36b58814c69e174013219d577ad5a4699f4d` passed
+[PR #1 run #24](https://github.com/akshatksingh18/akshatos/actions/runs/33981449101) on its first
+push: 20-source boundary checks, 37 domain assertions, 41 integration/persistence tests, one
+hub/settings UI test, simulator/device compilation, IPA inspection and CI Gate. PR runs do not
+upload IPA artifacts, so build 4 below remains the latest downloaded IPA; this work is phone-unverified.
+
+Build 7 completes the dashboard/Settings UI: authoritative `NotificationAuthorization` and
+`HomeAuthorization` tracking on `SquatStore` (replacing a boolean and fragile status-string
+matching), a `SettingsRoute`-driven one-tap action on blocking alerts, a dedicated Notifications
+settings section with Focus/Scheduled Summary/banner caveats, distinct denied/restricted/when-in-use
+Home messaging, per-state hero icons, and VoiceOver/Dynamic Type/Reduce Motion/Increased-Contrast
+accessibility behavior. Exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed
+[PR #1 run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 20-source
+boundary checks, 37 domain assertions, 39 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. PR runs do not upload IPA artifacts, so
+build 4 below remains the latest downloaded IPA; this UI/permission work is phone-unverified.
+
+Build 6 adds staged opt-in Home selection and Always authorization, one app-lifetime circular region,
+protected boundary/event storage, source-aware pause/resume and outside-Home choices, automation
+health/edit/delete UI, future-date streak filtering and expanded goal/streak/Home regression tests.
+It intentionally omits continuous background-location mode and excludes Home coordinates from backup
+exports. Exact source `3037348257938dcd545838a7b54d5bd53dafccd1` passed
+[PR #1 run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593): 20-source
+boundary checks, 37 domain assertions, 34 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. PR runs do not upload IPA artifacts, and
+the Home geofence remains phone-unverified.
+
+Build 5 adds daily aggregation/history, active/paused timing, foreground calendar-boundary rollover,
+versioned JSON export/validated restore, completed-history deletion, and regression coverage. Its
+exact source `2ac71a10731a73012a4726bbada4d3609fea93cf` passed
+[PR #1 run #14](https://github.com/akshatksingh18/akshatos/actions/runs/33906715819): 16-source
+boundary checks, 29 domain assertions, 29 integration/persistence tests, one hub/settings UI test,
+simulator/device compilation, IPA inspection and CI Gate. PR runs do not upload IPA artifacts, so
+build 4 below remains the latest downloaded IPA; do not attribute build-5 behavior to that artifact.
+
+Build 4 adds notification actions, durable queued commands, receipt persistence and regression tests.
+Source `3cfea6176d43e79b8af899b579e0ac602b480715` passed all jobs including `CI Gate` in
+[PR #1 run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 14-source boundary
+checks and six negative fixtures, workflow/inventory checks, 20 domain assertions, 24 integration
+tests, one hub/settings UI test, simulator/device compilation and IPA payload inspection.
+The feature is published on `feature/squats-notification-actions` in
+[PR #1](https://github.com/akshatksingh18/akshatos/pull/1); it is not merged into main.
+
+PR runs intentionally omit IPA upload. The same application source, on documentation revision
+`ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`, passed both
+[PR run #11](https://github.com/akshatksingh18/akshatos/actions/runs/33898795994) and
+[delivery run #12](https://github.com/akshatksingh18/akshatos/actions/runs/33899343678), including `CI Gate`.
+The latter published the downloaded artifact below. No build-4 signing, installation or durable
+release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
+notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
+and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Selected build-4 download
+
+- Version: **0.2.0 (4)**; source `ede1e492bedf8bfbc8c76fb938a3a0676aa97b32`.
+- Artifact: `akshatos-ios-12`, from delivery run #12 linked above.
+- Verified local directory:
+  `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12`.
+- File: `AkshatOS-unsigned.ipa`; keep `AkshatOS-unsigned.ipa.sha256` and `build-info.txt` beside it.
+- SHA-256: `154677be1c5b70b68cbf3a0b7e5a218409a974ffa006b4d70d7160049d40b114`.
+- Local checksum matches the cloud checksum; ZIP integrity, payload, permanent bundle ID,
+  version/build and absence of shipped tests/extensions/signing profile are checked. This is an
+  unsigned preview for manual Sideloadly testing, not a phone-verified or signing-refresh release.
+
+### Earlier preview evidence
+
+The prior expanded pipeline in `ci.md` passed on source `a31643b2375abcd3e708ca3747c9980b1a3e78b8`,
 [run #7](https://github.com/akshatksingh18/akshatos/actions/runs/33820332042): source/workflow checks,
 12 domain assertions, three SwiftData tests, hub/settings navigation, simulator/device builds,
-IPA inspection and `CI Gate`. It produced `akshatos-ios-7` and `test-diagnostics-7-1` in Actions.
-That new artifact was not downloaded or physically tested; the verified local download below
-remains run #6. No production app behavior or version changed in this CI-only task.
+IPA inspection and `CI Gate`. It originally produced `akshatos-ios-7` and `test-diagnostics-7-1`;
+those and all other retained Actions artifacts were deleted before the repository became public.
+That IPA was not downloaded or physically tested; the verified local download below remains run #6.
+No production app behavior or version changed in this CI-only task.
 
 Verified preview: **0.2.0 (3)**, [iOS Cloud Build #6](https://github.com/akshatksingh18/akshatos/actions/runs/33818156350),
 source `e70740d3af51e5bad288787c99f3a1430103c88e`, artifact `akshatos-ios-6`.
@@ -49,19 +146,19 @@ artifact; it was not deleted or relabeled. This refactor preserves the schema, s
 and bundle ID. Physical same-ID upgrade/data preservation and reminders still need testing.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
-2. Compile/run `ios/tests/squats/main.swift` with the pure `SquatSession.swift` domain (12 assertions).
+2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (20 assertions).
 3. Compile simulator, run the hub → dashboard → back UI test with screenshot attachments, and
    compile the unsigned arm64 device Release build. Simulator test runners are not in the IPA.
 4. Inspect bundle/version/executable, package ordinary Payload IPA, generate checksum/build metadata.
 5. Upload a 14-day Actions artifact. Download and checksum it before signing. Keep a durable copy
    outside Git after physical acceptance; temporary Actions storage is not the release cache.
 
-No local Mac is available. Windows edits source; macOS/Xcode in the private cloud build compiles.
+No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
 ## First AkshatOS install (manual steps; no computer control)
 
-1. Use the verified **AkshatOS** download above, not the old smoke download; download a newer
+1. Use the selected **AkshatOS 0.2.0 (4)** download above, not an older preview or smoke download; download a newer
    successful artifact only when its source/build is intentionally selected.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
@@ -74,14 +171,16 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 6. Open **AkshatOS**: the first screen must be the app picker. Select **Squat Reminder**; test back
    navigation to the hub. Other modules must clearly say they are not available.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
-   lock the phone, receive an alert, open Squats and Done +1, Undo, Pause, Resume, snooze, End, and
-   reopen the app. Test 45 minutes too. No notification-action buttons exist in this slice.
+   lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
+   test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
+   relaunch. Repeat with 45 minutes. Confirm action ordering and that returning to the picker does
+   not stop reminders. A build-3 schedule may need one explicit Repair reminders to add the category.
 8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 
-Wi-Fi/automatic refresh, expiry recovery, in-place upgrades, full daily summary, notification
-buttons, Home geofence, Shortcuts, and export/restore are not verified/completed by this first slice.
-Keep real irreplaceable history out until recovery is implemented.
+Wi-Fi/automatic refresh, expiry recovery, in-place upgrades and notification buttons still require
+physical verification. Home geofence physical verification, Shortcuts and physical recovery remain unfinished. Keep
+irreplaceable history disposable until export/restore is exercised on the phone.
 
 ## Previous standalone smoke evidence
 

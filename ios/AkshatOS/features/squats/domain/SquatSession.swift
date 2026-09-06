@@ -6,6 +6,7 @@ struct SquatEvent: Codable, Identifiable, Equatable {
     var id = UUID()
     var date: Date
     var kind: Kind
+    var source: String? = nil
 }
 
 struct SquatSession: Codable, Identifiable, Equatable {
@@ -18,6 +19,9 @@ struct SquatSession: Codable, Identifiable, Equatable {
     var goal: Int?
     var state: State = .paused
     var events: [SquatEvent] = []
+    // Optional additions decode older V1 payloads without rewriting their history.
+    var actionReceipts: [String]? = nil
+    var pauseReason: String? = nil
 
     var count: Int { events.filter { $0.kind == .done }.count }
     var isActive: Bool { state != .ended }
@@ -37,10 +41,22 @@ struct SquatSession: Codable, Identifiable, Equatable {
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }
 
+    static func endOfDay(_ day: String, calendar: Calendar = .current) -> Date? {
+        let pieces = day.split(separator: "-").compactMap { Int($0) }
+        guard pieces.count == 3,
+              let start = calendar.date(from: DateComponents(
+                year: pieces[0], month: pieces[1], day: pieces[2])),
+              dayKey(start, calendar: calendar) == day else { return nil }
+        return calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: start))
+    }
+
     static func streaks(_ sessions: [SquatSession], now: Date = Date(),
                         calendar: Calendar = .current) -> (current: Int, best: Int) {
+        let today = dayKey(now, calendar: calendar)
         let groups = Dictionary(grouping: sessions, by: \.day)
         let qualified = Set(groups.compactMap { day, values -> String? in
+            // A clock correction must not let future-dated records inflate today's streak.
+            guard day <= today else { return nil }
             guard let goal = values.sorted(by: { $0.started < $1.started }).first?.goal,
                   values.reduce(0, { $0 + $1.count }) >= goal else { return nil }
             return day
@@ -50,6 +66,7 @@ struct SquatSession: Codable, Identifiable, Equatable {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = calendar.timeZone
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.isLenient = false
         var best = 0
         var length = 0
         var previous: Date?
@@ -63,7 +80,7 @@ struct SquatSession: Codable, Identifiable, Equatable {
             previous = date
         }
         var cursor = calendar.startOfDay(for: now)
-        if !qualified.contains(dayKey(cursor, calendar: calendar)) {
+        if !qualified.contains(today) {
             cursor = calendar.date(byAdding: .day, value: -1, to: cursor)!
         }
         var current = 0

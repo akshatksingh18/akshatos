@@ -59,4 +59,30 @@ import SwiftData
         XCTAssertThrowsError(try JSONDecoder().decode(SquatSession.self, from: row.payload))
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<SquatSchemaV1.SavedSession>()), 1)
     }
+
+    func testRepositoryReplaceAndDeletePersistAcrossContexts() throws {
+        let container = try makeContainer()
+        let repository = SwiftDataSquatRepository(container: container)
+        let original = session()
+        try repository.save(original)
+        var replacement = session()
+        replacement.id = UUID()
+        replacement.state = .ended
+        replacement.ended = replacement.started.addingTimeInterval(1800)
+        try repository.replaceAll(with: [replacement])
+        XCTAssertEqual(try repository.load(), [replacement])
+        try repository.delete(ids: [replacement.id])
+        XCTAssertTrue(try repository.load().isEmpty)
+    }
+
+    func testRepositoryRejectsInvalidReplacementWithoutChangingData() throws {
+        let container = try makeContainer()
+        let repository = SwiftDataSquatRepository(container: container)
+        let original = session()
+        try repository.save(original)
+        var duplicate = original
+        duplicate.started = original.started.addingTimeInterval(1)
+        XCTAssertThrowsError(try repository.replaceAll(with: [original, duplicate]))
+        XCTAssertEqual(try repository.load(), [original])
+    }
 }

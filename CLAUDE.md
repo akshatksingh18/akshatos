@@ -4,19 +4,53 @@ Personal native iPhone hub: the home screen selects a feature, starting with Squ
 PageVault and ReelVault are reserved for later; WHOOP stays standalone. This repository evolved
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
-**Status:** Building — hub picker and first Squats dashboard/core are implemented in source.
-Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
+**Status:** Building — hub picker, Squats dashboard/core, durable notification actions, daily history,
+local backup/restore, Home auto-pause, and expanded goal/streak edges are implemented and cloud-
+verified in build-6 source. Build-7 source completes the dashboard/Settings UI: distinct notification
+(not-determined/authorized/provisional/ephemeral/denied) and location (not-determined/when-in-use/
+always/denied/restricted) permission presentation with proactive Settings routing, per-state
+automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/increased-contrast accessibility
+behavior; its exact source passed cloud CI (see `ci.md`). Build-8 source introduced three remaining
+dashboard/Settings UI gaps: a distinct "turned off"/revoked wording once notification or location
+access has been granted at least once (instead of reusing first-denial wording), an icon-based
+automation-health row on the main dashboard rather than a plain muted line, and Dynamic Type
+hardening (a reusable `AdaptiveRow` that stacks label/value rows vertically at accessibility text
+sizes instead of squeezing them into a fixed-width row). Security-review correction source
+`d80653da39433815c1d12fb9470adb9417a6f819` makes the remembered grants accurate and persistent,
+excludes protected Home state from device backup, and passed cloud CI (see `ci.md`). Physical
+acceptance plus the
+remaining native v1 work (foreground reconciliation completion, broader automated coverage) are
+pending. Cloud compilation, first AkshatOS phone launch, and refresh acceptance are tracked in
 `cloud-build.md`. The removed standalone smoke app proved the earlier toolchain only.
 The full target feature contract below is not a claim that every feature is implemented.
 
 ## Files
 
-- `ci.md` — pipeline stages, feature test registration, failure handling, coverage limits, and
-  current GitHub branch-protection limitation; read before changing CI or accepting a build.
+- `handoff.md` — new-session entry point, current implementation/evidence boundaries and recommended
+  continuation order; read to resume, then use its linked owning specifications and setup guides.
+- `ci.md` — pipeline stages, docs-only PR classification, feature test registration, failure
+  handling, coverage limits, public-repository operation, and `main` protection; read before
+  changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
 - `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
+- `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
+  scheduling/save failures and file/disk recovery regression tests.
+- `ios/AkshatOS/features/squats/domain/SquatAction.swift` — shared action commands and delivery receipts.
+- `ios/AkshatOS/features/squats/domain/SquatDaySummary.swift` — same-date aggregation, active/paused
+  timing, goal status and detailed daily history.
+- `ios/AkshatOS/features/squats/domain/SquatsBackup.swift` — versioned local JSON export/restore
+  contract and whole-file validation.
+- `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
+- `ios/AkshatOS/features/squats/domain/HomeAutomation.swift` — pure Home-boundary state, debounce,
+  and source-aware pause/resume decisions.
+- `ios/AkshatOS/features/squats/data/HomeAutomationStorage.swift` — protected this-device-only Home
+  configuration and durable minimal boundary-event inbox.
+- `ios/AkshatOS/features/squats/services/HomeRegionService.swift` — feature-owned protocol and
+  inactive test/preview adapter; the app coordinator owns the Core Location delegate implementation.
+- `ios/AkshatOS/features/squats/ui/HomeSetupView.swift` — one-shot Home map/radius confirmation UI.
+- `ios/AkshatOS/features/squats/data/SquatRepository.swift` — retryable SwiftData persistence adapter.
 - `hub-plan.md` — canonical shared packaging, source/identity ownership, feature boundaries,
   and integration gates; versioned here, with parent/sibling indexes linking to it.
 - `CLAUDE.md` — canonical project instructions and the accepted end-to-end iPhone implementation,
@@ -32,8 +66,8 @@ The full target feature contract below is not a claim that every feature is impl
   update items in place as their real state changes.
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
-- `.github/workflows/ios-build.yml` — private macOS-runner job that generates the Xcode project,
-  runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
+- `.github/workflows/ios-build.yml` — public-repository macOS-runner job that generates the Xcode
+  project, runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
 - `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,
   and deterministic icon generator; this is the canonical hub source tree.
 - `ios/AkshatOS/app/` — composition/lifetime ownership, sole notification delegate, and `hub/`
@@ -57,9 +91,9 @@ The full target feature contract below is not a claim that every feature is impl
 
 ### Product and target decision
 
-- Canonical source/build owner: this `akshatos/` repository, private GitHub
+- Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (3)`.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, version `0.2.0 (8)`.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -125,8 +159,9 @@ The full target feature contract below is not a claim that every feature is impl
 
 - Keep idle interval/goal preferences in `UserDefaults`. Lifecycle intent belongs in the same
   versioned SwiftData session payload as its events, avoiding a separate divergent intent copy.
-  Future geofence enablement/health and identifiers may use namespaced preferences. Store the Home coordinate/radius in
-  protected local storage, never logs or remote services. Use a local versioned SwiftData store for
+  Home configuration and minimal pending region events use separate protected, atomic files marked
+  excluded from device backup. Store the Home coordinate/radius in protected local storage, never
+  logs, backups, or remote services. Use a local versioned SwiftData store for
   active/finalized day sessions, completion timestamps, pause segments, snooze events, per-day goal
   snapshots, and streak qualification when the final deployment target is iOS 17 or later; fall back
   to Core Data or SQLite only if the activation toolchain/device makes SwiftData unsuitable.
@@ -155,8 +190,10 @@ The full target feature contract below is not a claim that every feature is impl
 - Build the dashboard around one readable state hero, a scheduled-next-reminder treatment, a large
   sets-completed-today count, configurable daily-goal progress, current/best streak, contextual
   lifecycle controls, and a compact Today event timeline. End requires confirmation and opens a
-  summary with sets, goal/streak result, start/end, active/paused duration, completion times, pause
-  segments, snoozes, and interval. Keep finalized daily summaries local.
+  summary with sets, goal result, start/end, active/paused duration, completion times, pause
+  segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
+  Export/restore uses a versioned local JSON file selected by the user; validation completes before
+  replacement, and completed-history deletion preserves an active day and settings.
 - Treat only explicit Done actions as completion evidence. iOS does not provide a dependable count
   of every notification actually presented under Focus/Scheduled Summary, so do not display a
   fabricated delivery count or completion percentage.
@@ -192,7 +229,7 @@ The full target feature contract below is not a claim that every feature is impl
   framework dependency. That standard artifact must remain signable by Sideloadly and portable to
   another compatible installer or direct Xcode deployment if the preferred tool stops working.
 - New or changed iOS binaries still require macOS/Xcode, but Akshat has no local Mac. The accepted
-  primary compiler is therefore the private-repository `.github/workflows/ios-build.yml` job on a
+  primary compiler is therefore the `.github/workflows/ios-build.yml` job on a
   pinned GitHub-hosted macOS/Xcode image. Windows authors source; XcodeGen creates the project on the
   runner; the job builds an unsigned ordinary device IPA and publishes its hash/build metadata.
 - Keep Apple credentials, two-factor codes, certificates, provisioning profiles, device IDs, and
@@ -270,7 +307,8 @@ The full target feature contract below is not a claim that every feature is impl
   profiles:
   <https://developer.apple.com/help/account/basics/about-your-developer-account/>.
 - The no-local-Mac build uses GitHub-hosted macOS runners and the pinned Xcode version available on
-  that image; private repositories consume the account's Actions-minute allowance. Re-check runner
+  that image. The repository is temporarily public so standard hosted-runner use does not consume the
+  private-repository Actions-minute allowance. Re-check runner
   availability before toolchain changes: <https://docs.github.com/en/actions/reference/runners/github-hosted-runners>.
 - XcodeGen turns the versioned `ios/project.yml` into the ephemeral Xcode project on the runner;
   keep its version pinned and re-verify generation when changing it:
@@ -347,6 +385,13 @@ current observed behavior in the applicable project document rather than relying
 
 ### Phased implementation plan
 
+Execution order: finish the agreed native Squats v1 implementation and automated/cloud checks
+before asking Akshat for physical-phone testing. Sideloading is reported working; do not make
+another installation exercise a prerequisite for continued coding. Physical acceptance remains
+required after implementation, with defects found there fixed before calling the feature dependable.
+`handoff.md` and `todo.md` own the current implementation-first work order. Optional Shortcuts
+remain a follow-on; this sequencing change does not expand native v1 or activate media modules.
+
 1. **Hub transition and cloud activation:** source/repository and bundle ID are selected and the
    target/workflow is adapted. Pass cloud tests/build and physical hub-picker → Squats navigation
    before calling this new identity phone-verified; see `cloud-build.md`.
@@ -418,11 +463,15 @@ The iPhone path can be described as working only when all of the following are t
 
 ## Repository and hosting
 
-The project is backed up to the private GitHub repository
-<https://github.com/akshatksingh18/akshatos>; local `main` tracks `origin/main` after the first
-push. Keep it private unless Akshat explicitly decides to make it public after a separate privacy,
-licensing, history, and secret review. GitHub stores source and documentation only—not Apple
-credentials, signing material, provisioning data, device state, or release IPAs.
+The project is backed up to the temporarily public GitHub repository
+<https://github.com/akshatksingh18/akshatos>; local `main` tracks `origin/main`. Akshat authorized the
+visibility change after a fresh full-history and GitHub-surface security review, accepted the
+low-risk local username/path exposure without rewriting history, and had all 26 retained Actions
+artifacts deleted before the switch. The intent is to return to private once the public-CI need has
+passed. Doing so will stop new public access but cannot undo anything cloned, forked, downloaded,
+indexed, or cached while public. `ci.md` owns the operational details and verified `main` protection.
+GitHub stores source and documentation only—not Apple credentials, signing material, provisioning
+data, device state, or durable release IPAs.
 
 ## Working agreement
 
@@ -430,7 +479,7 @@ credentials, signing material, provisioning data, device state, or release IPAs.
   register new feature suites, and pass the exact commit's GitHub Actions `CI Gate` before claiming
   verification or promoting an IPA. Inspect failures and fix the cause; never bypass or weaken tests
   to make a build green. Prefer PRs for subsequent code changes. Follow `ci.md`, including the
-  explicit distinction between passing CI and unavailable server-enforced branch protection.
+  server-enforced `main` protection and docs-only PR classification.
 - Documentation synchronization is an automatic completion step; Akshat must never need to request
   it separately. Before every final response after code/configuration work, a plan decision, build or
   signing progress, or a reported phone test, audit the full applicable `CLAUDE.md` chain plus
