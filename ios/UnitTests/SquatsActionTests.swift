@@ -519,7 +519,7 @@ import UserNotifications
     }
 
     func testForegroundReconciliationKeepsValidCurrentSessionSnooze() async {
-        let (repository, reminders, _, store) = fixture()
+        let (repository, reminders, inbox, _) = fixture()
         let deadline = time.addingTimeInterval(600)
         var active = repository.values[0]
         active.log(SquatEvent(date: time, kind: .snooze, source: "dashboard"))
@@ -528,10 +528,11 @@ import UserNotifications
         reminders.state.hasSnooze = true
         reminders.state.snoozeSessionID = active.id
         reminders.state.snooze = time.addingTimeInterval(1_200)
-        await store.refresh()
-        XCTAssertEqual(store.operational, "Running")
+        let reopened = make(repository, reminders, inbox)
+        await reopened.refresh()
+        XCTAssertEqual(reopened.operational, "Running")
         XCTAssertEqual(reminders.cancelSnoozeCount, 0)
-        XCTAssertEqual(store.snoozeReminder, deadline)
+        XCTAssertEqual(reopened.snoozeReminder, deadline)
     }
 
     func testDoneCadenceResetRetriesAfterPersistenceFailure() async {
