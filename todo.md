@@ -18,21 +18,10 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: build-6 Home automation and goal/streak source passed exact-source cloud checks;
-finish the agreed native Squats v1 before asking
-Akshat for physical testing. Sideloading is reported working and is not a prerequisite for further
-coding. Daily overview/history and export/restore/deletion are implemented and passed the exact
-build-5 source gate. Build-6 source adds clock-safe streak filtering, same-day goal-snapshot tests,
-and opt-in Home auto-pause with protected state/events and setup/status UI. Its final source passed
-PR run #18. Build-7 source completes the dashboard/Settings UI task (permission-state presentation,
-automation-health icons, and VoiceOver/Dynamic Type/Reduce Motion/contrast accessibility); its exact
-source passed PR run #22. Build-8 source closes three gaps found in a follow-up review of that same
-task: revoked-vs-denied wording, an icon-based dashboard automation-health row, and Dynamic Type
-hardening for accessibility text sizes; its exact source passed PR run #24. Post-review source
-corrects the remembered notification/location grant semantics and device-backup exclusion for
-Home state; exact source `d80653d` passed PR run #27. Next:
-foreground-reconciliation completion and broader day/streak, persistence, migration and
-permission-transition test coverage.
+Current focus: the agreed native Squats lifecycle, dashboard/Settings UI, notification actions,
+daily overview/recovery, Home automation and foreground reconciliation are implemented. Exact
+reconciliation source `8c1cc96` passed PR run #32 and was merged to `main` through PR #1. Next:
+broader day/streak, persistence, migration, permission-transition and UI regression coverage.
 Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
 recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
 other modules stay deferred.
@@ -120,11 +109,15 @@ other modules stay deferred.
       Build-6 source implements this contract without continuous background-location mode and keeps
       Home coordinates out of device backups and backup exports. Exact-source cloud tests pass; physical geofence
       acceptance remains open.
-- [ ] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
+- [x] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
       `UserDefaults` preferences, actual notification settings,
       recurring/snooze requests, pending action inbox, day data, and Home-region configuration on
       launch/foreground return; cancel stale requests and expose reminder or geofence repair/degraded
-      states.
+      states. Exact source `8c1cc96` canonicalizes invalid idle settings, removes foreign/malformed
+      snoozes without moving a healthy cadence, requires a usable matching recurring request, and
+      compares/replaces the actual system Home circle while resetting stale presence. Run #32 passed
+      37 domain assertions, 45 integration/persistence tests, one UI test, both builds, IPA inspection
+      and `CI Gate`; PR #1 merged it to `main`.
 - [ ] **Add logic and persistence tests.** Cover lifecycle transitions, interval validation, state
       reconciliation, action deduplication, permission transitions, snooze replacement, summary
       derivation, goal/streak boundaries, skipped dates, same-day sessions, Undo/past edits,
@@ -188,6 +181,9 @@ more integration tests covering the revoked-vs-denied wording for both notificat
 authorization (37 domain assertions, 41 integration/persistence tests, one UI test). Correction source
 `d80653da39433815c1d12fb9470adb9417a6f819` strengthens those same tests across store recreation,
 fixes their grant semantics, and verifies Home backup exclusion; PR run #27 passed.
+Foreground-reconciliation source `8c1cc96` adds four integration tests for persisted preference
+repair, valid/foreign snooze handling, and mismatched Home-boundary replacement. PR run #32 passed
+37 domain assertions, 45 integration/persistence tests and one UI test before PR #1 merged.
 
 ## Documentation synchronization
 
