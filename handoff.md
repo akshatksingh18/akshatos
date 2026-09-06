@@ -3,8 +3,9 @@
 **Status:** The repository is temporarily public with protected `main`. Build-9 application source
 `e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
 repair of a repeating request without a next fire date. PR #4 is merged; main delivery run #39
-passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. First
-physical AkshatOS acceptance is next. This is a current-state entry point,
+passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Phone review
+identified two accepted dashboard refinements—snooze-first countdown presentation and a completion-
+only **Your day so far** list—which must be implemented and rebuilt before acceptance continues. This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
 
@@ -174,15 +175,19 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+1. **Implement the two accepted phone-review UI refinements:** make a pending ten-minute nudge the
+   prominent countdown with the regular cadence underneath, and make **Your day so far** list only
+   completed sets with their times. Preserve the two independent schedules and internal lifecycle
+   events; add regression/UI coverage and produce a new verified build before resuming acceptance.
+2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
-2. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
+3. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-3. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
