@@ -232,6 +232,201 @@ import UserNotifications
         XCTAssertEqual(defaults.integer(forKey: "squats.goal"), 100)
     }
 
+    func testFreshPreferencesUseChosenDefaultsAndPreserveExplicitGoalOff() {
+        let suite = "SquatsActionTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = make(MemoryRepository(), FakeReminders(), MemoryInbox(), defaults: defaults)
+        XCTAssertEqual(store.interval, SquatStore.defaultInterval)
+        XCTAssertEqual(store.goal, SquatStore.defaultGoal)
+        XCTAssertEqual(defaults.integer(forKey: "squats.interval"), 45)
+        XCTAssertEqual(defaults.integer(forKey: "squats.goal"), 8)
+
+        defaults.set(0, forKey: "squats.goal")
+        let reopened = make(MemoryRepository(), FakeReminders(), MemoryInbox(), defaults: defaults)
+        XCTAssertEqual(reopened.goal, 0, "An explicit choice to turn goal tracking off must survive relaunch")
+    }
+
+    func testHomeDraftUsesChosenDefaultRadiusAndClampsEdits() async {
+        let monitor = FakeHomeMonitor()
+        let store = make(MemoryRepository(), FakeReminders(), MemoryInbox(), monitor: monitor)
+        await store.chooseCurrentLocationAsHome()
+        XCTAssertEqual(store.homeDraft?.radius, HomeBoundary.defaultRadius)
+        XCTAssertEqual(HomeBoundary.defaultRadius, 150)
+        store.updateHomeDraftRadius(10)
+        XCTAssertEqual(store.homeDraft?.radius, HomeBoundary.allowedRadius.lowerBound)
+        store.updateHomeDraftRadius(2_000)
+        XCTAssertEqual(store.homeDraft?.radius, HomeBoundary.allowedRadius.upperBound)
+    }
+
+    func testLifecycleIsIdempotentAndSnapshotsActiveSettings() async {
+        let suite = "SquatsActionTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(30, forKey: "squats.interval")
+        defaults.set(6, forKey: "squats.goal")
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        let store = make(repository, reminders, MemoryInbox(), defaults: defaults)
+
+        await store.start()
+        await store.start()
+        XCTAssertEqual(reminders.scheduleCount, 1)
+        XCTAssertEqual(store.active?.state, .running)
+        XCTAssertEqual(store.active?.interval, 30)
+        XCTAssertEqual(store.active?.goal, 6)
+
+        store.interval = 60
+        store.goal = 10
+        await store.pause()
+        await store.pause()
+        XCTAssertEqual(store.active?.events.filter { $0.kind == .pause }.count, 1)
+        XCTAssertEqual(store.active?.interval, 30)
+        XCTAssertEqual(store.active?.goal, 6)
+        XCTAssertNil(reminders.state.sessionID)
+
+        await store.resume()
+        await store.resume()
+        XCTAssertEqual(reminders.scheduleCount, 2)
+        XCTAssertEqual(reminders.state.interval, 1_800)
+        await store.end()
+        await store.end()
+        XCTAssertNil(store.active)
+        XCTAssertEqual(store.summary?.goal, 6)
+        XCTAssertNil(reminders.state.sessionID)
+    }
+
+    func testStartSchedulingFailureLeavesRecoverablePausedDay() async {
+        let repository = MemoryRepository()
+        let reminders = FakeReminders()
+        reminders.failSchedule = true
+        let store = make(repository, reminders, MemoryInbox())
+        await store.start()
+        XCTAssertEqual(store.active?.state, .paused)
+        XCTAssertEqual(store.operational, "Paused")
+        XCTAssertNil(reminders.state.sessionID)
+        XCTAssertNotNil(store.message)
+
+        reminders.failSchedule = false
+        await store.resume()
+        XCTAssertEqual(store.active?.state, .running)
+        XCTAssertEqual(store.operational, "Running")
+        XCTAssertEqual(reminders.scheduleCount, 1)
+    }
+
+    func testPausedAndCompletedStatesCancelUnexpectedRequests() async {
+        let pausedRepository = MemoryRepository()
+        var paused = session(); paused.state = .paused
+        pausedRepository.values = [paused]
+        let pausedReminders = FakeReminders()
+        pausedReminders.state.sessionID = paused.id
+        pausedReminders.state.interval = 2_700
+        pausedReminders.state.next = time.addingTimeInterval(2_700)
+        pausedReminders.state.hasSnooze = true
+        pausedReminders.state.snoozeSessionID = paused.id
+        pausedReminders.state.snooze = time.addingTimeInterval(600)
+        let pausedStore = make(pausedRepository, pausedReminders, MemoryInbox())
+        await pausedStore.refresh()
+        XCTAssertEqual(pausedStore.operational, "Paused")
+        XCTAssertNil(pausedReminders.state.sessionID)
+        XCTAssertFalse(pausedReminders.state.hasSnooze)
+
+        let endedRepository = MemoryRepository()
+        var ended = session(); ended.state = .ended; ended.ended = time
+        endedRepository.values = [ended]
+        let endedReminders = FakeReminders()
+        endedReminders.state.sessionID = ended.id
+        endedReminders.state.next = time.addingTimeInterval(2_700)
+        let endedStore = make(endedRepository, endedReminders, MemoryInbox())
+        await endedStore.refresh()
+        XCTAssertEqual(endedStore.operational, "Day complete")
+        XCTAssertNil(endedReminders.state.sessionID)
+    }
+
+    func testRepairRearmsRunningSessionWhenTriggerHasNoNextDate() async {
+        let (_, reminders, _, store) = fixture()
+        reminders.state.next = nil
+        await store.refresh()
+        XCTAssertEqual(store.operational, "Reminder needs repair")
+        await store.resume()
+        XCTAssertEqual(reminders.scheduleCount, 1)
+        XCTAssertEqual(store.operational, "Running")
+        XCTAssertNotNil(store.nextReminder)
+    }
+
+    func testForegroundRemovesExpiredAndNonActionableCurrentSnoozes() async {
+        let (repository, reminders, _, store) = fixture()
+        reminders.state.hasSnooze = true
+        reminders.state.snoozeSessionID = repository.values[0].id
+        reminders.state.snooze = time.addingTimeInterval(-1)
+        await store.refresh()
+        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
+
+        reminders.state.hasSnooze = true
+        reminders.state.snoozeSessionID = repository.values[0].id
+        reminders.state.snoozeActionable = false
+        reminders.state.snooze = time.addingTimeInterval(600)
+        await store.refresh()
+        XCTAssertEqual(reminders.cancelSnoozeCount, 2)
+        XCTAssertNil(store.snoozeReminder)
+        XCTAssertEqual(store.operational, "Running")
+    }
+
+    func testAuthorizedButAlertsDisabledBlocksRunningAndRemovesSnooze() async {
+        let (repository, reminders, _, store) = fixture()
+        reminders.state.authorization = .authorized
+        reminders.state.allowed = false
+        reminders.state.hasSnooze = true
+        reminders.state.snoozeSessionID = repository.values[0].id
+        reminders.state.snooze = time.addingTimeInterval(600)
+        await store.refresh()
+        XCTAssertTrue(store.notificationEverAuthorized)
+        XCTAssertEqual(store.notificationAuthorization, .authorized)
+        XCTAssertEqual(store.operational, "Notifications blocked")
+        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
+    }
+
+    func testHomeHealthCoversInsufficientAuthorizationSystemAndBackgroundFailures() async {
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150))
+        let monitor = FakeHomeMonitor()
+        monitor.state.authorization = .whenInUse
+        let store = make(MemoryRepository(), FakeReminders(), MemoryInbox(), home: home, monitor: monitor)
+        await store.refresh()
+        XCTAssertEqual(store.homeHealth, "Always access needed")
+
+        monitor.state.authorization = .always
+        monitor.state.monitoringAvailable = false
+        await store.refresh()
+        XCTAssertEqual(store.homeHealth, "Region monitoring unavailable")
+
+        monitor.state.monitoringAvailable = true
+        monitor.state.backgroundAccess = .denied
+        await store.refresh()
+        XCTAssertEqual(store.homeHealth, "Background refresh restricted")
+    }
+
+    func testDisableHomeClearsEventsAndPreventsAutomationResume() async throws {
+        let repository = MemoryRepository()
+        var paused = session(); paused.state = .paused; paused.pauseReason = "homeAwayAutomation"
+        repository.values = [paused]
+        let home = MemoryHomePersistence()
+        home.value = HomeAutomationState(boundary: HomeBoundary(latitude: 41, longitude: -87, radius: 150),
+                                         presence: .outside)
+        let homeInbox = MemoryHomeInbox()
+        try homeInbox.enqueue(HomeBoundaryEvent(kind: .entered, date: time,
+            regionIdentifier: HomeAutomationState.regionIdentifier))
+        let monitor = FakeHomeMonitor()
+        let store = make(repository, FakeReminders(), MemoryInbox(), home: home,
+                         homeInbox: homeInbox, monitor: monitor)
+        await store.disableHome()
+        XCTAssertFalse(store.homeEnabled)
+        XCTAssertNil(home.value)
+        XCTAssertTrue(homeInbox.values.isEmpty)
+        XCTAssertNil(monitor.state.monitoredBoundary)
+        XCTAssertEqual(store.active?.pauseReason, "homeAutomationDisabled")
+    }
+
     func testForegroundReconciliationRemovesForeignSnoozeButPreservesHealthyCadence() async {
         let (repository, reminders, _, store) = fixture()
         reminders.state.hasSnooze = true

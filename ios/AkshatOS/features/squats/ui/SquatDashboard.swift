@@ -217,7 +217,7 @@ struct SquatDashboard: View {
                         .font(.caption).foregroundStyle(Palette.muted)
                 }
             } else {
-                Text("Choose a daily set goal in Settings to begin your streak. No target is chosen for you.")
+                Text("Daily goal tracking is off. Choose a goal in Settings to begin your streak.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
             }
             if dynamicTypeSize.isAccessibilitySize {

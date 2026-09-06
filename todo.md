@@ -19,12 +19,11 @@ primary; Android remains a separate fallback scaffold.
       These remain logical modules in one target; future media implementations are not included.
 
 Current focus: the agreed native Squats lifecycle, dashboard/Settings UI, notification actions,
-daily overview/recovery, Home automation and foreground reconciliation are implemented. Exact
-reconciliation source `8c1cc96` passed PR run #32 and was merged to `main` through PR #1. Next:
-broader day/streak, persistence, migration, permission-transition and UI regression coverage.
-Then deliver the complete candidate for phone acceptance, fix observed defects and prove refresh/
-recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in `cloud-build.md`;
-other modules stay deferred.
+daily overview/recovery, Home automation, foreground reconciliation, chosen defaults and expanded
+native-v1 regression coverage are implemented in build-9 source. Finish exact-source PR #4 cloud
+verification, then deliver the candidate for phone acceptance, fix observed defects and prove
+refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+`cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
       into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
@@ -42,9 +41,10 @@ other modules stay deferred.
 - [ ] **Promote the verified smoke artifact to a durable cache.** Preserve the Downloads IPA,
       checksum, and build metadata outside Git; choose the stable cache location before moving
       or deleting that download. No stable-cache copy has been verified yet.
-- [ ] **Choose the deferred product constants before behavior acceptance.** Set the initial daily
-      completed-set goal and validate a practical default Home-boundary radius on the actual phone;
-      keep both configurable and do not block the initial scaffold on choosing the numbers now.
+- [x] **Choose the product constants before behavior acceptance.** New installs start with an
+      eight-completed-set daily goal and a configurable 150-meter Home boundary. Goal zero remains
+      an explicit opt-out and existing saved choices survive relaunch. Automated default/range tests
+      pass; physical Home-radius suitability remains part of the phone matrix rather than the choice.
 - [ ] **Build the native hub host and Squats module.** After resolving source/identity ownership,
       the target/workflow and picker/dashboard now exist in source, with reserved later modules and
       Android preserved. Finish and physically verify the hub IPA. Keep notifications/geofences at host
@@ -118,12 +118,18 @@ other modules stay deferred.
       compares/replaces the actual system Home circle while resetting stale presence. Run #32 passed
       37 domain assertions, 45 integration/persistence tests, one UI test, both builds, IPA inspection
       and `CI Gate`; PR #1 merged it to `main`.
-- [ ] **Add logic and persistence tests.** Cover lifecycle transitions, interval validation, state
+- [x] **Add logic and persistence tests.** Cover lifecycle transitions, interval validation, state
       reconciliation, action deduplication, permission transitions, snooze replacement, summary
       derivation, goal/streak boundaries, skipped dates, same-day sessions, Undo/past edits,
       prospective goal changes, day/DST/time-zone boundaries, geofence pause-source guards and
       duplicate events, migrations, and protected-data fallback. Simulator tests do not replace
-      hardware tests.
+      hardware tests. Build-9 source expands the suite to 47 domain assertions, 55 integration/
+      persistence tests and one UI test, including chosen defaults, idempotent lifecycle, schedule-
+      failure recovery, exact request repair, stale-request/snooze cleanup, alerts-disabled handling,
+      Home degraded/disable paths, spring/fall DST and time-zone ownership. Current-schema legacy
+      decoding, malformed payloads, atomic replacement and protected-data fallbacks remain covered;
+      any future schema version must add its own migration tests. Exact Build-9 source/documentation
+      head passed PR #4 run #37; physical acceptance remains pending.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End, snooze,
       foreground/background, explicit force-quit, reboot, Low Power Mode, Focus, Scheduled Summary,
@@ -184,6 +190,9 @@ fixes their grant semantics, and verifies Home backup exclusion; PR run #27 pass
 Foreground-reconciliation source `8c1cc96` adds four integration tests for persisted preference
 repair, valid/foreign snooze handling, and mismatched Home-boundary replacement. PR run #32 passed
 37 domain assertions, 45 integration/persistence tests and one UI test before PR #1 merged.
+Build-9 application source `e999ed2` adds ten integration tests and ten domain assertions across
+defaults, lifecycle, repair, permissions, snooze cleanup, Home degradation/disable, DST/time-zone
+and recovery behavior; it also extends the UI test over the chosen goal and permission/Home status.
 
 ## Documentation synchronization
 

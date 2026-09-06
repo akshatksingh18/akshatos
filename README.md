@@ -4,7 +4,7 @@ A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and ente
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (8)**,
+recovery, Home auto-pause and expanded goal/streak edge handling, source version **0.2.0 (9)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
@@ -20,9 +20,10 @@ Foreground reconciliation now repairs invalid idle preferences, removes stale or
 requires the expected recurring-request identity/interval/category, and replaces a missing or
 mismatched system Home boundary without trusting stale presence. Exact source `8c1cc96` passed the
 full cloud gate in run #32 and was merged to `main` through PR #1.
-The accepted order is to finish native Squats v1 and its automated tests first, then have Akshat
-test the complete feature on the phone. Sideloading is reported working; continued implementation
-does not wait for another installation exercise.
+Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
+permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
+and fixes repair of a repeating request with no next fire date. Its exact cloud verification passed
+in the rerun of PR #4 run #37; the next acceptance phase is the complete physical-iPhone matrix.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
@@ -42,17 +43,17 @@ App composition, display-only hub, shared styling and Squats feature are separat
 - Notification actions ordered Done, Pause, then snooze; durable inbox, replay protection after Undo,
   and queued-action retry UI. Locked-device behavior still needs physical verification.
 - One system-scheduled recurring reminder; local versioned SwiftData sessions and daily summaries.
-- Configurable daily goal (unset initially), current/best streak and today's progress.
+- Configurable daily goal (eight sets initially; zero turns it off), current/best streak and
+  today's progress.
 - Same-date daily overview with active/paused duration, event/pause detail, local-midnight rollover,
   versioned JSON export/restore, and confirmed deletion of completed history.
 - Optional staged Home setup with one protected local geofence, pause-source guards, outside-Home
   Start/Resume choices, visible health, and edit/disable/delete. No route history is retained.
 - No server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** Shortcuts, remaining v1 UI/reliability work and physical
-acceptance testing. The full intended scope below remains the
-target, not a list of completed features. Until recovery and device tests pass, use disposable
-test activity only.
+**Still deferred:** Shortcuts and physical acceptance testing. The full intended scope below
+remains the target, not a list of completed features. Until recovery and device tests pass, use
+disposable test activity only.
 
 ## Intended daily behavior
 
@@ -61,9 +62,9 @@ test activity only.
 - Receive ordinary local notifications until pausing or tapping **End my day**.
 - Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
   not unrecorded individual repetitions.
-- Reach the configurable daily set goal to qualify that local date for the streak. The dashboard
-  shows today's progress plus current and personal-best streak; the initial goal number remains to
-  be chosen later rather than hard-coded now.
+- Reach the configurable daily set goal to qualify that local date for the streak. New installs
+  start at eight completed sets; setting the goal to zero turns streak tracking off. The dashboard
+  shows today's progress plus current and personal-best streak.
 - Use **Pause** while away and **Resume** when ready. Resume begins a fresh 45-minute interval.
 - Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
   only that same day if the geofence caused the pause. Manual controls remain available at all times.
@@ -105,7 +106,8 @@ export a versioned JSON backup, validate and restore it before replacing current
 delete completed history while retaining the active day and preferences.
 
 The implemented forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
-location to choose/confirm a circular Home boundary, then requests the authorization needed for iOS
+location to choose/confirm a circular Home boundary with a configurable 150-meter initial radius,
+then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
 state stay in protected local storage excluded from both device backups and Squats backup exports;
 the app never continuously tracks location or saves a route. Build-6 passed exact-source cloud checks; physical

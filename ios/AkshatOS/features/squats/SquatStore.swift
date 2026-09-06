@@ -2,6 +2,9 @@ import Foundation
 import SwiftUI
 
 @MainActor final class SquatStore: ObservableObject {
+    static let defaultInterval = 45
+    static let defaultGoal = 8
+
     @Published private(set) var sessions: [SquatSession] = []
     @Published private(set) var busy = false
     @Published private(set) var operational = "Ready"
@@ -66,8 +69,8 @@ import SwiftUI
         self.homeMonitor = homeMonitor ?? InactiveHomeRegionMonitor()
         self.now = now
         self.calendar = calendar
-        interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? 45))
-        goal = max(0, min(100, defaults.integer(forKey: "squats.goal")))
+        interval = max(1, min(180, defaults.object(forKey: "squats.interval") as? Int ?? Self.defaultInterval))
+        goal = max(0, min(100, defaults.object(forKey: "squats.goal") as? Int ?? Self.defaultGoal))
         notificationEverAuthorized = defaults.bool(forKey: "squats.notificationEverAuthorized")
         homeEverAuthorized = defaults.bool(forKey: "squats.homeEverAuthorized")
         // Canonicalize old/corrupt idle preferences so every subsequent launch sees the repaired values.
@@ -493,7 +496,8 @@ import SwiftUI
             guard var session = active, !staleDay else { return }
             let snapshot = await reminders.snapshot()
             if session.state == .running && snapshot.allowed && snapshot.sessionID == session.id &&
-                snapshot.interval == TimeInterval(session.interval * 60) && snapshot.actionable { return }
+                snapshot.interval == TimeInterval(session.interval * 60) && snapshot.actionable &&
+                snapshot.next != nil { return }
             guard try await reminders.authorize() else {
                 message = notificationEverAuthorized
                     ? "Notifications were turned off while paused. Allow them again in iOS Settings to resume."
