@@ -2,10 +2,11 @@
 
 **State:** Native hub/Squats lifecycle, actions, history, Home automation, foreground
 reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
-Exact Build-9 verification passed in PR #4 run #37. Build-10 source implements snooze-first countdown
-priority and a completion-only dashboard timeline. It also persists a cadence anchor after phone
-testing showed Build 9 resetting the displayed countdown on close/reopen. PR #7 and main delivery
-run #43 passed the Build-10 cloud gate; physical acceptance remains in `cloud-build.md`.
+Exact Build-9 verification passed in PR #4 run #37. Build 10 implements snooze-first countdown
+priority, a completion-only dashboard timeline and a persisted regular cadence anchor; PR #7 and
+main run #43 passed. Device testing then exposed that the snooze deadline still came from an unstable
+reconstructed trigger and that Done left the nudge active. Working Build 11 source persists the
+snooze deadline and resets cadence after a snooze-related Done; cloud/device acceptance remains open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -13,7 +14,7 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, working source version 0.2.0 (10); Build 9 remains the installed artifact.
+  `com.akshatksingh18.akshatos`, working source version 0.2.0 (11); Build 10 is installed but unaccepted.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -150,8 +151,9 @@ background-capable services at app lifetime; load future media views/resources o
   replaces the recurring request and begins a fresh interval. End removes recurring/snooze requests
   and finalizes the active day.
 - Register a reminder category with actions ordered Done, Pause, and Remind me in 10 min. Done records
-  one set without changing the cadence. Pause calls the same idempotent pause command as the UI.
-  Snooze replaces one one-off request for ten minutes later while the regular request continues.
+  one set without changing an ordinary cadence; if a snooze remains unresolved, it removes that
+  request, replaces the recurring request and persists a full new interval. Pause calls the same
+  idempotent command as the UI. Snooze replaces one one-off request for ten minutes later.
 - `UNUserNotificationCenterDelegate` routes responses by category/action identifier and always calls
   its completion handler after durable/idempotent processing. The normal app, notification handler,
   and App Intents never implement separate state-transition logic.
@@ -247,6 +249,8 @@ update stored state only after replacement succeeds.
   the app cannot promise exact visible delivery. Normally the persisted regular cadence owns the
   prominent countdown. While a one-off snooze is pending, its earlier deadline replaces that clock;
   do not render a competing secondary countdown.
+- Persist both the regular cadence anchor and the accepted snooze deadline; never use a reconstructed
+  `UNTimeIntervalNotificationTrigger.nextTriggerDate()` as a durable countdown across foregrounding.
 - Keep the dashboard's **Your day so far** list completion-only: one row per non-undone Done event
   with its time. Continue persisting pause/resume/snooze events for lifecycle reconciliation,
   durations and summaries, but do not render them in this at-a-glance list.

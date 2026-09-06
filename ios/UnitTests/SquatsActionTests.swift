@@ -376,22 +376,42 @@ import UserNotifications
                        "Closing and reopening must not restart the displayed interval")
     }
 
-    func testSnoozeOwnsPrimaryCountdownAndDashboardTimelineContainsOnlyCompletions() async {
+    func testSnoozeOwnsStablePrimaryCountdownAndDashboardTimelineContainsOnlyCompletions() async {
         let (repository, reminders, _, _) = fixture()
         var active = repository.values[0]
         active.log(SquatEvent(date: time.addingTimeInterval(-120), kind: .pause, source: "dashboard"))
         active.log(SquatEvent(date: time.addingTimeInterval(-60), kind: .done, source: "dashboard"))
+        active.log(SquatEvent(date: time, kind: .snooze, source: "dashboard"))
+        active.snoozeCadenceDeadline = time.addingTimeInterval(600)
         repository.values = [active]
         let snooze = time.addingTimeInterval(600)
         reminders.state.hasSnooze = true
         reminders.state.snoozeSessionID = active.id
-        reminders.state.snooze = snooze
+        reminders.state.snooze = time.addingTimeInterval(1_200)
 
         let reopened = make(repository, reminders, MemoryInbox())
         await reopened.refresh()
         XCTAssertTrue(reopened.primaryReminderIsSnooze)
         XCTAssertEqual(reopened.primaryReminder, snooze)
         XCTAssertEqual(reopened.todayCompletions.map(\.kind), [.done])
+    }
+
+    func testDoneWhileSnoozePendingCancelsNudgeAndStartsFreshCadence() async {
+        let (repository, reminders, _, store) = fixture()
+        let active = repository.values[0]
+        await store.receive(action(active, .snooze))
+        XCTAssertTrue(reminders.state.hasSnooze)
+
+        await store.receive(action(active, .done))
+
+        XCTAssertEqual(store.todayCount, 1)
+        XCTAssertFalse(reminders.state.hasSnooze)
+        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
+        XCTAssertEqual(reminders.scheduleCount, 2)
+        XCTAssertEqual(store.active?.reminderCadenceAnchor, time.addingTimeInterval(2_700))
+        XCTAssertEqual(store.nextReminder, time.addingTimeInterval(2_700))
+        XCTAssertFalse(store.primaryReminderIsSnooze)
+        XCTAssertNil(store.active?.snoozeCadenceDeadline)
     }
 
     func testLegacyRunningSessionAdoptsTriggerDeadlineOnlyOnce() async {
@@ -410,8 +430,13 @@ import UserNotifications
 
     func testForegroundRemovesExpiredAndNonActionableCurrentSnoozes() async {
         let (repository, reminders, _, store) = fixture()
+        var expired = repository.values[0]
+        expired.log(SquatEvent(date: time.addingTimeInterval(-601), kind: .snooze,
+                               source: "dashboard"))
+        expired.snoozeCadenceDeadline = time.addingTimeInterval(-1)
+        repository.values = [expired]
         reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = repository.values[0].id
+        reminders.state.snoozeSessionID = expired.id
         reminders.state.snooze = time.addingTimeInterval(-1)
         await store.refresh()
         XCTAssertEqual(reminders.cancelSnoozeCount, 1)
@@ -496,13 +521,36 @@ import UserNotifications
     func testForegroundReconciliationKeepsValidCurrentSessionSnooze() async {
         let (repository, reminders, _, store) = fixture()
         let deadline = time.addingTimeInterval(600)
+        var active = repository.values[0]
+        active.log(SquatEvent(date: time, kind: .snooze, source: "dashboard"))
+        active.snoozeCadenceDeadline = deadline
+        repository.values = [active]
         reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = repository.values[0].id
-        reminders.state.snooze = deadline
+        reminders.state.snoozeSessionID = active.id
+        reminders.state.snooze = time.addingTimeInterval(1_200)
         await store.refresh()
         XCTAssertEqual(store.operational, "Running")
         XCTAssertEqual(reminders.cancelSnoozeCount, 0)
         XCTAssertEqual(store.snoozeReminder, deadline)
+    }
+
+    func testDoneCadenceResetRetriesAfterPersistenceFailure() async {
+        let (repository, reminders, inbox, store) = fixture()
+        let active = repository.values[0]
+        await store.receive(action(active, .snooze))
+        repository.failSave = true
+
+        await store.receive(action(active, .done, id: "done-after-snooze"))
+        XCTAssertEqual(store.todayCount, 0)
+        XCTAssertEqual(inbox.values.map(\.id), ["done-after-snooze"])
+        XCTAssertNil(reminders.state.sessionID)
+
+        repository.failSave = false
+        await store.refresh()
+        XCTAssertEqual(store.todayCount, 1)
+        XCTAssertTrue(inbox.values.isEmpty)
+        XCTAssertEqual(store.active?.reminderCadenceAnchor, time.addingTimeInterval(2_700))
+        XCTAssertEqual(reminders.state.sessionID, active.id)
     }
 
     func testForegroundReconciliationReplacesMismatchedHomeBoundaryAndForgetsPresence() async {
@@ -962,6 +1010,30 @@ import UserNotifications
         XCTAssertEqual(saved.count, 0)
         XCTAssertEqual(saved.actionReceipts, [command.id])
         XCTAssertEqual(command.applying(to: saved).count, 0)
+    }
+
+    func testCadenceAndSnoozeDeadlinesSurviveSwiftDataRecreation() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let schema = Schema(versionedSchema: SquatSchemaV1.self)
+        let config = ModelConfiguration("CountdownDiskTest", schema: schema,
+                                        url: root.appendingPathComponent("store.sqlite"))
+        var original = session()
+        original.reminderCadenceAnchor = time.addingTimeInterval(1_200)
+        original.log(SquatEvent(date: time, kind: .snooze, source: "dashboard"))
+        original.snoozeCadenceDeadline = time.addingTimeInterval(600)
+        do {
+            let container = try ModelContainer(for: schema, migrationPlan: SquatMigration.self,
+                                               configurations: [config])
+            try SwiftDataSquatRepository(container: container).save(original)
+        }
+
+        let reopened = try ModelContainer(for: schema, migrationPlan: SquatMigration.self,
+                                          configurations: [config])
+        let saved = try XCTUnwrap(SwiftDataSquatRepository(container: reopened).load().first)
+        XCTAssertEqual(saved.reminderCadenceAnchor, time.addingTimeInterval(1_200))
+        XCTAssertEqual(saved.snoozeCadenceDeadline, time.addingTimeInterval(600))
     }
 
     func testRestoreReplacesHistorySettingsAndLeavesOpenDayNeedingRearm() async throws {

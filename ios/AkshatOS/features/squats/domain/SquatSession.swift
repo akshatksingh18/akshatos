@@ -26,9 +26,22 @@ struct SquatSession: Codable, Identifiable, Equatable {
     /// this persisted anchor instead of treating `UNTimeIntervalNotificationTrigger.nextTriggerDate()`
     /// as stable across app launches.
     var reminderCadenceAnchor: Date? = nil
+    /// The accepted snooze deadline remains available after iOS reconstructs or delivers its
+    /// one-off request. It is cleared by Done/Pause/Resume rather than inferred from the trigger.
+    var snoozeCadenceDeadline: Date? = nil
 
     var count: Int { events.filter { $0.kind == .done }.count }
     var isActive: Bool { state != .ended }
+
+    /// The snooze request is a time-interval trigger, whose reconstructed `nextTriggerDate()` is
+    /// not a durable source of truth after the app backgrounds. Its accepted action timestamp is.
+    func unresolvedSnoozeDeadline(delay: TimeInterval = 600) -> Date? {
+        guard let index = events.lastIndex(where: { $0.kind == .snooze }) else { return nil }
+        let superseded = events.suffix(from: events.index(after: index)).contains {
+            $0.kind == .done || $0.kind == .pause || $0.kind == .resume
+        }
+        return superseded ? nil : events[index].date.addingTimeInterval(delay)
+    }
 
     mutating func log(_ event: SquatEvent) {
         guard isActive, !events.contains(where: { $0.id == event.id }) else { return }

@@ -128,20 +128,21 @@ struct SquatDashboard: View {
                 } trailing: {
                     if store.busy { ProgressView().tint(Palette.lime) }
                 }
-                if let date = store.primaryReminder {
-                    VStack(alignment: .leading, spacing: 5) {
-                        TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
-                            let interval = TimeInterval((store.active?.interval ?? 45) * 60)
-                            let elapsed = max(0, context.date.timeIntervalSince(date))
-                            let next = store.primaryReminderIsSnooze ? date :
-                                (date > context.date ? date : date.addingTimeInterval((floor(elapsed / interval) + 1) * interval))
-                            let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
+                if let regular = store.nextReminder {
+                    TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
+                        let snooze = store.snoozeReminder.flatMap { $0 > context.date ? $0 : nil }
+                        let interval = TimeInterval((store.active?.interval ?? 45) * 60)
+                        let elapsed = max(0, context.date.timeIntervalSince(regular))
+                        let next = snooze ?? (regular > context.date ? regular :
+                            regular.addingTimeInterval((floor(elapsed / interval) + 1) * interval))
+                        let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
+                        VStack(alignment: .leading, spacing: 5) {
                             Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
                                 .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
+                            Text(snooze == nil ? "until the next scheduled reminder" :
+                                 "until your reminder in 10 minutes")
+                                .font(.caption).foregroundStyle(Palette.muted)
                         }
-                        Text(!store.primaryReminderIsSnooze ? "until the next scheduled reminder" :
-                             "until your reminder in 10 minutes")
-                            .font(.caption).foregroundStyle(Palette.muted)
                     }
                 } else {
                     Text(heroDescription).font(.body).foregroundStyle(Palette.muted)

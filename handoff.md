@@ -3,11 +3,12 @@
 **Status:** The repository is temporarily public with protected `main`. Build-9 application source
 `e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
 repair of a repeating request without a next fire date. PR #4 is merged; main delivery run #39
-passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Phone review
-identified a close/reopen countdown reset in addition to the accepted snooze-first countdown and
-completion-only **Your day so far** refinements. Build 10 implements all three with a persisted
-regular-cadence anchor. PR #7 and main delivery run #43 passed, and the downloaded replacement IPA
-is checksum/package verified but not yet installed. This is a current-state entry point,
+passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Build 10
+implemented the snooze-first countdown, completion-only timeline and regular-cadence persistence;
+PR #7/main run #43 passed and its verified IPA is installed. Phone testing found its ten-minute
+deadline still resets on foreground and Done leaves that nudge active. Working Build 11 source
+persists the snooze deadline and makes snooze-related Done begin a fresh full interval; cloud build
+and device verification are pending. This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
 
@@ -50,7 +51,7 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Working source version: `0.2.0 (10)`, minimum iOS 17. Build 9 remains the selected installed artifact;
+  Working source version: `0.2.0 (11)`, minimum iOS 17. Build 10 is installed but not accepted;
   preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
@@ -162,13 +163,14 @@ the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-veri
 
 The selected hash-verified candidate is **0.2.0 (10)** from main delivery run #43, at:
 `C:\Users\aksha\Downloads\akshatos-build-10\akshatos-ios-43\AkshatOS-unsigned.ipa`.
-Its checksum, identity, version/build, payload and screenshots passed local inspection. Build 9 is
-the installed fallback and Build 4 remains retained. Builds 2 and 3 plus the obsolete standalone
+Its checksum, identity, version/build, payload and screenshots passed local inspection. Build 10 is
+installed; Builds 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
 smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
-Akshat installed Build 9 and confirmed notification/location permission prompts; closing/reopening
-that build exposed the countdown defect fixed in Build 10. **Build-10 same-ID installation and
-refresh preservation remain pending.**
+Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
+visible, but foregrounding resets that ten-minute clock and Done does not resolve it. Because the old
+app was uninstalled, this installation does not prove same-ID refresh preservation. Build 11 fixes
+both behaviors in source; its over-install and device acceptance remain pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -179,10 +181,10 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Install and test the verified Build-10 artifact over Build 9:** confirm the pending ten-minute
-   deadline owns the single main countdown, **Your day so far** shows only completed sets/times, and
-   close/reopen preserves the regular clock. Verify that same-ID update preserves existing settings,
-   permissions, Home configuration and disposable history.
+1. **Cloud-verify Build 11, then install it over Build 10:** preserve the current app container and
+   confirm both regular and ten-minute countdowns survive background/foreground and relaunch. During
+   a pending snooze, Done must log once, remove the nudge and begin a full regular interval. Also
+   confirm settings, permissions, Home configuration and disposable history survive the over-install.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
