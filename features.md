@@ -11,7 +11,8 @@ Home boundary is compared with the actual system registration. Build 9 chooses a
 initial goal and a 150-meter initial Home radius and expands native-v1 automated coverage.
 Build-9 cloud verification passed in PR #4 run #37. Build-10 source implements the accepted countdown
 and completion-list refinements and persists the regular cadence anchor after phone testing exposed a
-close/reopen countdown reset. Build-10 cloud and physical acceptance remain outstanding.
+close/reopen countdown reset. PR #7 and main delivery run #43 passed the Build-10 cloud gate;
+physical acceptance remains outstanding.
 Android is an unverified fallback.
 
 ## Hub entry

@@ -5,8 +5,9 @@
 repair of a repeating request without a next fire date. PR #4 is merged; main delivery run #39
 passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Phone review
 identified a close/reopen countdown reset in addition to the accepted snooze-first countdown and
-completion-only **Your day so far** refinements. Build-10 working source implements all three with a
-persisted regular-cadence anchor, but still needs cloud verification and a replacement IPA. This is a current-state entry point,
+completion-only **Your day so far** refinements. Build 10 implements all three with a persisted
+regular-cadence anchor. PR #7 and main delivery run #43 passed, and the downloaded replacement IPA
+is checksum/package verified but not yet installed. This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
 
@@ -159,14 +160,15 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The selected hash-verified candidate is **0.2.0 (9)** from main delivery run #39, at:
-`C:\Users\aksha\Downloads\akshatos-build-9\akshatos-ios-39\AkshatOS-unsigned.ipa`.
-Its checksum, identity, version/build, payload and screenshots passed local inspection. Build 4 is
-retained as the immediate fallback. Builds 2 and 3 plus the obsolete standalone smoke artifact were
-sent to the Windows Recycle Bin and are recoverable until it is emptied. No AkshatOS install is recorded.
+The selected hash-verified candidate is **0.2.0 (10)** from main delivery run #43, at:
+`C:\Users\aksha\Downloads\akshatos-build-10\akshatos-ios-43\AkshatOS-unsigned.ipa`.
+Its checksum, identity, version/build, payload and screenshots passed local inspection. Build 9 is
+the installed fallback and Build 4 remains retained. Builds 2 and 3 plus the obsolete standalone
+smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
-Only the old standalone Squat Reminder smoke was installed and opened on the phone. Akshat then
-deleted that disposable app. **AkshatOS installation, reminders and same-ID refresh remain pending.**
+Akshat installed Build 9 and confirmed notification/location permission prompts; closing/reopening
+that build exposed the countdown defect fixed in Build 10. **Build-10 same-ID installation and
+refresh preservation remain pending.**
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -177,10 +179,10 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Verify and build the Build-10 phone-review fixes:** the pending ten-minute deadline now owns the
-   single main countdown, **Your day so far** shows only completed sets/times, and a persisted cadence
-   anchor prevents close/reopen from resetting the regular clock. Complete regression/UI coverage,
-   pass the exact commit's CI Gate, and produce/install a replacement IPA before resuming acceptance.
+1. **Install and test the verified Build-10 artifact over Build 9:** confirm the pending ten-minute
+   deadline owns the single main countdown, **Your day so far** shows only completed sets/times, and
+   close/reopen preserves the regular clock. Verify that same-ID update preserves existing settings,
+   permissions, Home configuration and disposable history.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix

@@ -11,9 +11,9 @@ by Akshat; that is not evidence that this new hub build works on the phone.
 The Build-9 unsigned IPA is downloaded and hash-verified after main delivery run #39; Build 4 is
 retained as the fallback. The build guide contains the exact paths and manual Sideloadly steps.
 Physical testing confirmed that notification and location permission prompts appear, but also found
-that closing and reopening Build 9 resets the displayed regular countdown. Build-10 source persists
-the cadence anchor so foreground reconciliation cannot restart that clock; cloud build and replacement
-IPA verification remain pending.
+that closing and reopening Build 9 resets the displayed regular countdown. Build 10 persists the
+cadence anchor so foreground reconciliation cannot restart that clock. PR #7 and main delivery run
+#43 passed, and its downloaded IPA is checksum/package verified; phone installation remains pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -29,7 +29,8 @@ permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Set
 and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
 run #39 produced the checksum-verified Build-9 IPA. Build-10 source prioritizes a pending ten-minute
 nudge in the main countdown, keeps **Your day so far** completion-only, and fixes the phone-observed
-close/reopen countdown reset with a persisted cadence anchor. Rebuild before continuing acceptance.
+close/reopen countdown reset with a persisted cadence anchor. PR #7 and main run #43 passed the full
+pipeline; install the verified Build-10 artifact before continuing acceptance.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
