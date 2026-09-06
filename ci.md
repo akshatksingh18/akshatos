@@ -117,6 +117,12 @@ disabled permission behavior, degraded Home health and safe Home disable. The UI
 the eight-set default plus notification/Home status surfaces. The expanded totals are 47 domain
 assertions, 55 integration/persistence tests and one UI test.
 
+Build-10 source `f7fa520` adds three integration regressions for persisted cadence across foreground/
+relaunch, one-time migration of a Build-9 active session, snooze ownership of the primary countdown,
+and completion-only dashboard history. PR #7 and main delivery run #43 each passed 49 domain
+assertions, 58 integration/persistence tests, one UI test, simulator/device compilation, IPA
+inspection and `CI Gate`. Main run #43 uploaded the checksum-verified Build-10 artifact.
+
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection
 assertion for device tests. Its diagnostic artifact was successfully downloaded; no behavior check

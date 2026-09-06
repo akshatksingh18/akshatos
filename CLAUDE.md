@@ -11,9 +11,10 @@ eight completed sets and a 150-meter Home boundary, expands the native-v1 regres
 repairs a repeating request that has no next fire date instead of incorrectly treating it as
 healthy. PR #4 is merged, and main delivery run #39 produced the downloaded, checksum-verified
 Build-9 IPA. Phone testing confirmed notification/location prompts and exposed a close/reopen
-countdown reset. Build-10 working source persists the cadence anchor and implements a snooze-first
-single countdown plus a completion-only **Your day so far** list. Verify and rebuild it before
-continuing physical feature, Home and refresh acceptance in `cloud-build.md`. The removed standalone smoke app proved
+countdown reset. Build 10 persists the cadence anchor and implements a snooze-first single countdown
+plus a completion-only **Your day so far** list. PR #7 and main delivery run #43 passed; the downloaded
+IPA is checksum/package verified. Install it over Build 9 before continuing physical feature, Home
+and refresh acceptance in `cloud-build.md`. The removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 

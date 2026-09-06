@@ -4,8 +4,8 @@
 reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
 Exact Build-9 verification passed in PR #4 run #37. Build-10 source implements snooze-first countdown
 priority and a completion-only dashboard timeline. It also persists a cadence anchor after phone
-testing showed Build 9 resetting the displayed countdown on close/reopen. Build-10 cloud and physical
-acceptance remain in `cloud-build.md`.
+testing showed Build 9 resetting the displayed countdown on close/reopen. PR #7 and main delivery
+run #43 passed the Build-10 cloud gate; physical acceptance remains in `cloud-build.md`.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
