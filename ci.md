@@ -5,6 +5,8 @@ passed Source checks, Build installable IPA and `CI Gate` in
 [PR #1 run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820): 37 domain
 assertions, 45 integration/persistence tests, the hub/settings UI test, simulator/device compilation
 and IPA inspection. PR #1 merged it to `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`.
+The resulting [main delivery run #33](https://github.com/akshatksingh18/akshatos/actions/runs/34000405465)
+also passed the complete pipeline and uploaded the expected `akshatos-ios-33` artifact.
 The public repository's `main` branch is server-protected with a
 strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
 Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS

@@ -1,11 +1,11 @@
 # AkshatOS session handoff
 
 **Status:** The repository is temporarily public with protected `main`. Foreground reconciliation
-source `8c1cc96` passed PR run #32 and PR #1 merged it to `main` as `1996004`. Resume broader
-native-v1 regression coverage next; first physical AkshatOS acceptance and the full Squats
-feature contract remain unfinished. This is a current-state entry point, not a separate
-specification or chronological log. Update it in place when its resume guidance changes; the
-linked owning documents control detailed facts.
+source `8c1cc96` passed PR run #32, PR #1 merged it to `main` as `1996004`, and main delivery run
+#33 passed. Resume broader native-v1 regression coverage next; first physical AkshatOS acceptance
+and the full Squats feature contract remain unfinished. This is a current-state entry point, not a
+separate specification or chronological log. Update it in place when its resume guidance changes;
+the linked owning documents control detailed facts.
 
 ## Start here
 
@@ -147,6 +147,9 @@ Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` pass
 [PR run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820): 37 domain
 assertions, 45 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
 IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally did not upload an IPA.
+[Main delivery run #33](https://github.com/akshatksingh18/akshatos/actions/runs/34000405465)
+passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
+the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
 The selected hash-verified local preview is **0.2.0 (4)** from delivery run #12, at:
 `C:\Users\aksha\Downloads\akshatos-notification-actions\akshatos-ios-12\AkshatOS-unsigned.ipa`.
