@@ -19,10 +19,11 @@ primary; Android remains a separate fallback scaffold.
       These remain logical modules in one target; future media implementations are not included.
 
 Current focus: Build 10 is installed and phone testing exposed a ten-minute countdown reset after
-backgrounding plus Done leaving the unresolved nudge active. Working Build 11 source persists the
-snooze deadline, makes snooze-related Done cancel it and start a fresh full interval, and adds
-SwiftData recreation plus failure/retry regressions. Cloud-verify and install Build 11 over Build 10,
-then resume phone acceptance and prove refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+backgrounding plus Done leaving the unresolved nudge active. Build 11 source persists the snooze
+deadline, makes snooze-related Done cancel it and start a fresh full interval, and adds SwiftData
+recreation plus failure/retry regressions. Application commit `9586f8a` passed PR #10's full cloud
+gate; merge it, validate its main artifact and install over Build 10 before resuming phone acceptance
+and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -64,12 +65,13 @@ then resume phone acceptance and prove refresh/recovery. Optional Shortcuts rema
       plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
       row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
       `81bc36b` passed PR run #24.
-- [ ] **Cloud-build and physically verify the Build-11 countdown correction.** Build 10 was installed
+- [ ] **Deliver and physically verify the cloud-passed Build-11 countdown correction.** Build 10 was installed
       after uninstalling Build 9, so it did not prove same-ID data preservation. It correctly makes a
       pending ten-minute deadline the main countdown and keeps **Your day so far** completion-only,
       but phone testing found that foregrounding restarts that snooze clock and Done leaves it active.
       Build 11 source persists both deadlines and makes snooze-related Done start a fresh full interval.
-      Cloud CI, an over-install on Build 10, and background/relaunch/delivery tests remain required.
+      PR #10 run #34067380053 passed 49 domain assertions, 61 XCTest cases, the UI test, both builds,
+      IPA inspection and `CI Gate`. Merge/main artifact, an over-install on Build 10, and device tests remain.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

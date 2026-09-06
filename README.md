@@ -12,9 +12,10 @@ The Build-9 unsigned IPA is downloaded and hash-verified after main delivery run
 retained as the fallback. The build guide contains the exact paths and manual Sideloadly steps.
 Physical testing confirmed that notification and location permission prompts appear. Build 10 fixed
 Build 9's regular-countdown reset, but after installation phone testing found that the ten-minute
-countdown still restarts on foreground and Done does not dismiss it. Working Build 11 source now
-persists that deadline too and turns Done during/after a snooze into a fresh full interval; cloud
-and replacement-install verification remain pending.
+countdown still restarts on foreground and Done does not dismiss it. Build 11 source now persists
+that deadline too and turns Done during/after a snooze into a fresh full interval. Its exact
+application commit passed PR #10's full cloud pipeline; merge/main delivery and replacement-install
+verification remain pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -30,8 +31,8 @@ permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Set
 and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
 run #39 produced the checksum-verified Build-9 IPA. Build 10 prioritizes a pending ten-minute nudge,
 keeps **Your day so far** completion-only, and persists the regular cadence anchor; PR #7 and main
-run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects and is not yet
-cloud- or device-verified.
+run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects and passed its
+PR cloud gate; it remains unmerged and device-unverified.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at

@@ -8,8 +8,9 @@ passed 49 domain assertions, 58 XCTest cases, the UI test, simulator/device comp
 inspection and `CI Gate`, then uploaded Build 10. The downloaded IPA matches its published checksum
 and package identity, and both simulator screenshots were inspected. Akshat installed it after
 uninstalling Build 9; phone testing found the snooze clock resets on foreground and Done leaves that
-nudge active. Working Build 11 source persists the snooze deadline and resets to a full interval on
-snooze-related Done, but has no cloud artifact yet. Builds 9 and 4 remain retained fallbacks.
+nudge active. Build 11 source persists the snooze deadline and resets to a full interval on
+snooze-related Done. Exact application commit `9586f8a` passed PR #10's complete cloud pipeline but,
+as expected for a PR, uploaded no IPA; merge/main delivery remains. Builds 9 and 4 remain retained fallbacks.
 This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -24,7 +25,7 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (11)**; minimum iOS 17.
-  Build 10 is downloaded/verified and phone-installed; Build 11 is source-only pending cloud CI.
+  Build 10 is downloaded/verified and phone-installed; Build 11 passed PR CI but has no main artifact yet.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -45,10 +46,11 @@ passed 49 domain assertions, 58 integration/persistence tests, one UI test, both
 inspection and `CI Gate`. Main delivery run #43 repeated that complete pipeline for merge commit
 `e99b7aa0ab2eaa71a583e6abfd42937c4d1d1cd9` and uploaded `akshatos-ios-43`.
 
-Working Build-11 source adds a stable persisted snooze deadline, conditional Done cadence reset,
-real SwiftData disk recreation and reset failure/retry coverage. The expected suite is 49 domain
-assertions and 61 integration/persistence tests; do not treat those totals as passed until its exact
-commit completes `CI Gate`.
+Build-11 application source `9586f8af537108bb1c11024bad63eb2f85a9d94c` adds a stable persisted
+snooze deadline, conditional Done cadence reset, real SwiftData disk recreation and reset failure/
+retry coverage. [PR #10 run #34067380053](https://github.com/akshatksingh18/akshatos/actions/runs/34067380053)
+passed 49 domain assertions, 61 integration/persistence tests, one UI test, simulator/device builds,
+IPA inspection and `CI Gate`. The PR correctly uploaded no IPA; merge/main delivery is pending.
 
 Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` selects a configurable
 eight-set daily goal and 150-meter Home radius, expands the registered suite to 47 domain assertions,

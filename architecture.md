@@ -5,8 +5,9 @@ reconciliation, chosen defaults and the expanded native-v1 regression suite are 
 Exact Build-9 verification passed in PR #4 run #37. Build 10 implements snooze-first countdown
 priority, a completion-only dashboard timeline and a persisted regular cadence anchor; PR #7 and
 main run #43 passed. Device testing then exposed that the snooze deadline still came from an unstable
-reconstructed trigger and that Done left the nudge active. Working Build 11 source persists the
-snooze deadline and resets cadence after a snooze-related Done; cloud/device acceptance remains open.
+reconstructed trigger and that Done left the nudge active. Build 11 source persists the snooze
+deadline and resets cadence after a snooze-related Done; exact application commit `9586f8a` passed
+PR #10's complete cloud gate. Merge/main delivery and device acceptance remain open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 

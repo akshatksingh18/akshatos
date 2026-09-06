@@ -6,9 +6,10 @@ repair of a repeating request without a next fire date. PR #4 is merged; main de
 passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Build 10
 implemented the snooze-first countdown, completion-only timeline and regular-cadence persistence;
 PR #7/main run #43 passed and its verified IPA is installed. Phone testing found its ten-minute
-deadline still resets on foreground and Done leaves that nudge active. Working Build 11 source
-persists the snooze deadline and makes snooze-related Done begin a fresh full interval; cloud build
-and device verification are pending. This is a current-state entry point,
+deadline still resets on foreground and Done leaves that nudge active. Build 11 source persists the
+snooze deadline and makes snooze-related Done begin a fresh full interval. Exact application commit
+`9586f8a` passed PR #10 run #34067380053; merge/main delivery and device verification are pending.
+This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
 
@@ -170,7 +171,7 @@ smoke artifact were sent to the Windows Recycle Bin and are recoverable until it
 Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
 visible, but foregrounding resets that ten-minute clock and Done does not resolve it. Because the old
 app was uninstalled, this installation does not prove same-ID refresh preservation. Build 11 fixes
-both behaviors in source; its over-install and device acceptance remain pending.
+both behaviors and passed its PR cloud gate; merge/main artifact, over-install and device acceptance remain pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -181,7 +182,7 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Cloud-verify Build 11, then install it over Build 10:** preserve the current app container and
+1. **Merge cloud-passed PR #10, validate its main artifact, then install it over Build 10:** preserve the current app container and
    confirm both regular and ten-minute countdowns survive background/foreground and relaunch. During
    a pending snooze, Done must log once, remove the nudge and begin a full regular interval. Also
    confirm settings, permissions, Home configuration and disposable history survive the over-install.
