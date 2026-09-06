@@ -33,14 +33,15 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
 - [ ] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
       picker → Squats → back navigation; verify reminders continue while the picker is shown.
       Cloud domain/navigation tests, both builds and downloaded IPA inspection/hash have passed;
-      first physical AkshatOS install and behavior are still pending (see `cloud-build.md`).
+      Build 9 installation and permission prompts are confirmed, while picker/back continuity and
+      the rest of the physical behavior remain pending (see `cloud-build.md`).
 
 - [x] **Prove the no-local-Mac smoke pipeline.** Cloud simulator/device compilation, packaging,
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [x] **Retire obsolete preview artifacts.** Build 9 plus its checksum, metadata and screenshots are
-      the selected candidate; Build 4 is retained as the immediate fallback. Builds 2 and 3 and the
+- [x] **Retire obsolete preview artifacts.** Build 10 plus its checksum, metadata and screenshots is
+      the selected candidate; installed Build 9 and retained Build 4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
 - [x] **Choose the product constants before behavior acceptance.** New installs start with an
@@ -70,9 +71,6 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
       PR #7 and main run #43 passed 49 domain assertions, 58 integration/persistence tests, one UI
       test, both builds, IPA inspection and CI Gate. Install over Build 9 and verify displayed and
       delivered deadlines through background/foreground and relaunch.
-- [ ] **Make Your day so far completion-only.** Render only non-undone Done events and their times;
-      omit pause, resume, snooze and reminder-maintenance events from the dashboard list while
-      retaining them internally for lifecycle reconciliation, durations and finalized summaries.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
@@ -153,10 +151,10 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
-      Build 9 passed main delivery run #39 and is downloaded with matching checksum, identity/version,
-      payload and screenshot checks; Build 4 is retained as the fallback. Physical acceptance and
-      durable current/previous release-cache promotion remain open, so Build 9 is not yet a known-good
-      phone release.
+      Build 10 passed main delivery run #43 and is downloaded with matching checksum, identity/version,
+      payload and screenshot checks; installed Build 9 and retained Build 4 are fallbacks. Physical
+      acceptance and durable current/previous release-cache promotion remain open, so Build 10 is not
+      yet a known-good phone release.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.
