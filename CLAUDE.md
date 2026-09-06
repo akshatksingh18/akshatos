@@ -9,8 +9,8 @@ daily history/recovery, Home auto-pause and foreground reconciliation are implem
 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` chooses configurable defaults of
 eight completed sets and a 150-meter Home boundary, expands the native-v1 regression suite, and
 repairs a repeating request that has no next fire date instead of incorrectly treating it as
-healthy. Exact build-9 cloud verification is in progress in PR #4; physical feature, Home and
-refresh acceptance remain pending in `cloud-build.md`. The removed standalone smoke app proved
+healthy. Exact Build-9 cloud verification passed in the rerun of PR #4 run #37; physical feature,
+Home and refresh acceptance remain pending in `cloud-build.md`. The removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 

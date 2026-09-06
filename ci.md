@@ -4,8 +4,11 @@
 native-v1 suite to 47 domain assertions, 55 integration/persistence tests and the hub/settings UI
 test. Its app-logic parent `db9c59f1ad23ec7f5f5199e2a3216ccd10490c56` passed Source checks,
 both builds, all tests, IPA inspection and `CI Gate` in
-[PR #4 run #36](https://github.com/akshatksingh18/akshatos/actions/runs/34002015676); exact build-9
-verification remains pending after the build-number/documentation update.
+[PR #4 run #36](https://github.com/akshatksingh18/akshatos/actions/runs/34002015676). The exact
+Build-9 source/documentation head `b11623ed50c1fdc77b0897b1a74a98cbd57a9cf5` passed the same
+macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate` in the
+[rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377);
+the PR correctly did not upload an IPA artifact.
 The public repository's `main` branch is server-protected with a
 strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
 Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS

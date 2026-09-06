@@ -2,8 +2,10 @@
 
 **State:** Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` chooses the
 eight-set/150-meter defaults, expands regression coverage and fixes missing-next-trigger repair.
-Its app-logic parent passed PR #4 run #36; exact build-9 verification is pending after the version/
-documentation update. Build-4 remains the latest downloaded, hash-verified IPA and older local
+The exact Build-9 source/documentation head `b11623ed50c1fdc77b0897b1a74a98cbd57a9cf5` passed
+the macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate` in the
+[rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377).
+PR validation does not upload an IPA; Build-4 remains the latest downloaded, hash-verified IPA and older local
 previews are preserved. First AkshatOS physical installation, reminder behavior and refresh
 acceptance remain pending. This file owns the build evidence.
 
@@ -36,7 +38,9 @@ eight-set daily goal and 150-meter Home radius, expands the registered suite to 
 55 integration/persistence tests and one UI test, and fixes repair of a repeating request without a
 next fire date. The app-logic parent passed
 [PR #4 run #36](https://github.com/akshatksingh18/akshatos/actions/runs/34002015676), including both
-builds and IPA inspection; exact build-9 verification is pending.
+builds and IPA inspection. The exact source/documentation head `b11623e` passed the same checks in
+the [rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377);
+as a PR run, it did not upload an IPA artifact.
 
 Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` repairs invalid idle
 preferences, validates the active recurring request and current-session snooze, removes stale

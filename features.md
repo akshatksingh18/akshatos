@@ -9,7 +9,8 @@ automation and full foreground reconciliation are implemented and cloud-verified
 intent is compared with notification permission plus recurring/snooze requests, and the protected
 Home boundary is compared with the actual system registration. Build 9 chooses an eight-set
 initial goal and a 150-meter initial Home radius and expands native-v1 automated coverage.
-Physical acceptance remains outstanding. Android is an unverified fallback.
+Build-9 cloud verification passed in PR #4 run #37. Physical acceptance remains outstanding.
+Android is an unverified fallback.
 
 ## Hub entry
 

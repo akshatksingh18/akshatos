@@ -128,7 +128,8 @@ refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidenc
       failure recovery, exact request repair, stale-request/snooze cleanup, alerts-disabled handling,
       Home degraded/disable paths, spring/fall DST and time-zone ownership. Current-schema legacy
       decoding, malformed payloads, atomic replacement and protected-data fallbacks remain covered;
-      any future schema version must add its own migration tests. Exact build-9 PR verification is pending.
+      any future schema version must add its own migration tests. Exact Build-9 source/documentation
+      head passed PR #4 run #37; physical acceptance remains pending.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End, snooze,
       foreground/background, explicit force-quit, reboot, Low Power Mode, Focus, Scheduled Summary,

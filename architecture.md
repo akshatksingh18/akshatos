@@ -2,7 +2,7 @@
 
 **State:** Native hub/Squats lifecycle, actions, history, Home automation, foreground
 reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
-Exact build-9 verification is tracked in `ci.md`; physical acceptance remains in `cloud-build.md`.
+Exact Build-9 verification passed in PR #4 run #37; physical acceptance remains in `cloud-build.md`.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 

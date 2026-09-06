@@ -2,8 +2,9 @@
 
 **Status:** The repository is temporarily public with protected `main`. Build-9 application source
 `e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
-repair of a repeating request without a next fire date. Exact-source PR #4 verification is pending;
-after it passes, first physical AkshatOS acceptance is next. This is a current-state entry point,
+repair of a repeating request without a next fire date. Exact-source PR #4 run #37 passed its
+macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate`; first
+physical AkshatOS acceptance is next. This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
 
@@ -173,9 +174,7 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Finish build-9 verification:** wait for PR #4's exact-source macOS job and required `CI Gate`,
-   fix any regression, merge only while the exact head is green, and retain the main delivery result.
-2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+1. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.

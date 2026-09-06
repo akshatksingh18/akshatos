@@ -22,8 +22,8 @@ mismatched system Home boundary without trusting stale presence. Exact source `8
 full cloud gate in run #32 and was merged to `main` through PR #1.
 Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
 permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
-and fixes repair of a repeating request with no next fire date. Its exact cloud verification is
-tracked in `ci.md`. The next acceptance phase is the complete physical-iPhone matrix.
+and fixes repair of a repeating request with no next fire date. Its exact cloud verification passed
+in the rerun of PR #4 run #37; the next acceptance phase is the complete physical-iPhone matrix.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
