@@ -10,7 +10,9 @@ deadline and resets cadence after a snooze-related Done. PR #10 merged as `8b5b8
 run #49 passed the complete gate and its Build-11 artifact passed local checksum/package inspection.
 Build 12 source `c5f787e` makes every running Done replace the recurring cadence and stabilizes
 transient dashboard geometry; PR #12 run #34073932922 and main delivery run #53 passed the complete
-cloud gate, and the downloaded IPA passed local inspection. Device acceptance remains open.
+cloud gate, and the downloaded IPA passed local inspection. Build 12 then passed the listed physical
+cadence, persistence, smooth-interaction and same-ID state-preservation checks; the broader device,
+refresh/recovery and soak matrix remains open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -19,7 +21,7 @@ real device behavior.
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version 0.2.0 (12); Build 11 is the phone-installed
-  predecessor and Build 12 is the verified replacement candidate.
+  predecessor and Build 12 is the installed, accepted current build for the checks above.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -325,8 +327,9 @@ Detailed artifact/install steps live in `cloud-build.md`.
 
 Sideloadly is present at its standard per-user Windows installation path. Akshat reports successful
 Local Anisette initialization followed by USB device detection; `cloud-build.md` records the working
-startup sequence. Signing, installation, and first launch passed. Wi-Fi pairing, same-ID upgrades,
-background refresh, and expiry recovery remain unverified.
+startup sequence. Signing, installation, first launch and one same-ID Build 11 → Build 12 upgrade
+with state preservation passed. Wi-Fi refresh, repeated signing cycles, automatic background refresh,
+and expiry recovery remain unverified.
 
 ## Current Android fallback architecture
 

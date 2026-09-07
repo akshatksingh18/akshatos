@@ -19,7 +19,10 @@ testing confirms its displayed countdown survives leaving and closing the app, w
 still did not restart the interval. Build 12 source now resets every running Done to a full interval
 and stabilizes changing button/card geometry. PR #12 run #34073932922 passed the complete 49-domain/
 63-integration-test cloud gate; main delivery run #53 repeated it and produced the downloaded,
-checksum/package/screenshot-verified Build-12 IPA. Device verification remains pending.
+checksum/package/screenshot-verified Build-12 IPA. Build 12 was installed over Build 11 without an
+uninstall; phone testing passed cadence reset after ordinary and snoozed Done, countdown persistence
+across background/force-close, smooth button interactions, and preservation of settings, permissions,
+Home configuration and history. The broader device/refresh/recovery matrix remains pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -65,8 +68,8 @@ App composition, display-only hub, shared styling and Squats feature are separat
   Start/Resume choices, visible health, and edit/disable/delete. No route history is retained.
 - No server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** Shortcuts and physical acceptance testing. The full intended scope below
-remains the target, not a list of completed features. Until recovery and device tests pass, use
+**Still deferred:** Shortcuts and the remaining physical, refresh and recovery testing. The full
+intended scope below remains the target, not a list of completed features. Until recovery and device tests pass, use
 disposable test activity only.
 
 ## Intended daily behavior
@@ -87,7 +90,8 @@ disposable test activity only.
 - Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day. Its
   persisted ten-minute deadline temporarily becomes the single main countdown. Background the app
   without restarting that deadline, then tap Done when the set is complete to begin a fresh interval.
-  Exact delivery remains a Build-11 physical acceptance gate.
+  Build-12 phone acceptance confirms the countdown stays stable across background/force-close and
+  Done replaces it with a fresh regular interval.
 - **Your day so far** shows only completed sets and their times, not pause/resume/snooze bookkeeping.
 - End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
   a completion timeline. A below-goal current date stays marked at risk until that date ends.

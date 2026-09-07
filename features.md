@@ -17,7 +17,9 @@ merged as `8b5b8c4`; main delivery run #49 passed and its Build-11 IPA passed lo
 inspection. Phone testing confirms countdown persistence but found ordinary Done did not restart the
 interval. Build 12 source `c5f787e` implements universal Done reset plus stable action-state layout;
 PR #12 run #34073932922 and main delivery run #53 passed the complete cloud gate, and the downloaded
-IPA passed local inspection. Physical acceptance remains outstanding.
+IPA passed local inspection. Build 12 then passed phone checks for ordinary/snoozed Done cadence
+reset, background/force-quit countdown persistence, smooth button interactions, and same-ID state
+preservation. The broader physical and deployment matrix remains outstanding.
 Android is an unverified fallback.
 
 ## Hub entry

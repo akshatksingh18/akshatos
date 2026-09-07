@@ -15,8 +15,11 @@ behavior is for every successful Done to start a fresh full interval. Build 12 s
 implements that shared cadence reset and stable action-state layout; PR #12 run #34073932922 passed
 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA inspection and
 `CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated the complete gate and its
-downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Only physical
-acceptance remains for these fixes.
+downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Akshat installed it
+over Build 11 without uninstalling and reports all requested phone checks passed: ordinary and
+snoozed Done reset to a fresh interval, the countdown persists across background/force-close,
+buttons no longer jump vertically, and settings, permissions, Home configuration and history were
+preserved. These fixes are accepted; the broader physical and deployment matrix remains.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -177,12 +180,10 @@ checksum, identity, version/build, payload and screenshots passed local inspecti
 phone-installed predecessor; Builds 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
 smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
-Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
-visible, but foregrounding resets that ten-minute clock and Done does not resolve it. Because the old
-app was uninstalled, this installation does not prove same-ID refresh preservation. Build 11 fixes
-both behaviors, is merged, and has a verified main artifact. Its countdown-persistence correction
-now passes phone testing; snooze-related Done, same-ID over-install preservation and the wider device
-matrix remain pending.
+Build 10 exposed foreground/snooze defects after an uninstall-based update. Build 11 corrected
+countdown persistence. Build 12 is now installed over Build 11 without uninstalling and passes the
+targeted cadence, persistence, smooth-interaction and state-preservation checks, proving one same-ID
+update cycle. The wider device, refresh/recovery and soak matrix remains pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -193,18 +194,11 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Install and physically verify Build 12:** install the selected Build-12 IPA over Build 11 without
-   uninstalling. Confirm every dashboard or notification Done logs once, cancels any snooze and starts
-   a fresh configured interval even when the ordinary countdown was active; confirm taps no longer
-   cause the dashboard to jump vertically and that Reduce Motion/accessibility behavior still works.
-2. **Refresh/data-preservation acceptance:** confirm settings, permissions, Home configuration and
-   disposable history survive the same-ID Build 11 → Build 12 over-install. Do not uninstall a
-   data-bearing build during routine updates.
-3. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+1. **Complete the broader physical feature matrix:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
-4. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
+2. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
