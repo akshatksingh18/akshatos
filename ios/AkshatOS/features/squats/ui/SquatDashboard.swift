@@ -140,19 +140,16 @@ struct SquatDashboard: View {
                     .accessibilityHidden(!store.busy)
                 }
                 Group {
-                    if let regular = store.nextReminder {
+                    if store.nextReminder != nil {
                         TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
-                            let snooze = store.snoozeReminder.flatMap { $0 > context.date ? $0 : nil }
-                            let interval = TimeInterval((store.active?.interval ?? 45) * 60)
-                            let elapsed = max(0, context.date.timeIntervalSince(regular))
-                            let next = snooze ?? (regular > context.date ? regular :
-                                regular.addingTimeInterval((floor(elapsed / interval) + 1) * interval))
+                            let next = store.reminderDeadline(at: context.date) ?? context.date
                             let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
                                     .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
-                                Text(snooze == nil ? "until the next scheduled reminder" :
-                                     "until your reminder in 10 minutes")
+                                Text(store.active?.reminderCadenceAnchor.map { $0 <= context.date } == true
+                                     ? "until the next automatic nudge"
+                                     : "until the next scheduled reminder")
                                     .font(.caption).foregroundStyle(Palette.muted)
                             }
                         }
@@ -165,7 +162,7 @@ struct SquatDashboard: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(heroAccessibilityLabel)
             heroActions
-            Text("Every \(store.active?.interval ?? store.interval) min · Focus and iOS settings may silence alerts.")
+            Text("Every \(store.active?.interval ?? store.interval) min · then every 10 min until Done · Focus and iOS settings may silence alerts.")
                 .font(.caption).foregroundStyle(Palette.muted)
         }
         .animation(interactionAnimation, value: store.busy)
@@ -176,7 +173,6 @@ struct SquatDashboard: View {
 
     private var heroActions: some View {
         let hasUsableActiveDay = store.active != nil && !store.staleDay
-        let showSnooze = hasUsableActiveDay && store.operational == "Running"
         let showSettings = hasUsableActiveDay && store.operational == "Notifications blocked"
         let showManualPause = hasUsableActiveDay && store.active?.state == .running && store.operational != "Running"
         return Group {
@@ -204,15 +200,11 @@ struct SquatDashboard: View {
                     .allowsHitTesting(primaryActionAvailable)
                     .accessibilityHidden(!primaryActionAvailable)
 
-                    Button(showSettings ? "Open iOS notification settings" : "Remind me in 10 min") {
-                        if showSettings { openNotificationSettings() }
-                        else { Task { await store.snooze() } }
+                    if showSettings {
+                        Button("Open iOS notification settings") { openNotificationSettings() }
+                            .buttonStyle(ActionStyle())
+                            .disabled(store.busy)
                     }
-                    .buttonStyle(ActionStyle())
-                    .disabled((!showSnooze && !showSettings) || store.busy)
-                    .opacity(showSnooze || showSettings ? 1 : 0)
-                    .allowsHitTesting(showSnooze || showSettings)
-                    .accessibilityHidden(!showSnooze && !showSettings)
 
                     if showManualPause {
                         Button("Pause until I resume") { Task { await store.pause() } }
@@ -369,6 +361,10 @@ struct SquatDashboard: View {
                     Text("Focus modes can silence or defer reminders, Scheduled Summary can bundle them, and per-app sound/banner settings can make an accepted request appear not to work. AkshatOS can only show what iOS reports; it cannot override these choices.")
                         .font(.caption).foregroundStyle(.secondary)
                         .accessibilityIdentifier("notification-permission-caveats")
+                    Label(dailyStartStatusText, systemImage: "sunrise")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text("When no Squats day is active, AkshatOS schedules a daily 9:00 AM notification inviting you to start. Opening it never starts the timer automatically.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Data management") {
                     Button {
@@ -433,7 +429,7 @@ struct SquatDashboard: View {
                     Label("Shortcuts", systemImage: "app.badge")
                 }.foregroundStyle(.secondary)
                 Section("Notification actions") {
-                    Text("Done logs one set. Pause stops reminders until you resume. Remind me in 10 min temporarily replaces the main countdown.")
+                    Text("Done logs one set and restarts the full interval. Pause stops reminders until you resume. If you ignore a reminder, AkshatOS nudges you automatically every 10 minutes until you choose Done or Pause.")
                         .accessibilityIdentifier("notification-actions-help")
                 }
             }.navigationTitle("Squat settings")
@@ -535,6 +531,12 @@ struct SquatDashboard: View {
         }
     }
 
+    private var dailyStartStatusText: String {
+        if store.dailyStartReminderScheduled { return "Daily 9:00 AM start reminder scheduled" }
+        if store.active != nil { return "Daily start reminder is inactive during a Squats day" }
+        return "Daily 9:00 AM start reminder needs notification access"
+    }
+
     private var stateIcon: String {
         switch store.operational {
         case "Running": return "bell.badge"
@@ -560,10 +562,9 @@ struct SquatDashboard: View {
 
     private var heroAccessibilityLabel: String {
         var parts = [store.operational]
-        if let snooze = store.snoozeReminder {
-            parts.append("Reminder in 10 minutes around \(snooze.formatted(date: .omitted, time: .shortened))")
-        } else if let date = store.nextReminder {
-            parts.append("Next reminder around \(date.formatted(date: .omitted, time: .shortened))")
+        if let date = store.primaryReminder {
+            let prefix = store.primaryReminderIsAutomaticNudge ? "Next automatic nudge" : "Next reminder"
+            parts.append("\(prefix) around \(date.formatted(date: .omitted, time: .shortened))")
         } else {
             parts.append(heroDescription)
         }

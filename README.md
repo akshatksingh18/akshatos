@@ -4,7 +4,7 @@ A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and ente
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (12)**,
+recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (13)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
@@ -23,6 +23,10 @@ checksum/package/screenshot-verified Build-12 IPA. Build 12 was installed over B
 uninstall; phone testing passed cadence reset after ordinary and snoozed Done, countdown persistence
 across background/force-close, smooth button interactions, and preservation of settings, permissions,
 Home configuration and history. The broader device/refresh/recovery matrix remains pending.
+Build 13 replaces manual snooze with a bounded pre-scheduled chain of automatic ten-minute nudges
+after an ignored normal reminder, and adds an idle-only 9:00 AM invitation to start the day. Done or
+Pause cancels the chain; Done starts a fresh full interval. This source is awaiting CI/artifact and
+physical-phone acceptance, so Build 12 remains the installed known-good build.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -56,10 +60,12 @@ App composition, display-only hub, shared styling and Squats feature are separat
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
 - Hub app picker; Squats dashboard; visibly planned PageVault/ReelVault entries.
-- Start/Pause/Resume/End, Done +1/Undo and ten-minute snooze from dashboard or notification.
-- Notification actions ordered Done, Pause, then snooze; durable inbox, replay protection after Undo,
+- Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
+- Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
+  minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,
   and queued-action retry UI. Locked-device behavior still needs physical verification.
-- One system-scheduled recurring reminder; local versioned SwiftData sessions and daily summaries.
+- One bounded normal-plus-nudge schedule while active and one 9:00 AM start invitation while idle;
+  local versioned SwiftData sessions and daily summaries.
 - Configurable daily goal (eight sets initially; zero turns it off), current/best streak and
   today's progress.
 - Same-date daily overview with active/paused duration, event/pause detail, local-midnight rollover,
@@ -87,11 +93,11 @@ disposable test activity only.
 - Use **Pause** while away and **Resume** when ready. Resume begins a fresh 45-minute interval.
 - Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
   only that same day if the geofence caused the pause. Manual controls remain available at all times.
-- Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day. Its
-  persisted ten-minute deadline temporarily becomes the single main countdown. Background the app
-  without restarting that deadline, then tap Done when the set is complete to begin a fresh interval.
-  Build-12 phone acceptance confirms the countdown stays stable across background/force-close and
-  Done replaces it with a fresh regular interval.
+- If a normal reminder is ignored, the main clock advances to the next automatic ten-minute nudge
+  and iOS continues those nudges until Done or Pause. Done begins a fresh full interval. Build 13
+  pre-schedules a bounded horizon and replenishes it when the app returns to the foreground.
+- While no day is active and notification access exists, a repeating 9:00 AM local notification
+  invites you to open AkshatOS. Tapping it opens the app but does not start the timer automatically.
 - **Your day so far** shows only completed sets and their times, not pause/resume/snooze bookkeeping.
 - End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
   a completion timeline. A below-goal current date stays marked at risk until that date ends.
@@ -103,14 +109,13 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 ## Primary iPhone plan
 
 The `ios/` source now opens the hub picker and a separate Squats dashboard. The build path is
-Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses one repeating
-`UNTimeIntervalNotificationTrigger` for the normal cadence plus at most one one-off snooze request;
-iOS schedules delivery, so the app does not need a background timer, PWA, or push server. Repeating
-intervals must be at least 60 seconds.
+Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses a bounded batch
+of one-off `UNTimeIntervalNotificationTrigger` requests for the normal reminder and automatic nudges,
+plus one repeating 9:00 AM calendar request while idle. iOS schedules delivery, so the app does not
+need a background timer, PWA, or push server.
 
-The notification category exposes Done, Pause, and Remind me in 10 min. Compact notification
-space may show only Done and Pause; expand the notification for the third action. Dashboard and
-notification controls use the same idempotent lifecycle commands.
+The notification category exposes Done and Pause. Dashboard and notification controls use the same
+idempotent lifecycle commands. Legacy Build-12 snooze actions remain decode-safe but do nothing.
 An old preview's schedule may show Repair reminders after update; re-arm it once to attach the
 current buttons. Actions are queued before processing and receipts survive Undo. If protected
 session data is unavailable, logging waits for unlock and merge; a matching Pause can still cancel

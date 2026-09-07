@@ -34,6 +34,11 @@ persistence, smooth-interaction and state-preservation phone checks. The broader
 refresh/recovery matrix remains. Optional
 Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
+Build 13 source now implements the next accepted behavior: the manual snooze control/action is
+removed, an ignored normal reminder is followed by 59 pre-scheduled ten-minute nudges, foreground
+reconciliation replenishes the bounded batch without moving its anchor, and idle authorized state
+owns one repeating 9:00 AM start invitation. Automated/cloud, artifact and phone acceptance remain
+open; Build 12 stays the installed known-good build until those gates pass.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
       into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
@@ -126,12 +131,22 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       denial is phrased as a revocation ("turned off") instead of reusing first-request wording.
       Correction source `d80653d` records provisional/alerts-disabled notification grants and When
       In Use location grants, and proves both flags plus wording survive store recreation; run #27 passed.
-- [x] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use one
-      stable recurring request ID, and make Start/Pause/Resume/End idempotent. Pause keeps the active
-      day, Resume starts a fresh interval, and End cancels all project requests and finalizes it.
-- [x] **Implement actionable notifications and snooze.** Register Done, Pause, and Remind me in 10
-      min in that priority order; route them through shared commands; allow only one stable one-off
-      snooze; and handle locked-device persistence and callback deadlines safely.
+- [ ] **Verify Build 13 automatic overdue nudges end to end.** Source schedules one normal reminder
+      followed by 59 ten-minute nudges, shows the nudge as the single main countdown after the normal
+      deadline, replenishes a low/drained batch from the persisted anchor, and makes Done/Pause/End
+      cancel the old batch. Done starts a fresh full interval. The manual snooze UI/category is gone;
+      legacy snooze payloads remain decode-safe no-ops. Pass PR/main CI, inspect the IPA/screenshots,
+      then verify ignored delivery, repeated delivery, Done and Pause on the physical phone.
+- [ ] **Verify the idle 9:00 AM start invitation end to end.** Source schedules exactly one repeating
+      local 9:00 AM notification while no day is active and access exists, cancels it on Start, restores
+      it after End, and never auto-starts from a tap. Pass automated/cloud checks, then verify actual
+      delivery, tap-to-open, active-day suppression and time-zone behavior on the phone.
+- [x] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use a
+      bounded normal-plus-nudge batch, and make Start/Pause/Resume/End idempotent. Pause keeps the active
+      day, Resume starts a fresh interval, and End cancels active requests and finalizes it.
+- [x] **Implement actionable notifications and legacy-safe migration.** Register Done then Pause,
+      route them through shared commands, retire manual snooze without breaking old payload decoding,
+      and handle locked-device persistence and callback deadlines safely.
       Source now includes ordered categories, a shared command path, after-first-unlock atomic inbox,
       delivery receipts that survive Undo, busy-action draining, protected-store retry and matching
       Pause cancellation. The action suite passed exact-source CI in run #10; physical

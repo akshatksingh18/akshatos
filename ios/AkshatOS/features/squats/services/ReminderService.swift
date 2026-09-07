@@ -7,35 +7,47 @@ struct ReminderSnapshot {
     var sessionID: UUID?
     var interval: TimeInterval?
     var actionable: Bool = true
-    var snoozeSessionID: UUID?
-    var snoozeActionable: Bool = true
-    var hasSnooze = false
+    var activeRequestCount = 0
     var next: Date?
-    var snooze: Date?
+    var hasLegacySnooze = false
+    var dailyStartScheduled = false
 }
 
 @MainActor protocol SquatReminders {
     func authorize() async throws -> Bool
     func snapshot() async -> ReminderSnapshot
-    func schedule(_ session: SquatSession, snoozeUntil: Date?) async throws
+    func schedule(_ session: SquatSession, firstReminderAt: Date) async throws
+    func ensureDailyStartReminder() async throws
     func cancel()
-    func cancelSnooze()
+    func cancelDailyStartReminder()
 }
 
 @MainActor final class ReminderService: SquatReminders {
     static let regular = "akshatos.squats.regular"
-    static let snooze = "akshatos.squats.snooze"
+    static let automaticPrefix = "akshatos.squats.automatic-nudge."
+    static let dailyStart = "akshatos.squats.daily-start"
+    static let legacySnooze = "akshatos.squats.snooze"
     static let categoryID = "akshatos.squats.reminder"
     static let doneAction = "akshatos.squats.done"
     static let pauseAction = "akshatos.squats.pause"
-    static let snoozeAction = "akshatos.squats.snooze-ten"
+    static let legacySnoozeAction = "akshatos.squats.snooze-ten"
+    static let automaticNudgeInterval: TimeInterval = 600
+    static let automaticNudgeCount = 59
+    static let scheduleVersion = 2
     let center = UNUserNotificationCenter.current()
+
+    static var activeIdentifiers: [String] {
+        [regular, legacySnooze] + (0..<automaticNudgeCount).map { automaticPrefix + String($0) }
+    }
+
+    static func isActiveIdentifier(_ identifier: String) -> Bool {
+        identifier == regular || identifier == legacySnooze || identifier.hasPrefix(automaticPrefix)
+    }
 
     static func category() -> UNNotificationCategory {
         UNNotificationCategory(identifier: categoryID, actions: [
             UNNotificationAction(identifier: doneAction, title: "Done", options: []),
-            UNNotificationAction(identifier: pauseAction, title: "Pause", options: []),
-            UNNotificationAction(identifier: snoozeAction, title: "Remind me in 10 min", options: [])
+            UNNotificationAction(identifier: pauseAction, title: "Pause", options: [])
         ], intentIdentifiers: [], options: [])
     }
 
@@ -66,39 +78,105 @@ struct ReminderSnapshot {
     func snapshot() async -> ReminderSnapshot {
         let settings = await center.notificationSettings()
         let requests = await center.pendingNotificationRequests()
-        let regular = requests.first { $0.identifier == Self.regular }
-        let trigger = regular?.trigger as? UNTimeIntervalNotificationTrigger
-        let sessionID = (regular?.content.userInfo["session"] as? String).flatMap(UUID.init(uuidString:))
-        let snooze = requests.first { $0.identifier == Self.snooze }
-        let snoozeSessionID = (snooze?.content.userInfo["session"] as? String).flatMap(UUID.init(uuidString:))
-        return ReminderSnapshot(allowed: Self.allowed(settings.authorizationStatus) && settings.alertSetting == .enabled,
+        let active = requests.filter { Self.isActiveIdentifier($0.identifier) }
+        let current = active.filter { $0.identifier != Self.legacySnooze }
+        let dated = current.compactMap { request -> (UNNotificationRequest, Date)? in
+            guard let trigger = request.trigger as? UNTimeIntervalNotificationTrigger,
+                  let date = trigger.nextTriggerDate() else { return nil }
+            return (request, date)
+        }.sorted { $0.1 < $1.1 }
+        let sessionIDs = Set(current.compactMap {
+            ($0.content.userInfo["session"] as? String).flatMap(UUID.init(uuidString:))
+        })
+        let intervals = Set(current.compactMap { contentInterval($0.content) })
+        let actionable = !current.isEmpty && current.allSatisfy {
+            $0.content.categoryIdentifier == Self.categoryID &&
+            ($0.content.userInfo["scheduleVersion"] as? Int) == Self.scheduleVersion
+        }
+        return ReminderSnapshot(
+            allowed: Self.allowed(settings.authorizationStatus) && settings.alertSetting == .enabled,
             authorization: Self.authorization(settings.authorizationStatus),
-            sessionID: sessionID, interval: trigger?.repeats == true ? trigger?.timeInterval : nil,
-            actionable: regular?.content.categoryIdentifier == Self.categoryID,
-            snoozeSessionID: snoozeSessionID,
-            snoozeActionable: snooze?.content.categoryIdentifier == Self.categoryID,
-            hasSnooze: snooze != nil,
-            next: trigger?.nextTriggerDate(), snooze: (snooze?.trigger as? UNTimeIntervalNotificationTrigger)?.nextTriggerDate())
+            sessionID: sessionIDs.count == 1 ? sessionIDs.first : nil,
+            interval: intervals.count == 1 ? intervals.first : nil,
+            actionable: actionable,
+            activeRequestCount: dated.count,
+            next: dated.first?.1,
+            hasLegacySnooze: active.contains { $0.identifier == Self.legacySnooze },
+            dailyStartScheduled: requests.contains { $0.identifier == Self.dailyStart })
     }
 
-    func schedule(_ session: SquatSession, snoozeUntil: Date? = nil) async throws {
+    func schedule(_ session: SquatSession, firstReminderAt: Date) async throws {
+        cancel()
+        let now = Date()
+        let interval = TimeInterval(session.interval * 60)
+        var requests: [(String, Date, Bool)] = []
+        if firstReminderAt > now { requests.append((Self.regular, firstReminderAt, false)) }
+        let nextNudge: Date
+        if firstReminderAt > now {
+            nextNudge = firstReminderAt.addingTimeInterval(Self.automaticNudgeInterval)
+        } else {
+            let elapsed = max(0, now.timeIntervalSince(firstReminderAt))
+            nextNudge = firstReminderAt.addingTimeInterval(
+                (floor(elapsed / Self.automaticNudgeInterval) + 1) * Self.automaticNudgeInterval)
+        }
+        for index in 0..<Self.automaticNudgeCount {
+            requests.append((Self.automaticPrefix + String(index),
+                             nextNudge.addingTimeInterval(TimeInterval(index) * Self.automaticNudgeInterval), true))
+        }
+        do {
+            for request in requests {
+                let content = reminderContent(session: session, interval: interval, automatic: request.2)
+                let trigger = UNTimeIntervalNotificationTrigger(
+                    timeInterval: max(1, request.1.timeIntervalSinceNow), repeats: false)
+                try await center.add(UNNotificationRequest(identifier: request.0, content: content, trigger: trigger))
+            }
+        } catch {
+            cancel()
+            throw error
+        }
+    }
+
+    func ensureDailyStartReminder() async throws {
+        let requests = await center.pendingNotificationRequests()
+        guard !requests.contains(where: { $0.identifier == Self.dailyStart }) else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Time for a squat break"
-        content.body = "Take a movement break, then tap Done to log your set."
+        content.title = "Start your Squats day"
+        content.body = "Open AkshatOS to start today's movement reminders."
         content.sound = .default
-        content.categoryIdentifier = Self.categoryID
-        content.userInfo = ["session": session.id.uuidString]
-        let trigger = UNTimeIntervalNotificationTrigger(
-            timeInterval: snoozeUntil.map { max(1, $0.timeIntervalSinceNow) } ?? TimeInterval(session.interval * 60),
-            repeats: snoozeUntil == nil)
-        try await center.add(UNNotificationRequest(identifier: snoozeUntil == nil ? Self.regular : Self.snooze,
-            content: content, trigger: trigger))
+        let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: 9, minute: 0), repeats: true)
+        try await center.add(UNNotificationRequest(identifier: Self.dailyStart, content: content, trigger: trigger))
     }
 
     func cancel() {
-        center.removePendingNotificationRequests(withIdentifiers: [Self.regular, Self.snooze])
-        center.removeDeliveredNotifications(withIdentifiers: [Self.regular, Self.snooze])
+        center.removePendingNotificationRequests(withIdentifiers: Self.activeIdentifiers)
+        center.removeDeliveredNotifications(withIdentifiers: Self.activeIdentifiers)
     }
 
-    func cancelSnooze() { center.removePendingNotificationRequests(withIdentifiers: [Self.snooze]) }
+    func cancelDailyStartReminder() {
+        center.removePendingNotificationRequests(withIdentifiers: [Self.dailyStart])
+        center.removeDeliveredNotifications(withIdentifiers: [Self.dailyStart])
+    }
+
+    private func reminderContent(session: SquatSession, interval: TimeInterval,
+                                 automatic: Bool) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = automatic ? "Still time for a squat break" : "Time for a squat break"
+        content.body = automatic
+            ? "When you finish a set, tap Done to return to your normal interval."
+            : "Take a movement break, then tap Done to log your set."
+        content.sound = .default
+        content.categoryIdentifier = Self.categoryID
+        content.userInfo = [
+            "session": session.id.uuidString,
+            "interval": Int(interval / 60),
+            "scheduleVersion": Self.scheduleVersion
+        ]
+        return content
+    }
+
+    private func contentInterval(_ content: UNNotificationContent) -> TimeInterval? {
+        if let value = content.userInfo["interval"] as? Int { return TimeInterval(value * 60) }
+        if let value = content.userInfo["interval"] as? NSNumber { return value.doubleValue * 60 }
+        return nil
+    }
 }

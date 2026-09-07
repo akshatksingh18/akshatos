@@ -9,7 +9,7 @@ import SwiftUI
     @Published private(set) var busy = false
     @Published private(set) var operational = "Ready"
     @Published private(set) var nextReminder: Date?
-    @Published private(set) var snoozeReminder: Date?
+    @Published private(set) var dailyStartReminderScheduled = false
     @Published private(set) var pendingActionCount = 0
     @Published private(set) var storageAvailable = false
     @Published private(set) var notificationAuthorization: NotificationAuthorization = .notDetermined
@@ -41,12 +41,20 @@ import SwiftUI
     var todayCompletions: [SquatEvent] {
         today.flatMap(\.events).filter { $0.kind == .done }.sorted { $0.date > $1.date }
     }
-    private var activeSnoozeReminder: Date? {
-        guard let snoozeReminder, snoozeReminder > now() else { return nil }
-        return snoozeReminder
+    var primaryReminder: Date? { reminderDeadline(at: now()) }
+    var primaryReminderIsAutomaticNudge: Bool {
+        guard let anchor = active?.reminderCadenceAnchor else { return false }
+        return anchor <= now()
     }
-    var primaryReminder: Date? { activeSnoozeReminder ?? nextReminder }
-    var primaryReminderIsSnooze: Bool { activeSnoozeReminder != nil }
+    func reminderDeadline(at date: Date) -> Date? {
+        guard let session = active, session.state == .running,
+              let anchor = session.reminderCadenceAnchor else { return nil }
+        guard anchor <= date else { return anchor }
+        let elapsed = max(0, date.timeIntervalSince(anchor))
+        return anchor.addingTimeInterval(
+            (floor(elapsed / ReminderService.automaticNudgeInterval) + 1) *
+            ReminderService.automaticNudgeInterval)
+    }
     var todayCount: Int { today.reduce(0) { $0 + $1.count } }
     var todayGoal: Int? {
         if let first = today.sorted(by: { $0.started < $1.started }).first { return first.goal }
@@ -267,10 +275,11 @@ import SwiftUI
             return
         }
         reminders.cancel()
-        try await reminders.schedule(session, snoozeUntil: nil)
+        let deadline = now().addingTimeInterval(TimeInterval(session.interval * 60))
+        try await reminders.schedule(session, firstReminderAt: deadline)
         session.state = .running
         session.pauseReason = nil
-        session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
+        session.reminderCadenceAnchor = deadline
         session.snoozeCadenceDeadline = nil
         session.log(SquatEvent(date: event.date, kind: .resume, source: "homeAwayAutomation"))
         do { try save(session) } catch { reminders.cancel(); throw error }
@@ -310,18 +319,10 @@ import SwiftUI
         var resetCadenceAfterDone = false
         if action.kind == .pause { reminders.cancel() }
         if action.kind == .snooze {
-            let snapshot = await reminders.snapshot()
-            let deadline = action.date.addingTimeInterval(600)
-            // Do not resurrect expired snoozes or create a snooze without a usable regular cadence.
-            guard deadline > now(), session.day == SquatSession.dayKey(now(), calendar: calendar),
-                  snapshot.allowed, snapshot.sessionID == session.id,
-                  snapshot.interval == TimeInterval(session.interval * 60) else {
-                try acknowledge(action, session: session)
-                message = "That snooze is no longer available. Open Squats to check your reminder status."
-                messageRoute = nil
-                return
-            }
-            try await reminders.schedule(session, snoozeUntil: deadline)
+            // Build 13 removes manual snooze. A queued Build-12 action is acknowledged so it cannot
+            // replay forever, but it never changes the automatic-nudge schedule.
+            try acknowledge(action, session: session)
+            return
         }
         var updated = action.applying(to: session)
         if action.kind == .done {
@@ -329,16 +330,14 @@ import SwiftUI
             if snapshot.allowed, session.state == .running {
                 // Every completion becomes the cadence anchor: the next set is due one full
                 // configured interval after this one, regardless of whether a snooze was active.
-                try await reminders.schedule(session, snoozeUntil: nil)
-                reminders.cancelSnooze()
-                updated.reminderCadenceAnchor = now().addingTimeInterval(
-                    TimeInterval(session.interval * 60))
+                let deadline = now().addingTimeInterval(TimeInterval(session.interval * 60))
+                try await reminders.schedule(session, firstReminderAt: deadline)
+                updated.reminderCadenceAnchor = deadline
                 resetCadenceAfterDone = true
             }
         }
         do { try save(updated) }
         catch {
-            if action.kind == .snooze { reminders.cancelSnooze() }
             if resetCadenceAfterDone { reminders.cancel() }
             throw error
         }
@@ -352,7 +351,7 @@ import SwiftUI
 
     private func reconcile() async {
         nextReminder = nil
-        snoozeReminder = nil
+        dailyStartReminderScheduled = false
         guard storageAvailable else { operational = "Storage unavailable"; return }
         if var session = active, staleDay {
             reminders.cancel()
@@ -373,48 +372,45 @@ import SwiftUI
         rememberNotificationAuthorization(snapshot.authorization)
         guard let session = active else {
             reminders.cancel()
+            if snapshot.allowed {
+                do {
+                    try await reminders.ensureDailyStartReminder()
+                    dailyStartReminderScheduled = true
+                } catch { dailyStartReminderScheduled = false }
+            }
             operational = today.isEmpty ? "Ready" : "Day complete"
             return
         }
+        reminders.cancelDailyStartReminder()
         guard session.state == .running else { reminders.cancel(); operational = "Paused"; return }
-        guard snapshot.allowed else {
-            if snapshot.hasSnooze { reminders.cancelSnooze() }
-            operational = "Notifications blocked"
-            return
-        }
-        guard snapshot.sessionID == session.id,
-              snapshot.interval == TimeInterval(session.interval * 60), snapshot.actionable,
-              snapshot.next != nil else {
-            if snapshot.hasSnooze { reminders.cancelSnooze() }
-            operational = "Reminder needs repair"
-            return
-        }
-        let cadence = TimeInterval(session.interval * 60)
+        guard snapshot.allowed else { operational = "Notifications blocked"; return }
+        let expectedInterval = TimeInterval(session.interval * 60)
+        let healthy = snapshot.sessionID == session.id && snapshot.interval == expectedInterval &&
+            snapshot.actionable && snapshot.activeRequestCount > 0 && snapshot.next != nil
         if let anchor = session.reminderCadenceAnchor {
-            let elapsed = max(0, now().timeIntervalSince(anchor))
-            nextReminder = anchor > now() ? anchor :
-                anchor.addingTimeInterval((floor(elapsed / cadence) + 1) * cadence)
+            if !healthy {
+                // Migrate Build-12 requests and restore a drained/lost bounded queue from the
+                // persisted cadence anchor without moving the user's next-due timeline.
+                do { try await reminders.schedule(session, firstReminderAt: anchor) }
+                catch { operational = "Reminder needs repair"; return }
+            } else if snapshot.activeRequestCount < 30 {
+                // Refill the bounded queue without moving the persisted cadence anchor.
+                do { try await reminders.schedule(session, firstReminderAt: anchor) }
+                catch { operational = "Reminder needs repair"; return }
+            }
+            nextReminder = anchor
+            if session.snoozeCadenceDeadline != nil {
+                var migrated = session
+                migrated.snoozeCadenceDeadline = nil
+                do { try save(migrated) } catch { actionFailure(error) }
+            }
         } else if let fallback = snapshot.next {
-            // A Build-9 session has no anchor. Adopt the OS value once during migration, persist it,
+            // A legacy session has no anchor. Adopt the OS value once during migration, persist it,
             // and use that stable value on every later foreground reconciliation.
             var migrated = session
             migrated.reminderCadenceAnchor = fallback
             do { try save(migrated) } catch { actionFailure(error) }
             nextReminder = fallback
-        }
-        if snapshot.hasSnooze {
-            let persistedSnooze = session.snoozeCadenceDeadline ?? session.unresolvedSnoozeDeadline()
-            if snapshot.snoozeSessionID == session.id, snapshot.snoozeActionable,
-               let snooze = persistedSnooze, snooze > now() {
-                snoozeReminder = snooze
-                if session.snoozeCadenceDeadline == nil {
-                    var migrated = session
-                    migrated.snoozeCadenceDeadline = snooze
-                    do { try save(migrated) } catch { actionFailure(error) }
-                }
-            } else {
-                reminders.cancelSnooze()
-            }
         }
         operational = "Running"
     }
@@ -515,10 +511,12 @@ import SwiftUI
             }
             try save(session)
             reminders.cancel()
+            reminders.cancelDailyStartReminder()
             if pausedForHome { return }
-            try await reminders.schedule(session, snoozeUntil: nil)
+            let deadline = now().addingTimeInterval(TimeInterval(session.interval * 60))
+            try await reminders.schedule(session, firstReminderAt: deadline)
             session.state = .running
-            session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
+            session.reminderCadenceAnchor = deadline
             do { try save(session) } catch { reminders.cancel(); throw error }
         }
     }
@@ -534,7 +532,6 @@ import SwiftUI
 
     func pause() async { await dashboard(.pause) }
     func done() async { await dashboard(.done) }
-    func snooze() async { await dashboard(.snooze) }
 
     func resume() async {
         await perform {
@@ -542,7 +539,7 @@ import SwiftUI
             let snapshot = await reminders.snapshot()
             if session.state == .running && snapshot.allowed && snapshot.sessionID == session.id &&
                 snapshot.interval == TimeInterval(session.interval * 60) && snapshot.actionable &&
-                snapshot.next != nil { return }
+                snapshot.activeRequestCount > 0 && snapshot.next != nil { return }
             guard try await reminders.authorize() else {
                 message = notificationEverAuthorized
                     ? "Notifications were turned off while paused. Allow them again in iOS Settings to resume."
@@ -556,10 +553,12 @@ import SwiftUI
                 homeState = state
             }
             reminders.cancel()
-            try await reminders.schedule(session, snoozeUntil: nil)
+            reminders.cancelDailyStartReminder()
+            let deadline = now().addingTimeInterval(TimeInterval(session.interval * 60))
+            try await reminders.schedule(session, firstReminderAt: deadline)
             session.state = .running
             session.pauseReason = nil
-            session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
+            session.reminderCadenceAnchor = deadline
             session.snoozeCadenceDeadline = nil
             session.log(SquatEvent(date: now(), kind: .resume, source: "dashboard"))
             do { try save(session) } catch { reminders.cancel(); throw error }

@@ -36,7 +36,7 @@ import UIKit
 
     static func action(request: UNNotificationRequest, delivered: Date, identifier: String,
                        now: Date = Date()) -> SquatAction? {
-        guard [ReminderService.regular, ReminderService.snooze].contains(request.identifier),
+        guard ReminderService.isActiveIdentifier(request.identifier),
               request.content.categoryIdentifier == ReminderService.categoryID,
               let rawSession = request.content.userInfo["session"] as? String,
               let session = UUID(uuidString: rawSession) else { return nil }
@@ -44,7 +44,7 @@ import UIKit
         switch identifier {
         case ReminderService.doneAction: kind = .done
         case ReminderService.pauseAction: kind = .pause
-        case ReminderService.snoozeAction: kind = .snooze
+        case ReminderService.legacySnoozeAction: return nil
         default: return nil // Opening/dismissing a notification is never a completed set.
         }
         return SquatAction(id: SquatAction.notificationID(session: session, request: request.identifier,
