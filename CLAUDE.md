@@ -15,7 +15,13 @@ after leaving the app. Build 10 fixed the regular clock but phone testing showed
 clock still reset on foreground, and Done left that pending nudge active. Build 11 persists both
 deadlines and makes Done resolve a snooze into a fresh full interval. PR #10 merged as
 `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; main delivery run #49 passed the complete cloud gate,
-and its Build-11 IPA is downloaded and independently verified. Device acceptance is pending. The removed standalone smoke app proved
+and its Build-11 IPA is downloaded and independently verified. Phone testing confirms the displayed
+countdown now survives leaving and closing the app, while ordinary Done still did not reset it.
+Build 12 source `c5f787efb628cf63531c57e4cf9478edf5d8731b` resets every running Done to a
+full interval and stabilizes button-state layout without changing actions. PR #12 run
+#34073932922 passed 49 domain assertions, 63 integration/persistence tests, the UI test, both
+builds, IPA inspection and `CI Gate`; main delivery and device verification remain pending. The
+removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 
@@ -89,7 +95,7 @@ feature is physically verified.
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
-  `0.2.0 (11)`; Build 10 is installed but not accepted.
+  `0.2.0 (12)`; Build 11 is the phone-installed predecessor while Build 12 awaits cloud delivery.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -132,8 +138,9 @@ feature is physically verified.
   and presents its overview. All lifecycle operations are idempotent.
 - Register one actionable reminder category. Order its actions **Done**, **Pause**, then **Remind
   me in 10 min** because compact notification interfaces may show only the first two actions.
-  Done records one completion event and normally leaves the cadence alone; if a snooze is unresolved,
-  Done cancels it and begins a fresh full interval from that completion. Pause uses the same
+  Done records one completion event, cancels any unresolved snooze, and begins a fresh full regular
+  interval from that completion whether the prior main countdown was regular or snoozed. Build 12
+  implements this in the shared dashboard/notification command. Pause uses the same
   domain command as the dashboard; 10 min schedules/replaces one one-off snooze. Handle action responses through the notification-center delegate
   and persist before completing the background callback.
 - If permission is denied or notifications are disabled, Start must not display a healthy
@@ -191,8 +198,8 @@ feature is physically verified.
   list, though they remain persisted for lifecycle reconciliation, durations and summaries. Persist
   each Start/Resume cadence anchor and accepted snooze deadline so background/foreground or relaunch
   cannot restart either displayed interval. While a ten-minute snooze is pending, its earlier
-  deadline replaces the regular countdown as the single main clock. Done during that snooze logs
-  the set, removes the nudge and starts a full regular interval. End requires confirmation and opens a
+  deadline replaces the regular countdown as the single main clock. Any Done logs the set, removes
+  any pending nudge and starts a full regular interval. End requires confirmation and opens a
   summary with sets, goal result, start/end, active/paused duration, completion times, pause
   segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
   Export/restore uses a versioned local JSON file selected by the user; validation completes before

@@ -18,12 +18,17 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: Build 10 is installed and phone testing exposed a ten-minute countdown reset after
-backgrounding plus Done leaving the unresolved nudge active. Build 11 persists the snooze deadline,
+Current focus: Build 10 phone testing exposed a ten-minute countdown reset after backgrounding plus
+Done leaving the unresolved nudge active. Build 11 is now on the phone, persists the snooze deadline,
 makes snooze-related Done cancel it and start a fresh full interval, and adds SwiftData recreation
 plus failure/retry regressions. PR #10 and main delivery run #49 passed; the downloaded Build-11 IPA
-also passed local checksum/package inspection. Install it over Build 10 before resuming phone
-acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+also passed local checksum/package inspection, and its countdown survives leaving and closing the app.
+Finish phone acceptance and refresh/recovery; whether Build 11 was installed over Build 10 without an
+uninstall has not been explicitly reported. Build 12 source now makes every successful Done restart
+the full regular interval and stabilizes transient button/card geometry; PR #12 run #34073932922
+passed 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA
+inspection and `CI Gate`. Main delivery and phone acceptance remain. Optional
+Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -40,8 +45,8 @@ acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [x] **Retire obsolete preview artifacts.** Build 10 plus its checksum, metadata and screenshots is
-      the installed candidate; retained Builds 9 and 4 are fallbacks. Builds 2 and 3 and the
+- [x] **Retire obsolete preview artifacts.** Build 11 plus its checksum, metadata and screenshots is
+      the current phone candidate; retained Builds 9 and 4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
 - [x] **Choose the product constants before behavior acceptance.** New installs start with an
@@ -72,7 +77,32 @@ acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud
       Build 11 source persists both deadlines and makes snooze-related Done start a fresh full interval.
       PR #10 run #34067380053 and main delivery run #49 passed 49 domain assertions, 61 XCTest cases,
       the UI test, both builds, IPA inspection and `CI Gate`. Artifact `akshatos-ios-49` is downloaded
-      and checksum/package-verified. An over-install on Build 10 and device tests remain.
+      and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
+      and closing the app. Confirm snooze-related Done and the remaining device matrix before closing
+      this item; same-ID over-install preservation has not been explicitly reported.
+- [ ] **Cloud- and phone-verify regular cadence reset after every completed set.** Phone testing confirms that Build 11
+      leaves the existing 45-minute countdown running when Done +1 is tapped without a snooze. The
+      accepted behavior is that dashboard Done and notification Done both represent a set completed
+      now: record exactly one set, cancel any unresolved snooze, replace the recurring request, persist
+      a new cadence anchor, and show one full configured interval (45 minutes by default). Preserve
+      idempotency and retry safety; add tests for ordinary and snoozed Done, dashboard/notification
+      sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
+      behavior change. Build 12 source `c5f787e` implements it; PR #12 run #34073932922 passed the
+      complete cloud gate. Main delivery and phone verification remain before this item can close.
+- [ ] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
+      reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
+      interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
+      snooze or lifecycle controls. The current views change several published values asynchronously
+      and conditionally insert/remove the busy indicator, helper/Undo row, countdown text and controls,
+      so SwiftUI recalculates card heights and the surrounding `ScrollView` shifts. Preserve stable
+      card/control geometry and scroll position, and use deliberate transitions where appropriate.
+      Acceptance requires no visible up/down jump for tap, working, success, failure or disabled-state
+      changes. Do not alter reminder cadence, action semantics, persistence, navigation, permissions,
+      accessibility behavior or any other functionality while making this presentation-only change.
+      Build 12 source `c5f787e` reserves stable busy/reminder/control/helper geometry, animates state
+      transitions with Reduce Motion respected, and keeps hidden controls out of hit testing and
+      accessibility. PR #12 run #34073932922 passed compilation and UI evidence; main delivery and
+      phone verification remain pending.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

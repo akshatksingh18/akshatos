@@ -9,7 +9,12 @@ PR #7/main run #43 passed and its verified IPA is installed. Phone testing found
 deadline still resets on foreground and Done leaves that nudge active. Build 11 persists the snooze
 deadline and makes snooze-related Done begin a fresh full interval. PR #10 merged as `8b5b8c4`; main
 delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/package and screenshot
-inspection. Device verification is pending.
+inspection. Phone testing confirms the displayed countdown survives leaving and closing the app;
+it also confirms ordinary Done does not reset the active 45-minute countdown. The accepted next
+behavior is for every successful Done to start a fresh full interval. Build 12 source `c5f787e`
+implements that shared cadence reset and stable action-state layout; PR #12 run #34073932922 passed
+49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA inspection and
+`CI Gate`. Protected-main delivery and the remaining device matrix are pending.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -53,7 +58,7 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Working source version: `0.2.0 (11)`, minimum iOS 17. Build 10 is installed but not accepted;
+  Working source version: `0.2.0 (12)`, minimum iOS 17. Build 11 is the phone-installed predecessor;
   preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
@@ -173,7 +178,9 @@ smoke artifact were sent to the Windows Recycle Bin and are recoverable until it
 Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
 visible, but foregrounding resets that ten-minute clock and Done does not resolve it. Because the old
 app was uninstalled, this installation does not prove same-ID refresh preservation. Build 11 fixes
-both behaviors, is merged, and has a verified main artifact; over-install and device acceptance remain pending.
+both behaviors, is merged, and has a verified main artifact. Its countdown-persistence correction
+now passes phone testing; snooze-related Done, same-ID over-install preservation and the wider device
+matrix remain pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -184,19 +191,23 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Install verified Build 11 over Build 10:** preserve the current app container and
-   confirm both regular and ten-minute countdowns survive background/foreground and relaunch. During
-   a pending snooze, Done must log once, remove the nudge and begin a full regular interval. Also
-   confirm settings, permissions, Home configuration and disposable history survive the over-install.
-2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+1. **Cloud-verify and deliver Build 12:** universal Done cadence reset and smooth interactions are
+   implemented in source. Every dashboard or notification Done must log once, cancel any snooze and
+   start a fresh configured interval even when the ordinary countdown was active. Keep the
+   vertical-jump fix presentation-only. Require the full PR gate, merge through protected main,
+   validate the main IPA/hash/screenshots, then install it over Build 11 without uninstalling.
+2. **Finish Build 11/device correction acceptance:** its displayed countdown now survives leaving and
+   closing the app. Establish whether Build 11 was installed over Build 10; if so, confirm
+   settings, permissions, Home configuration and disposable history survived that over-install.
+3. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
-3. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
+4. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+5. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is

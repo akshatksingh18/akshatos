@@ -14,7 +14,10 @@ refinements and persisted the regular cadence anchor; PR #7 and main delivery ru
 testing then exposed a separate trigger-derived reset of the ten-minute clock and an unresolved nudge
 after Done. Build 11 persists that deadline and resets the cadence after snooze-related Done. PR #10
 merged as `8b5b8c4`; main delivery run #49 passed and its Build-11 IPA passed local checksum/package
-inspection. Physical acceptance remains outstanding.
+inspection. Phone testing confirms countdown persistence but found ordinary Done did not restart the
+interval. Build 12 source `c5f787e` implements universal Done reset plus stable action-state layout;
+PR #12 run #34073932922 passed the complete cloud gate, while main delivery and physical acceptance
+remain outstanding.
 Android is an unverified fallback.
 
 ## Hub entry
@@ -111,8 +114,9 @@ or Resume and continues until Pause or End removes it.
 The reminder category provides these actions:
 
 1. **Done** — record exactly one completed set for the active day without requiring the app UI to
-   open. It normally leaves the cadence unchanged; when a snooze is unresolved, it cancels that
-   nudge and begins a fresh full regular interval from the completed set.
+   open, cancel any unresolved nudge, and begin a fresh full regular interval from the completed set.
+   This reset applies whether the main countdown was the ordinary cadence or a ten-minute snooze.
+   Build 12 implements both paths through the same dashboard/notification command.
 2. **Pause** — cancel the recurring request and move the active day to Paused. This is the escape
    hatch when the first inconvenient reminder arrives while away from home.
 3. **Remind me in 10 min** — schedule or replace one one-off snooze request ten minutes later. The

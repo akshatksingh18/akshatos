@@ -414,6 +414,21 @@ import UserNotifications
         XCTAssertNil(store.active?.snoozeCadenceDeadline)
     }
 
+    func testDoneDuringRegularCadenceStartsFreshCadence() async {
+        let (repository, reminders, _, store) = fixture()
+        let active = repository.values[0]
+
+        await store.done()
+
+        XCTAssertEqual(store.todayCount, 1)
+        XCTAssertEqual(reminders.scheduleCount, 1)
+        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
+        XCTAssertEqual(reminders.state.sessionID, active.id)
+        XCTAssertEqual(store.active?.reminderCadenceAnchor, time.addingTimeInterval(2_700))
+        XCTAssertEqual(store.nextReminder, time.addingTimeInterval(2_700))
+        XCTAssertFalse(store.primaryReminderIsSnooze)
+    }
+
     func testLegacyRunningSessionAdoptsTriggerDeadlineOnlyOnce() async {
         let (repository, reminders, _, store) = fixture()
         let adopted = time.addingTimeInterval(900)
@@ -554,6 +569,25 @@ import UserNotifications
         XCTAssertEqual(reminders.state.sessionID, active.id)
     }
 
+    func testRegularDoneCadenceResetRetriesAfterSchedulingFailure() async {
+        let (repository, reminders, inbox, store) = fixture()
+        let active = repository.values[0]
+        reminders.failSchedule = true
+
+        await store.receive(action(active, .done, id: "regular-done-retry"))
+        XCTAssertEqual(store.todayCount, 0)
+        XCTAssertEqual(inbox.values.map(\.id), ["regular-done-retry"])
+        XCTAssertEqual(reminders.scheduleCount, 0)
+
+        reminders.failSchedule = false
+        await store.refresh()
+        XCTAssertEqual(store.todayCount, 1)
+        XCTAssertTrue(inbox.values.isEmpty)
+        XCTAssertEqual(reminders.scheduleCount, 1)
+        XCTAssertEqual(store.active?.reminderCadenceAnchor, time.addingTimeInterval(2_700))
+        XCTAssertEqual(reminders.state.sessionID, active.id)
+    }
+
     func testForegroundReconciliationReplacesMismatchedHomeBoundaryAndForgetsPresence() async {
         let repository = MemoryRepository()
         let reminders = FakeReminders()
@@ -578,7 +612,7 @@ import UserNotifications
         await store.receive(command)
         await store.receive(command)
         XCTAssertEqual(store.todayCount, 1)
-        XCTAssertEqual(reminders.scheduleCount, 0, "Done must not move the cadence")
+        XCTAssertEqual(reminders.scheduleCount, 1, "A duplicate Done must reset cadence only once")
         await store.undo()
         let reopened = make(repository, reminders, inbox)
         await reopened.receive(command)

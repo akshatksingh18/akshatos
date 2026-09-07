@@ -20,6 +20,7 @@ struct SquatDashboard: View {
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 48
     @ScaledMetric(relativeTo: .largeTitle) private var todayCountSize: CGFloat = 56
     @ScaledMetric(relativeTo: .largeTitle) private var summaryCountSize: CGFloat = 64
+    @ScaledMetric(relativeTo: .body) private var reminderAreaMinHeight: CGFloat = 76
 
     var body: some View {
         ScrollView {
@@ -56,13 +57,18 @@ struct SquatDashboard: View {
                     }.buttonStyle(ActionStyle(primary: true))
                         .disabled(store.active == nil || store.staleDay || store.busy || !store.storageAvailable)
                         .accessibilityIdentifier("log-set")
-                    if let active = store.active, active.count > 0, !store.staleDay {
-                        Button("Undo last set") { Task { await store.undo() } }
-                            .font(.footnote).frame(maxWidth: .infinity).disabled(store.busy)
-                    } else {
+                    ZStack {
                         Text("Count a set only after you've done it.")
                             .font(.caption).foregroundStyle(Palette.muted)
+                            .opacity(canUndo ? 0 : 1)
+                            .accessibilityHidden(canUndo)
+                        Button("Undo last set") { Task { await store.undo() } }
+                            .font(.footnote).frame(maxWidth: .infinity).disabled(store.busy)
+                            .opacity(canUndo ? 1 : 0)
+                            .allowsHitTesting(canUndo)
+                            .accessibilityHidden(!canUndo)
                     }
+                    .frame(maxWidth: .infinity)
                 }
                 goalCard
                 timeline
@@ -121,69 +127,123 @@ struct SquatDashboard: View {
 
     private var hero: some View {
         Surface {
-            Group {
+            VStack(alignment: .leading, spacing: 18) {
                 AdaptiveRow {
                     Label(store.operational, systemImage: stateIcon)
                         .font(.headline).foregroundStyle(Palette.lime)
                 } trailing: {
-                    if store.busy { ProgressView().tint(Palette.lime) }
-                }
-                if let regular = store.nextReminder {
-                    TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
-                        let snooze = store.snoozeReminder.flatMap { $0 > context.date ? $0 : nil }
-                        let interval = TimeInterval((store.active?.interval ?? 45) * 60)
-                        let elapsed = max(0, context.date.timeIntervalSince(regular))
-                        let next = snooze ?? (regular > context.date ? regular :
-                            regular.addingTimeInterval((floor(elapsed / interval) + 1) * interval))
-                        let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
-                                .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
-                            Text(snooze == nil ? "until the next scheduled reminder" :
-                                 "until your reminder in 10 minutes")
-                                .font(.caption).foregroundStyle(Palette.muted)
-                        }
+                    ZStack {
+                        Color.clear
+                        if store.busy { ProgressView().tint(Palette.lime) }
                     }
-                } else {
-                    Text(heroDescription).font(.body).foregroundStyle(Palette.muted)
+                    .frame(width: 20, height: 20)
+                    .accessibilityHidden(!store.busy)
                 }
+                Group {
+                    if let regular = store.nextReminder {
+                        TimelineView(.periodic(from: .now, by: reduceMotion ? 30 : 1)) { context in
+                            let snooze = store.snoozeReminder.flatMap { $0 > context.date ? $0 : nil }
+                            let interval = TimeInterval((store.active?.interval ?? 45) * 60)
+                            let elapsed = max(0, context.date.timeIntervalSince(regular))
+                            let next = snooze ?? (regular > context.date ? regular :
+                                regular.addingTimeInterval((floor(elapsed / interval) + 1) * interval))
+                            let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
+                                    .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
+                                Text(snooze == nil ? "until the next scheduled reminder" :
+                                     "until your reminder in 10 minutes")
+                                    .font(.caption).foregroundStyle(Palette.muted)
+                            }
+                        }
+                    } else {
+                        Text(heroDescription).font(.body).foregroundStyle(Palette.muted)
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: reminderAreaMinHeight, alignment: .topLeading)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(heroAccessibilityLabel)
-            if let active = store.active {
-                if !store.staleDay {
+            heroActions
+            Text("Every \(store.active?.interval ?? store.interval) min · Focus and iOS settings may silence alerts.")
+                .font(.caption).foregroundStyle(Palette.muted)
+        }
+        .animation(interactionAnimation, value: store.busy)
+        .animation(interactionAnimation, value: store.operational)
+        .animation(interactionAnimation, value: store.todayCount)
+        .animation(interactionAnimation, value: store.active?.id)
+    }
+
+    private var heroActions: some View {
+        let hasUsableActiveDay = store.active != nil && !store.staleDay
+        let showSnooze = hasUsableActiveDay && store.operational == "Running"
+        let showSettings = hasUsableActiveDay && store.operational == "Notifications blocked"
+        let showManualPause = hasUsableActiveDay && store.active?.state == .running && store.operational != "Running"
+        return Group {
+            if store.active == nil {
+                Button {
+                    if store.today.isEmpty { startRequested() } else { showRestart = true }
+                } label: {
+                    Text(store.today.isEmpty ? "Start my day" : "Start another session")
+                }
+                .buttonStyle(ActionStyle(primary: true))
+                .disabled(store.busy || !store.storageAvailable)
+            } else {
+                VStack(spacing: 12) {
                     Button {
                         Task {
                             if store.operational == "Running" { await store.pause() }
                             else { await store.resume() }
                         }
                     } label: {
-                        Text(store.operational == "Running" ? "Pause reminders" :
-                             (active.state == .paused ? "Resume reminders" : "Repair reminders"))
-                    }.buttonStyle(ActionStyle(primary: true)).disabled(store.busy || !store.storageAvailable)
-                    if store.operational == "Running" {
-                        Button("Remind me in 10 min") { Task { await store.snooze() } }
-                            .buttonStyle(ActionStyle()).disabled(store.busy)
+                        Text(primaryActionTitle)
                     }
-                    if store.operational == "Notifications blocked" { settingsLink }
-                    if active.state == .running && store.operational != "Running" {
+                    .buttonStyle(ActionStyle(primary: true))
+                    .disabled(!primaryActionAvailable || store.busy || !store.storageAvailable)
+                    .opacity(primaryActionAvailable ? 1 : 0)
+                    .allowsHitTesting(primaryActionAvailable)
+                    .accessibilityHidden(!primaryActionAvailable)
+
+                    Button(showSettings ? "Open iOS notification settings" : "Remind me in 10 min") {
+                        if showSettings { openNotificationSettings() }
+                        else { Task { await store.snooze() } }
+                    }
+                    .buttonStyle(ActionStyle())
+                    .disabled((!showSnooze && !showSettings) || store.busy)
+                    .opacity(showSnooze || showSettings ? 1 : 0)
+                    .allowsHitTesting(showSnooze || showSettings)
+                    .accessibilityHidden(!showSnooze && !showSettings)
+
+                    if showManualPause {
                         Button("Pause until I resume") { Task { await store.pause() } }
-                            .buttonStyle(ActionStyle()).disabled(store.busy)
+                            .buttonStyle(ActionStyle())
+                            .disabled(store.busy)
                     }
+
+                    Button("End my day") { showEnd = true }
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.muted)
+                        .frame(maxWidth: .infinity)
+                        .disabled(store.busy || !store.storageAvailable)
                 }
-                Button("End my day") { showEnd = true }
-                    .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.muted)
-                    .frame(maxWidth: .infinity).disabled(store.busy || !store.storageAvailable)
-            } else {
-                Button {
-                    if store.today.isEmpty { startRequested() }
-                    else { showRestart = true }
-                } label: { Text(store.today.isEmpty ? "Start my day" : "Start another session") }
-                    .buttonStyle(ActionStyle(primary: true)).disabled(store.busy || !store.storageAvailable)
             }
-            Text("Every \(store.active?.interval ?? store.interval) min · Focus and iOS settings may silence alerts.")
-                .font(.caption).foregroundStyle(Palette.muted)
         }
+    }
+
+    private var primaryActionAvailable: Bool { store.active == nil || !store.staleDay }
+
+    private var primaryActionTitle: String {
+        guard let active = store.active else { return "Start my day" }
+        if store.operational == "Running" { return "Pause reminders" }
+        return active.state == .paused ? "Resume reminders" : "Repair reminders"
+    }
+
+    private var canUndo: Bool {
+        guard let active = store.active else { return false }
+        return active.count > 0 && !store.staleDay
+    }
+
+    private var interactionAnimation: Animation? {
+        reduceMotion ? nil : .easeInOut(duration: 0.2)
     }
 
     private var heroDescription: String {
@@ -211,10 +271,10 @@ struct SquatDashboard: View {
                 ProgressView(value: Double(min(store.todayCount, goal)), total: Double(goal)).tint(Palette.lime)
                     .accessibilityLabel("Progress toward today's goal")
                     .accessibilityValue("\(min(store.todayCount, goal)) of \(goal) sets")
-                if store.todayCount < goal {
-                    Text("Today is at risk; your existing streak remains intact until the local day ends.")
-                        .font(.caption).foregroundStyle(Palette.muted)
-                }
+                Text("Today is at risk; your existing streak remains intact until the local day ends.")
+                    .font(.caption).foregroundStyle(Palette.muted)
+                    .opacity(store.todayCount < goal ? 1 : 0)
+                    .accessibilityHidden(store.todayCount >= goal)
             } else {
                 Text("Daily goal tracking is off. Choose a goal in Settings to begin your streak.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
@@ -379,6 +439,10 @@ struct SquatDashboard: View {
             }.navigationTitle("Squat settings")
                 .toolbar { Button("Done") { showSettings = false } }
         }.tint(Palette.lime)
+            .animation(interactionAnimation, value: store.busy)
+            .animation(interactionAnimation, value: store.homeEnabled)
+            .animation(interactionAnimation, value: store.notificationAuthorization)
+            .animation(interactionAnimation, value: store.homeAuthorization)
             .sheet(isPresented: $showHomeSetup) { HomeSetupView() }
             .confirmationDialog("Restore this Squats backup?", isPresented: $showRestore,
                                 titleVisibility: .visible) {
