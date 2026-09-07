@@ -20,6 +20,13 @@ IPA inspection and `CI Gate`; as intended, the PR uploaded no IPA. PR #12 merged
 `061272f3781b091360ae47cd4ac2bed983c73ef3`; [main delivery run #53](https://github.com/akshatksingh18/akshatos/actions/runs/34074441041)
 repeated the complete gate and uploaded `akshatos-ios-53`. Its downloaded IPA matches the cloud
 checksum, passed local identity/payload inspection, and both screenshots were visually inspected.
+Build 13 application source `94d186b189859363a8ddce7abe963b46deab9175` adds bounded automatic
+ten-minute nudges and the idle 9:00 AM start invitation. PR #15 run #57 passed the complete gate and
+uploaded no IPA as intended. PR #15 merged as `f484f663647a2be0cad44f3bb1c7fe2671b6572d`;
+[main delivery run #58](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604)
+passed the complete gate and uploaded `akshatos-ios-58`. The downloaded Build-13 IPA matches SHA-256
+`41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`, passed local identity/
+metadata/payload validation, and both screenshots were visually inspected. Physical acceptance is pending.
 This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -33,9 +40,10 @@ implementation and automated checks; the manual steps below are for that accepta
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (12)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (13)**; minimum iOS 17.
   Build 12 is installed and accepted for cadence reset, countdown persistence, interaction smoothness
-  and one-cycle same-ID state preservation. Build 11 is the retained predecessor.
+  and one-cycle same-ID state preservation. Build 13 is downloaded and cloud/local-verified but not
+  yet phone-installed; Build 11 remains the retained predecessor.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -72,6 +80,16 @@ passed 49 domain assertions, 63 integration/persistence tests, one UI test, simu
 IPA inspection and `CI Gate`. The PR correctly uploaded no IPA. PR #12 merged as
 `061272f3781b091360ae47cd4ac2bed983c73ef3`; [main delivery run #53](https://github.com/akshatksingh18/akshatos/actions/runs/34074441041)
 repeated the complete passing pipeline and uploaded `akshatos-ios-53`.
+
+Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` adds one normal reminder
+followed by 59 automatic ten-minute nudges, bounded foreground refill/migration, a two-action
+Done/Pause category, and an idle-only repeating 9:00 AM start invitation. After an initial red run
+exposed eight stale fixture/expectation assertions (with compilation and UI already passing),
+[PR #15 run #57](https://github.com/akshatksingh18/akshatos/actions/runs/34150335957)
+passed 49 domain assertions, 63 integration/persistence tests, five SwiftData tests, one UI test,
+simulator/device builds, IPA inspection and `CI Gate`. PR #15 merged as
+`f484f663647a2be0cad44f3bb1c7fe2671b6572d`; main delivery run #58 repeated the full passing pipeline
+and uploaded `akshatos-ios-58`.
 
 Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` selects a configurable
 eight-set daily goal and 150-meter Home radius, expands the registered suite to 47 domain assertions,
@@ -171,7 +189,21 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
-### Installed and accepted Build-12 download
+### Downloaded Build-13 candidate
+
+- Version: **0.2.0 (13)**; merge source `f484f663647a2be0cad44f3bb1c7fe2671b6572d`.
+- Artifact: `akshatos-ios-58`, from main delivery run #58 linked above.
+- Verified local directory:
+  `C:\Users\aksha\Downloads\akshatos-build-13\akshatos-ios-58`.
+- File: `AkshatOS-unsigned.ipa`; keep its checksum, `build-info.txt` and screenshots together.
+- SHA-256: `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`.
+- The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
+  minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
+  both exported simulator screenshots were visually inspected without clipping or malformed layout.
+  This candidate is ready for same-ID over-install and physical automatic-nudge/9:00 AM testing;
+  Build 12 remains the installed accepted fallback until that succeeds.
+
+### Installed and accepted Build-12 predecessor
 
 - Version: **0.2.0 (12)**; merge source `061272f3781b091360ae47cd4ac2bed983c73ef3`.
 - Artifact: `akshatos-ios-53`, from main delivery run #53 linked above.
@@ -262,11 +294,10 @@ testing remain.
 No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
-## Build-12 physical acceptance and future replacement flow
+## Build-13 physical acceptance and future replacement flow
 
-1. Build 12 has already passed its exact-source `CI Gate`, download, checksum, package identity,
-   screenshot, over-install and targeted phone checks. For the next build, repeat this flow without
-   uninstalling so state preservation remains testable.
+1. Build 13 has passed its exact-source `CI Gate`, download, checksum, package identity and screenshot
+   checks. Install it over Build 12 without uninstalling so state preservation remains testable.
 2. Before signing, recheck `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against the
    recorded checksum if the artifact was moved or copied.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
@@ -280,13 +311,15 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    navigation to the hub. Other modules must clearly say they are not available.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
    lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
-   test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
-   relaunch. During a pending snooze, background/foreground the app and confirm the same deadline;
-   then use Done before expiry and verify one logged set, no snooze, and a fresh full interval.
-   Build 12 passed the targeted dashboard cadence reset; future builds must repeat both dashboard
-   and notification-action testing. Confirm action ordering and that returning to the picker does
-   not stop reminders as part of the broader matrix.
-8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
+   ignore another normal alert and confirm the dashboard switches to one ten-minute automatic-nudge
+   countdown. Background/force-close without moving that deadline, receive the nudge, then verify
+   further nudges continue every ten minutes until Done. Done must log one set, cancel the old chain
+   and start a fresh full interval; notification Pause must stop the chain until Resume. Confirm the
+   notification exposes only Done/Pause and that returning to the picker does not stop reminders.
+8. End the day and confirm Settings reports the daily 9:00 AM start reminder scheduled. At the next
+   9:00 AM delivery, tap it and verify AkshatOS opens without silently starting a session. Starting a
+   day must remove that idle reminder; ending must restore it.
+9. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 
 Wi-Fi/automatic refresh, expiry recovery, in-place upgrades and notification buttons still require

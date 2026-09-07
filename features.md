@@ -21,8 +21,9 @@ IPA passed local inspection. Build 12 then passed phone checks for ordinary/snoo
 reset, background/force-quit countdown persistence, smooth button interactions, and same-ID state
 preservation. The broader physical and deployment matrix remains outstanding.
 Build 13 source replaces the manual snooze flow with automatic ten-minute nudges after an ignored
-normal reminder and adds an idle-only 9:00 AM start invitation. It is awaiting CI/artifact and phone
-acceptance; legacy snooze data remains readable for upgrade compatibility.
+normal reminder and adds an idle-only 9:00 AM start invitation. PR #15 run #57 and main run #58
+passed the complete gate, and the downloaded IPA passed local inspection. Phone acceptance remains
+open; legacy snooze data stays readable for upgrade compatibility.
 Android is an unverified fallback.
 
 ## Hub entry

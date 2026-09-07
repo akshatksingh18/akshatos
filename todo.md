@@ -37,8 +37,9 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
 Build 13 source now implements the next accepted behavior: the manual snooze control/action is
 removed, an ignored normal reminder is followed by 59 pre-scheduled ten-minute nudges, foreground
 reconciliation replenishes the bounded batch without moving its anchor, and idle authorized state
-owns one repeating 9:00 AM start invitation. Automated/cloud, artifact and phone acceptance remain
-open; Build 12 stays the installed known-good build until those gates pass.
+owns one repeating 9:00 AM start invitation. PR #15 run #57 and main run #58 passed the complete
+gate; the downloaded IPA passed checksum/package/screenshot inspection. Phone acceptance remains
+open; Build 12 stays the installed known-good build until that gate passes.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
       into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
@@ -136,11 +137,13 @@ open; Build 12 stays the installed known-good build until those gates pass.
       deadline, replenishes a low/drained batch from the persisted anchor, and makes Done/Pause/End
       cancel the old batch. Done starts a fresh full interval. The manual snooze UI/category is gone;
       legacy snooze payloads remain decode-safe no-ops. Pass PR/main CI, inspect the IPA/screenshots,
-      then verify ignored delivery, repeated delivery, Done and Pause on the physical phone.
+      then verify ignored delivery, repeated delivery, Done and Pause on the physical phone. PR/main
+      CI and IPA/screenshot inspection are complete; only the phone portion remains.
 - [ ] **Verify the idle 9:00 AM start invitation end to end.** Source schedules exactly one repeating
       local 9:00 AM notification while no day is active and access exists, cancels it on Start, restores
       it after End, and never auto-starts from a tap. Pass automated/cloud checks, then verify actual
-      delivery, tap-to-open, active-day suppression and time-zone behavior on the phone.
+      delivery, tap-to-open, active-day suppression and time-zone behavior on the phone. Automated/
+      cloud and artifact checks are complete; physical delivery behavior remains.
 - [x] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use a
       bounded normal-plus-nudge batch, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels active requests and finalizes it.

@@ -16,7 +16,8 @@ refresh/recovery and soak matrix remains open.
 Build 13 source replaces manual snooze with 59 pre-scheduled ten-minute automatic nudges after the
 normal due time and adds one repeating 9:00 AM idle start invitation. Foreground reconciliation
 replenishes the bounded active batch from its persisted anchor; Done/Pause cancel it, and Done
-starts a fresh full interval. CI/artifact and phone acceptance are still pending.
+starts a fresh full interval. PR #15 run #57 and main run #58 passed the full gate; the downloaded
+IPA passed local inspection. Phone acceptance is still pending.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 

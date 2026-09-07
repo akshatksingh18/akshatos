@@ -25,8 +25,9 @@ across background/force-close, smooth button interactions, and preservation of s
 Home configuration and history. The broader device/refresh/recovery matrix remains pending.
 Build 13 replaces manual snooze with a bounded pre-scheduled chain of automatic ten-minute nudges
 after an ignored normal reminder, and adds an idle-only 9:00 AM invitation to start the day. Done or
-Pause cancels the chain; Done starts a fresh full interval. This source is awaiting CI/artifact and
-physical-phone acceptance, so Build 12 remains the installed known-good build.
+Pause cancels the chain; Done starts a fresh full interval. PR #15 run #57 and main delivery run #58
+passed the complete gate, and the downloaded Build-13 IPA passed checksum/package/screenshot
+inspection. Physical-phone acceptance remains open, so Build 12 is still the installed known-good build.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
