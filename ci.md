@@ -3,6 +3,9 @@
 **Status:** Build-11 application source `9586f8af537108bb1c11024bad63eb2f85a9d94c` passed 49 domain
 assertions, 61 integration/persistence tests, the UI test, both builds, IPA inspection and `CI Gate`
 in [PR #10 run #34067380053](https://github.com/akshatksingh18/akshatos/actions/runs/34067380053).
+PR #10 merged as `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; [main delivery run #49](https://github.com/akshatksingh18/akshatos/actions/runs/34068524652)
+repeated the complete gate and uploaded the independently verified Build-11 artifact recorded in
+`cloud-build.md`.
 Build 10 previously passed 49 domain assertions and 58 integration/persistence tests in PR #7 and
 main run #43. Earlier Build-9
 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expanded the native-v1 suite to
@@ -133,7 +136,9 @@ persisted snooze deadline, Done during an unresolved snooze cancels it and start
 and that cross-system reset retries after persistence failure. A real file-backed SwiftData reopen
 also proves both stored deadlines survive repository recreation. PR #10 run #34067380053 passed all
 49 domain assertions, 61 integration/persistence tests, the UI test, simulator/device builds, IPA
-inspection and required `CI Gate`; PR runs intentionally upload no IPA.
+inspection and required `CI Gate`; PR runs intentionally upload no IPA. PR #10 then merged as
+`8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`, and main delivery run #49 repeated the full passing
+pipeline and uploaded `akshatos-ios-49`.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection

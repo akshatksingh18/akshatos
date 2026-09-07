@@ -6,9 +6,10 @@ repair of a repeating request without a next fire date. PR #4 is merged; main de
 passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Build 10
 implemented the snooze-first countdown, completion-only timeline and regular-cadence persistence;
 PR #7/main run #43 passed and its verified IPA is installed. Phone testing found its ten-minute
-deadline still resets on foreground and Done leaves that nudge active. Build 11 source persists the
-snooze deadline and makes snooze-related Done begin a fresh full interval. Exact application commit
-`9586f8a` passed PR #10 run #34067380053; merge/main delivery and device verification are pending.
+deadline still resets on foreground and Done leaves that nudge active. Build 11 persists the snooze
+deadline and makes snooze-related Done begin a fresh full interval. PR #10 merged as `8b5b8c4`; main
+delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/package and screenshot
+inspection. Device verification is pending.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -162,16 +163,17 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The selected hash-verified candidate is **0.2.0 (10)** from main delivery run #43, at:
-`C:\Users\aksha\Downloads\akshatos-build-10\akshatos-ios-43\AkshatOS-unsigned.ipa`.
-Its checksum, identity, version/build, payload and screenshots passed local inspection. Build 10 is
+The selected hash-verified candidate is **0.2.0 (11)** from main delivery run #49, at:
+`C:\Users\aksha\Downloads\akshatos-build-11\akshatos-ios-49\AkshatOS-unsigned.ipa`.
+Its SHA-256 is `8234d5b8eaa86b4836771e4eae1f2f788f59276fdb455ccc63d3e84b239fae67`;
+checksum, identity, version/build, payload and screenshots passed local inspection. Build 10 is
 installed; Builds 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
 smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
 Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
 visible, but foregrounding resets that ten-minute clock and Done does not resolve it. Because the old
 app was uninstalled, this installation does not prove same-ID refresh preservation. Build 11 fixes
-both behaviors and passed its PR cloud gate; merge/main artifact, over-install and device acceptance remain pending.
+both behaviors, is merged, and has a verified main artifact; over-install and device acceptance remain pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -182,7 +184,7 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Merge cloud-passed PR #10, validate its main artifact, then install it over Build 10:** preserve the current app container and
+1. **Install verified Build 11 over Build 10:** preserve the current app container and
    confirm both regular and ten-minute countdowns survive background/foreground and relaunch. During
    a pending snooze, Done must log once, remove the nudge and begin a full regular interval. Also
    confirm settings, permissions, Home configuration and disposable history survive the over-install.

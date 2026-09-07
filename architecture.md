@@ -6,8 +6,9 @@ Exact Build-9 verification passed in PR #4 run #37. Build 10 implements snooze-f
 priority, a completion-only dashboard timeline and a persisted regular cadence anchor; PR #7 and
 main run #43 passed. Device testing then exposed that the snooze deadline still came from an unstable
 reconstructed trigger and that Done left the nudge active. Build 11 source persists the snooze
-deadline and resets cadence after a snooze-related Done; exact application commit `9586f8a` passed
-PR #10's complete cloud gate. Merge/main delivery and device acceptance remain open.
+deadline and resets cadence after a snooze-related Done. PR #10 merged as `8b5b8c4`; main delivery
+run #49 passed the complete gate and its Build-11 artifact passed local checksum/package inspection.
+Device acceptance remains open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 

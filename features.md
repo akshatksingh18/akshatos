@@ -12,9 +12,9 @@ initial goal and a 150-meter initial Home radius and expands native-v1 automated
 Build-9 cloud verification passed in PR #4 run #37. Build 10 implemented the countdown/completion-list
 refinements and persisted the regular cadence anchor; PR #7 and main delivery run #43 passed. Phone
 testing then exposed a separate trigger-derived reset of the ten-minute clock and an unresolved nudge
-after Done. Build 11 source persists that deadline and resets the cadence after snooze-related Done;
-application commit `9586f8a` passed PR #10's complete cloud gate, while merge/main delivery and
-physical acceptance remain outstanding.
+after Done. Build 11 persists that deadline and resets the cadence after snooze-related Done. PR #10
+merged as `8b5b8c4`; main delivery run #49 passed and its Build-11 IPA passed local checksum/package
+inspection. Physical acceptance remains outstanding.
 Android is an unverified fallback.
 
 ## Hub entry
