@@ -3,9 +3,10 @@
 **Status:** Build-12 application source `c5f787efb628cf63531c57e4cf9478edf5d8731b` passed 49 domain
 assertions, 63 integration/persistence tests, the UI test, simulator/device builds, IPA inspection
 and `CI Gate` in [PR #12 run #34073932922](https://github.com/akshatksingh18/akshatos/actions/runs/34073932922).
-The PR correctly uploaded no IPA. Protected-main merge and delivery remain pending.
-Build 11 previously passed the complete PR and main delivery gates and its independently verified
-artifact is recorded in `cloud-build.md`.
+The PR correctly uploaded no IPA. PR #12 merged as `061272f3781b091360ae47cd4ac2bed983c73ef3`;
+[main delivery run #53](https://github.com/akshatksingh18/akshatos/actions/runs/34074441041)
+repeated the complete gate and uploaded the independently verified Build-12 artifact recorded in
+`cloud-build.md`.
 Build 10 previously passed 49 domain assertions and 58 integration/persistence tests in PR #7 and
 main run #43. Earlier Build-9
 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expanded the native-v1 suite to

@@ -9,8 +9,8 @@ reconstructed trigger and that Done left the nudge active. Build 11 source persi
 deadline and resets cadence after a snooze-related Done. PR #10 merged as `8b5b8c4`; main delivery
 run #49 passed the complete gate and its Build-11 artifact passed local checksum/package inspection.
 Build 12 source `c5f787e` makes every running Done replace the recurring cadence and stabilizes
-transient dashboard geometry; PR #12 run #34073932922 passed the complete cloud gate, while main
-delivery and device acceptance remain open.
+transient dashboard geometry; PR #12 run #34073932922 and main delivery run #53 passed the complete
+cloud gate, and the downloaded IPA passed local inspection. Device acceptance remains open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -18,7 +18,8 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, working source version 0.2.0 (12); Build 11 is the phone-installed predecessor.
+  `com.akshatksingh18.akshatos`, working source version 0.2.0 (12); Build 11 is the phone-installed
+  predecessor and Build 12 is the verified replacement candidate.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.

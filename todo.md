@@ -27,7 +27,9 @@ Finish phone acceptance and refresh/recovery; whether Build 11 was installed ove
 uninstall has not been explicitly reported. Build 12 source now makes every successful Done restart
 the full regular interval and stabilizes transient button/card geometry; PR #12 run #34073932922
 passed 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA
-inspection and `CI Gate`. Main delivery and phone acceptance remain. Optional
+inspection and `CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated the complete
+gate and its downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Phone
+acceptance remains. Optional
 Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
@@ -45,8 +47,9 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [x] **Retire obsolete preview artifacts.** Build 11 plus its checksum, metadata and screenshots is
-      the current phone candidate; retained Builds 9 and 4 are fallbacks. Builds 2 and 3 and the
+- [x] **Retire obsolete preview artifacts.** Build 12 plus its checksum, metadata and screenshots is
+      the current phone candidate; Build 11 is its installed predecessor and retained Builds 9 and
+      4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
 - [x] **Choose the product constants before behavior acceptance.** New installs start with an
@@ -88,7 +91,9 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       idempotency and retry safety; add tests for ordinary and snoozed Done, dashboard/notification
       sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
       behavior change. Build 12 source `c5f787e` implements it; PR #12 run #34073932922 passed the
-      complete cloud gate. Main delivery and phone verification remain before this item can close.
+      complete cloud gate. PR #12 merged as `061272f`; main delivery run #53 repeated the full gate,
+      and its downloaded IPA passed local inspection. Phone verification remains before this item
+      can close.
 - [ ] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
       reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
       interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
@@ -101,8 +106,9 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       accessibility behavior or any other functionality while making this presentation-only change.
       Build 12 source `c5f787e` reserves stable busy/reminder/control/helper geometry, animates state
       transitions with Reduce Motion respected, and keeps hidden controls out of hit testing and
-      accessibility. PR #12 run #34073932922 passed compilation and UI evidence; main delivery and
-      phone verification remain pending.
+      accessibility. PR #12 run #34073932922 and main delivery run #53 passed compilation and UI
+      evidence, and the downloaded IPA screenshots passed visual inspection. Phone verification
+      remains pending.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

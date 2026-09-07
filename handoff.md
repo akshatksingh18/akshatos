@@ -14,7 +14,9 @@ it also confirms ordinary Done does not reset the active 45-minute countdown. Th
 behavior is for every successful Done to start a fresh full interval. Build 12 source `c5f787e`
 implements that shared cadence reset and stable action-state layout; PR #12 run #34073932922 passed
 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA inspection and
-`CI Gate`. Protected-main delivery and the remaining device matrix are pending.
+`CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated the complete gate and its
+downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Only physical
+acceptance remains for these fixes.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -168,11 +170,11 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The selected hash-verified candidate is **0.2.0 (11)** from main delivery run #49, at:
-`C:\Users\aksha\Downloads\akshatos-build-11\akshatos-ios-49\AkshatOS-unsigned.ipa`.
-Its SHA-256 is `8234d5b8eaa86b4836771e4eae1f2f788f59276fdb455ccc63d3e84b239fae67`;
-checksum, identity, version/build, payload and screenshots passed local inspection. Build 10 is
-installed; Builds 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
+The selected hash-verified candidate is **0.2.0 (12)** from main delivery run #53, at:
+`C:\Users\aksha\Downloads\akshatos-build-12\akshatos-ios-53\AkshatOS-unsigned.ipa`.
+Its SHA-256 is `ce0a2750244a5b31d9047494ec40cf3c7adc45f4e705049c7807eba6b8c6fae3`;
+checksum, identity, version/build, payload and screenshots passed local inspection. Build 11 is the
+phone-installed predecessor; Builds 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
 smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
 Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
@@ -191,14 +193,13 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Cloud-verify and deliver Build 12:** universal Done cadence reset and smooth interactions are
-   implemented in source. Every dashboard or notification Done must log once, cancel any snooze and
-   start a fresh configured interval even when the ordinary countdown was active. Keep the
-   vertical-jump fix presentation-only. Require the full PR gate, merge through protected main,
-   validate the main IPA/hash/screenshots, then install it over Build 11 without uninstalling.
-2. **Finish Build 11/device correction acceptance:** its displayed countdown now survives leaving and
-   closing the app. Establish whether Build 11 was installed over Build 10; if so, confirm
-   settings, permissions, Home configuration and disposable history survived that over-install.
+1. **Install and physically verify Build 12:** install the selected Build-12 IPA over Build 11 without
+   uninstalling. Confirm every dashboard or notification Done logs once, cancels any snooze and starts
+   a fresh configured interval even when the ordinary countdown was active; confirm taps no longer
+   cause the dashboard to jump vertically and that Reduce Motion/accessibility behavior still works.
+2. **Refresh/data-preservation acceptance:** confirm settings, permissions, Home configuration and
+   disposable history survive the same-ID Build 11 → Build 12 over-install. Do not uninstall a
+   data-bearing build during routine updates.
 3. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
