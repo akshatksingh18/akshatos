@@ -13,6 +13,8 @@ Done. PR #10 merged as `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; main delivery
 passed the complete pipeline and uploaded `akshatos-ios-49`. Its downloaded IPA matches the published
 checksum and passed local identity/payload inspection; both screenshots were inspected. Builds 9 and
 4 remain retained fallbacks.
+Build 12 application source `c5f787efb628cf63531c57e4cf9478edf5d8731b` adds universal running-Done
+cadence reset and stable button-state geometry. It has no cloud or downloadable artifact evidence yet.
 This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -26,7 +28,7 @@ implementation and automated checks; the manual steps below are for that accepta
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (11)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (12)**; minimum iOS 17.
   Build 10 was the prior phone build; Build 11 is downloaded/verified and now phone-tested for
   countdown persistence. Whether it was installed as a same-ID over-install was not explicitly reported.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
@@ -230,10 +232,10 @@ reminders still need testing.
 No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
-## Next Build-11 replacement install (manual steps; no computer control)
+## Next Build-12 replacement install (manual steps; no computer control)
 
-1. Build 11 is on the phone and its displayed countdown survives leaving and closing the app. Confirm
-   whether it was installed over Build 10 without uninstalling before closing the same-ID refresh gate.
+1. First require an exact Build-12 main artifact to pass `CI Gate`, then download and validate it.
+   Install it over Build 11 without uninstalling so the same-ID refresh gate remains testable.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
@@ -249,8 +251,8 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
    relaunch. During a pending snooze, background/foreground the app and confirm the same deadline;
    then use Done before expiry and verify one logged set, no snooze, and a fresh full interval.
-   Build 11 still leaves an ordinary 45-minute cadence unchanged after Done; a later build must reset
-   that cadence to a fresh full interval, then pass the same dashboard and notification-action test.
+   Build 11 still leaves an ordinary 45-minute cadence unchanged after Done; Build 12 source resets
+   that cadence to a fresh full interval and must pass the same dashboard and notification-action test.
    Confirm action ordering and that returning to the picker does not stop reminders.
 8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.

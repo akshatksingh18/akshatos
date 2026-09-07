@@ -8,7 +8,8 @@ main run #43 passed. Device testing then exposed that the snooze deadline still 
 reconstructed trigger and that Done left the nudge active. Build 11 source persists the snooze
 deadline and resets cadence after a snooze-related Done. PR #10 merged as `8b5b8c4`; main delivery
 run #49 passed the complete gate and its Build-11 artifact passed local checksum/package inspection.
-Device acceptance remains open.
+Build 12 source `c5f787e` makes every running Done replace the recurring cadence and stabilizes
+transient dashboard geometry; cloud and device acceptance remain open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -16,7 +17,7 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, working source version 0.2.0 (11); Build 10 is installed but unaccepted.
+  `com.akshatksingh18.akshatos`, working source version 0.2.0 (12); Build 11 is the phone-installed predecessor.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -154,8 +155,8 @@ background-capable services at app lifetime; load future media views/resources o
   and finalizes the active day.
 - Register a reminder category with actions ordered Done, Pause, and Remind me in 10 min. Done records
   one set, removes any unresolved snooze, replaces the recurring request and persists a full new
-  interval whether the prior main countdown was regular or snoozed. Build 11 only performs that
-  replacement for an unresolved snooze; ordinary-cadence Done reset is the next behavior change. Pause calls the same
+  interval whether the prior main countdown was regular or snoozed. Build 12 performs that replacement
+  through the shared command with rollback/retry protection. Pause calls the same
   idempotent command as the UI. Snooze replaces one one-off request for ten minutes later.
 - `UNUserNotificationCenterDelegate` routes responses by category/action identifier and always calls
   its completion handler after durable/idempotent processing. The normal app, notification handler,

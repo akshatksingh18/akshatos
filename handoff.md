@@ -11,8 +11,9 @@ deadline and makes snooze-related Done begin a fresh full interval. PR #10 merge
 delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/package and screenshot
 inspection. Phone testing confirms the displayed countdown survives leaving and closing the app;
 it also confirms ordinary Done does not reset the active 45-minute countdown. The accepted next
-behavior is for every successful Done to start a fresh full interval; it is not implemented in Build 11.
-The remaining device matrix is pending.
+behavior is for every successful Done to start a fresh full interval. Build 12 source `c5f787e`
+implements that shared cadence reset and stable action-state layout; cloud validation, delivery and
+the remaining device matrix are pending.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -56,7 +57,7 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Working source version: `0.2.0 (11)`, minimum iOS 17. Build 10 is installed but not accepted;
+  Working source version: `0.2.0 (12)`, minimum iOS 17. Build 11 is the phone-installed predecessor;
   preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
@@ -189,9 +190,11 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Implement and cloud-verify universal Done cadence reset plus smooth interactions:** every
-   dashboard or notification Done must log once, cancel any snooze and start a fresh configured
-   interval even when the ordinary countdown was active. Keep the vertical-jump fix presentation-only.
+1. **Cloud-verify and deliver Build 12:** universal Done cadence reset and smooth interactions are
+   implemented in source. Every dashboard or notification Done must log once, cancel any snooze and
+   start a fresh configured interval even when the ordinary countdown was active. Keep the
+   vertical-jump fix presentation-only. Require the full PR gate, merge through protected main,
+   validate the main IPA/hash/screenshots, then install it over Build 11 without uninstalling.
 2. **Finish Build 11/device correction acceptance:** its displayed countdown now survives leaving and
    closing the app. Establish whether Build 11 was installed over Build 10; if so, confirm
    settings, permissions, Home configuration and disposable history survived that over-install.

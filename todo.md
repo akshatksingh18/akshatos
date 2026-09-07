@@ -24,8 +24,8 @@ makes snooze-related Done cancel it and start a fresh full interval, and adds Sw
 plus failure/retry regressions. PR #10 and main delivery run #49 passed; the downloaded Build-11 IPA
 also passed local checksum/package inspection, and its countdown survives leaving and closing the app.
 Finish phone acceptance and refresh/recovery; whether Build 11 was installed over Build 10 without an
-uninstall has not been explicitly reported. Implement the newly accepted rule that every successful
-Done restarts the full regular interval; Build 11 does so only when a snooze is unresolved. Optional
+uninstall has not been explicitly reported. Build 12 source now makes every successful Done restart
+the full regular interval and stabilizes transient button/card geometry; macOS CI is pending. Optional
 Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
@@ -78,15 +78,16 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
       and closing the app. Confirm snooze-related Done and the remaining device matrix before closing
       this item; same-ID over-install preservation has not been explicitly reported.
-- [ ] **Reset the regular cadence after every completed set.** Phone testing confirms that Build 11
+- [ ] **Cloud- and phone-verify regular cadence reset after every completed set.** Phone testing confirms that Build 11
       leaves the existing 45-minute countdown running when Done +1 is tapped without a snooze. The
       accepted behavior is that dashboard Done and notification Done both represent a set completed
       now: record exactly one set, cancel any unresolved snooze, replace the recurring request, persist
       a new cadence anchor, and show one full configured interval (45 minutes by default). Preserve
       idempotency and retry safety; add tests for ordinary and snoozed Done, dashboard/notification
       sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
-      behavior change and is not implemented or verified in Build 11.
-- [ ] **Make every button interaction visually smooth without changing behavior.** Phone testing
+      behavior change. Build 12 source `c5f787e` implements it; macOS tests/build and phone verification
+      remain before this item can close.
+- [ ] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
       reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
       interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
       snooze or lifecycle controls. The current views change several published values asynchronously
@@ -96,6 +97,9 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       Acceptance requires no visible up/down jump for tap, working, success, failure or disabled-state
       changes. Do not alter reminder cadence, action semantics, persistence, navigation, permissions,
       accessibility behavior or any other functionality while making this presentation-only change.
+      Build 12 source `c5f787e` reserves stable busy/reminder/control/helper geometry, animates state
+      transitions with Reduce Motion respected, and keeps hidden controls out of hit testing and
+      accessibility. macOS compilation/UI evidence and phone verification remain pending.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

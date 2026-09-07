@@ -4,7 +4,7 @@ A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and ente
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (11)**,
+recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (12)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
@@ -15,8 +15,9 @@ Build 9's regular-countdown reset, but after installation phone testing found th
 countdown still restarts on foreground and Done does not dismiss it. Build 11 persists that deadline
 too and turns Done during/after a snooze into a fresh full interval. PR #10 and main delivery run #49
 passed the full cloud pipeline; the Build-11 IPA is downloaded and checksum/package-verified. Phone
-testing confirms its displayed countdown survives leaving and closing the app. The rest of device
-verification remains pending.
+testing confirms its displayed countdown survives leaving and closing the app, while ordinary Done
+still did not restart the interval. Build 12 source now resets every running Done to a full interval
+and stabilizes changing button/card geometry; cloud and device verification remain pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -33,7 +34,8 @@ and fixes repair of a repeating request with no next fire date. PR #4 is merged 
 run #39 produced the checksum-verified Build-9 IPA. Build 10 prioritizes a pending ten-minute nudge,
 keeps **Your day so far** completion-only, and persists the regular cadence anchor; PR #7 and main
 run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects, merged through
-PR #10, and passed main delivery run #49; it remains device-unverified.
+PR #10, and passed main delivery run #49; countdown persistence now passes phone testing, while its
+remaining behavior is not fully device-verified.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
@@ -73,7 +75,7 @@ disposable test activity only.
 - Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
   not unrecorded individual repetitions. Done should dismiss any unresolved nudge and restart the
   full regular interval from that completed set, including when the ordinary 45-minute countdown was
-  active. Build 11 currently performs that reset only when a snooze is unresolved.
+  active. Build 12 implements the universal reset in the shared dashboard/notification command.
 - Reach the configurable daily set goal to qualify that local date for the streak. New installs
   start at eight completed sets; setting the goal to zero turns streak tracking off. The dashboard
   shows today's progress plus current and personal-best streak.
