@@ -18,12 +18,13 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: Build 10 is installed and phone testing exposed a ten-minute countdown reset after
-backgrounding plus Done leaving the unresolved nudge active. Build 11 persists the snooze deadline,
+Current focus: Build 10 phone testing exposed a ten-minute countdown reset after backgrounding plus
+Done leaving the unresolved nudge active. Build 11 is now on the phone, persists the snooze deadline,
 makes snooze-related Done cancel it and start a fresh full interval, and adds SwiftData recreation
 plus failure/retry regressions. PR #10 and main delivery run #49 passed; the downloaded Build-11 IPA
-also passed local checksum/package inspection. Install it over Build 10 before resuming phone
-acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+also passed local checksum/package inspection, and its countdown survives leaving and closing the app.
+Finish phone acceptance and refresh/recovery; whether Build 11 was installed over Build 10 without an
+uninstall has not been explicitly reported. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -40,8 +41,8 @@ acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [x] **Retire obsolete preview artifacts.** Build 10 plus its checksum, metadata and screenshots is
-      the installed candidate; retained Builds 9 and 4 are fallbacks. Builds 2 and 3 and the
+- [x] **Retire obsolete preview artifacts.** Build 11 plus its checksum, metadata and screenshots is
+      the current phone candidate; retained Builds 9 and 4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
 - [x] **Choose the product constants before behavior acceptance.** New installs start with an
