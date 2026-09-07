@@ -8,14 +8,14 @@ recovery, Home auto-pause and expanded goal/streak edge handling, working source
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
-The Build-9 unsigned IPA is downloaded and hash-verified after main delivery run #39; Build 4 is
-retained as the fallback. The build guide contains the exact paths and manual Sideloadly steps.
+The Build-11 unsigned IPA is downloaded and hash-verified after main delivery run #49; Builds 9 and
+4 are retained fallbacks. The build guide contains the exact paths and manual Sideloadly steps.
 Physical testing confirmed that notification and location permission prompts appear. Build 10 fixed
 Build 9's regular-countdown reset, but after installation phone testing found that the ten-minute
-countdown still restarts on foreground and Done does not dismiss it. Build 11 source now persists
-that deadline too and turns Done during/after a snooze into a fresh full interval. Its exact
-application commit passed PR #10's full cloud pipeline; merge/main delivery and replacement-install
-verification remain pending.
+countdown still restarts on foreground and Done does not dismiss it. Build 11 persists that deadline
+too and turns Done during/after a snooze into a fresh full interval. PR #10 and main delivery run #49
+passed the full cloud pipeline; the Build-11 IPA is downloaded, checksum/package-verified, and ready
+for an over-install. Replacement-install and device verification remain pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -31,8 +31,8 @@ permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Set
 and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
 run #39 produced the checksum-verified Build-9 IPA. Build 10 prioritizes a pending ten-minute nudge,
 keeps **Your day so far** completion-only, and persists the regular cadence anchor; PR #7 and main
-run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects and passed its
-PR cloud gate; it remains unmerged and device-unverified.
+run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects, merged through
+PR #10, and passed main delivery run #49; it remains device-unverified.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at

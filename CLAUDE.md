@@ -12,10 +12,10 @@ repairs a repeating request that has no next fire date instead of incorrectly tr
 healthy. PR #4 is merged, and main delivery run #39 produced the downloaded, checksum-verified
 Build-9 IPA. Phone testing confirmed notification/location prompts and exposed countdown resets
 after leaving the app. Build 10 fixed the regular clock but phone testing showed its ten-minute
-clock still reset on foreground, and Done left that pending nudge active. Build 11 source
-persists both deadlines and makes Done resolve a snooze into a fresh full interval; exact application
-commit `9586f8af537108bb1c11024bad63eb2f85a9d94c` passed PR #10's complete cloud gate. Merge/main
-delivery and device acceptance are pending. The removed standalone smoke app proved
+clock still reset on foreground, and Done left that pending nudge active. Build 11 persists both
+deadlines and makes Done resolve a snooze into a fresh full interval. PR #10 merged as
+`8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; main delivery run #49 passed the complete cloud gate,
+and its Build-11 IPA is downloaded and independently verified. Device acceptance is pending. The removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 

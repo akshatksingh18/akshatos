@@ -8,9 +8,11 @@ passed 49 domain assertions, 58 XCTest cases, the UI test, simulator/device comp
 inspection and `CI Gate`, then uploaded Build 10. The downloaded IPA matches its published checksum
 and package identity, and both simulator screenshots were inspected. Akshat installed it after
 uninstalling Build 9; phone testing found the snooze clock resets on foreground and Done leaves that
-nudge active. Build 11 source persists the snooze deadline and resets to a full interval on
-snooze-related Done. Exact application commit `9586f8a` passed PR #10's complete cloud pipeline but,
-as expected for a PR, uploaded no IPA; merge/main delivery remains. Builds 9 and 4 remain retained fallbacks.
+nudge active. Build 11 persists the snooze deadline and resets to a full interval on snooze-related
+Done. PR #10 merged as `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; main delivery run #49
+passed the complete pipeline and uploaded `akshatos-ios-49`. Its downloaded IPA matches the published
+checksum and passed local identity/payload inspection; both screenshots were inspected. Builds 9 and
+4 remain retained fallbacks.
 This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -25,7 +27,7 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (11)**; minimum iOS 17.
-  Build 10 is downloaded/verified and phone-installed; Build 11 passed PR CI but has no main artifact yet.
+  Build 10 is phone-installed; Build 11 is downloaded/verified and ready for an over-install.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -50,7 +52,9 @@ Build-11 application source `9586f8af537108bb1c11024bad63eb2f85a9d94c` adds a st
 snooze deadline, conditional Done cadence reset, real SwiftData disk recreation and reset failure/
 retry coverage. [PR #10 run #34067380053](https://github.com/akshatksingh18/akshatos/actions/runs/34067380053)
 passed 49 domain assertions, 61 integration/persistence tests, one UI test, simulator/device builds,
-IPA inspection and `CI Gate`. The PR correctly uploaded no IPA; merge/main delivery is pending.
+IPA inspection and `CI Gate`. The PR correctly uploaded no IPA. PR #10 merged as
+`8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; [main delivery run #49](https://github.com/akshatksingh18/akshatos/actions/runs/34068524652)
+repeated the full passing pipeline and uploaded `akshatos-ios-49`.
 
 Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` selects a configurable
 eight-set daily goal and 150-meter Home radius, expands the registered suite to 47 domain assertions,
@@ -150,7 +154,20 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
-### Selected Build-10 download
+### Selected Build-11 download
+
+- Version: **0.2.0 (11)**; merge source `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`.
+- Artifact: `akshatos-ios-49`, from main delivery run #49 linked above.
+- Verified local directory:
+  `C:\Users\aksha\Downloads\akshatos-build-11\akshatos-ios-49`.
+- File: `AkshatOS-unsigned.ipa`; keep its checksum, `build-info.txt` and screenshots together.
+- SHA-256: `8234d5b8eaa86b4836771e4eae1f2f788f59276fdb455ccc63d3e84b239fae67`.
+- The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
+  minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
+  both exported simulator screenshots were visually inspected. This is the replacement candidate;
+  install it over Build 10 without uninstalling to test same-ID data preservation and the fixes.
+
+### Installed Build-10 predecessor
 
 - Version: **0.2.0 (10)**; merge source `e99b7aa0ab2eaa71a583e6abfd42937c4d1d1cd9`.
 - Artifact: `akshatos-ios-43`, from main delivery run #43 linked above.
@@ -213,8 +230,8 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 
 ## Next Build-11 replacement install (manual steps; no computer control)
 
-1. Wait for an exact Build-11 main artifact to pass `CI Gate`, download and validate it, then install
-   it over the current Build 10 without uninstalling. Do not reuse Build 10 for this acceptance pass.
+1. Install the verified Build-11 IPA above over the current Build 10 without uninstalling. Do not
+   reuse Build 10 for this acceptance pass.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
