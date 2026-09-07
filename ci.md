@@ -1,12 +1,15 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-12 application source `c5f787efb628cf63531c57e4cf9478edf5d8731b` passed 49 domain
-assertions, 63 integration/persistence tests, the UI test, simulator/device builds, IPA inspection
-and `CI Gate` in [PR #12 run #34073932922](https://github.com/akshatksingh18/akshatos/actions/runs/34073932922).
-The PR correctly uploaded no IPA. PR #12 merged as `061272f3781b091360ae47cd4ac2bed983c73ef3`;
-[main delivery run #53](https://github.com/akshatksingh18/akshatos/actions/runs/34074441041)
-repeated the complete gate and uploaded the independently verified Build-12 artifact recorded in
-`cloud-build.md`.
+**Status:** Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
+assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
+builds, IPA inspection and `CI Gate` in
+[PR #15 run #57](https://github.com/akshatksingh18/akshatos/actions/runs/34150335957).
+The PR correctly uploaded no IPA. PR #15 merged as `f484f663647a2be0cad44f3bb1c7fe2671b6572d`;
+[main delivery run #58](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604)
+repeated the complete gate and uploaded the independently verified Build-13 artifact recorded in
+`cloud-build.md`. An earlier PR run #56 failed eight outdated/new fixture expectations after the
+app compiled and the UI test passed; the tests and missing-anchor reconciliation were corrected,
+then the full gate was rerun rather than accepting the failure.
 Build 10 previously passed 49 domain assertions and 58 integration/persistence tests in PR #7 and
 main run #43. Earlier Build-9
 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expanded the native-v1 suite to
@@ -140,6 +143,12 @@ also proves both stored deadlines survive repository recreation. PR #10 run #340
 inspection and required `CI Gate`; PR runs intentionally upload no IPA. PR #10 then merged as
 `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`, and main delivery run #49 repeated the full passing
 pipeline and uploaded `akshatos-ios-49`.
+
+Build-13 source `94d186b` replaces manual snooze coverage with automatic ten-minute-nudge behavior,
+bounded-batch refill/migration, full-interval Done reset, two-action routing, legacy-snooze no-op,
+and idle 9:00 AM schedule/cancel/restore tests while retaining 63 integration/persistence tests.
+PR #15 run #57 and main run #58 each passed 49 domain assertions, 63 action/integration tests, five
+SwiftData tests, the UI test, simulator/device builds, IPA inspection and required `CI Gate`.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection

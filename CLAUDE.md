@@ -25,12 +25,13 @@ the complete gate and its Build-12 IPA passed local checksum/package/screenshot 
 installed Build 12 over Build 11 without uninstalling and confirmed preserved settings, permissions,
 Home configuration and history; persistent background/force-quit countdowns; fresh full intervals
 after ordinary and snoozed Done; and smooth button interactions without vertical jumps. The broader
-physical, refresh/recovery and soak matrix remains pending. Build 13 source is now implementing the
-accepted follow-up: after the normal interval becomes due, pre-scheduled local notifications nudge
+physical, refresh/recovery and soak matrix remains pending. Build 13 implements the accepted
+follow-up: after the normal interval becomes due, pre-scheduled local notifications nudge
 every ten minutes until Done or Pause, while Done restarts the full interval; the manual snooze
 button/action is retired. When no day is active and notification access exists, one repeating
 9:00 AM local notification invites the user to open AkshatOS and start, without auto-starting a day.
-Build 13 is not accepted until its PR/main CI, artifact inspection and physical-phone checks pass. The
+PR #15 run #57 and main run #58 passed the complete gate; the Build-13 IPA is downloaded and passed
+checksum/package/screenshot inspection. Physical-phone acceptance remains pending. The
 removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
@@ -106,7 +107,7 @@ feature is physically verified.
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
   `0.2.0 (13)`; Build 12 is installed and accepted for its cadence, persistence, interaction and
-  one-cycle same-ID upgrade checks. Build 11 is the retained predecessor.
+  one-cycle same-ID upgrade checks. Build 13 is the downloaded, cloud/local-verified phone candidate.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the

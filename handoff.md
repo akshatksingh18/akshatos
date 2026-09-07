@@ -20,6 +20,11 @@ over Build 11 without uninstalling and reports all requested phone checks passed
 snoozed Done reset to a fresh interval, the countdown persists across background/force-close,
 buttons no longer jump vertically, and settings, permissions, Home configuration and history were
 preserved. These fixes are accepted; the broader physical and deployment matrix remains.
+Build 13 source replaces manual snooze with a bounded chain of automatic ten-minute nudges after
+an ignored normal reminder and adds an idle-only 9:00 AM start invitation. PR #15 run #57 passed the
+full gate and merged as `f484f66`; main delivery run #58 repeated the gate and published the locally
+checksum/package/screenshot-verified Build-13 IPA. Build 13 is ready for same-ID over-install and
+physical nudge/daily-start testing; Build 12 remains the installed accepted build until that passes.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -63,7 +68,7 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Working source version: `0.2.0 (12)`, minimum iOS 17. Build 11 is the phone-installed predecessor;
+  Working source version: `0.2.0 (13)`, minimum iOS 17. Build 12 is the phone-installed predecessor;
   preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
@@ -78,10 +83,13 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
 ## Already implemented in source
 
 - Picker, Squats dashboard, shared visual components, and app-lifetime services across navigation.
-- Start/Pause/Resume/End; dashboard Done +1, Undo, and replaceable ten-minute snooze.
-- Notification Done, Pause and ten-minute snooze; atomic after-first-unlock command inbox,
+- Start/Pause/Resume/End; dashboard Done +1 and Undo. Ignored normal reminders advance to automatic
+  ten-minute nudges on the single primary countdown until Done or Pause.
+- Notification Done and Pause; bounded normal-plus-59-nudge scheduling, idle 9:00 AM start invitation;
+  atomic after-first-unlock command inbox,
   receipt persistence surviving Undo, shared commands, protected-store retry and queued-action UI.
-- One system-scheduled recurring local reminder; permission/pending-request reconciliation.
+- One bounded active reminder batch plus one repeating idle daily-start request; permission/pending-
+  request reconciliation and foreground batch replenishment.
 - Versioned SwiftData session storage, recent session summaries, configurable daily goal,
   same-day set aggregation, and current/best streak calculation. New installs start at eight sets;
   zero turns tracking off.
@@ -173,11 +181,11 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The selected hash-verified candidate is **0.2.0 (12)** from main delivery run #53, at:
-`C:\Users\aksha\Downloads\akshatos-build-12\akshatos-ios-53\AkshatOS-unsigned.ipa`.
-Its SHA-256 is `ce0a2750244a5b31d9047494ec40cf3c7adc45f4e705049c7807eba6b8c6fae3`;
-checksum, identity, version/build, payload and screenshots passed local inspection. Build 11 is the
-phone-installed predecessor; Builds 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
+The selected hash-verified candidate is **0.2.0 (13)** from main delivery run #58, at:
+`C:\Users\aksha\Downloads\akshatos-build-13\akshatos-ios-58\AkshatOS-unsigned.ipa`.
+Its SHA-256 is `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`;
+checksum, identity, version/build, payload and screenshots passed local inspection. Build 12 is the
+phone-installed accepted predecessor; Builds 11, 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
 smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
 Build 10 exposed foreground/snooze defects after an uninstall-based update. Build 11 corrected
@@ -194,15 +202,17 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Complete the broader physical feature matrix:** picker → Squats → back, one-minute/45-minute reminders,
-   dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
-   summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
-   defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
+1. **Install and phone-verify Build 13 over Build 12:** use the selected IPA without uninstalling;
+   prove normal reminder → repeated automatic ten-minute nudges, the single nudge countdown across
+   background/force-close, Done full-interval reset, Pause cancellation, and the two-action notification.
+   End the day, verify the idle 9:00 AM request, then confirm its next delivery opens without auto-start.
+   Continue picker/back, Undo/replay, permissions, summaries/recovery, Home automation and the broader
+   physical matrix. Record actual results and fix defects; `architecture.md` owns durability limits.
 2. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-5. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+3. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
