@@ -72,7 +72,15 @@ acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud
       Build 11 source persists both deadlines and makes snooze-related Done start a fresh full interval.
       PR #10 run #34067380053 and main delivery run #49 passed 49 domain assertions, 61 XCTest cases,
       the UI test, both builds, IPA inspection and `CI Gate`. Artifact `akshatos-ios-49` is downloaded
-      and checksum/package-verified. An over-install on Build 10 and device tests remain.
+      and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
+      and closing the app. Confirm snooze-related Done and the remaining device matrix before closing
+      this item; same-ID over-install preservation has not been explicitly reported.
+- [ ] **Smooth dashboard action-state transitions.** Phone testing reports a small vertical jump when
+      buttons are tapped. The current dashboard changes several published values asynchronously and
+      conditionally inserts/removes the busy indicator, helper/Undo row, countdown text and lifecycle
+      controls, so SwiftUI recalculates card heights and the surrounding `ScrollView` shifts. Preserve
+      stable card/control heights or apply a deliberate transition after the behavior is reproduced;
+      this is a presentation issue, not evidence of cadence or persistence failure.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

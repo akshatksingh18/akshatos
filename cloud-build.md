@@ -27,7 +27,8 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (11)**; minimum iOS 17.
-  Build 10 is phone-installed; Build 11 is downloaded/verified and ready for an over-install.
+  Build 10 was the prior phone build; Build 11 is downloaded/verified and now phone-tested for
+  countdown persistence. Whether it was installed as a same-ID over-install was not explicitly reported.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -165,7 +166,8 @@ and updating an old category-less schedule through Repair reminders. None has ph
 - The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
   minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
   both exported simulator screenshots were visually inspected. This is the replacement candidate;
-  install it over Build 10 without uninstalling to test same-ID data preservation and the fixes.
+  Phone testing confirms its displayed countdown survives leaving and closing the app. Confirm
+  whether it was installed over Build 10 before treating same-ID data preservation as verified.
 
 ### Installed Build-10 predecessor
 
@@ -230,8 +232,8 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 
 ## Next Build-11 replacement install (manual steps; no computer control)
 
-1. Install the verified Build-11 IPA above over the current Build 10 without uninstalling. Do not
-   reuse Build 10 for this acceptance pass.
+1. Build 11 is on the phone and its displayed countdown survives leaving and closing the app. Confirm
+   whether it was installed over Build 10 without uninstalling before closing the same-ID refresh gate.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.

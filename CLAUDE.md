@@ -15,7 +15,8 @@ after leaving the app. Build 10 fixed the regular clock but phone testing showed
 clock still reset on foreground, and Done left that pending nudge active. Build 11 persists both
 deadlines and makes Done resolve a snooze into a fresh full interval. PR #10 merged as
 `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; main delivery run #49 passed the complete cloud gate,
-and its Build-11 IPA is downloaded and independently verified. Device acceptance is pending. The removed standalone smoke app proved
+and its Build-11 IPA is downloaded and independently verified. Phone testing confirms the displayed
+countdown now survives leaving and closing the app; the rest of device acceptance is pending. The removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 

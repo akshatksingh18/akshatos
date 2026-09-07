@@ -14,8 +14,9 @@ Physical testing confirmed that notification and location permission prompts app
 Build 9's regular-countdown reset, but after installation phone testing found that the ten-minute
 countdown still restarts on foreground and Done does not dismiss it. Build 11 persists that deadline
 too and turns Done during/after a snooze into a fresh full interval. PR #10 and main delivery run #49
-passed the full cloud pipeline; the Build-11 IPA is downloaded, checksum/package-verified, and ready
-for an over-install. Replacement-install and device verification remain pending.
+passed the full cloud pipeline; the Build-11 IPA is downloaded and checksum/package-verified. Phone
+testing confirms its displayed countdown survives leaving and closing the app. The rest of device
+verification remains pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8

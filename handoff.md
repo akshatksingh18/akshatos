@@ -9,7 +9,8 @@ PR #7/main run #43 passed and its verified IPA is installed. Phone testing found
 deadline still resets on foreground and Done leaves that nudge active. Build 11 persists the snooze
 deadline and makes snooze-related Done begin a fresh full interval. PR #10 merged as `8b5b8c4`; main
 delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/package and screenshot
-inspection. Device verification is pending.
+inspection. Phone testing confirms the displayed countdown survives leaving and closing the app;
+the remaining device matrix is pending.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -173,7 +174,9 @@ smoke artifact were sent to the Windows Recycle Bin and are recoverable until it
 Akshat installed Build 10 after uninstalling Build 9. The app launches and its main snooze clock is
 visible, but foregrounding resets that ten-minute clock and Done does not resolve it. Because the old
 app was uninstalled, this installation does not prove same-ID refresh preservation. Build 11 fixes
-both behaviors, is merged, and has a verified main artifact; over-install and device acceptance remain pending.
+both behaviors, is merged, and has a verified main artifact. Its countdown-persistence correction
+now passes phone testing; snooze-related Done, same-ID over-install preservation and the wider device
+matrix remain pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
@@ -184,10 +187,10 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Install verified Build 11 over Build 10:** preserve the current app container and
-   confirm both regular and ten-minute countdowns survive background/foreground and relaunch. During
-   a pending snooze, Done must log once, remove the nudge and begin a full regular interval. Also
-   confirm settings, permissions, Home configuration and disposable history survive the over-install.
+1. **Finish Build 11 correction acceptance:** its displayed countdown now survives leaving and
+   closing the app. During a pending snooze, confirm Done logs once, removes the nudge and begins a
+   full regular interval. Establish whether Build 11 was installed over Build 10; if so, confirm
+   settings, permissions, Home configuration and disposable history survived that over-install.
 2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
