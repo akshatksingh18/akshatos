@@ -381,7 +381,7 @@ import SwiftUI
             operational = today.isEmpty ? "Ready" : "Day complete"
             return
         }
-        reminders.cancelDailyStartReminder()
+        if snapshot.dailyStartScheduled { reminders.cancelDailyStartReminder() }
         guard session.state == .running else { reminders.cancel(); operational = "Paused"; return }
         guard snapshot.allowed else { operational = "Notifications blocked"; return }
         let expectedInterval = TimeInterval(session.interval * 60)
@@ -411,6 +411,9 @@ import SwiftUI
             migrated.reminderCadenceAnchor = fallback
             do { try save(migrated) } catch { actionFailure(error) }
             nextReminder = fallback
+        } else {
+            operational = "Reminder needs repair"
+            return
         }
         operational = "Running"
     }

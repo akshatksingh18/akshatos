@@ -342,7 +342,11 @@ import UserNotifications
     }
 
     func testRepairRearmsRunningSessionWhenTriggerHasNoNextDate() async {
-        let (_, reminders, _, store) = fixture()
+        let (repository, reminders, _, _) = fixture()
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = time.addingTimeInterval(2_700)
+        repository.values = [active]
+        let store = make(repository, reminders, MemoryInbox())
         reminders.state.next = nil
         await store.refresh()
         XCTAssertEqual(reminders.scheduleCount, 1)
@@ -453,12 +457,14 @@ import UserNotifications
     }
 
     func testForegroundMigratesLegacySnoozeAndClearsPersistedDeadline() async {
-        let (repository, reminders, _, store) = fixture()
+        let (repository, reminders, _, _) = fixture()
         var legacy = repository.values[0]
+        legacy.reminderCadenceAnchor = time.addingTimeInterval(2_700)
         legacy.snoozeCadenceDeadline = time.addingTimeInterval(600)
         repository.values = [legacy]
         reminders.state.hasLegacySnooze = true
         reminders.state.activeRequestCount = 1
+        let store = make(repository, reminders, MemoryInbox())
         await store.refresh()
         XCTAssertEqual(reminders.scheduleCount, 1)
         XCTAssertNil(store.active?.snoozeCadenceDeadline)
@@ -526,9 +532,13 @@ import UserNotifications
     }
 
     func testForegroundReplenishesLowAutomaticBatchWithoutMovingCadence() async {
-        let (repository, reminders, _, store) = fixture()
-        let anchor = repository.values[0].reminderCadenceAnchor
+        let (repository, reminders, _, _) = fixture()
+        let anchor = time.addingTimeInterval(2_700)
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = anchor
+        repository.values = [active]
         reminders.state.activeRequestCount = 10
+        let store = make(repository, reminders, MemoryInbox())
         await store.refresh()
         XCTAssertEqual(store.operational, "Running")
         XCTAssertEqual(reminders.scheduleCount, 1)
@@ -704,9 +714,12 @@ import UserNotifications
     }
 
     func testLegacySnoozeActionIsAcknowledgedWithoutChangingCadence() async {
-        let (repository, reminders, _, store) = fixture()
-        let active = repository.values[0]
-        let anchor = active.reminderCadenceAnchor
+        let (repository, reminders, _, _) = fixture()
+        let anchor = time.addingTimeInterval(2_700)
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = anchor
+        repository.values = [active]
+        let store = make(repository, reminders, MemoryInbox())
         await store.receive(action(active, .snooze))
         XCTAssertEqual(reminders.scheduleCount, 0)
         XCTAssertEqual(store.active?.reminderCadenceAnchor, anchor)
