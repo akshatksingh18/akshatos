@@ -1,14 +1,16 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build-10 source `f7fa520` fixes the phone-observed close/reopen countdown reset with a
-persisted cadence anchor, makes a pending ten-minute deadline the single main countdown, and keeps
-**Your day so far** completion-only. PR #7 passed the full gate and merged as
+**State:** Build 10 makes a pending ten-minute deadline the single main countdown, keeps **Your day
+so far** completion-only and persists the regular cadence anchor. PR #7 passed the full gate and merged as
 `e99b7aa0ab2eaa71a583e6abfd42937c4d1d1cd9`. Its
 [main delivery run #43](https://github.com/akshatksingh18/akshatos/actions/runs/34057258895)
 passed 49 domain assertions, 58 XCTest cases, the UI test, simulator/device compilation, IPA
 inspection and `CI Gate`, then uploaded Build 10. The downloaded IPA matches its published checksum
-and package identity, and both simulator screenshots were inspected. Build 9 is the installed
-fallback and Build 4 remains retained; Build-10 same-ID installation is pending.
+and package identity, and both simulator screenshots were inspected. Akshat installed it after
+uninstalling Build 9; phone testing found the snooze clock resets on foreground and Done leaves that
+nudge active. Build 11 source persists the snooze deadline and resets to a full interval on
+snooze-related Done. Exact application commit `9586f8a` passed PR #10's complete cloud pipeline but,
+as expected for a PR, uploaded no IPA; merge/main delivery remains. Builds 9 and 4 remain retained fallbacks.
 This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -22,8 +24,8 @@ implementation and automated checks; the manual steps below are for that accepta
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (10)**; minimum iOS 17.
-  Build 10 is downloaded/verified; Build 9 remains the phone-installed artifact.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (11)**; minimum iOS 17.
+  Build 10 is downloaded/verified and phone-installed; Build 11 passed PR CI but has no main artifact yet.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -32,7 +34,8 @@ implementation and automated checks; the manual steps below are for that accepta
 The hub is a fresh identity, not an in-place upgrade of the former standalone smoke app.
 Akshat removed that disposable app after its successful launch. No activity/history feature existed
 in it; no migration is implemented. Do not reuse deletion as the workflow for future data-bearing
-AkshatOS updates. Same-ID refresh/data preservation is still unverified.
+  AkshatOS updates. Build 10 was also installed after uninstalling Build 9, so same-ID refresh/data
+  preservation is still unverified; install Build 11 over Build 10 without deleting the app.
 
 ## Cloud validation and delivery
 
@@ -42,6 +45,12 @@ only dashboard history. [PR #7 run](https://github.com/akshatksingh18/akshatos/a
 passed 49 domain assertions, 58 integration/persistence tests, one UI test, both builds, IPA
 inspection and `CI Gate`. Main delivery run #43 repeated that complete pipeline for merge commit
 `e99b7aa0ab2eaa71a583e6abfd42937c4d1d1cd9` and uploaded `akshatos-ios-43`.
+
+Build-11 application source `9586f8af537108bb1c11024bad63eb2f85a9d94c` adds a stable persisted
+snooze deadline, conditional Done cadence reset, real SwiftData disk recreation and reset failure/
+retry coverage. [PR #10 run #34067380053](https://github.com/akshatksingh18/akshatos/actions/runs/34067380053)
+passed 49 domain assertions, 61 integration/persistence tests, one UI test, simulator/device builds,
+IPA inspection and `CI Gate`. The PR correctly uploaded no IPA; merge/main delivery is pending.
 
 Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` selects a configurable
 eight-set daily goal and 150-meter Home radius, expands the registered suite to 47 domain assertions,
@@ -151,8 +160,9 @@ and updating an old category-less schedule through Repair reminders. None has ph
 - SHA-256: `ac727b95d8fa2ee9e1228a4de6cca194471cc626191a1576247ec7088d0ac216`.
 - The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
   minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
-  both exported simulator screenshots were visually inspected. This remains an unsigned,
-  phone-unverified candidate. Build 9 remains installed and available as the immediate fallback.
+  both exported simulator screenshots were visually inspected. Akshat installed this candidate after
+  uninstalling Build 9; its snooze defects keep it from becoming the known-good release. The retained
+  Build-9 artifact remains an immediate fallback.
 
 ### Retained Build-4 fallback
 
@@ -191,7 +201,7 @@ is emptied and remain reproducible from Git history. Physical same-ID upgrade/da
 reminders still need testing.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
-2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (20 assertions).
+2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (49 assertions).
 3. Compile simulator, run the hub → dashboard → back UI test with screenshot attachments, and
    compile the unsigned arm64 device Release build. Simulator test runners are not in the IPA.
 4. Inspect bundle/version/executable, package ordinary Payload IPA, generate checksum/build metadata.
@@ -201,9 +211,10 @@ reminders still need testing.
 No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
-## First AkshatOS install (manual steps; no computer control)
+## Next Build-11 replacement install (manual steps; no computer control)
 
-1. Use the selected **AkshatOS 0.2.0 (10)** download above and install it over Build 9 without uninstalling.
+1. Wait for an exact Build-11 main artifact to pass `CI Gate`, download and validate it, then install
+   it over the current Build 10 without uninstalling. Do not reuse Build 10 for this acceptance pass.
 2. Verify `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against its checksum file.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
@@ -217,8 +228,9 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
    lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
    test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
-   relaunch. Repeat with 45 minutes. Confirm action ordering and that returning to the picker does
-   not stop reminders. A build-3 schedule may need one explicit Repair reminders to add the category.
+   relaunch. During a pending snooze, background/foreground the app and confirm the same deadline;
+   then use Done before expiry and verify one logged set, no snooze, and a fresh full interval.
+   Repeat with 45 minutes. Confirm action ordering and that returning to the picker does not stop reminders.
 8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 

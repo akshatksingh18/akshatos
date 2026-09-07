@@ -18,12 +18,12 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: the agreed native Squats lifecycle, dashboard/Settings UI, notification actions,
-daily overview/recovery, Home automation, foreground reconciliation, chosen defaults and expanded
-native-v1 regression coverage are implemented in Build-9 source. PR #4 is merged and main run #39
-produced the downloaded, checksum-verified candidate. Phone review identified two accepted dashboard
-refinements below; implement and cloud-verify them, then resume phone acceptance and prove refresh/
-recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+Current focus: Build 10 is installed and phone testing exposed a ten-minute countdown reset after
+backgrounding plus Done leaving the unresolved nudge active. Build 11 source persists the snooze
+deadline, makes snooze-related Done cancel it and start a fresh full interval, and adds SwiftData
+recreation plus failure/retry regressions. Application commit `9586f8a` passed PR #10's full cloud
+gate; merge it, validate its main artifact and install over Build 10 before resuming phone acceptance
+and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -41,7 +41,7 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
 - [x] **Retire obsolete preview artifacts.** Build 10 plus its checksum, metadata and screenshots is
-      the selected candidate; installed Build 9 and retained Build 4 are fallbacks. Builds 2 and 3 and the
+      the installed candidate; retained Builds 9 and 4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
 - [x] **Choose the product constants before behavior acceptance.** New installs start with an
@@ -65,12 +65,13 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
       plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
       row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
       `81bc36b` passed PR run #24.
-- [ ] **Install and physically verify the cloud-passed Build-10 countdown and completion-list fixes.**
-      Source makes a pending ten-minute deadline the single main countdown, filters **Your day so far**
-      to Done events, and persists the regular cadence anchor so close/reopen cannot reset the clock.
-      PR #7 and main run #43 passed 49 domain assertions, 58 integration/persistence tests, one UI
-      test, both builds, IPA inspection and CI Gate. Install over Build 9 and verify displayed and
-      delivered deadlines through background/foreground and relaunch.
+- [ ] **Deliver and physically verify the cloud-passed Build-11 countdown correction.** Build 10 was installed
+      after uninstalling Build 9, so it did not prove same-ID data preservation. It correctly makes a
+      pending ten-minute deadline the main countdown and keeps **Your day so far** completion-only,
+      but phone testing found that foregrounding restarts that snooze clock and Done leaves it active.
+      Build 11 source persists both deadlines and makes snooze-related Done start a fresh full interval.
+      PR #10 run #34067380053 passed 49 domain assertions, 61 XCTest cases, the UI test, both builds,
+      IPA inspection and `CI Gate`. Merge/main artifact, an over-install on Build 10, and device tests remain.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
@@ -151,10 +152,10 @@ recovery. Optional Shortcuts remain follow-on work. Cloud/device evidence lives 
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
-      Build 10 passed main delivery run #43 and is downloaded with matching checksum, identity/version,
-      payload and screenshot checks; installed Build 9 and retained Build 4 are fallbacks. Physical
-      acceptance and durable current/previous release-cache promotion remain open, so Build 10 is not
-      yet a known-good phone release.
+      Build 10 passed main delivery run #43, is downloaded with matching checksum/package checks and
+      is installed; retained Builds 9 and 4 are fallbacks. Its phone-reported snooze defects require
+      Build 11 before physical acceptance and durable current/previous release-cache promotion, so
+      Build 10 is not a known-good release.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.

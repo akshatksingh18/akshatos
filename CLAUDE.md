@@ -10,11 +10,12 @@ application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` chooses configurab
 eight completed sets and a 150-meter Home boundary, expands the native-v1 regression suite, and
 repairs a repeating request that has no next fire date instead of incorrectly treating it as
 healthy. PR #4 is merged, and main delivery run #39 produced the downloaded, checksum-verified
-Build-9 IPA. Phone testing confirmed notification/location prompts and exposed a close/reopen
-countdown reset. Build 10 persists the cadence anchor and implements a snooze-first single countdown
-plus a completion-only **Your day so far** list. PR #7 and main delivery run #43 passed; the downloaded
-IPA is checksum/package verified. Install it over Build 9 before continuing physical feature, Home
-and refresh acceptance in `cloud-build.md`. The removed standalone smoke app proved
+Build-9 IPA. Phone testing confirmed notification/location prompts and exposed countdown resets
+after leaving the app. Build 10 fixed the regular clock but phone testing showed its ten-minute
+clock still reset on foreground, and Done left that pending nudge active. Build 11 source
+persists both deadlines and makes Done resolve a snooze into a fresh full interval; exact application
+commit `9586f8af537108bb1c11024bad63eb2f85a9d94c` passed PR #10's complete cloud gate. Merge/main
+delivery and device acceptance are pending. The removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 
@@ -88,7 +89,7 @@ feature is physically verified.
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
-  `0.2.0 (10)`; Build 9 remains the latest installed artifact.
+  `0.2.0 (11)`; Build 10 is installed but not accepted.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -131,9 +132,9 @@ feature is physically verified.
   and presents its overview. All lifecycle operations are idempotent.
 - Register one actionable reminder category. Order its actions **Done**, **Pause**, then **Remind
   me in 10 min** because compact notification interfaces may show only the first two actions.
-  Done records one completion event without altering the regular cadence; Pause uses the same
-  domain command as the dashboard; 10 min schedules/replaces one one-off snooze and leaves the
-  underlying cadence in place. Handle action responses through the notification-center delegate
+  Done records one completion event and normally leaves the cadence alone; if a snooze is unresolved,
+  Done cancels it and begins a fresh full interval from that completion. Pause uses the same
+  domain command as the dashboard; 10 min schedules/replaces one one-off snooze. Handle action responses through the notification-center delegate
   and persist before completing the background callback.
 - If permission is denied or notifications are disabled, Start must not display a healthy
   “Running” state. Show a clear blocked state and a route to the app's iOS notification settings.
@@ -188,9 +189,10 @@ feature is physically verified.
   lifecycle controls, and a compact completion-only **Your day so far** list showing Done events and
   their times. Do not show pause, resume, snooze or reminder-maintenance events in that dashboard
   list, though they remain persisted for lifecycle reconciliation, durations and summaries. Persist
-  each Start/Resume cadence anchor so close/reopen cannot restart the displayed interval. While a
-  ten-minute snooze is pending, its earlier deadline replaces the regular countdown as the single
-  main clock. End requires confirmation and opens a
+  each Start/Resume cadence anchor and accepted snooze deadline so background/foreground or relaunch
+  cannot restart either displayed interval. While a ten-minute snooze is pending, its earlier
+  deadline replaces the regular countdown as the single main clock. Done during that snooze logs
+  the set, removes the nudge and starts a full regular interval. End requires confirmation and opens a
   summary with sets, goal result, start/end, active/paused duration, completion times, pause
   segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
   Export/restore uses a versioned local JSON file selected by the user; validation completes before
@@ -356,8 +358,8 @@ current observed behavior in the applicable project document rather than relying
   and attempted interval changes while Running or Paused;
 - Done from the dashboard and locked-screen notification, accidental-tap Undo, duplicate callback
   protection, and durable merge of an action received while protected files are unavailable;
-- 10-minute snooze replacement, its interaction with the unchanged regular cadence, repeated
-  snooze, Pause/End with a snooze pending, and notification action ordering in compact/expanded UI;
+- 10-minute snooze replacement, stable foreground/relaunch countdown, Done before/after delivery,
+  repeated snooze, Pause/End with a snooze pending, and notification action ordering in compact/expanded UI;
 - daily summary correctness across start/end, pause segments, snoozes, completions, local midnight,
   time-zone changes, relaunch, and same-day restart confirmation;
 - goal/streak behavior below, exactly at, and above the chosen threshold; current-day at-risk state;

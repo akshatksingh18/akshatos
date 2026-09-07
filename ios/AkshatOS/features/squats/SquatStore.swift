@@ -41,8 +41,12 @@ import SwiftUI
     var todayCompletions: [SquatEvent] {
         today.flatMap(\.events).filter { $0.kind == .done }.sorted { $0.date > $1.date }
     }
-    var primaryReminder: Date? { snoozeReminder ?? nextReminder }
-    var primaryReminderIsSnooze: Bool { snoozeReminder != nil }
+    private var activeSnoozeReminder: Date? {
+        guard let snoozeReminder, snoozeReminder > now() else { return nil }
+        return snoozeReminder
+    }
+    var primaryReminder: Date? { activeSnoozeReminder ?? nextReminder }
+    var primaryReminderIsSnooze: Bool { activeSnoozeReminder != nil }
     var todayCount: Int { today.reduce(0) { $0 + $1.count } }
     var todayGoal: Int? {
         if let first = today.sorted(by: { $0.started < $1.started }).first { return first.goal }
@@ -267,6 +271,7 @@ import SwiftUI
         session.state = .running
         session.pauseReason = nil
         session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
+        session.snoozeCadenceDeadline = nil
         session.log(SquatEvent(date: event.date, kind: .resume, source: "homeAwayAutomation"))
         do { try save(session) } catch { reminders.cancel(); throw error }
         notice = "You arrived Home, so reminders resumed."
@@ -302,6 +307,7 @@ import SwiftUI
             try acknowledge(action, session: session)
             return
         }
+        var resetCadenceAfterDone = false
         if action.kind == .pause { reminders.cancel() }
         if action.kind == .snooze {
             let snapshot = await reminders.snapshot()
@@ -317,9 +323,24 @@ import SwiftUI
             }
             try await reminders.schedule(session, snoozeUntil: deadline)
         }
-        do { try save(action.applying(to: session)) }
+        var updated = action.applying(to: session)
+        if action.kind == .done {
+            let snapshot = await reminders.snapshot()
+            let snoozeDeadline = session.snoozeCadenceDeadline ?? session.unresolvedSnoozeDeadline()
+            if snoozeDeadline != nil, snapshot.allowed, session.state == .running {
+                // Completing the set makes the pending nudge obsolete. Replacing the recurring
+                // request gives the user a full interval from this completed set.
+                try await reminders.schedule(session, snoozeUntil: nil)
+                reminders.cancelSnooze()
+                updated.reminderCadenceAnchor = now().addingTimeInterval(
+                    TimeInterval(session.interval * 60))
+                resetCadenceAfterDone = true
+            }
+        }
+        do { try save(updated) }
         catch {
             if action.kind == .snooze { reminders.cancelSnooze() }
+            if resetCadenceAfterDone { reminders.cancel() }
             throw error
         }
     }
@@ -383,9 +404,15 @@ import SwiftUI
             nextReminder = fallback
         }
         if snapshot.hasSnooze {
+            let persistedSnooze = session.snoozeCadenceDeadline ?? session.unresolvedSnoozeDeadline()
             if snapshot.snoozeSessionID == session.id, snapshot.snoozeActionable,
-               let snooze = snapshot.snooze, snooze > now() {
+               let snooze = persistedSnooze, snooze > now() {
                 snoozeReminder = snooze
+                if session.snoozeCadenceDeadline == nil {
+                    var migrated = session
+                    migrated.snoozeCadenceDeadline = snooze
+                    do { try save(migrated) } catch { actionFailure(error) }
+                }
             } else {
                 reminders.cancelSnooze()
             }
@@ -534,6 +561,7 @@ import SwiftUI
             session.state = .running
             session.pauseReason = nil
             session.reminderCadenceAnchor = now().addingTimeInterval(TimeInterval(session.interval * 60))
+            session.snoozeCadenceDeadline = nil
             session.log(SquatEvent(date: now(), kind: .resume, source: "dashboard"))
             do { try save(session) } catch { reminders.cancel(); throw error }
         }
@@ -552,6 +580,7 @@ import SwiftUI
             guard var session = active else { return }
             reminders.cancel()
             session.state = .ended
+            session.snoozeCadenceDeadline = nil
             session.ended = now()
             try save(session)
             if var state = homeState, state.suppressExitUntilEntry {

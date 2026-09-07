@@ -9,10 +9,12 @@ automation and full foreground reconciliation are implemented and cloud-verified
 intent is compared with notification permission plus recurring/snooze requests, and the protected
 Home boundary is compared with the actual system registration. Build 9 chooses an eight-set
 initial goal and a 150-meter initial Home radius and expands native-v1 automated coverage.
-Build-9 cloud verification passed in PR #4 run #37. Build-10 source implements the accepted countdown
-and completion-list refinements and persists the regular cadence anchor after phone testing exposed a
-close/reopen countdown reset. PR #7 and main delivery run #43 passed the Build-10 cloud gate;
-physical acceptance remains outstanding.
+Build-9 cloud verification passed in PR #4 run #37. Build 10 implemented the countdown/completion-list
+refinements and persisted the regular cadence anchor; PR #7 and main delivery run #43 passed. Phone
+testing then exposed a separate trigger-derived reset of the ten-minute clock and an unresolved nudge
+after Done. Build 11 source persists that deadline and resets the cadence after snooze-related Done;
+application commit `9586f8a` passed PR #10's complete cloud gate, while merge/main delivery and
+physical acceptance remain outstanding.
 Android is an unverified fallback.
 
 ## Hub entry
@@ -76,8 +78,9 @@ one-off styling.
 - A large hero card shows the current state, a circular time-until-next-reminder treatment while
   running, and a clear paused/blocked/ended illustration in other states. With no snooze pending,
   the prominent countdown shows the next regular reminder. While a ten-minute nudge is pending,
-  that nearer deadline replaces the regular countdown as the single prominent clock. The persisted
-  regular cadence anchor keeps close/reopen and foreground reconciliation from restarting the clock.
+  that nearer deadline replaces the regular countdown as the single prominent clock. Persisted
+  regular and snooze deadlines keep background/foreground, close/reopen and reconciliation from
+  restarting either clock.
   Times are labelled as **scheduled**, because Focus and other iOS settings can delay presentation.
 - A prominent count card shows **sets completed today** with a one-tap **Done +1** control. An Undo
   affordance is available after an accidental tap and from the day's event list.
@@ -108,14 +111,14 @@ or Resume and continues until Pause or End removes it.
 The reminder category provides these actions:
 
 1. **Done** — record exactly one completed set for the active day without requiring the app UI to
-   open. It does not change the regular 45-minute cadence.
+   open. It normally leaves the cadence unchanged; when a snooze is unresolved, it cancels that
+   nudge and begins a fresh full regular interval from the completed set.
 2. **Pause** — cancel the recurring request and move the active day to Paused. This is the escape
    hatch when the first inconvenient reminder arrives while away from home.
 3. **Remind me in 10 min** — schedule or replace one one-off snooze request ten minutes later. The
-   ten-minute deadline becomes the dashboard's sole main countdown. The intended next normal cycle
-   begins after that postponed reminder rather than competing with it; implementation must not claim
-   this is reliable until the delivered-notification schedule passes Build-10 device testing. Snooze
-   never records a completed set.
+   persisted ten-minute deadline becomes the dashboard's sole main countdown. It remains stable when
+   the app backgrounds. Snooze never records a completed set; Done resolves it and begins the next
+   full regular interval. Build 11 passed cloud regression coverage; device behavior remains unverified.
 
 iOS may show only the first two category actions in compact space, so Done and Pause receive the
 first two positions; the 10-minute action is available from the expanded notification and the

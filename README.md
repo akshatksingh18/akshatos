@@ -4,16 +4,18 @@ A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and ente
 dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (10)**,
+recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (11)**,
 bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
 The Build-9 unsigned IPA is downloaded and hash-verified after main delivery run #39; Build 4 is
 retained as the fallback. The build guide contains the exact paths and manual Sideloadly steps.
-Physical testing confirmed that notification and location permission prompts appear, but also found
-that closing and reopening Build 9 resets the displayed regular countdown. Build 10 persists the
-cadence anchor so foreground reconciliation cannot restart that clock. PR #7 and main delivery run
-#43 passed, and its downloaded IPA is checksum/package verified; phone installation remains pending.
+Physical testing confirmed that notification and location permission prompts appear. Build 10 fixed
+Build 9's regular-countdown reset, but after installation phone testing found that the ten-minute
+countdown still restarts on foreground and Done does not dismiss it. Build 11 source now persists
+that deadline too and turns Done during/after a snooze into a fresh full interval. Its exact
+application commit passed PR #10's full cloud pipeline; merge/main delivery and replacement-install
+verification remain pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
@@ -27,10 +29,10 @@ full cloud gate in run #32 and was merged to `main` through PR #1.
 Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
 permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
 and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
-run #39 produced the checksum-verified Build-9 IPA. Build-10 source prioritizes a pending ten-minute
-nudge in the main countdown, keeps **Your day so far** completion-only, and fixes the phone-observed
-close/reopen countdown reset with a persisted cadence anchor. PR #7 and main run #43 passed the full
-pipeline; install the verified Build-10 artifact before continuing acceptance.
+run #39 produced the checksum-verified Build-9 IPA. Build 10 prioritizes a pending ten-minute nudge,
+keeps **Your day so far** completion-only, and persists the regular cadence anchor; PR #7 and main
+run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects and passed its
+PR cloud gate; it remains unmerged and device-unverified.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
@@ -68,7 +70,8 @@ disposable test activity only.
 - Tap **Start my day**; the first reminder is one interval later.
 - Receive ordinary local notifications until pausing or tapping **End my day**.
 - Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
-  not unrecorded individual repetitions.
+  not unrecorded individual repetitions. If a ten-minute nudge is unresolved, Done dismisses it and
+  begins the next full regular interval from that completed set.
 - Reach the configurable daily set goal to qualify that local date for the streak. New installs
   start at eight completed sets; setting the goal to zero turns streak tracking off. The dashboard
   shows today's progress plus current and personal-best streak.
@@ -76,8 +79,9 @@ disposable test activity only.
 - Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
   only that same day if the geofence caused the pause. Manual controls remain available at all times.
 - Use **Remind me in 10 min** for a short interruption such as dinner without pausing the day. Its
-  ten-minute deadline temporarily becomes the single main countdown. Exact post-nudge cadence
-  delivery remains a Build-10 physical acceptance gate.
+  persisted ten-minute deadline temporarily becomes the single main countdown. Background the app
+  without restarting that deadline, then tap Done when the set is complete to begin a fresh interval.
+  Exact delivery remains a Build-11 physical acceptance gate.
 - **Your day so far** shows only completed sets and their times, not pause/resume/snooze bookkeeping.
 - End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
   a completion timeline. A below-goal current date stays marked at risk until that date ends.

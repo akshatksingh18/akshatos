@@ -36,14 +36,17 @@ struct SquatAction: Codable, Equatable {
         switch kind {
         case .done:
             session.log(SquatEvent(id: eventID, date: date, kind: .done, source: source))
+            session.snoozeCadenceDeadline = nil
         case .pause:
             if session.state == .running || session.pauseReason != source {
                 session.log(SquatEvent(id: eventID, date: date, kind: .pause, source: source))
             }
             session.state = .paused
             session.pauseReason = source
+            session.snoozeCadenceDeadline = nil
         case .snooze:
             session.log(SquatEvent(id: eventID, date: date, kind: .snooze, source: source))
+            session.snoozeCadenceDeadline = date.addingTimeInterval(600)
         }
         session.actionReceipts = (session.actionReceipts ?? []) + [id]
         return session

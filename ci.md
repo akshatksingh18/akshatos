@@ -1,8 +1,13 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expands the
-native-v1 suite to 47 domain assertions, 55 integration/persistence tests and the hub/settings UI
-test. Its app-logic parent `db9c59f1ad23ec7f5f5199e2a3216ccd10490c56` passed Source checks,
+**Status:** Build-11 application source `9586f8af537108bb1c11024bad63eb2f85a9d94c` passed 49 domain
+assertions, 61 integration/persistence tests, the UI test, both builds, IPA inspection and `CI Gate`
+in [PR #10 run #34067380053](https://github.com/akshatksingh18/akshatos/actions/runs/34067380053).
+Build 10 previously passed 49 domain assertions and 58 integration/persistence tests in PR #7 and
+main run #43. Earlier Build-9
+application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expanded the native-v1 suite to
+47 domain assertions and 55 integration/persistence tests. Its app-logic parent
+`db9c59f1ad23ec7f5f5199e2a3216ccd10490c56` passed Source checks,
 both builds, all tests, IPA inspection and `CI Gate` in
 [PR #4 run #36](https://github.com/akshatksingh18/akshatos/actions/runs/34002015676). The exact
 Build-9 source/documentation head `b11623ed50c1fdc77b0897b1a74a98cbd57a9cf5` passed the same
@@ -122,6 +127,13 @@ relaunch, one-time migration of a Build-9 active session, snooze ownership of th
 and completion-only dashboard history. PR #7 and main delivery run #43 each passed 49 domain
 assertions, 58 integration/persistence tests, one UI test, simulator/device compilation, IPA
 inspection and `CI Gate`. Main run #43 uploaded the checksum-verified Build-10 artifact.
+
+Build-11 application source `9586f8a` adds three more integration regressions: a trigger snapshot cannot move the
+persisted snooze deadline, Done during an unresolved snooze cancels it and starts a full new cadence,
+and that cross-system reset retries after persistence failure. A real file-backed SwiftData reopen
+also proves both stored deadlines survive repository recreation. PR #10 run #34067380053 passed all
+49 domain assertions, 61 integration/persistence tests, the UI test, simulator/device builds, IPA
+inspection and required `CI Gate`; PR runs intentionally upload no IPA.
 
 The initial PR run failed because Simulator returned no file-protection metadata. The test now
 checks actual writer options and file durability in CI while retaining the filesystem protection
