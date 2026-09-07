@@ -28,8 +28,10 @@ uninstall has not been explicitly reported. Build 12 source now makes every succ
 the full regular interval and stabilizes transient button/card geometry; PR #12 run #34073932922
 passed 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA
 inspection and `CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated the complete
-gate and its downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Phone
-acceptance remains. Optional
+gate and its downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Akshat
+installed it over Build 11 without uninstalling and passed the requested cadence reset, countdown
+persistence, smooth-interaction and state-preservation phone checks. The broader physical and
+refresh/recovery matrix remains. Optional
 Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
@@ -48,7 +50,7 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
 - [x] **Retire obsolete preview artifacts.** Build 12 plus its checksum, metadata and screenshots is
-      the current phone candidate; Build 11 is its installed predecessor and retained Builds 9 and
+      the installed current build; Build 11 is its retained predecessor and retained Builds 9 and
       4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
@@ -73,7 +75,7 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
       row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
       `81bc36b` passed PR run #24.
-- [ ] **Deliver and physically verify the cloud-passed Build-11 countdown correction.** Build 10 was installed
+- [x] **Deliver and physically verify the countdown-persistence correction.** Build 10 was installed
       after uninstalling Build 9, so it did not prove same-ID data preservation. It correctly makes a
       pending ten-minute deadline the main countdown and keeps **Your day so far** completion-only,
       but phone testing found that foregrounding restarts that snooze clock and Done leaves it active.
@@ -81,9 +83,10 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       PR #10 run #34067380053 and main delivery run #49 passed 49 domain assertions, 61 XCTest cases,
       the UI test, both builds, IPA inspection and `CI Gate`. Artifact `akshatos-ios-49` is downloaded
       and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
-      and closing the app. Confirm snooze-related Done and the remaining device matrix before closing
-      this item; same-ID over-install preservation has not been explicitly reported.
-- [ ] **Cloud- and phone-verify regular cadence reset after every completed set.** Phone testing confirms that Build 11
+      and closing the app. Build 12 was installed over Build 11 without uninstalling; its phone tests
+      confirm the snooze countdown remains persistent and Done during a snooze begins a fresh full
+      interval while app state survives the same-ID update.
+- [x] **Cloud- and phone-verify regular cadence reset after every completed set.** Phone testing confirms that Build 11
       leaves the existing 45-minute countdown running when Done +1 is tapped without a snooze. The
       accepted behavior is that dashboard Done and notification Done both represent a set completed
       now: record exactly one set, cancel any unresolved snooze, replace the recurring request, persist
@@ -92,9 +95,10 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
       behavior change. Build 12 source `c5f787e` implements it; PR #12 run #34073932922 passed the
       complete cloud gate. PR #12 merged as `061272f`; main delivery run #53 repeated the full gate,
-      and its downloaded IPA passed local inspection. Phone verification remains before this item
-      can close.
-- [ ] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
+      and its downloaded IPA passed local inspection. Build 12 phone testing confirms Done during
+      both the ordinary cadence and a pending ten-minute nudge logs the set and starts a fresh full
+      interval; countdown persistence across background/force-close also remains intact.
+- [x] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
       reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
       interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
       snooze or lifecycle controls. The current views change several published values asynchronously
@@ -107,8 +111,9 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       Build 12 source `c5f787e` reserves stable busy/reminder/control/helper geometry, animates state
       transitions with Reduce Motion respected, and keeps hidden controls out of hit testing and
       accessibility. PR #12 run #34073932922 and main delivery run #53 passed compilation and UI
-      evidence, and the downloaded IPA screenshots passed visual inspection. Phone verification
-      remains pending.
+      evidence, and the downloaded IPA screenshots passed visual inspection. Build 12 phone testing
+      confirms button interactions are smooth without the reported vertical jump and the associated
+      cadence/persistence behavior remains correct.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

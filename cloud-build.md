@@ -34,8 +34,8 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (12)**; minimum iOS 17.
-  Build 11 is the phone-installed predecessor and passes countdown-persistence testing. Build 12 is
-  downloaded/verified and awaiting same-ID over-install and physical acceptance.
+  Build 12 is installed and accepted for cadence reset, countdown persistence, interaction smoothness
+  and one-cycle same-ID state preservation. Build 11 is the retained predecessor.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
@@ -45,8 +45,8 @@ The hub is a fresh identity, not an in-place upgrade of the former standalone sm
 Akshat removed that disposable app after its successful launch. No activity/history feature existed
 in it; no migration is implemented. Do not reuse deletion as the workflow for future data-bearing
   AkshatOS updates. Build 10 was also installed after uninstalling Build 9, so same-ID refresh/data
-  preservation remains an explicit acceptance gate; install Build 12 over Build 11 without deleting
-  the app.
+  preservation was subsequently proven by installing Build 12 over Build 11 without deleting the
+  app; repeated refresh cycles and recovery remain separate acceptance gates.
 
 ## Cloud validation and delivery
 
@@ -171,7 +171,7 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
-### Selected Build-12 download
+### Installed and accepted Build-12 download
 
 - Version: **0.2.0 (12)**; merge source `061272f3781b091360ae47cd4ac2bed983c73ef3`.
 - Artifact: `akshatos-ios-53`, from main delivery run #53 linked above.
@@ -182,8 +182,10 @@ and updating an old category-less schedule through Repair reminders. None has ph
 - The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
   minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
   both exported simulator screenshots were visually inspected without clipping or malformed layout.
-  Install this candidate over Build 11 without uninstalling, then verify universal Done reset and
-  interaction smoothness on the physical phone.
+  Akshat installed this artifact over Build 11 without uninstalling. Phone testing confirms ordinary
+  and snoozed Done start a fresh full interval, the countdown persists across background/force-close,
+  button interactions no longer jump vertically, and settings, permissions, Home configuration and
+  history survived the same-ID update.
 
 ### Phone-installed Build-11 predecessor
 
@@ -195,9 +197,8 @@ and updating an old category-less schedule through Repair reminders. None has ph
 - SHA-256: `8234d5b8eaa86b4836771e4eae1f2f788f59276fdb455ccc63d3e84b239fae67`.
 - The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
   minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
-  both exported simulator screenshots were visually inspected. This is the replacement candidate;
-  Phone testing confirms its displayed countdown survives leaving and closing the app. Confirm
-  whether it was installed over Build 10 before treating same-ID data preservation as verified.
+  both exported simulator screenshots were visually inspected. Phone testing confirms its displayed
+  countdown survives leaving and closing the app. Build 12 supersedes it as the installed build.
 
 ### Installed Build-10 predecessor
 
@@ -246,8 +247,9 @@ unsigned device Release build and IPA packaging passed. The downloaded package c
 
 The locally verified Build-3 and Build-2 previews were superseded by Builds 4 and 9 and sent to the
 Windows Recycle Bin together with their checksum/build metadata. They are recoverable until the bin
-is emptied and remain reproducible from Git history. Physical same-ID upgrade/data preservation and
-reminders still need testing.
+is emptied and remain reproducible from Git history. One physical same-ID upgrade with data
+preservation and the Build-12 cadence fixes passed; broader reminders, refresh/recovery and soak
+testing remain.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
 2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (49 assertions).
@@ -260,11 +262,11 @@ reminders still need testing.
 No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
-## Next Build-12 replacement install (manual steps; no computer control)
+## Build-12 physical acceptance and future replacement flow
 
-1. Use the selected, exact-source Build-12 artifact above. Its main `CI Gate`, download, checksum,
-   package identity and screenshots are already verified. Install it over Build 11 without
-   uninstalling so the same-ID refresh gate remains testable.
+1. Build 12 has already passed its exact-source `CI Gate`, download, checksum, package identity,
+   screenshot, over-install and targeted phone checks. For the next build, repeat this flow without
+   uninstalling so state preservation remains testable.
 2. Before signing, recheck `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against the
    recorded checksum if the artifact was moved or copied.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
@@ -281,9 +283,9 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
    relaunch. During a pending snooze, background/foreground the app and confirm the same deadline;
    then use Done before expiry and verify one logged set, no snooze, and a fresh full interval.
-   Build 11 still leaves an ordinary 45-minute cadence unchanged after Done; Build 12 resets that
-   cadence to a fresh full interval and must pass the same dashboard and notification-action test.
-   Confirm action ordering and that returning to the picker does not stop reminders.
+   Build 12 passed the targeted dashboard cadence reset; future builds must repeat both dashboard
+   and notification-action testing. Confirm action ordering and that returning to the picker does
+   not stop reminders as part of the broader matrix.
 8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 

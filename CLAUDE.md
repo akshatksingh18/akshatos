@@ -21,8 +21,11 @@ Build 12 source `c5f787efb628cf63531c57e4cf9478edf5d8731b` resets every running 
 full interval and stabilizes button-state layout without changing actions. PR #12 run
 #34073932922 passed 49 domain assertions, 63 integration/persistence tests, the UI test, both
 builds, IPA inspection and `CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated
-the complete gate and its Build-12 IPA passed local checksum/package/screenshot inspection. Device
-verification remains pending. The
+the complete gate and its Build-12 IPA passed local checksum/package/screenshot inspection. Akshat
+installed Build 12 over Build 11 without uninstalling and confirmed preserved settings, permissions,
+Home configuration and history; persistent background/force-quit countdowns; fresh full intervals
+after ordinary and snoozed Done; and smooth button interactions without vertical jumps. The broader
+physical, refresh/recovery and soak matrix remains pending. The
 removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
@@ -97,8 +100,8 @@ feature is physically verified.
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
-  `0.2.0 (12)`; Build 11 is the phone-installed predecessor and Build 12 is the verified replacement
-  candidate awaiting physical installation.
+  `0.2.0 (12)`; Build 12 is installed and accepted for its cadence, persistence, interaction and
+  one-cycle same-ID upgrade checks. Build 11 is the retained predecessor.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
@@ -237,7 +240,8 @@ feature is physically verified.
 
 - The hub uses `com.akshatksingh18.akshatos`. Do not change it for retries or updates.
   The former `com.akshatksingh18.squatreminder` is historical smoke identity only; its IPA must
-  never be relabeled as AkshatOS. The new identity still needs physical signing acceptance.
+  never be relabeled as AkshatOS. Build 12 has passed physical signing/install acceptance under the
+  permanent AkshatOS identity.
 
 - Produce a plain release-mode IPA with no Sideloadly-specific injection, tweak, JIT, or private
   framework dependency. That standard artifact must remain signable by Sideloadly and portable to
