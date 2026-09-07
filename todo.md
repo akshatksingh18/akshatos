@@ -75,12 +75,16 @@ acceptance and refresh/recovery. Optional Shortcuts remain follow-on work. Cloud
       and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
       and closing the app. Confirm snooze-related Done and the remaining device matrix before closing
       this item; same-ID over-install preservation has not been explicitly reported.
-- [ ] **Smooth dashboard action-state transitions.** Phone testing reports a small vertical jump when
-      buttons are tapped. The current dashboard changes several published values asynchronously and
-      conditionally inserts/removes the busy indicator, helper/Undo row, countdown text and lifecycle
-      controls, so SwiftUI recalculates card heights and the surrounding `ScrollView` shifts. Preserve
-      stable card/control heights or apply a deliberate transition after the behavior is reproduced;
-      this is a presentation issue, not evidence of cadence or persistence failure.
+- [ ] **Make every button interaction visually smooth without changing behavior.** Phone testing
+      reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
+      interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
+      snooze or lifecycle controls. The current views change several published values asynchronously
+      and conditionally insert/remove the busy indicator, helper/Undo row, countdown text and controls,
+      so SwiftUI recalculates card heights and the surrounding `ScrollView` shifts. Preserve stable
+      card/control geometry and scroll position, and use deliberate transitions where appropriate.
+      Acceptance requires no visible up/down jump for tap, working, success, failure or disabled-state
+      changes. Do not alter reminder cadence, action semantics, persistence, navigation, permissions,
+      accessibility behavior or any other functionality while making this presentation-only change.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
