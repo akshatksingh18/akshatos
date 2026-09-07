@@ -18,7 +18,8 @@ passed the full cloud pipeline; the Build-11 IPA is downloaded and checksum/pack
 testing confirms its displayed countdown survives leaving and closing the app, while ordinary Done
 still did not restart the interval. Build 12 source now resets every running Done to a full interval
 and stabilizes changing button/card geometry. PR #12 run #34073932922 passed the complete 49-domain/
-63-integration-test cloud gate; main delivery and device verification remain pending.
+63-integration-test cloud gate; main delivery run #53 repeated it and produced the downloaded,
+checksum/package/screenshot-verified Build-12 IPA. Device verification remains pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
