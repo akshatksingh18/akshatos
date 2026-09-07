@@ -17,7 +17,8 @@ too and turns Done during/after a snooze into a fresh full interval. PR #10 and 
 passed the full cloud pipeline; the Build-11 IPA is downloaded and checksum/package-verified. Phone
 testing confirms its displayed countdown survives leaving and closing the app, while ordinary Done
 still did not restart the interval. Build 12 source now resets every running Done to a full interval
-and stabilizes changing button/card geometry; cloud and device verification remain pending.
+and stabilizes changing button/card geometry. PR #12 run #34073932922 passed the complete 49-domain/
+63-integration-test cloud gate; main delivery and device verification remain pending.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8

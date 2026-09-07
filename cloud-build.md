@@ -14,7 +14,10 @@ passed the complete pipeline and uploaded `akshatos-ios-49`. Its downloaded IPA 
 checksum and passed local identity/payload inspection; both screenshots were inspected. Builds 9 and
 4 remain retained fallbacks.
 Build 12 application source `c5f787efb628cf63531c57e4cf9478edf5d8731b` adds universal running-Done
-cadence reset and stable button-state geometry. It has no cloud or downloadable artifact evidence yet.
+cadence reset and stable button-state geometry. [PR #12 run #34073932922](https://github.com/akshatksingh18/akshatos/actions/runs/34073932922)
+passed 49 domain assertions, 63 integration/persistence tests, one UI test, simulator/device builds,
+IPA inspection and `CI Gate`; as intended, the PR uploaded no IPA. Main delivery and downloadable
+artifact evidence remain pending.
 This file owns the build evidence.
 
 Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
@@ -58,6 +61,12 @@ passed 49 domain assertions, 61 integration/persistence tests, one UI test, simu
 IPA inspection and `CI Gate`. The PR correctly uploaded no IPA. PR #10 merged as
 `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; [main delivery run #49](https://github.com/akshatksingh18/akshatos/actions/runs/34068524652)
 repeated the full passing pipeline and uploaded `akshatos-ios-49`.
+
+Build-12 application source `c5f787efb628cf63531c57e4cf9478edf5d8731b` adds universal running-Done
+cadence reset, retry coverage for replacement scheduling, and stable dashboard action geometry.
+[PR #12 run #34073932922](https://github.com/akshatksingh18/akshatos/actions/runs/34073932922)
+passed 49 domain assertions, 63 integration/persistence tests, one UI test, simulator/device builds,
+IPA inspection and `CI Gate`. The PR correctly uploaded no IPA.
 
 Build-9 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` selects a configurable
 eight-set daily goal and 150-meter Home radius, expands the registered suite to 47 domain assertions,

@@ -18,8 +18,10 @@ deadlines and makes Done resolve a snooze into a fresh full interval. PR #10 mer
 and its Build-11 IPA is downloaded and independently verified. Phone testing confirms the displayed
 countdown now survives leaving and closing the app, while ordinary Done still did not reset it.
 Build 12 source `c5f787efb628cf63531c57e4cf9478edf5d8731b` resets every running Done to a
-full interval and stabilizes button-state layout without changing actions; cloud and device
-verification are pending. The removed standalone smoke app proved
+full interval and stabilizes button-state layout without changing actions. PR #12 run
+#34073932922 passed 49 domain assertions, 63 integration/persistence tests, the UI test, both
+builds, IPA inspection and `CI Gate`; main delivery and device verification remain pending. The
+removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
 

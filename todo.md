@@ -25,7 +25,9 @@ plus failure/retry regressions. PR #10 and main delivery run #49 passed; the dow
 also passed local checksum/package inspection, and its countdown survives leaving and closing the app.
 Finish phone acceptance and refresh/recovery; whether Build 11 was installed over Build 10 without an
 uninstall has not been explicitly reported. Build 12 source now makes every successful Done restart
-the full regular interval and stabilizes transient button/card geometry; macOS CI is pending. Optional
+the full regular interval and stabilizes transient button/card geometry; PR #12 run #34073932922
+passed 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA
+inspection and `CI Gate`. Main delivery and phone acceptance remain. Optional
 Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
@@ -85,8 +87,8 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       a new cadence anchor, and show one full configured interval (45 minutes by default). Preserve
       idempotency and retry safety; add tests for ordinary and snoozed Done, dashboard/notification
       sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
-      behavior change. Build 12 source `c5f787e` implements it; macOS tests/build and phone verification
-      remain before this item can close.
+      behavior change. Build 12 source `c5f787e` implements it; PR #12 run #34073932922 passed the
+      complete cloud gate. Main delivery and phone verification remain before this item can close.
 - [ ] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
       reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
       interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
@@ -99,7 +101,8 @@ Shortcuts remain follow-on work. Cloud/device evidence lives in
       accessibility behavior or any other functionality while making this presentation-only change.
       Build 12 source `c5f787e` reserves stable busy/reminder/control/helper geometry, animates state
       transitions with Reduce Motion respected, and keeps hidden controls out of hit testing and
-      accessibility. macOS compilation/UI evidence and phone verification remain pending.
+      accessibility. PR #12 run #34073932922 passed compilation and UI evidence; main delivery and
+      phone verification remain pending.
 - [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
       flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
       (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/

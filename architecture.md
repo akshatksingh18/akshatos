@@ -9,7 +9,8 @@ reconstructed trigger and that Done left the nudge active. Build 11 source persi
 deadline and resets cadence after a snooze-related Done. PR #10 merged as `8b5b8c4`; main delivery
 run #49 passed the complete gate and its Build-11 artifact passed local checksum/package inspection.
 Build 12 source `c5f787e` makes every running Done replace the recurring cadence and stabilizes
-transient dashboard geometry; cloud and device acceptance remain open.
+transient dashboard geometry; PR #12 run #34073932922 passed the complete cloud gate, while main
+delivery and device acceptance remain open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 

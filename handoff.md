@@ -12,8 +12,9 @@ delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/pa
 inspection. Phone testing confirms the displayed countdown survives leaving and closing the app;
 it also confirms ordinary Done does not reset the active 45-minute countdown. The accepted next
 behavior is for every successful Done to start a fresh full interval. Build 12 source `c5f787e`
-implements that shared cadence reset and stable action-state layout; cloud validation, delivery and
-the remaining device matrix are pending.
+implements that shared cadence reset and stable action-state layout; PR #12 run #34073932922 passed
+49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA inspection and
+`CI Gate`. Protected-main delivery and the remaining device matrix are pending.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.

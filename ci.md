@@ -1,11 +1,11 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-11 application source `9586f8af537108bb1c11024bad63eb2f85a9d94c` passed 49 domain
-assertions, 61 integration/persistence tests, the UI test, both builds, IPA inspection and `CI Gate`
-in [PR #10 run #34067380053](https://github.com/akshatksingh18/akshatos/actions/runs/34067380053).
-PR #10 merged as `8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; [main delivery run #49](https://github.com/akshatksingh18/akshatos/actions/runs/34068524652)
-repeated the complete gate and uploaded the independently verified Build-11 artifact recorded in
-`cloud-build.md`.
+**Status:** Build-12 application source `c5f787efb628cf63531c57e4cf9478edf5d8731b` passed 49 domain
+assertions, 63 integration/persistence tests, the UI test, simulator/device builds, IPA inspection
+and `CI Gate` in [PR #12 run #34073932922](https://github.com/akshatksingh18/akshatos/actions/runs/34073932922).
+The PR correctly uploaded no IPA. Protected-main merge and delivery remain pending.
+Build 11 previously passed the complete PR and main delivery gates and its independently verified
+artifact is recorded in `cloud-build.md`.
 Build 10 previously passed 49 domain assertions and 58 integration/persistence tests in PR #7 and
 main run #43. Earlier Build-9
 application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expanded the native-v1 suite to
