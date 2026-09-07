@@ -326,10 +326,9 @@ import SwiftUI
         var updated = action.applying(to: session)
         if action.kind == .done {
             let snapshot = await reminders.snapshot()
-            let snoozeDeadline = session.snoozeCadenceDeadline ?? session.unresolvedSnoozeDeadline()
-            if snoozeDeadline != nil, snapshot.allowed, session.state == .running {
-                // Completing the set makes the pending nudge obsolete. Replacing the recurring
-                // request gives the user a full interval from this completed set.
+            if snapshot.allowed, session.state == .running {
+                // Every completion becomes the cadence anchor: the next set is due one full
+                // configured interval after this one, regardless of whether a snooze was active.
                 try await reminders.schedule(session, snoozeUntil: nil)
                 reminders.cancelSnooze()
                 updated.reminderCadenceAnchor = now().addingTimeInterval(

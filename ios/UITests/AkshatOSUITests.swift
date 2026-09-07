@@ -9,6 +9,8 @@ final class AkshatOSUITests: XCTestCase {
         app.buttons["open-squats"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Start my day"].exists)
+        XCTAssertFalse(app.buttons["Remind me in 10 min"].exists)
+        XCTAssertFalse(app.buttons["End my day"].exists)
         capture("Squats dashboard")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 5))
