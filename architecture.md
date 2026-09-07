@@ -13,6 +13,10 @@ transient dashboard geometry; PR #12 run #34073932922 and main delivery run #53 
 cloud gate, and the downloaded IPA passed local inspection. Build 12 then passed the listed physical
 cadence, persistence, smooth-interaction and same-ID state-preservation checks; the broader device,
 refresh/recovery and soak matrix remains open.
+Build 13 source replaces manual snooze with 59 pre-scheduled ten-minute automatic nudges after the
+normal due time and adds one repeating 9:00 AM idle start invitation. Foreground reconciliation
+replenishes the bounded active batch from its persisted anchor; Done/Pause cancel it, and Done
+starts a fresh full interval. CI/artifact and phone acceptance are still pending.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -20,8 +24,8 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, working source version 0.2.0 (12); Build 11 is the phone-installed
-  predecessor and Build 12 is the installed, accepted current build for the checks above.
+  `com.akshatksingh18.akshatos`, working source version 0.2.0 (13); Build 12 is the installed,
+  accepted current build for the checks above.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore` and the sole
   `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
@@ -34,8 +38,8 @@ real device behavior.
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
   Only interval/goal preferences use UserDefaults.
   Store errors fail closed and preserve data rather than silently replacing the database.
-- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, notification Done/Pause/ten-minute snooze,
-  one recurring local request and one replaceable snooze, permission/request reconciliation, daily
+- Implemented: Start/Pause/Resume/End, dashboard Done/Undo, notification Done/Pause, a bounded
+  normal-plus-automatic-nudge batch, an idle 9:00 AM start request, permission/request reconciliation, daily
   overview/history with same-date aggregation and active/paused duration, configurable eight-set
   initial goal, current/best streak, versioned JSON export/validated restore, and completed-
   history deletion that preserves an active day.
@@ -46,8 +50,8 @@ real device behavior.
   UserNotifications schedules delivery without relying on the dashboard or its timer. Future-dated
   clock artifacts are excluded from current/best streaks until their local date arrives.
 - Foreground reconciliation canonicalizes out-of-range idle interval/goal preferences, drains both
-  durable inboxes, validates the current recurring request and any one-off snooze against the active
-  session/category/deadline, and removes stale snoozes without moving a healthy cadence.
+  durable inboxes, validates and replenishes the current bounded request batch against the active
+  session/category/deadline, and migrates legacy snooze state without moving the cadence anchor.
 - Home auto-pause source now includes staged When In Use/Always setup, map/radius confirmation, one
   stable circular region, protected local config/event files, launch/foreground reconciliation,
   debounce, pause-reason guards, outside-Home choices, degraded health, and boundary deletion.
@@ -84,8 +88,8 @@ real device behavior.
   reconciliation/repair, snooze cleanup, Home-health/disable, DST/time-zone, summary/recovery,
   legacy-payload and Settings UI coverage. It also requires a non-nil next fire date before Resume
   treats an existing repeating request as healthy.
-- Deferred: App Intents and physical/refresh acceptance. The notification category
-  exposes Done, Pause, then Remind me in 10 min without requiring foreground launch.
+- Deferred: App Intents and Build-13 physical/refresh acceptance. The notification category exposes
+  Done then Pause without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-
   unverified behavior as accepted.
 
@@ -146,22 +150,23 @@ background-capable services at app lifetime; load future media views/resources o
 
 ### Scheduling and action model
 
-- Keep one stable recurring-request identifier and one stable one-off snooze identifier.
-- Persist the first deadline of each Start/Resume cadence in the active session. Derive later regular
-  deadlines from that anchor; use the system trigger's next date only once to migrate an active
-  Build-9 session. Foreground reconciliation must never restart the displayed interval.
+- Keep stable namespaced identifiers for the normal reminder, 59 automatic nudges, the idle daily
+  start invitation, and the legacy snooze identifier that upgrades must remove.
+- Persist the first deadline of each Start/Resume/Done cadence in the active session. Derive later
+  ten-minute nudge deadlines from that anchor; use a legacy system trigger's next date only once to
+  migrate an older active session. Foreground reconciliation must never restart the displayed interval.
 - Start validates a whole-minute interval (45 minutes by default), requests authorization when
-  undetermined, creates an active day, removes stale project requests, and adds exactly one repeating
-  `UNTimeIntervalNotificationTrigger`. The repeating interval is at least 60 seconds. Store/display
-  Running only after the request is accepted; its first reminder occurs one interval after Start.
-- Pause removes the recurring request and any pending snooze while keeping the day open. Resume
-  replaces the recurring request and begins a fresh interval. End removes recurring/snooze requests
-  and finalizes the active day.
-- Register a reminder category with actions ordered Done, Pause, and Remind me in 10 min. Done records
-  one set, removes any unresolved snooze, replaces the recurring request and persists a full new
-  interval whether the prior main countdown was regular or snoozed. Build 12 performs that replacement
-  through the shared command with rollback/retry protection. Pause calls the same
-  idempotent command as the UI. Snooze replaces one one-off request for ten minutes later.
+  undetermined, creates an active day, removes stale project requests, and adds one normal one-off
+  plus 59 ten-minute automatic-nudge requests. Store/display Running only after the bounded batch is
+  accepted; its first reminder occurs one interval after Start.
+- Pause removes the active batch while keeping the day open. Resume replaces it and begins a fresh
+  interval. End removes active requests, finalizes the day and restores the idle daily-start request.
+- Register a reminder category with actions ordered Done then Pause. Done records one set, replaces
+  the active batch and persists a full new interval whether the normal reminder or automatic nudges
+  were pending. Pause calls the same idempotent command as the UI. Legacy snooze callbacks decode
+  safely and are acknowledged without changing cadence.
+- While idle and authorized, keep one repeating 9:00 AM local calendar notification. Start cancels
+  it; returning to idle restores it. Its default tap only opens the app and never starts a session.
 - `UNUserNotificationCenterDelegate` routes responses by category/action identifier and always calls
   its completion handler after durable/idempotent processing. The normal app, notification handler,
   and App Intents never implement separate state-transition logic.
@@ -184,10 +189,9 @@ background-capable services at app lifetime; load future media views/resources o
 - Foreground, protected-data-available and normal command completion drain the inbox. Failed loads
   retry without deleting/replacing the database. A queued Pause cancels the matching schedule even
   if the primary store is unavailable or an earlier Done save failed. Done waits for durable merge.
-- Snooze keeps its original tap-time-plus-ten-minute deadline during retries, leaves the normal
-  cadence unchanged, and is discarded with a visible message if expired or permission/cadence is
-  unusable. A failed snooze save cancels its one-off request and retains the queued command.
-- Old category-less recurring requests show repair-required until explicitly re-armed. A healthy
+- Build-12 snooze commands remain decode-compatible but are acknowledged as no-ops. Foreground
+  migration removes the legacy request/deadline and builds the current batch from the regular anchor.
+- Missing, drained, or old-category batches are automatically rebuilt in the foreground. A healthy
   repeated Resume leaves the existing cadence alone. New/old-session callbacks cannot revive End.
 - The system callback completes after inbox persistence and attempted processing; callbacks arriving
   while busy may finish with their command durably queued. Pending count and retry UI explain this.
@@ -200,15 +204,15 @@ background-capable services at app lifetime; load future media views/resources o
 On launch, every foreground return, and after a user-visible domain action, merge pending locked
 actions and inspect both notification settings and pending requests:
 
-- desired running + correct request + usable permission = Running;
-- desired running + missing/wrong request = repair-required state with explicit re-arm (or a later
-  carefully tested foreground repair);
-- desired paused/ended/not-started + unexpected recurring request = cancel stale request;
+- desired running + correct batch + usable permission = Running;
+- desired running + missing/wrong/drained batch = rebuild it from the persisted anchor; show repair
+  required only if rescheduling fails;
+- desired paused/ended/not-started + unexpected active request = cancel stale request;
 - disabled/revoked permission = blocked state even if a request remains pending.
 
-The implementation also rejects a recurring request without a usable next trigger, removes a
-snooze for another session or with the wrong category/deadline, and canonicalizes invalid idle
-preferences. Home reconciliation compares the registered circular region's center/radius with the
+The implementation rejects a batch without a usable next trigger, replenishes it when fewer than
+30 requests remain, migrates legacy snooze data, and canonicalizes invalid idle preferences. Home
+reconciliation compares the registered circular region's center/radius with the
 protected saved boundary. A missing or mismatched registration resets presence to Unknown and
 re-registers the saved boundary; permission, monitoring, background-refresh, or repair failures stay
 visibly degraded.
@@ -254,14 +258,13 @@ update stored state only after replacement succeeds.
   health, and daily summary. Respect Dynamic Type, VoiceOver, Reduce Motion, contrast, and non-color
   state indicators from the first scaffold.
 - Label countdowns as **scheduled** because Focus, Scheduled Summary, and system/user settings mean
-  the app cannot promise exact visible delivery. Normally the persisted regular cadence owns the
-  prominent countdown. While a one-off snooze is pending, its earlier deadline replaces that clock;
-  do not render a competing secondary countdown.
-- Persist both the regular cadence anchor and the accepted snooze deadline; never use a reconstructed
-  `UNTimeIntervalNotificationTrigger.nextTriggerDate()` as a durable countdown across foregrounding.
+  the app cannot promise exact visible delivery. The persisted cadence anchor owns the prominent
+  countdown: it shows the normal deadline first, then successive ten-minute automatic nudges.
+- Persist the regular cadence anchor; never use a reconstructed trigger date as the durable countdown
+  across foregrounding.
 - Keep the dashboard's **Your day so far** list completion-only: one row per non-undone Done event
-  with its time. Continue persisting pause/resume/snooze events for lifecycle reconciliation,
-  durations and summaries, but do not render them in this at-a-glance list.
+  with its time. Legacy pause/resume/snooze events remain readable for durations and summaries, but
+  are not rendered in this at-a-glance list.
 - End requires confirmation; Done offers Undo; paused/blocked/repair states present the one relevant
   recovery action without clutter.
 

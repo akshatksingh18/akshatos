@@ -46,7 +46,8 @@ import UserNotifications
     var state = ReminderSnapshot(allowed: true, authorization: .authorized)
     var scheduleCount = 0
     var failSchedule = false
-    var cancelSnoozeCount = 0
+    var ensureDailyCount = 0
+    var cancelDailyCount = 0
     var duringSchedule: (() async -> Void)?
     var duringSnapshot: (() async -> Void)?
     func authorize() async throws -> Bool { state.allowed }
@@ -57,33 +58,31 @@ import UserNotifications
         }
         return state
     }
-    func schedule(_ session: SquatSession, snoozeUntil: Date?) async throws {
+    func schedule(_ session: SquatSession, firstReminderAt: Date) async throws {
         if let callback = duringSchedule {
             duringSchedule = nil
             await callback()
         }
         if failSchedule { throw CocoaError(.fileWriteUnknown) }
         scheduleCount += 1
-        if let date = snoozeUntil {
-            state.hasSnooze = true
-            state.snoozeSessionID = session.id
-            state.snoozeActionable = true
-            state.snooze = date
-        }
-        else {
-            state.sessionID = session.id
-            state.interval = TimeInterval(session.interval * 60)
-            state.actionable = true
-            state.next = Date().addingTimeInterval(TimeInterval(session.interval * 60))
-        }
+        state.sessionID = session.id
+        state.interval = TimeInterval(session.interval * 60)
+        state.actionable = true
+        state.activeRequestCount = 60
+        state.next = firstReminderAt
+        state.hasLegacySnooze = false
     }
     func cancel() {
         state.sessionID = nil; state.interval = nil; state.next = nil
-        state.hasSnooze = false; state.snoozeSessionID = nil; state.snooze = nil
+        state.actionable = false; state.activeRequestCount = 0; state.hasLegacySnooze = false
     }
-    func cancelSnooze() {
-        cancelSnoozeCount += 1
-        state.hasSnooze = false; state.snoozeSessionID = nil; state.snooze = nil
+    func ensureDailyStartReminder() async throws {
+        ensureDailyCount += 1
+        state.dailyStartScheduled = true
+    }
+    func cancelDailyStartReminder() {
+        cancelDailyCount += 1
+        state.dailyStartScheduled = false
     }
 }
 
@@ -215,6 +214,7 @@ import UserNotifications
         reminders.state.sessionID = repository.values[0].id
         reminders.state.interval = 2700
         reminders.state.next = time.addingTimeInterval(2700)
+        reminders.state.activeRequestCount = 60
         let inbox = MemoryInbox()
         return (repository, reminders, inbox, make(repository, reminders, inbox))
     }
@@ -322,14 +322,12 @@ import UserNotifications
         pausedReminders.state.sessionID = paused.id
         pausedReminders.state.interval = 2_700
         pausedReminders.state.next = time.addingTimeInterval(2_700)
-        pausedReminders.state.hasSnooze = true
-        pausedReminders.state.snoozeSessionID = paused.id
-        pausedReminders.state.snooze = time.addingTimeInterval(600)
+        pausedReminders.state.activeRequestCount = 60
         let pausedStore = make(pausedRepository, pausedReminders, MemoryInbox())
         await pausedStore.refresh()
         XCTAssertEqual(pausedStore.operational, "Paused")
         XCTAssertNil(pausedReminders.state.sessionID)
-        XCTAssertFalse(pausedReminders.state.hasSnooze)
+        XCTAssertEqual(pausedReminders.state.activeRequestCount, 0)
 
         let endedRepository = MemoryRepository()
         var ended = session(); ended.state = .ended; ended.ended = time
@@ -344,11 +342,13 @@ import UserNotifications
     }
 
     func testRepairRearmsRunningSessionWhenTriggerHasNoNextDate() async {
-        let (_, reminders, _, store) = fixture()
+        let (repository, reminders, _, _) = fixture()
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = time.addingTimeInterval(2_700)
+        repository.values = [active]
+        let store = make(repository, reminders, MemoryInbox())
         reminders.state.next = nil
         await store.refresh()
-        XCTAssertEqual(store.operational, "Reminder needs repair")
-        await store.resume()
         XCTAssertEqual(reminders.scheduleCount, 1)
         XCTAssertEqual(store.operational, "Running")
         XCTAssertNotNil(store.nextReminder)
@@ -376,41 +376,55 @@ import UserNotifications
                        "Closing and reopening must not restart the displayed interval")
     }
 
-    func testSnoozeOwnsStablePrimaryCountdownAndDashboardTimelineContainsOnlyCompletions() async {
+    func testOverdueCadenceOwnsTenMinuteCountdownAndTimelineContainsOnlyCompletions() async {
         let (repository, reminders, _, _) = fixture()
         var active = repository.values[0]
         active.log(SquatEvent(date: time.addingTimeInterval(-120), kind: .pause, source: "dashboard"))
         active.log(SquatEvent(date: time.addingTimeInterval(-60), kind: .done, source: "dashboard"))
-        active.log(SquatEvent(date: time, kind: .snooze, source: "dashboard"))
-        active.snoozeCadenceDeadline = time.addingTimeInterval(600)
+        active.reminderCadenceAnchor = time.addingTimeInterval(-60)
         repository.values = [active]
-        let snooze = time.addingTimeInterval(600)
-        reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = active.id
-        reminders.state.snooze = time.addingTimeInterval(1_200)
+        reminders.state.next = time.addingTimeInterval(540)
 
         let reopened = make(repository, reminders, MemoryInbox())
         await reopened.refresh()
-        XCTAssertTrue(reopened.primaryReminderIsSnooze)
-        XCTAssertEqual(reopened.primaryReminder, snooze)
+        XCTAssertTrue(reopened.primaryReminderIsAutomaticNudge)
+        XCTAssertEqual(reopened.primaryReminder, time.addingTimeInterval(540))
         XCTAssertEqual(reopened.todayCompletions.map(\.kind), [.done])
     }
 
-    func testDoneWhileSnoozePendingCancelsNudgeAndStartsFreshCadence() async {
+    func testAutomaticCountdownMovesToFirstTenMinuteNudgeAtDueTime() async {
+        let (repository, reminders, _, _) = fixture()
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = time
+        repository.values = [active]
+        let store = make(repository, reminders, MemoryInbox())
+        await store.refresh()
+        XCTAssertEqual(store.reminderDeadline(at: time), time.addingTimeInterval(600))
+    }
+
+    func testAutomaticCountdownMovesToFollowingNudgeAfterBoundaryPasses() async {
+        let (repository, reminders, _, _) = fixture()
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = time.addingTimeInterval(-601)
+        repository.values = [active]
+        let store = make(repository, reminders, MemoryInbox())
+        await store.refresh()
+        XCTAssertEqual(store.reminderDeadline(at: time), time.addingTimeInterval(599))
+    }
+
+    func testDoneWhileAutomaticNudgesAreDueStartsFreshCadence() async {
         let (repository, reminders, _, store) = fixture()
-        let active = repository.values[0]
-        await store.receive(action(active, .snooze))
-        XCTAssertTrue(reminders.state.hasSnooze)
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = time.addingTimeInterval(-600)
+        repository.values = [active]
 
         await store.receive(action(active, .done))
 
         XCTAssertEqual(store.todayCount, 1)
-        XCTAssertFalse(reminders.state.hasSnooze)
-        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
-        XCTAssertEqual(reminders.scheduleCount, 2)
+        XCTAssertEqual(reminders.scheduleCount, 1)
         XCTAssertEqual(store.active?.reminderCadenceAnchor, time.addingTimeInterval(2_700))
         XCTAssertEqual(store.nextReminder, time.addingTimeInterval(2_700))
-        XCTAssertFalse(store.primaryReminderIsSnooze)
+        XCTAssertFalse(store.primaryReminderIsAutomaticNudge)
         XCTAssertNil(store.active?.snoozeCadenceDeadline)
     }
 
@@ -422,11 +436,10 @@ import UserNotifications
 
         XCTAssertEqual(store.todayCount, 1)
         XCTAssertEqual(reminders.scheduleCount, 1)
-        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
         XCTAssertEqual(reminders.state.sessionID, active.id)
         XCTAssertEqual(store.active?.reminderCadenceAnchor, time.addingTimeInterval(2_700))
         XCTAssertEqual(store.nextReminder, time.addingTimeInterval(2_700))
-        XCTAssertFalse(store.primaryReminderIsSnooze)
+        XCTAssertFalse(store.primaryReminderIsAutomaticNudge)
     }
 
     func testLegacyRunningSessionAdoptsTriggerDeadlineOnlyOnce() async {
@@ -443,41 +456,29 @@ import UserNotifications
         XCTAssertEqual(reopened.nextReminder, adopted)
     }
 
-    func testForegroundRemovesExpiredAndNonActionableCurrentSnoozes() async {
-        let (repository, reminders, _, store) = fixture()
-        var expired = repository.values[0]
-        expired.log(SquatEvent(date: time.addingTimeInterval(-601), kind: .snooze,
-                               source: "dashboard"))
-        expired.snoozeCadenceDeadline = time.addingTimeInterval(-1)
-        repository.values = [expired]
-        reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = expired.id
-        reminders.state.snooze = time.addingTimeInterval(-1)
+    func testForegroundMigratesLegacySnoozeAndClearsPersistedDeadline() async {
+        let (repository, reminders, _, _) = fixture()
+        var legacy = repository.values[0]
+        legacy.reminderCadenceAnchor = time.addingTimeInterval(2_700)
+        legacy.snoozeCadenceDeadline = time.addingTimeInterval(600)
+        repository.values = [legacy]
+        reminders.state.hasLegacySnooze = true
+        reminders.state.activeRequestCount = 1
+        let store = make(repository, reminders, MemoryInbox())
         await store.refresh()
-        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
-
-        reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = repository.values[0].id
-        reminders.state.snoozeActionable = false
-        reminders.state.snooze = time.addingTimeInterval(600)
-        await store.refresh()
-        XCTAssertEqual(reminders.cancelSnoozeCount, 2)
-        XCTAssertNil(store.snoozeReminder)
+        XCTAssertEqual(reminders.scheduleCount, 1)
+        XCTAssertNil(store.active?.snoozeCadenceDeadline)
         XCTAssertEqual(store.operational, "Running")
     }
 
-    func testAuthorizedButAlertsDisabledBlocksRunningAndRemovesSnooze() async {
-        let (repository, reminders, _, store) = fixture()
+    func testAuthorizedButAlertsDisabledBlocksRunning() async {
+        let (_, reminders, _, store) = fixture()
         reminders.state.authorization = .authorized
         reminders.state.allowed = false
-        reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = repository.values[0].id
-        reminders.state.snooze = time.addingTimeInterval(600)
         await store.refresh()
         XCTAssertTrue(store.notificationEverAuthorized)
         XCTAssertEqual(store.notificationAuthorization, .authorized)
         XCTAssertEqual(store.operational, "Notifications blocked")
-        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
     }
 
     func testHomeHealthCoversInsufficientAuthorizationSystemAndBackgroundFailures() async {
@@ -521,44 +522,37 @@ import UserNotifications
         XCTAssertEqual(store.active?.pauseReason, "homeAutomationDisabled")
     }
 
-    func testForegroundReconciliationRemovesForeignSnoozeButPreservesHealthyCadence() async {
+    func testForegroundReconciliationPreservesHealthyAutomaticBatch() async {
         let (repository, reminders, _, store) = fixture()
-        reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = UUID()
-        reminders.state.snooze = time.addingTimeInterval(600)
+        reminders.state.activeRequestCount = 60
         await store.refresh()
         XCTAssertEqual(store.operational, "Running")
         XCTAssertEqual(reminders.state.sessionID, repository.values[0].id)
-        XCTAssertEqual(reminders.cancelSnoozeCount, 1)
-        XCTAssertNil(store.snoozeReminder)
+        XCTAssertEqual(reminders.scheduleCount, 0)
     }
 
-    func testForegroundReconciliationKeepsValidCurrentSessionSnooze() async {
-        let (repository, reminders, inbox, _) = fixture()
-        let deadline = time.addingTimeInterval(600)
+    func testForegroundReplenishesLowAutomaticBatchWithoutMovingCadence() async {
+        let (repository, reminders, _, _) = fixture()
+        let anchor = time.addingTimeInterval(2_700)
         var active = repository.values[0]
-        active.log(SquatEvent(date: time, kind: .snooze, source: "dashboard"))
-        active.snoozeCadenceDeadline = deadline
+        active.reminderCadenceAnchor = anchor
         repository.values = [active]
-        reminders.state.hasSnooze = true
-        reminders.state.snoozeSessionID = active.id
-        reminders.state.snooze = time.addingTimeInterval(1_200)
-        let reopened = make(repository, reminders, inbox)
-        await reopened.refresh()
-        XCTAssertEqual(reopened.operational, "Running")
-        XCTAssertEqual(reminders.cancelSnoozeCount, 0)
-        XCTAssertEqual(reopened.snoozeReminder, deadline)
+        reminders.state.activeRequestCount = 10
+        let store = make(repository, reminders, MemoryInbox())
+        await store.refresh()
+        XCTAssertEqual(store.operational, "Running")
+        XCTAssertEqual(reminders.scheduleCount, 1)
+        XCTAssertEqual(store.active?.reminderCadenceAnchor, anchor)
     }
 
     func testDoneCadenceResetRetriesAfterPersistenceFailure() async {
         let (repository, reminders, inbox, store) = fixture()
         let active = repository.values[0]
-        await store.receive(action(active, .snooze))
         repository.failSave = true
 
-        await store.receive(action(active, .done, id: "done-after-snooze"))
+        await store.receive(action(active, .done, id: "done-after-overdue"))
         XCTAssertEqual(store.todayCount, 0)
-        XCTAssertEqual(inbox.values.map(\.id), ["done-after-snooze"])
+        XCTAssertEqual(inbox.values.map(\.id), ["done-after-overdue"])
         XCTAssertNil(reminders.state.sessionID)
 
         repository.failSave = false
@@ -695,7 +689,7 @@ import UserNotifications
         XCTAssertTrue(inbox.values.isEmpty)
     }
 
-    func testSnoozeQueuedBeforeMidnightCannotScheduleForPreviousDay() async {
+    func testLegacySnoozeQueuedBeforeMidnightCannotRevivePreviousDay() async {
         let repository = MemoryRepository()
         let midnight = Calendar.current.startOfDay(for: time)
         let tap = midnight.addingTimeInterval(-60)
@@ -714,67 +708,31 @@ import UserNotifications
                                   date: tap, day: active.day, source: "notification")
         await store.receive(command)
         XCTAssertEqual(reminders.scheduleCount, 0)
-        XCTAssertNil(reminders.state.snooze)
         XCTAssertNil(store.active)
         XCTAssertEqual(store.operational, "Ready")
         XCTAssertEqual(store.sessions.first?.ended, midnight)
     }
 
-    func testSnoozeReplacementPreservesCadenceAndPauseCancelsBoth() async {
+    func testLegacySnoozeActionIsAcknowledgedWithoutChangingCadence() async {
+        let (repository, reminders, _, _) = fixture()
+        let anchor = time.addingTimeInterval(2_700)
+        var active = repository.values[0]
+        active.reminderCadenceAnchor = anchor
+        repository.values = [active]
+        let store = make(repository, reminders, MemoryInbox())
+        await store.receive(action(active, .snooze))
+        XCTAssertEqual(reminders.scheduleCount, 0)
+        XCTAssertEqual(store.active?.reminderCadenceAnchor, anchor)
+        XCTAssertTrue(store.active?.events.isEmpty == true)
+        XCTAssertEqual(store.todayCount, 0)
+    }
+
+    func testPauseCancelsAutomaticReminderBatch() async {
         let (repository, reminders, _, store) = fixture()
         let active = repository.values[0]
-        let regular = reminders.state.sessionID
-        await store.receive(action(active, .snooze))
-        await store.receive(action(active, .snooze))
-        XCTAssertEqual(reminders.state.sessionID, regular)
-        XCTAssertEqual(reminders.state.snooze, time.addingTimeInterval(600))
-        XCTAssertEqual(store.todayCount, 0)
         await store.receive(action(active, .pause))
         XCTAssertNil(reminders.state.sessionID)
-        XCTAssertNil(reminders.state.snooze)
-    }
-
-    func testFailedSnoozeSaveCancelsOneOffAndRetainsCommand() async {
-        let (repository, reminders, inbox, store) = fixture()
-        repository.failSave = true
-        await store.receive(action(repository.values[0], .snooze))
-        XCTAssertNil(reminders.state.snooze)
-        XCTAssertNotNil(reminders.state.sessionID)
-        XCTAssertEqual(inbox.values.count, 1)
-        repository.failSave = false
-        await store.refresh()
-        XCTAssertNotNil(reminders.state.snooze)
-        XCTAssertEqual(store.active?.events.filter { $0.kind == .snooze }.count, 1)
-    }
-
-    func testSchedulingFailureRetainsSnoozeForRetry() async {
-        let (repository, reminders, inbox, store) = fixture()
-        reminders.failSchedule = true
-        await store.receive(action(repository.values[0], .snooze))
-        XCTAssertEqual(inbox.values.count, 1)
-        XCTAssertTrue(store.active!.events.isEmpty)
-        reminders.failSchedule = false
-        await store.refresh()
-        XCTAssertTrue(inbox.values.isEmpty)
-        XCTAssertNotNil(reminders.state.snooze)
-    }
-
-    func testDeniedOrExpiredSnoozeIsNotResurrected() async {
-        let (repository, reminders, _, store) = fixture()
-        let denied = action(repository.values[0], .snooze)
-        reminders.state.allowed = false
-        reminders.state.authorization = .denied
-        await store.receive(denied)
-        XCTAssertEqual(store.operational, "Notifications blocked")
-        XCTAssertEqual(store.notificationAuthorization, .denied)
-        reminders.state.allowed = true
-        reminders.state.authorization = .authorized
-        await store.receive(denied)
-        var expired = action(repository.values[0], .snooze)
-        expired.date = time.addingTimeInterval(-700)
-        await store.receive(expired)
-        XCTAssertNil(reminders.state.snooze)
-        XCTAssertEqual(reminders.scheduleCount, 0)
+        XCTAssertEqual(reminders.state.activeRequestCount, 0)
     }
 
     func testStartWithoutNotificationPermissionRoutesMessageToNotificationSettings() async {
@@ -917,7 +875,7 @@ import UserNotifications
         await store.receive(action(active, .snooze))
         XCTAssertEqual(store.todayCount, 1)
         XCTAssertNil(reminders.state.sessionID)
-        XCTAssertNil(reminders.state.snooze)
+        XCTAssertEqual(reminders.state.activeRequestCount, 0)
     }
 
     func testInboxFailureDoesNotClaimCompletion() async {
@@ -928,21 +886,19 @@ import UserNotifications
         XCTAssertTrue(store.message?.contains("could not be saved") == true)
     }
 
-    func testResumeDoesNotResetHealthyCadenceAndOldCategoryNeedsRepair() async {
+    func testResumeDoesNotResetHealthyCadenceAndForegroundMigratesOldCategory() async {
         let (_, reminders, _, store) = fixture()
         await store.resume()
         XCTAssertEqual(reminders.scheduleCount, 0)
         reminders.state.actionable = false
         await store.refresh()
-        XCTAssertEqual(store.operational, "Reminder needs repair")
-        await store.resume()
         XCTAssertEqual(reminders.scheduleCount, 1)
         XCTAssertEqual(store.operational, "Running")
     }
 
     func testCategoryOrderAndRouterRejectUnrelatedOrDefaultActions() throws {
         let category = ReminderService.category()
-        XCTAssertEqual(category.actions.map(\.identifier), [ReminderService.doneAction, ReminderService.pauseAction, ReminderService.snoozeAction])
+        XCTAssertEqual(category.actions.map(\.identifier), [ReminderService.doneAction, ReminderService.pauseAction])
         XCTAssertTrue(category.actions.allSatisfy { $0.options.isEmpty })
         let content = UNMutableNotificationContent()
         content.categoryIdentifier = ReminderService.categoryID
@@ -957,6 +913,60 @@ import UserNotifications
         XCTAssertNil(AppNotificationCoordinator.action(request: request, delivered: time, identifier: UNNotificationDismissActionIdentifier))
         let foreign = UNNotificationRequest(identifier: "other-feature", content: content, trigger: nil)
         XCTAssertNil(AppNotificationCoordinator.action(request: foreign, delivered: time, identifier: ReminderService.doneAction))
+        let automatic = UNNotificationRequest(identifier: ReminderService.automaticPrefix + "0", content: content, trigger: nil)
+        XCTAssertNotNil(AppNotificationCoordinator.action(request: automatic, delivered: time,
+                                                            identifier: ReminderService.doneAction))
+        XCTAssertNil(AppNotificationCoordinator.action(request: request, delivered: time,
+                                                        identifier: ReminderService.legacySnoozeAction))
+    }
+
+    func testAutomaticBatchAndDailyStartStayBelowIOSPendingLimit() {
+        XCTAssertEqual(ReminderService.automaticNudgeCount, 59)
+        XCTAssertEqual(ReminderService.activeIdentifiers.count, 61)
+        XCTAssertLessThanOrEqual(1 + ReminderService.automaticNudgeCount + 1, 64)
+    }
+
+    func testIdleRefreshSchedulesNineAMStartReminder() async {
+        let reminders = FakeReminders()
+        let store = make(MemoryRepository(), reminders, MemoryInbox())
+        await store.refresh()
+        XCTAssertEqual(reminders.ensureDailyCount, 1)
+        XCTAssertTrue(store.dailyStartReminderScheduled)
+        XCTAssertTrue(reminders.state.dailyStartScheduled)
+    }
+
+    func testIdleWithoutNotificationAccessDoesNotScheduleDailyStart() async {
+        let reminders = FakeReminders()
+        reminders.state.allowed = false
+        reminders.state.authorization = .denied
+        let store = make(MemoryRepository(), reminders, MemoryInbox())
+        await store.refresh()
+        XCTAssertEqual(reminders.ensureDailyCount, 0)
+        XCTAssertFalse(store.dailyStartReminderScheduled)
+    }
+
+    func testPausedDayDoesNotScheduleDailyStartReminder() async {
+        let repository = MemoryRepository()
+        var paused = session()
+        paused.state = .paused
+        repository.values = [paused]
+        let reminders = FakeReminders()
+        let store = make(repository, reminders, MemoryInbox())
+        await store.refresh()
+        XCTAssertEqual(reminders.ensureDailyCount, 0)
+        XCTAssertFalse(reminders.state.dailyStartScheduled)
+    }
+
+    func testStartingCancelsDailyStartAndEndingRestoresIt() async {
+        let reminders = FakeReminders()
+        reminders.state.dailyStartScheduled = true
+        let store = make(MemoryRepository(), reminders, MemoryInbox())
+        await store.start()
+        XCTAssertFalse(reminders.state.dailyStartScheduled)
+        XCTAssertEqual(reminders.cancelDailyCount, 1)
+        await store.end()
+        XCTAssertTrue(reminders.state.dailyStartScheduled)
+        XCTAssertTrue(store.dailyStartReminderScheduled)
     }
 
     func testFileInboxSurvivesRecreationDeduplicatesAndPreservesCorruption() throws {

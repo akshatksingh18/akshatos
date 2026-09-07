@@ -25,7 +25,12 @@ the complete gate and its Build-12 IPA passed local checksum/package/screenshot 
 installed Build 12 over Build 11 without uninstalling and confirmed preserved settings, permissions,
 Home configuration and history; persistent background/force-quit countdowns; fresh full intervals
 after ordinary and snoozed Done; and smooth button interactions without vertical jumps. The broader
-physical, refresh/recovery and soak matrix remains pending. The
+physical, refresh/recovery and soak matrix remains pending. Build 13 source is now implementing the
+accepted follow-up: after the normal interval becomes due, pre-scheduled local notifications nudge
+every ten minutes until Done or Pause, while Done restarts the full interval; the manual snooze
+button/action is retired. When no day is active and notification access exists, one repeating
+9:00 AM local notification invites the user to open AkshatOS and start, without auto-starting a day.
+Build 13 is not accepted until its PR/main CI, artifact inspection and physical-phone checks pass. The
 removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
@@ -100,7 +105,7 @@ feature is physically verified.
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
-  `0.2.0 (12)`; Build 12 is installed and accepted for its cadence, persistence, interaction and
+  `0.2.0 (13)`; Build 12 is installed and accepted for its cadence, persistence, interaction and
   one-cycle same-ID upgrade checks. Build 11 is the retained predecessor.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
@@ -129,26 +134,30 @@ feature is physically verified.
 
 ### Notification behavior
 
-- Use one stable normal-request identifier and a repeating
-  `UNTimeIntervalNotificationTrigger(timeInterval:repeats:)`. Convert the validated whole-minute
-  setting to seconds, default it to 45 minutes, and enforce the iOS repeating-trigger minimum of
-  **60 seconds**. Allow at most one separate, stable one-off snooze request; never create an
-  unbounded list of future requests.
+- Use one stable normal-request identifier and a bounded batch of one-off
+  `UNTimeIntervalNotificationTrigger` requests. The first request is one selected interval after
+  Start/Resume/Done (45 minutes by default); if ignored, follow it with 59 automatic nudges ten
+  minutes apart. Together with the idle daily-start request this remains below iOS's pending-
+  notification ceiling. Foreground reconciliation replenishes a low or exhausted batch from the
+  persisted cadence anchor without shifting the clock. Never build an unbounded request list.
 - **Start my day** requests notification authorization if its status is undetermined, verifies the
   resulting settings, creates a new active day, removes/replaces stale project requests, and adds
-  the single repeating request. Mark the state Running only after the request is accepted. The
+  the bounded request batch. Mark the state Running only after the requests are accepted. The
   first reminder occurs one selected interval after Start; no immediate reminder is implied.
-- **Pause** cancels the recurring request and any pending snooze without ending the active day.
-  **Resume** adds a fresh recurring request and schedules its first reminder one full interval
-  later. **End my day** cancels every project-owned normal/snooze request, finalizes the session,
+- **Pause** cancels the active reminder batch without ending the active day.
+  **Resume** adds a fresh batch whose first reminder is one full interval later. **End my day**
+  cancels every project-owned active reminder, finalizes the session,
   and presents its overview. All lifecycle operations are idempotent.
-- Register one actionable reminder category. Order its actions **Done**, **Pause**, then **Remind
-  me in 10 min** because compact notification interfaces may show only the first two actions.
-  Done records one completion event, cancels any unresolved snooze, and begins a fresh full regular
-  interval from that completion whether the prior main countdown was regular or snoozed. Build 12
-  implements this in the shared dashboard/notification command. Pause uses the same
-  domain command as the dashboard; 10 min schedules/replaces one one-off snooze. Handle action responses through the notification-center delegate
+- Register one actionable reminder category with **Done** then **Pause**. Done records one
+  completion event, replaces every pending active reminder, and begins a fresh full interval from
+  that completion whether the first reminder or automatic nudges were pending. Pause uses the same
+  domain command as the dashboard. Build-12 snooze commands may still decode for compatibility but
+  must be acknowledged as no-ops and must not appear in new UI/categories. Handle action responses through the notification-center delegate
   and persist before completing the background callback.
+- When notification access has already been granted and no active day exists, keep exactly one
+  repeating calendar notification for 9:00 AM local time. It invites the user to open AkshatOS and
+  start; tapping it must not silently create a session. Starting a day cancels it, and returning to
+  idle schedules it again.
 - If permission is denied or notifications are disabled, Start must not display a healthy
   “Running” state. Show a clear blocked state and a route to the app's iOS notification settings.
   Do not repeatedly prompt after denial because iOS will not show the authorization sheet again.
@@ -182,10 +191,10 @@ feature is physically verified.
 - On launch and every return to the foreground, query both
   `getNotificationSettings` and `getPendingNotificationRequests`. Reconcile the stored intent with
   the actual pending request instead of trusting persisted intent alone:
-  - stored running + correct pending request + usable permission = Running;
-  - stored running + missing/wrong request = visible repair-required state, with an explicit
-    re-arm action (or a carefully tested automatic repair while foregrounded);
-  - stored paused/ended/not-started + unexpected recurring request = cancel the stale request;
+  - stored running + correct pending batch + usable permission = Running;
+  - stored running + missing/wrong/drained batch = automatic foreground repair from the persisted
+    cadence anchor, or a visible repair-required state if rescheduling fails;
+  - stored paused/ended/not-started + unexpected active request = cancel the stale request;
   - revoked/disabled permission = blocked state even if a request remains pending.
 - Interval edits are allowed only when no active day exists; Pause keeps the interval fixed for the
   still-active day. If that decision changes later, changing an active interval must atomically replace
@@ -200,12 +209,11 @@ feature is physically verified.
 - Build the dashboard around one readable state hero, a scheduled-next-reminder treatment, a large
   sets-completed-today count, configurable daily-goal progress, current/best streak, contextual
   lifecycle controls, and a compact completion-only **Your day so far** list showing Done events and
-  their times. Do not show pause, resume, snooze or reminder-maintenance events in that dashboard
-  list, though they remain persisted for lifecycle reconciliation, durations and summaries. Persist
-  each Start/Resume cadence anchor and accepted snooze deadline so background/foreground or relaunch
-  cannot restart either displayed interval. While a ten-minute snooze is pending, its earlier
-  deadline replaces the regular countdown as the single main clock. Any Done logs the set, removes
-  any pending nudge and starts a full regular interval. End requires confirmation and opens a
+  their times. Do not show pause, resume, legacy snooze or reminder-maintenance events in that
+  dashboard list. Persist each Start/Resume/Done cadence anchor so background/foreground or relaunch
+  cannot restart the displayed interval. Before the anchor is due, the single main clock shows the
+  normal interval; afterward it advances through ten-minute automatic-nudge deadlines. Any Done
+  logs the set, removes pending nudges and starts a full regular interval. End requires confirmation and opens a
   summary with sets, goal result, start/end, active/paused duration, completion times, pause
   segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
   Export/restore uses a versioned local JSON file selected by the user; validation completes before
@@ -372,9 +380,12 @@ current observed behavior in the applicable project document rather than relying
   and attempted interval changes while Running or Paused;
 - Done from the dashboard and locked-screen notification, accidental-tap Undo, duplicate callback
   protection, and durable merge of an action received while protected files are unavailable;
-- 10-minute snooze replacement, stable foreground/relaunch countdown, Done before/after delivery,
-  repeated snooze, Pause/End with a snooze pending, and notification action ordering in compact/expanded UI;
-- daily summary correctness across start/end, pause segments, snoozes, completions, local midnight,
+- automatic ten-minute nudges after an ignored normal reminder, stable foreground/relaunch countdown,
+  Done before/after nudge delivery, batch replenishment, Pause/End with nudges pending, and two-action
+  notification ordering in compact/expanded UI;
+- idle 9:00 AM start delivery, tap-to-open without auto-start, cancellation on Start, restoration
+  after End, and behavior across time-zone/clock changes;
+- daily summary correctness across start/end, pause segments, legacy snoozes, completions, local midnight,
   time-zone changes, relaunch, and same-day restart confirmation;
 - goal/streak behavior below, exactly at, and above the chosen threshold; current-day at-risk state;
   skipped days; same-day multiple sessions; Undo/past-day edits; prospective goal changes; current/
@@ -417,8 +428,8 @@ remain a follow-on; this sequencing change does not expand native v1 or activate
    components while preserving the permanent bundle ID, add the explicit lifecycle state model,
    goal/streak presentation, and notification/location permission-status surfaces, and leave
    Android intact.
-3. **Reliable lifecycle:** implement validated interval input, Start/Pause/Resume/End, the single
-   repeating request plus one snooze request, SwiftData intent and versioned day/event storage,
+3. **Reliable lifecycle:** implement validated interval input, Start/Pause/Resume/End, the bounded
+   normal-plus-automatic-nudge batch and idle daily-start request, SwiftData intent and versioned day/event storage,
    idempotent domain commands, and foreground reconciliation. Gate optional automation on this core.
 4. **Actions and insight:** implement Done +1, notification actions, lock-safe action persistence,
    Undo, Today timeline, per-day goal snapshot, deterministic current/best streak calculation,
@@ -429,7 +440,7 @@ remain a follow-on; this sequencing change does not expand native v1 or activate
    and edit/disable/delete. Use region monitoring, not continuous tracking, and keep every manual
    fallback working.
 6. **Native verification:** build through macOS/Xcode and complete action ordering, locked/background/
-   force-quit, reboot, Focus/Summary, Low Power Mode, permission, snooze, lifecycle, persistence, and
+   force-quit, reboot, Focus/Summary, Low Power Mode, permission, automatic nudges, lifecycle, persistence, and
    day-boundary, goal/streak, geofence, Background App Refresh, and authorization tests on the
    physical iPhone.
 7. **Optional Shortcut automation:** expose App Intents and prove Leave/Arrive or Focus automations
@@ -452,11 +463,14 @@ The iPhone path can be described as working only when all of the following are t
 - a clean checkout can regenerate the Xcode project and IPA through the documented macOS workflow;
   its bundle/version/architecture and checksum are inspected, no Apple secrets enter GitHub, and the
   artifact is copied out of temporary Actions storage after physical verification;
-- Start creates exactly one correct repeating local-notification request; Pause removes it without
-  ending the day; Resume safely recreates it; End removes all project requests and finalizes the
+- Start creates one bounded normal-plus-nudge local-notification batch; Pause removes it without
+  ending the day; Resume safely recreates it; End removes active project requests and finalizes the
   day; and the UI reconciles permission, requests, interval, and stored state truthfully;
-- Done from both dashboard and notification records exactly one set, 10-minute snooze never
-  accumulates requests or records completion, and the Today timeline/history/end summary survive
+- ignored normal reminders lead to automatic ten-minute nudges until Done/Pause within the bounded
+  scheduled horizon, foreground reconciliation replenishes that horizon, idle days have one 9:00 AM
+  start invitation, and tapping it never auto-starts a session;
+- Done from both dashboard and notification records exactly one set, resets a full normal interval,
+  and the Today timeline/history/end summary survive
   relaunch, locked action handling, and in-place upgrade without duplication or loss;
 - the configurable daily goal, current/best streak, at-risk state, qualification history, and
   prospective goal changes remain correct across End, skipped days, Undo, relaunch, local midnight,

@@ -20,6 +20,9 @@ PR #12 run #34073932922 and main delivery run #53 passed the complete cloud gate
 IPA passed local inspection. Build 12 then passed phone checks for ordinary/snoozed Done cadence
 reset, background/force-quit countdown persistence, smooth button interactions, and same-ID state
 preservation. The broader physical and deployment matrix remains outstanding.
+Build 13 source replaces the manual snooze flow with automatic ten-minute nudges after an ignored
+normal reminder and adds an idle-only 9:00 AM start invitation. It is awaiting CI/artifact and phone
+acceptance; legacy snooze data remains readable for upgrade compatibility.
 Android is an unverified fallback.
 
 ## Hub entry
@@ -41,9 +44,9 @@ health-data platform.
 The core loop is:
 
 1. Tap **Start my day**.
-2. Receive an ordinary local reminder every 45 minutes by default.
-3. Tap **Done** after completing a squat break, or use **Pause** / **Remind me in 10 min** when the
-   moment is inconvenient.
+2. Receive an ordinary local reminder after 45 minutes by default; if ignored, receive automatic
+   nudges every ten minutes until responding.
+3. Tap **Done** after completing a squat break, or use **Pause** when the moment is inconvenient.
 4. Optionally let the Home geofence pause the active day on departure and resume it on return.
 5. Reach the configured daily set goal to preserve the streak.
 6. Tap **End my day** and review the day's completed sets, goal/streak result, and timing.
@@ -57,19 +60,21 @@ or per-set rep editor is a later option; until then the app must not label a set
 
 The UI and scheduler share an explicit state machine:
 
-- **Not started:** no active day and no recurring reminder. The primary action is Start my day.
-- **Running:** an active day exists, notification permission is usable, and the correct recurring
-  request is pending. The UI shows the next scheduled reminder and Pause / Done controls.
-- **Paused:** the active day remains open, but the recurring request is cancelled. Completions may
+- **Not started:** no active day or active batch. If notification access exists, one repeating 9:00
+  AM notification invites the user to open the app. The primary action is Start my day.
+- **Running:** an active day exists, notification permission is usable, and the correct bounded
+  normal-plus-nudge batch is pending. The UI shows the next scheduled reminder and Pause / Done controls.
+- **Paused:** the active day remains open, but the active batch is cancelled. Completions may
   still be logged manually. Resume starts a fresh interval, so the first normal reminder is one full
   interval after Resume.
-- **Ended:** the day's recurring and snooze requests are cancelled, the session is finalized, and
+- **Ended:** the day's active requests are cancelled, the session is finalized, the idle 9:00 AM
+  invitation is restored, and
   the daily overview is shown. An ended session cannot be resumed; starting again creates a new
   session only after an explicit confirmation if it is still the same local day.
 - **Blocked:** notification permission/settings cannot currently deliver reminders. The app keeps
   the data truthful, shows the reason, and links to Settings rather than pretending to run.
-- **Repair required:** stored intent and actual pending requests disagree. The app explains the
-  mismatch and offers an idempotent repair/re-arm action.
+- **Repair required:** rescheduling a missing/wrong/drained batch from the saved anchor failed. The
+  app explains the mismatch and offers an idempotent repair/re-arm action.
 
 Start, Pause, Resume, End, and Done must all be idempotent. Repeated taps or duplicate callbacks
 cannot create duplicate schedules, duplicate sessions, or duplicate completion events.
@@ -81,11 +86,10 @@ form. The first implementation should establish a small reusable visual system i
 one-off styling.
 
 - A large hero card shows the current state, a circular time-until-next-reminder treatment while
-  running, and a clear paused/blocked/ended illustration in other states. With no snooze pending,
-  the prominent countdown shows the next regular reminder. While a ten-minute nudge is pending,
-  that nearer deadline replaces the regular countdown as the single prominent clock. Persisted
-  regular and snooze deadlines keep background/foreground, close/reopen and reconciliation from
-  restarting either clock.
+  running, and a clear paused/blocked/ended illustration in other states. The prominent countdown
+  shows the normal reminder until it is due, then advances through automatic ten-minute nudge
+  deadlines as the single clock. The persisted cadence anchor keeps background/foreground,
+  close/reopen and reconciliation from restarting it.
   Times are labelled as **scheduled**, because Focus and other iOS settings can delay presentation.
 - A prominent count card shows **sets completed today** with a one-tap **Done +1** control. An Undo
   affordance is available after an accidental tap and from the day's event list.
@@ -97,7 +101,7 @@ one-off styling.
 - The compact **Your day so far** list shows only completed sets and their completion times. Pause,
   resume, snooze and other reminder-maintenance events remain internal lifecycle/history data and
   must not clutter this dashboard list. Undo remains available for the most recent completed set.
-- Small quick controls expose Remind me in 10 min, Pause, Resume, and notification settings only
+- Small quick controls expose Pause, Resume, and notification settings only
   when relevant. Disabled controls explain why they are unavailable.
 - Motion, gradients, haptics, and celebratory feedback may add warmth, but respect Reduce Motion,
   Dynamic Type, VoiceOver, contrast, and one-handed use. Meaning must never depend on color alone.
@@ -109,40 +113,35 @@ dashboard. Those would add signing/capability complexity without improving the c
 
 ## Reminder and notification actions
 
-Use one stable repeating `UNTimeIntervalNotificationTrigger` request for the normal cadence and a
-registered actionable-notification category. The normal request begins one full interval after Start
-or Resume and continues until Pause or End removes it.
+Use a bounded batch of one-off `UNTimeIntervalNotificationTrigger` requests plus a registered
+actionable-notification category. The normal request begins one full interval after Start, Resume,
+or Done; 59 ten-minute nudges follow if it is ignored. Foreground reconciliation replenishes a low
+or exhausted batch from the persisted anchor without moving the countdown.
 
 The reminder category provides these actions:
 
 1. **Done** — record exactly one completed set for the active day without requiring the app UI to
-   open, cancel any unresolved nudge, and begin a fresh full regular interval from the completed set.
-   This reset applies whether the main countdown was the ordinary cadence or a ten-minute snooze.
-   Build 12 implements both paths through the same dashboard/notification command.
-2. **Pause** — cancel the recurring request and move the active day to Paused. This is the escape
+   open, cancel the remaining batch, and begin a fresh full regular interval from the completed set.
+   This reset applies whether the normal reminder or automatic nudges were pending.
+2. **Pause** — cancel the active batch and move the active day to Paused. This is the escape
    hatch when the first inconvenient reminder arrives while away from home.
-3. **Remind me in 10 min** — schedule or replace one one-off snooze request ten minutes later. The
-   persisted ten-minute deadline becomes the dashboard's sole main countdown. It remains stable when
-   the app backgrounds. Snooze never records a completed set; Done resolves it and begins the next
-   full regular interval. Build 11 passed cloud regression coverage; device behavior remains unverified.
 
-iOS may show only the first two category actions in compact space, so Done and Pause receive the
-first two positions; the 10-minute action is available from the expanded notification and the
-dashboard. Physical-device testing must confirm the actual lock-screen/banner presentation on the
-target iPhone.
+The removed Build-12 snooze action remains decode-safe only so an already queued callback cannot
+loop or corrupt state. It is absent from both dashboard and notification category. Physical-device
+testing must confirm Done/Pause presentation and repeated automatic delivery on the target iPhone.
 
 Notification actions run through the same domain commands as dashboard buttons. Action handling must
 be safe while the phone is locked, persist an idempotent event before returning control to iOS, and
 merge any small pending-action inbox into the main day log on the next foreground reconciliation.
 The implemented inbox uses atomic protected files available after first unlock. Receipt persistence
 survives Undo and process restart; busy callbacks queue instead of disappearing. If primary storage
-is temporarily unavailable, Done waits for merge, Pause cancels a matching schedule, and snooze may
-be delayed until storage recovers (never beyond its original ten-minute deadline). The dashboard
+is temporarily unavailable, Done waits for merge, and Pause cancels a matching schedule. The dashboard
 shows queued actions and a retry control. Inbox write failure is reported rather than represented
 as a completed set; reboot-before-first-unlock and locked delivery still require device testing.
 
-Only one normal recurring request and one snooze request may exist. Pause cancels the normal request
-and any obsolete snooze. End cancels all project-owned pending and delivered reminders. A delivery
+At most 60 active requests exist: one normal reminder plus 59 automatic nudges. The separate idle
+daily-start request is canceled before an active batch is created, keeping the total under iOS's
+pending limit. Pause and End cancel active pending and delivered reminders. A delivery
 already in flight can race with Pause or End; the app documents observed behavior rather than
 promising atomic recall.
 
@@ -155,8 +154,8 @@ The dependable manual baseline remains available at all times:
 - A manual, notification, Siri, or Shortcut pause requires an explicit Resume. Only a pause whose
   recorded reason is `homeAwayAutomation` may auto-resume on the matching Home-entry event; every Resume
   starts a fresh interval.
-- For a short interruption such as dinner, Remind me in 10 min is preferred over pausing the day.
-  Repeated snoozes replace the existing snooze instead of accumulating notifications.
+- If an inconvenient reminder is ignored, the automatic ten-minute sequence continues. Use Pause
+  to stop it explicitly; use Done only after completing a set, which begins the next full interval.
 
 After the core loop works, expose local App Intents for **Start my day**, **Pause reminders**,
 **Resume reminders**, **Log completed set**, and **End my day**. They make optional Siri/Shortcuts
