@@ -133,8 +133,10 @@ feature is physically verified.
   and presents its overview. All lifecycle operations are idempotent.
 - Register one actionable reminder category. Order its actions **Done**, **Pause**, then **Remind
   me in 10 min** because compact notification interfaces may show only the first two actions.
-  Done records one completion event and normally leaves the cadence alone; if a snooze is unresolved,
-  Done cancels it and begins a fresh full interval from that completion. Pause uses the same
+  Done records one completion event, cancels any unresolved snooze, and begins a fresh full regular
+  interval from that completion whether the prior main countdown was regular or snoozed. Build 11
+  implements this reset only for snooze-related Done; the ordinary-cadence reset remains planned.
+  Pause uses the same
   domain command as the dashboard; 10 min schedules/replaces one one-off snooze. Handle action responses through the notification-center delegate
   and persist before completing the background callback.
 - If permission is denied or notifications are disabled, Start must not display a healthy
@@ -192,8 +194,9 @@ feature is physically verified.
   list, though they remain persisted for lifecycle reconciliation, durations and summaries. Persist
   each Start/Resume cadence anchor and accepted snooze deadline so background/foreground or relaunch
   cannot restart either displayed interval. While a ten-minute snooze is pending, its earlier
-  deadline replaces the regular countdown as the single main clock. Done during that snooze logs
-  the set, removes the nudge and starts a full regular interval. End requires confirmation and opens a
+  deadline replaces the regular countdown as the single main clock. Any Done logs the set, removes
+  any pending nudge and starts a full regular interval; Build 11 currently resets only after a snooze.
+  End requires confirmation and opens a
   summary with sets, goal result, start/end, active/paused duration, completion times, pause
   segments, snoozes, and interval. Same-date sessions aggregate into one local history entry.
   Export/restore uses a versioned local JSON file selected by the user; validation completes before

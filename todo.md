@@ -24,7 +24,9 @@ makes snooze-related Done cancel it and start a fresh full interval, and adds Sw
 plus failure/retry regressions. PR #10 and main delivery run #49 passed; the downloaded Build-11 IPA
 also passed local checksum/package inspection, and its countdown survives leaving and closing the app.
 Finish phone acceptance and refresh/recovery; whether Build 11 was installed over Build 10 without an
-uninstall has not been explicitly reported. Optional Shortcuts remain follow-on work. Cloud/device evidence lives in
+uninstall has not been explicitly reported. Implement the newly accepted rule that every successful
+Done restarts the full regular interval; Build 11 does so only when a snooze is unresolved. Optional
+Shortcuts remain follow-on work. Cloud/device evidence lives in
 `cloud-build.md`; other modules stay deferred.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
@@ -76,6 +78,14 @@ uninstall has not been explicitly reported. Optional Shortcuts remain follow-on 
       and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
       and closing the app. Confirm snooze-related Done and the remaining device matrix before closing
       this item; same-ID over-install preservation has not been explicitly reported.
+- [ ] **Reset the regular cadence after every completed set.** Phone testing confirms that Build 11
+      leaves the existing 45-minute countdown running when Done +1 is tapped without a snooze. The
+      accepted behavior is that dashboard Done and notification Done both represent a set completed
+      now: record exactly one set, cancel any unresolved snooze, replace the recurring request, persist
+      a new cadence anchor, and show one full configured interval (45 minutes by default). Preserve
+      idempotency and retry safety; add tests for ordinary and snoozed Done, dashboard/notification
+      sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
+      behavior change and is not implemented or verified in Build 11.
 - [ ] **Make every button interaction visually smooth without changing behavior.** Phone testing
       reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
       interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,

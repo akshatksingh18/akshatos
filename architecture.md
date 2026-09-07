@@ -153,8 +153,9 @@ background-capable services at app lifetime; load future media views/resources o
   replaces the recurring request and begins a fresh interval. End removes recurring/snooze requests
   and finalizes the active day.
 - Register a reminder category with actions ordered Done, Pause, and Remind me in 10 min. Done records
-  one set without changing an ordinary cadence; if a snooze remains unresolved, it removes that
-  request, replaces the recurring request and persists a full new interval. Pause calls the same
+  one set, removes any unresolved snooze, replaces the recurring request and persists a full new
+  interval whether the prior main countdown was regular or snoozed. Build 11 only performs that
+  replacement for an unresolved snooze; ordinary-cadence Done reset is the next behavior change. Pause calls the same
   idempotent command as the UI. Snooze replaces one one-off request for ten minutes later.
 - `UNUserNotificationCenterDelegate` routes responses by category/action identifier and always calls
   its completion handler after durable/idempotent processing. The normal app, notification handler,

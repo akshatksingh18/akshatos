@@ -249,7 +249,9 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
    test notification Pause, dashboard Resume, expanded-notification ten-minute snooze, End, and
    relaunch. During a pending snooze, background/foreground the app and confirm the same deadline;
    then use Done before expiry and verify one logged set, no snooze, and a fresh full interval.
-   Repeat with 45 minutes. Confirm action ordering and that returning to the picker does not stop reminders.
+   Build 11 still leaves an ordinary 45-minute cadence unchanged after Done; a later build must reset
+   that cadence to a fresh full interval, then pass the same dashboard and notification-action test.
+   Confirm action ordering and that returning to the picker does not stop reminders.
 8. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
 

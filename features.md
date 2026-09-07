@@ -111,8 +111,9 @@ or Resume and continues until Pause or End removes it.
 The reminder category provides these actions:
 
 1. **Done** — record exactly one completed set for the active day without requiring the app UI to
-   open. It normally leaves the cadence unchanged; when a snooze is unresolved, it cancels that
-   nudge and begins a fresh full regular interval from the completed set.
+   open, cancel any unresolved nudge, and begin a fresh full regular interval from the completed set.
+   This reset applies whether the main countdown was the ordinary cadence or a ten-minute snooze.
+   Build 11 implements the snooze case only; ordinary-cadence Done reset remains to be implemented.
 2. **Pause** — cancel the recurring request and move the active day to Paused. This is the escape
    hatch when the first inconvenient reminder arrives while away from home.
 3. **Remind me in 10 min** — schedule or replace one one-off snooze request ten minutes later. The

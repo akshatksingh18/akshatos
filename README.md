@@ -71,8 +71,9 @@ disposable test activity only.
 - Tap **Start my day**; the first reminder is one interval later.
 - Receive ordinary local notifications until pausing or tapping **End my day**.
 - Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
-  not unrecorded individual repetitions. If a ten-minute nudge is unresolved, Done dismisses it and
-  begins the next full regular interval from that completed set.
+  not unrecorded individual repetitions. Done should dismiss any unresolved nudge and restart the
+  full regular interval from that completed set, including when the ordinary 45-minute countdown was
+  active. Build 11 currently performs that reset only when a snooze is unresolved.
 - Reach the configurable daily set goal to qualify that local date for the streak. New installs
   start at eight completed sets; setting the goal to zero turns streak tracking off. The dashboard
   shows today's progress plus current and personal-best streak.

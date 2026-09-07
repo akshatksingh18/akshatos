@@ -10,7 +10,9 @@ deadline still resets on foreground and Done leaves that nudge active. Build 11 
 deadline and makes snooze-related Done begin a fresh full interval. PR #10 merged as `8b5b8c4`; main
 delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/package and screenshot
 inspection. Phone testing confirms the displayed countdown survives leaving and closing the app;
-the remaining device matrix is pending.
+it also confirms ordinary Done does not reset the active 45-minute countdown. The accepted next
+behavior is for every successful Done to start a fresh full interval; it is not implemented in Build 11.
+The remaining device matrix is pending.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -187,19 +189,21 @@ Finish the agreed native Squats v1 and automated/cloud tests before requesting p
 Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
 implementation for baseline installation. Existing device gates remain open until that later pass.
 
-1. **Finish Build 11 correction acceptance:** its displayed countdown now survives leaving and
-   closing the app. During a pending snooze, confirm Done logs once, removes the nudge and begins a
-   full regular interval. Establish whether Build 11 was installed over Build 10; if so, confirm
+1. **Implement and cloud-verify universal Done cadence reset plus smooth interactions:** every
+   dashboard or notification Done must log once, cancel any snooze and start a fresh configured
+   interval even when the ordinary countdown was active. Keep the vertical-jump fix presentation-only.
+2. **Finish Build 11/device correction acceptance:** its displayed countdown now survives leaving and
+   closing the app. Establish whether Build 11 was installed over Build 10; if so, confirm
    settings, permissions, Home configuration and disposable history survived that over-install.
-2. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
+3. **Physical feature acceptance:** picker → Squats → back, one-minute/45-minute reminders,
    dashboard and locked notification Done/Pause/snooze, Undo/replay, relaunch, permissions, day
    summaries/recovery, Home automation and the full physical matrix. Record actual results and fix
    defects; `architecture.md` owns action retry, expired-snooze and before-first-unlock limits.
-3. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
+4. **Deployment acceptance:** same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+5. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
