@@ -6,28 +6,48 @@ let reference = Date(timeIntervalSince1970: 1_788_480_000)
 func day(_ number: Int) -> Date {
     calendar.date(from: DateComponents(year: 2026, month: 9, day: number, hour: 12))!
 }
-func book(pages: Int = 100, page: Int = 0, fingerprint: String = "aaa",
+func book(pages: Int = 100, placed: Int? = nil, fingerprint: String = "aaa",
           title: String = "A Long Book", opened: Date? = nil) -> PageVaultBook {
     PageVaultBook(fingerprint: fingerprint, title: title, pageCount: pages,
-                  byteCount: 1_024, addedAt: reference, lastOpenedAt: opened, currentPage: page)
+                  byteCount: 1_024, addedAt: reference, lastOpenedAt: opened,
+                  currentPage: placed ?? 0, placeSetAt: placed == nil ? nil : reference)
 }
 
-// A persisted page must never escape the document's real range.
-assert(book(pages: 300, page: 42).resolvedPage() == 42, "A valid page is preserved")
-assert(book(pages: 300, page: 900).resolvedPage() == 299, "A stale page falls back to the last page")
-assert(book(pages: 300, page: -5).resolvedPage() == 0, "A negative page falls back to the first page")
-assert(book(pages: 0, page: 7).resolvedPage() == 0, "A document with no pages resolves to zero")
-assert(book(pages: 300, page: 10).resolvedPage(120) == 120, "An explicit request is clamped too")
-assert(book(pages: 300, page: 10).progressLabel == "11 / 300", "Progress is one-based for display")
-assert(book(pages: 0).progressLabel == "No pages", "A pageless document does not claim progress")
-assert(book(pages: 300, page: 299).progressFraction == 1, "The last page reads as complete")
-assert(book(pages: 1, page: 0).progressFraction == 1, "A single-page document is complete when open")
-assert(book(pages: 0).progressFraction == 0, "A pageless document has no progress")
+// A persisted place can outlive the page count it was valid for, so every read clamps.
+assert(book(pages: 300, placed: 42).resolvedPage() == 42, "A valid place is preserved")
+assert(book(pages: 300, placed: 900).resolvedPage() == 299, "A stale place falls back to the last page")
+assert(book(pages: 300, placed: -5).resolvedPage() == 0, "A negative place falls back to the first page")
+assert(book(pages: 0, placed: 7).resolvedPage() == 0, "A document with no pages resolves to zero")
+assert(book(pages: 300, placed: 10).resolvedPage(120) == 120, "An explicit request is clamped too")
 
-var reading = book(pages: 300)
-reading.remember(page: 5_000, at: reference)
-assert(reading.currentPage == 299 && reading.lastOpenedAt == reference,
-       "Remembering a page clamps it and records the read time")
+// Opening lands on the bookmark, or page one when the book was never bookmarked.
+assert(book(pages: 300).openingPage == 0, "An unbookmarked book opens at the first page")
+assert(book(pages: 300, placed: 87).openingPage == 87, "A bookmarked book opens at your place")
+assert(!book(pages: 300).hasPlace && book(pages: 300, placed: 0).hasPlace,
+       "A bookmark on page one is still a bookmark")
+assert(book(pages: 300).progressLabel == "Not started · 300 pages",
+       "An unbookmarked book does not claim progress")
+assert(book(pages: 300, placed: 10).progressLabel == "11 / 300", "Progress is one-based for display")
+assert(book(pages: 0).progressLabel == "No pages", "A pageless document has no progress label")
+assert(book(pages: 300).progressFraction == 0, "An unbookmarked book shows an empty bar")
+assert(book(pages: 300, placed: 299).progressFraction == 1, "A place on the last page fills the bar")
+
+// Only bookmarking moves your place. Reading past it, or browsing back, must not.
+var reading = book(pages: 300, placed: 8)
+reading.markOpened(at: day(2))
+assert(reading.currentPage == 8 && reading.hasPlace,
+       "Opening a book leaves your place exactly where you bookmarked it")
+reading.setPlace(page: 11, at: day(2))
+assert(reading.currentPage == 11 && reading.placeSetAt == day(2) && reading.lastOpenedAt == day(2),
+       "Bookmarking replaces the previous place instead of accumulating one more")
+reading.setPlace(page: 5_000, at: day(3))
+assert(reading.currentPage == 299, "A bookmark beyond the document clamps into range")
+assert(reading.isPlace(page: 299) && !reading.isPlace(page: 298),
+       "Only the bookmarked page reports as your place")
+assert(!book(pages: 300).isPlace(page: 0), "An unbookmarked first page is not a place")
+reading.clearPlace(at: day(4))
+assert(!reading.hasPlace && reading.currentPage == 0 && reading.openingPage == 0,
+       "Clearing your place returns the book to opening at page one")
 
 // Titles come from PDF metadata when it is meaningful, and the file name otherwise.
 assert(PageVaultBook.displayTitle(metadataTitle: "Real Title", fileName: "scan01.pdf") == "Real Title")
@@ -37,7 +57,7 @@ assert(PageVaultBook.displayTitle(metadataTitle: nil, fileName: ".pdf") == "Unti
        "An empty name after trimming never produces a blank title")
 assert(PageVaultBook.displayTitle(metadataTitle: nil, fileName: "notes") == "notes",
        "A source without an extension is kept as written")
-print("PASS: 15 book assertions (page clamping, progress, resume, title derivation)")
+print("PASS: 23 book and place assertions (clamping, opening page, progress, bookmark, titles)")
 
 var library = PageVaultLibrary()
 try library.insert(book(fingerprint: "one", title: "First"))
@@ -53,18 +73,22 @@ assert(duplicateRejected, "A repeated content fingerprint is rejected and names 
 assert(library.books.count == 1, "A rejected duplicate leaves no second entry")
 try library.insert(book(fingerprint: "two", title: "Second", opened: reference.addingTimeInterval(60)))
 assert(library.recent.first?.title == "Second", "Recently read sorts ahead of merely imported")
-var progressed = library.books[0]
-progressed.remember(page: 3, at: reference.addingTimeInterval(600))
-library.update(progressed)
-assert(library.recent.first?.title == "First", "Reading a book moves it back to the front")
+let firstID = library.books[0].id
+assert(library.setPlace(page: 3, for: firstID, at: reference.addingTimeInterval(600))?.currentPage == 3,
+       "The library moves a book's place")
+assert(library.recent.first?.title == "First", "Bookmarking a book moves it back to the front")
 assert(library.existing(fingerprint: "two")?.title == "Second", "Fingerprint lookup finds the owner")
-let removed = library.remove(id: progressed.id)
+assert(library.clearPlace(for: firstID, at: reference)?.hasPlace == false,
+       "The library can clear a place")
+assert(library.setPlace(page: 1, for: UUID(), at: reference) == nil,
+       "An unknown book cannot be bookmarked")
+let removed = library.remove(id: firstID)
 assert(removed?.title == "First" && library.books.count == 1, "Removal returns and detaches one book")
 assert(library.remove(id: UUID()) == nil, "Removing an unknown book is a no-op")
 let encoded = try JSONEncoder().encode(library)
 let restored = try JSONDecoder().decode(PageVaultLibrary.self, from: encoded)
 assert(restored == library, "The library survives a persistence round trip")
-print("PASS: 8 library assertions (fingerprint dedupe, recency, update, removal, round trip)")
+print("PASS: 11 library assertions (dedupe, recency, place, removal, round trip)")
 
 // Only one book is Reading at a time, and the previous one is demoted, never finished.
 var shelf = PageVaultLibrary()
@@ -97,48 +121,27 @@ goalHolder.status = .reading
 assert(goalHolder.activeGoal == 10, "The Reading book exposes its goal")
 print("PASS: 15 status assertions (default, single Reading book, demotion, shelves, goal sanitizing)")
 
-var marked = book(pages: 500)
-assert(marked.toggleBookmark(page: 40, note: "  ", at: reference), "Bookmarking a fresh page adds one")
-assert(marked.bookmarks.count == 1 && marked.bookmarks[0].note == nil,
-       "A whitespace-only note is stored as no note")
-assert(marked.hasBookmark(page: 40), "The page reports as bookmarked")
-assert(!marked.toggleBookmark(page: 40, at: reference), "Bookmarking the same page removes it")
-assert(marked.bookmarks.isEmpty && !marked.hasBookmark(page: 40), "Toggling off leaves no bookmark")
-marked.toggleBookmark(page: 90, note: "Good bit", at: reference)
-marked.toggleBookmark(page: 12, at: reference)
-assert(marked.bookmarks.map(\.page) == [12, 90], "Bookmarks stay sorted by page")
-marked.toggleBookmark(page: 9_000, at: reference)
-assert(marked.bookmarks.map(\.page) == [12, 90, 499], "A bookmark beyond the document clamps into range")
-marked.removeBookmark(id: marked.bookmarks[1].id)
-assert(marked.bookmarks.map(\.page) == [12, 499], "Removing a bookmark leaves the others")
-let markedRoundTrip = try JSONDecoder().decode(PageVaultBook.self,
-                                               from: try JSONEncoder().encode(marked))
-assert(markedRoundTrip == marked, "Bookmarks survive a persistence round trip")
-print("PASS: 9 bookmark assertions (toggle, notes, ordering, clamping, removal, round trip)")
-
-// A build written before these fields existed must keep decoding.
+// Records written by earlier builds must keep loading, including ones with fields since removed.
 let legacy = Data("""
 {"id":"5B8C1B16-5F2E-44B6-9A0E-4E3B0F6A11AA","fingerprint":"old","title":"Legacy Book",
- "pageCount":120,"byteCount":2048,"addedAt":0,"currentPage":7}
+ "pageCount":120,"byteCount":2048,"addedAt":0,"currentPage":7,
+ "bookmarks":[{"id":"1B8C1B16-5F2E-44B6-9A0E-4E3B0F6A11AA","page":4,"createdAt":0}]}
 """.utf8)
 let upgraded = try JSONDecoder().decode(PageVaultBook.self, from: legacy)
 assert(upgraded.status == .wantToRead, "An older payload defaults to Want to read")
-assert(upgraded.dailyPageGoal == nil && upgraded.bookmarks.isEmpty,
-       "An older payload gains empty goal and bookmark fields")
-assert(upgraded.currentPage == 7, "An older payload keeps its reading position")
-assert(upgraded.lastOpenedAt == nil && upgraded.statusChangedAt == nil,
-       "Absent optional timestamps decode as nil rather than failing")
+assert(upgraded.dailyPageGoal == nil, "An older payload has no goal")
+assert(upgraded.currentPage == 7, "An older payload keeps its stored page")
+assert(!upgraded.hasPlace, "A payload from before places existed is treated as unbookmarked")
+assert(upgraded.lastOpenedAt == nil, "Absent optional timestamps decode as nil rather than failing")
 
-// The smallest record any build could have written must still load.
 let minimal = Data("""
 {"id":"9C1F0C7E-1A2B-4C3D-8E4F-5A6B7C8D9E0F","fingerprint":"tiny","title":"Tiny",
  "pageCount":3,"byteCount":10,"addedAt":0}
 """.utf8)
 let tiny = try JSONDecoder().decode(PageVaultBook.self, from: minimal)
-assert(tiny.currentPage == 0 && tiny.status == .wantToRead && tiny.bookmarks.isEmpty,
+assert(tiny.currentPage == 0 && tiny.status == .wantToRead && !tiny.hasPlace,
        "A minimal record loads with defaults instead of throwing")
 
-// A record missing a genuinely required field is still a corrupt record, not a default.
 let corruptRecord = Data("""
 {"id":"9C1F0C7E-1A2B-4C3D-8E4F-5A6B7C8D9E0F","title":"No fingerprint","pageCount":3,
  "byteCount":10,"addedAt":0}
@@ -150,7 +153,7 @@ do {
     rejectedCorruptRecord = true
 }
 assert(rejectedCorruptRecord, "Leniency applies to added fields only, never to identity")
-print("PASS: 6 payload migration assertions (defaults, optionals, minimal record, corrupt record)")
+print("PASS: 7 payload migration assertions (defaults, removed fields, minimal, corrupt)")
 
 func readingDay(_ number: Int, book id: UUID, from: Int, to: Int, goal: Int) -> PageVaultReadingDay {
     PageVaultReadingDay(day: PageVaultReadingDay.dayKey(day(number), calendar: calendar),
@@ -167,11 +170,9 @@ assert(oneDay.pagesRead == 12 && oneDay.goalMet, "Passing the goal meets it")
 assert(!readingDay(1, book: tracked, from: 0, to: 99, goal: 0).isEvaluated,
        "A zero goal marks a deliberately unevaluated day")
 
-// Empty history has no streak at all.
 assert(PageVaultReadingDay.streak([], now: day(5), calendar: calendar) == PageVaultStreak(),
        "No recorded days means no streak")
 
-// Consecutive met days build a streak; today falling short is at risk, not broken.
 let met = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
            readingDay(2, book: tracked, from: 10, to: 25, goal: 10),
            readingDay(3, book: tracked, from: 25, to: 30, goal: 10)]
@@ -187,34 +188,29 @@ let complete = PageVaultReadingDay.streak(finishedToday, now: day(3), calendar: 
 assert(complete.current == 3 && complete.todayMet && !complete.isAtRisk,
        "Meeting today's goal extends the streak and clears the risk")
 
-// A day inside the window with no row is a real miss.
 let gapped = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
               readingDay(3, book: tracked, from: 10, to: 20, goal: 10)]
 let broken = PageVaultReadingDay.streak(gapped, now: day(3), calendar: calendar)
 assert(broken.current == 1, "A skipped day resets the streak")
 assert(broken.best == 1, "The best run reflects the reset")
 
-// An unevaluated day pauses evaluation instead of breaking the run.
 let paused = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
               readingDay(2, book: tracked, from: 0, to: 0, goal: 0),
               readingDay(3, book: tracked, from: 10, to: 20, goal: 10)]
 let held = PageVaultReadingDay.streak(paused, now: day(3), calendar: calendar)
 assert(held.current == 2, "Finishing a book without a replacement does not break the streak")
 
-// Switching books mid-streak keeps one continuous streak.
 let other = UUID()
 let switched = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
                 readingDay(2, book: other, from: 0, to: 15, goal: 10)]
 assert(PageVaultReadingDay.streak(switched, now: day(2), calendar: calendar).current == 2,
        "The streak follows the habit, not one particular book")
 
-// Future-dated rows cannot inflate today's streak.
 let future = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
               readingDay(9, book: tracked, from: 10, to: 40, goal: 10)]
 assert(PageVaultReadingDay.streak(future, now: day(1), calendar: calendar).current == 1,
        "A row dated after today is ignored")
 
-// A missed day before today breaks the run even when today is still open.
 let missedYesterday = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
                        readingDay(2, book: tracked, from: 10, to: 12, goal: 10),
                        readingDay(3, book: tracked, from: 12, to: 12, goal: 10)]
@@ -227,23 +223,6 @@ let dayRoundTrip = try JSONDecoder().decode(PageVaultReadingDay.self,
 assert(dayRoundTrip == oneDay, "A reading day survives a persistence round trip")
 assert(oneDay.id == "2026-09-01#\(tracked.uuidString)", "Rows are keyed by day and book")
 print("PASS: 20 streak assertions (day keys, high-water, at risk, misses, pauses, book switch, round trip)")
-
-// Outline hierarchy is preserved as indent levels; PageVault never invents a table of contents.
-let outline = [
-    PageVaultOutlineNode(id: "0", title: "Part One", page: 0, children: [
-        PageVaultOutlineNode(id: "0.0", title: "Chapter 1", page: 2),
-        PageVaultOutlineNode(id: "0.1", title: "Chapter 2", page: 40, children: [
-            PageVaultOutlineNode(id: "0.1.0", title: "A Section", page: 44)
-        ])
-    ]),
-    PageVaultOutlineNode(id: "1", title: "Unlinked Appendix", page: nil)
-]
-let rows = PageVaultOutlineNode.rows(outline)
-assert(rows.map(\.id) == ["0", "0.0", "0.1", "0.1.0", "1"], "Rows keep depth-first order")
-assert(rows.map(\.level) == [0, 1, 1, 2, 0], "Indent level mirrors outline depth")
-assert(rows.last?.page == nil, "An outline entry without a destination stays unlinked")
-assert(PageVaultOutlineNode.rows([]).isEmpty, "A PDF with no outline produces no rows")
-print("PASS: 4 outline assertions (order, depth, unlinked entries, empty outline)")
 
 assert(PageVaultImportFailure.passwordProtected.message.contains("password"),
        "Encrypted files fail with an explanation")

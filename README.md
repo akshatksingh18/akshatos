@@ -1,8 +1,9 @@
 # AkshatOS
 
 A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
-dashboard, or **PageVault** for its PDF library. PageVault implements importing, reading, reading
-status, a daily-goal streak, bookmarks and covers, but has never run on the phone;
+dashboard, or **PageVault** for its PDF library. PageVault's import and large-PDF reading passed a
+physical-device test, including a 188 MB scan; its paged one-page-at-a-time reader, warm paper and
+bookmarked place are implemented but not yet phone-verified.
 ReelVault is reserved for later and WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local

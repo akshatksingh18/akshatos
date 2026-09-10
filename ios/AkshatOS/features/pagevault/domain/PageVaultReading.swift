@@ -15,13 +15,6 @@ enum PageVaultReadingStatus: String, Codable, CaseIterable {
     }
 }
 
-struct PageVaultBookmark: Codable, Identifiable, Equatable {
-    var id = UUID()
-    var page: Int
-    var note: String?
-    var createdAt: Date
-}
-
 /// One evaluated day for one book. Rows are written while a goal is active, so a day inside the
 /// evaluated window with no row means the goal was live and nothing was read.
 struct PageVaultReadingDay: Codable, Identifiable, Equatable {

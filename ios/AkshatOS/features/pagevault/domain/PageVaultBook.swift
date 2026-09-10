@@ -1,7 +1,7 @@
 import Foundation
 
 // Pure domain types: no PDFKit, SwiftData, SwiftUI, or file-system side effects.
-// New fields carry defaults so payloads written by an earlier build still decode.
+// New fields are decoded leniently so records written by an earlier build keep loading.
 
 struct PageVaultBook: Codable, Identifiable, Equatable {
     var id = UUID()
@@ -12,17 +12,21 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
     var byteCount: Int64
     var addedAt: Date
     var lastOpenedAt: Date? = nil
+    /// "Your place" — the bookmarked page, behaving like a physical bookmark. Only bookmarking
+    /// moves it, so flipping through the book never loses where you actually stopped.
     var currentPage = 0
+    /// Non-nil once a place has been set, which distinguishes a real bookmark on page one from a
+    /// book that has never been bookmarked at all.
+    var placeSetAt: Date? = nil
     var status: PageVaultReadingStatus = .wantToRead
     var statusChangedAt: Date? = nil
     /// Pages per day required for this book to count toward the streak. Nil means untracked.
     var dailyPageGoal: Int? = nil
-    var bookmarks: [PageVaultBookmark] = []
 
     init(id: UUID = UUID(), fingerprint: String, title: String, pageCount: Int, byteCount: Int64,
-         addedAt: Date, lastOpenedAt: Date? = nil, currentPage: Int = 0,
+         addedAt: Date, lastOpenedAt: Date? = nil, currentPage: Int = 0, placeSetAt: Date? = nil,
          status: PageVaultReadingStatus = .wantToRead, statusChangedAt: Date? = nil,
-         dailyPageGoal: Int? = nil, bookmarks: [PageVaultBookmark] = []) {
+         dailyPageGoal: Int? = nil) {
         self.id = id
         self.fingerprint = fingerprint
         self.title = title
@@ -31,15 +35,15 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         self.addedAt = addedAt
         self.lastOpenedAt = lastOpenedAt
         self.currentPage = currentPage
+        self.placeSetAt = placeSetAt
         self.status = status
         self.statusChangedAt = statusChangedAt
         self.dailyPageGoal = dailyPageGoal
-        self.bookmarks = bookmarks
     }
 
     enum CodingKeys: String, CodingKey {
         case id, fingerprint, title, pageCount, byteCount, addedAt, lastOpenedAt, currentPage
-        case status, statusChangedAt, dailyPageGoal, bookmarks
+        case placeSetAt, status, statusChangedAt, dailyPageGoal
     }
 
     /// Decoded field by field rather than by the synthesized initializer, which ignores property
@@ -55,11 +59,11 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         addedAt = try container.decode(Date.self, forKey: .addedAt)
         lastOpenedAt = try container.decodeIfPresent(Date.self, forKey: .lastOpenedAt)
         currentPage = try container.decodeIfPresent(Int.self, forKey: .currentPage) ?? 0
+        placeSetAt = try container.decodeIfPresent(Date.self, forKey: .placeSetAt)
         status = try container.decodeIfPresent(PageVaultReadingStatus.self, forKey: .status)
             ?? .wantToRead
         statusChangedAt = try container.decodeIfPresent(Date.self, forKey: .statusChangedAt)
         dailyPageGoal = try container.decodeIfPresent(Int.self, forKey: .dailyPageGoal)
-        bookmarks = try container.decodeIfPresent([PageVaultBookmark].self, forKey: .bookmarks) ?? []
     }
 
     /// A persisted page can outlive the page count it was valid for, so every read clamps.
@@ -68,44 +72,41 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         return min(max(requested ?? currentPage, 0), pageCount - 1)
     }
 
+    var hasPlace: Bool { placeSetAt != nil }
+
+    /// Where opening this book should land: the bookmark if one exists, otherwise the first page.
+    var openingPage: Int { hasPlace ? resolvedPage() : 0 }
+
     var progressLabel: String {
-        pageCount > 0 ? "\(resolvedPage() + 1) / \(pageCount)" : "No pages"
+        guard pageCount > 0 else { return "No pages" }
+        return hasPlace ? "\(resolvedPage() + 1) / \(pageCount)" : "Not started · \(pageCount) pages"
     }
 
     var progressFraction: Double {
-        guard pageCount > 1 else { return pageCount == 1 ? 1 : 0 }
+        guard hasPlace, pageCount > 1 else { return 0 }
         return Double(resolvedPage()) / Double(pageCount - 1)
     }
 
     var activeGoal: Int { status == .reading ? max(0, dailyPageGoal ?? 0) : 0 }
 
-    mutating func remember(page: Int, at date: Date) {
+    func isPlace(page: Int) -> Bool { hasPlace && resolvedPage(page) == resolvedPage() }
+
+    /// Moves the bookmark to this page. Replaces any previous place rather than accumulating a
+    /// list, which is how a physical bookmark behaves.
+    mutating func setPlace(page: Int, at date: Date) {
         currentPage = resolvedPage(page)
+        placeSetAt = date
         lastOpenedAt = date
     }
 
-    func hasBookmark(page: Int) -> Bool {
-        bookmarks.contains { $0.page == resolvedPage(page) }
+    mutating func clearPlace(at date: Date) {
+        currentPage = 0
+        placeSetAt = nil
+        lastOpenedAt = date
     }
 
-    /// One bookmark per page: bookmarking a page that already has one removes it.
-    @discardableResult
-    mutating func toggleBookmark(page: Int, note: String? = nil, at date: Date) -> Bool {
-        let target = resolvedPage(page)
-        if let existing = bookmarks.firstIndex(where: { $0.page == target }) {
-            bookmarks.remove(at: existing)
-            return false
-        }
-        let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines)
-        bookmarks.append(PageVaultBookmark(page: target,
-                                           note: (trimmed?.isEmpty ?? true) ? nil : trimmed,
-                                           createdAt: date))
-        bookmarks.sort { $0.page < $1.page }
-        return true
-    }
-
-    mutating func removeBookmark(id: UUID) {
-        bookmarks.removeAll { $0.id == id }
+    mutating func markOpened(at date: Date) {
+        lastOpenedAt = date
     }
 
     /// PDF metadata titles are frequently blank, whitespace, or a leftover file path.
@@ -189,6 +190,20 @@ struct PageVaultLibrary: Codable, Equatable {
         books[index].dailyPageGoal = sanitized
         return books[index]
     }
+
+    @discardableResult
+    mutating func setPlace(page: Int, for id: UUID, at date: Date) -> PageVaultBook? {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
+        books[index].setPlace(page: page, at: date)
+        return books[index]
+    }
+
+    @discardableResult
+    mutating func clearPlace(for id: UUID, at date: Date) -> PageVaultBook? {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
+        books[index].clearPlace(at: date)
+        return books[index]
+    }
 }
 
 enum PageVaultImportFailure: Error, Equatable {
@@ -198,7 +213,7 @@ enum PageVaultImportFailure: Error, Equatable {
     case duplicate(title: String)
     case storage(String)
 
-    /// User-facing text. The spike must fail visibly rather than leave a false library entry.
+    /// User-facing text. Import must fail visibly rather than leave a false library entry.
     var message: String {
         switch self {
         case .unreadable:
@@ -211,31 +226,6 @@ enum PageVaultImportFailure: Error, Equatable {
             return "Already in your library as \"\(title)\"."
         case .storage(let reason):
             return "Could not save a copy: \(reason)"
-        }
-    }
-}
-
-struct PageVaultOutlineNode: Equatable {
-    /// Stable index path, so rows keep identity without generating fresh UUIDs on every traversal.
-    var id: String
-    var title: String
-    var page: Int?
-    var children: [PageVaultOutlineNode] = []
-}
-
-struct PageVaultOutlineRow: Equatable, Identifiable {
-    var id: String
-    var title: String
-    var page: Int?
-    var level: Int
-}
-
-extension PageVaultOutlineNode {
-    /// Depth-first flattening that preserves hierarchy as an indent level.
-    static func rows(_ nodes: [PageVaultOutlineNode], level: Int = 0) -> [PageVaultOutlineRow] {
-        nodes.flatMap { node in
-            [PageVaultOutlineRow(id: node.id, title: node.title, page: node.page, level: level)]
-                + rows(node.children, level: level + 1)
         }
     }
 }

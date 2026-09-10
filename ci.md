@@ -78,16 +78,18 @@ preservation and data-management settings now have coverage. Future schema-versi
 add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
 remain separate acceptance gates.
 
-PageVault registers its own suites: 77 domain assertions covering page clamping, title derivation,
-fingerprint dedupe, recency ordering, outline flattening, the single-Reading-book invariant, goal
-sanitizing, bookmark toggling/clamping, older-payload decoding, and the streak engine (high-water
-progress, at-risk today, missed days, paused days, book switches, future-dated rows); 18 hosted
-integration tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
-unreadable-file cleanup, resume and bookmarks across store recreation, cover generation, copy-only
-removal and reading-history cleanup; plus a hub → library → back UI test.
+PageVault registers its own suites: 79 domain assertions covering place clamping and the opening
+page, progress labels, title derivation, fingerprint dedupe, recency ordering, the
+single-Reading-book invariant, goal sanitizing, bookmark replacement, older-payload decoding
+(including records carrying fields since removed), and the streak engine (high-water progress,
+at-risk today, missed days, paused days, book switches, future-dated rows); 17 hosted integration
+tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
+unreadable-file cleanup, the bookmarked place across store recreation, proof that reading never
+moves that place, cover generation, copy-only removal and reading-history cleanup; plus a
+hub → library → back UI test.
 Simulator coverage cannot exercise the system document picker, real large-file memory pressure,
-rotation, or PDFKit scroll/zoom performance — those belong to the physical run owned by
-`../book-reader/CLAUDE.md`, which Akshat has deferred to a single end-of-implementation test pass.
+rotation, or paged swipe feel. The physical run owned by `../book-reader/CLAUDE.md` has passed the
+large-PDF gate; the reader redesign that followed it is not yet device-verified.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
