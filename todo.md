@@ -23,9 +23,11 @@ pre-scheduled ten-minute nudges, foreground replenishment from the stable cadenc
 9:00 AM start invitation passed PR #15 run #57, main run #58, local artifact inspection and Akshat's
 ongoing phone use. Build 12 is the retained accepted predecessor. Continue the explicit physical
 edge-case and refresh/recovery matrix; optional Shortcuts remain follow-on work. Cloud/device
-evidence lives in `cloud-build.md`. PageVault is now an activated parallel module whose own gates
-live in `../book-reader/CLAUDE.md`; ReelVault stays deferred. Squats' unchecked items below remain
-open regardless of PageVault progress.
+evidence lives in `cloud-build.md`. PageVault's v1 reading loop is implemented in source and
+cloud-tested but never phone-run; its gates live in `../book-reader/CLAUDE.md`, and Akshat deferred
+its physical testing to one end-of-implementation pass. ReelVault stays deferred. Squats' unchecked
+items below remain open regardless of PageVault progress. Source is now build 14, so the next
+installable artifact differs from installed Build 13.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
       into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for

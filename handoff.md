@@ -73,7 +73,8 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   Working source version: `0.2.0 (13)`, minimum iOS 17. Build 13 is phone-installed and accepted for
   its implemented daily workflow; Build 12 is the retained predecessor. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
-  combined dashboard. PageVault opens its own PDF library (phase-2 spike, not yet phone-verified);
+  combined dashboard. PageVault opens its own PDF library — import, reader, reading status, daily-goal
+  streak, bookmarks, covers — implemented and cloud-tested but never phone-run;
   ReelVault/Reels remains an unavailable planned card.
 - Squats' daily loop is accepted in ongoing phone use, so PageVault is now the activated next
   module; its scope/phases/progress are owned by `../book-reader/CLAUDE.md` and its phase-1 scaffold
