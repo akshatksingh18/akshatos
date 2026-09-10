@@ -195,6 +195,20 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
+### Downloaded Build-16 candidate — bookmark-driven progress and seamless paper
+
+- Version **0.2.0 (16)**; merge source `c1f378ff7fb3a0f12ccdee39fdf8a79a0baf9a7f` (PR #22).
+- Artifact `akshatos-ios-72` from main delivery run
+  [34524075937](https://github.com/akshatksingh18/akshatos/actions/runs/34524075937): 79 PageVault
+  domain assertions, 88 hosted tests, both builds, IPA inspection and `CI Gate` all passed.
+- Cached at `C:\Users\aksha\Downloads\akshatos-build-16\akshatos-ios-72`.
+- SHA-256 `3205ae71f7bb93cbbd381daab23ab914fcafbaee521d8fdc361e4dec21899053` matches the cloud
+  checksum. `validate-ipa.py` passed: structure, identity, metadata and payload.
+- Bookmarking claims the book as the one being read, the daily goal is reachable from the streak
+  card, progress counts bookmark to bookmark, and the page no longer sits inside letterbox bands.
+- **Unsigned and not phone-verified.** Install over Build 15 without uninstalling. Demotion keeps the
+  previous book's place, goal and reading history — only deleting a book clears those.
+
 ### Build-15 physical test result — warm paper good, three gaps found
 
 Warm paper renders correctly on text pages and the paged swipe works. Three problems, all addressed
