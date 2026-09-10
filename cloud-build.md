@@ -195,6 +195,22 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
+### Downloaded Build-15 candidate — paged reader, warm paper, bookmarked place
+
+- Version **0.2.0 (15)**; merge source `e209269967e51762324e8011cbe1b0f780271765` (PR #20).
+- Artifact `akshatos-ios-69` from main delivery run
+  [34511400591](https://github.com/akshatksingh18/akshatos/actions/runs/34511400591): 79 PageVault
+  domain assertions, 85 hosted tests, both builds, IPA inspection and `CI Gate` all passed.
+- Cached at `C:\Users\aksha\Downloads\akshatos-build-15\akshatos-ios-69`.
+- SHA-256 `c90f5c83ceb22f5ed49d153902e01d2991c182316f98492b136aaa9c92266bed` matches the cloud
+  checksum. `validate-ipa.py` passed: structure, identity, metadata and payload.
+- Fixes the build-14 defect where reopening a book erased its stored position, replaces continuous
+  scrolling with single-page horizontal paging, adds warm paper on by default, makes the bookmark
+  the only thing that moves your place, and removes the table-of-contents navigator.
+- **Unsigned and not phone-verified.** Install over Build 14 without uninstalling so the existing
+  PageVault library and Squats data stay testable. The decisive check is: bookmark a page, browse
+  elsewhere, close the app, reopen — it must land on the bookmark and the library bar must not move.
+
 ### Build-14 physical test result — large-PDF gate passed
 
 Akshat installed Build 14 over Build 13 without uninstalling and ran the fixture set. Squats was
