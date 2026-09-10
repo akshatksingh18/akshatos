@@ -104,24 +104,26 @@ import SwiftUI
         }
     }
 
-    /// Records how far reading actually reached, for the streak only. This deliberately does not
-    /// move your place: browsing through the book must never lose the page you bookmarked.
-    func recordPageView(_ book: PageVaultBook, page: Int) {
+    /// Opening a book only refreshes recency. Reading progress is counted from bookmark to
+    /// bookmark, so browsing pages deliberately records nothing.
+    func noteOpened(_ book: PageVaultBook) {
         guard var stored = library.books.first(where: { $0.id == book.id }) else { return }
-        let resolved = stored.resolvedPage(page)
-        if stored.lastOpenedAt == nil {
-            stored.markOpened(at: now())
-            library.update(stored)
-            persist(stored)
-        }
-        advanceToday(for: stored, reaching: resolved)
+        stored.markOpened(at: now())
+        library.update(stored)
+        persist(stored)
     }
 
-    /// Bookmarking is the only thing that moves your place, and therefore the only thing that
-    /// changes where the book reopens and what the library shows as progress.
+    /// Bookmarking is the single deliberate signal that reading happened: it moves your place,
+    /// claims the book as the one being read, and credits the pages covered since the last
+    /// bookmark toward today's goal.
     func setPlace(_ book: PageVaultBook, page: Int) {
+        if book.status != .reading {
+            for updated in library.setStatus(.reading, for: book.id, at: now()) { persist(updated) }
+        }
         guard let updated = library.setPlace(page: page, for: book.id, at: now()) else { return }
         persist(updated)
+        openTodayIfGoalIsActive()
+        advanceToday(for: updated, reaching: updated.resolvedPage())
     }
 
     func clearPlace(_ book: PageVaultBook) {
@@ -166,8 +168,9 @@ import SwiftUI
 
     // MARK: - Streak bookkeeping
 
-    /// Opens today's row as soon as a goal is live, so a day that passes without reading becomes a
-    /// real miss rather than an unrecorded gap.
+    /// Opens today's row as soon as a goal is live, so a day that passes without a bookmark becomes
+    /// a real miss rather than an unrecorded gap. The row starts at wherever your place is, so only
+    /// pages bookmarked after that count toward today.
     private func openTodayIfGoalIsActive() {
         guard let book = library.current, book.activeGoal > 0 else { return }
         let today = PageVaultReadingDay.dayKey(now(), calendar: calendar)
@@ -180,6 +183,7 @@ import SwiftUI
         persist(row)
     }
 
+    /// `page` is the newly bookmarked place, not a page merely viewed.
     private func advanceToday(for book: PageVaultBook, reaching page: Int) {
         guard book.status == .reading, book.activeGoal > 0 else { return }
         let today = PageVaultReadingDay.dayKey(now(), calendar: calendar)

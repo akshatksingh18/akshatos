@@ -81,15 +81,16 @@ remain separate acceptance gates.
 PageVault registers its own suites: 79 domain assertions covering place clamping and the opening
 page, progress labels, title derivation, fingerprint dedupe, recency ordering, the
 single-Reading-book invariant, goal sanitizing, bookmark replacement, older-payload decoding
-(including records carrying fields since removed), and the streak engine (high-water progress,
-at-risk today, missed days, paused days, book switches, future-dated rows); 17 hosted integration
+(including records carrying fields since removed), and the streak engine (bookmark-driven progress,
+at-risk today, missed days, paused days, book switches, future-dated rows); 20 hosted integration
 tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
-unreadable-file cleanup, the bookmarked place across store recreation, proof that reading never
-moves that place, cover generation, copy-only removal and reading-history cleanup; plus a
-hub → library → back UI test.
+unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming the book
+as the one being read, pages credited between bookmarks, an opened-but-unbookmarked book earning
+nothing, cover generation, copy-only removal and reading-history cleanup; plus a hub → library →
+back UI test.
 Simulator coverage cannot exercise the system document picker, real large-file memory pressure,
-rotation, or paged swipe feel. The physical run owned by `../book-reader/CLAUDE.md` has passed the
-large-PDF gate; the reader redesign that followed it is not yet device-verified.
+rotation, paged swipe feel, or how warm paper actually looks. The large-PDF gate passed on device;
+each reader iteration after it needs its own device pass, owned by `../book-reader/CLAUDE.md`.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
