@@ -229,14 +229,17 @@ import XCTest
         XCTAssertFalse(store.streak.todayMet)
         XCTAssertEqual(store.streak.current, 0)
 
+        // Page index 12 is the thirteenth page, and the book had no earlier bookmark, so pages
+        // one through thirteen have been read: thirteen, not twelve.
         store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        XCTAssertEqual(store.streak.todayPagesRead, 13)
         XCTAssertTrue(store.streak.todayMet, "Bookmarking past the goal completes today")
         XCTAssertEqual(store.streak.current, 1)
 
         let reopened = try makeStore(container: container, now: { clock })
         await reopened.load()
         XCTAssertEqual(reopened.streak.current, 1, "The streak is rebuilt from stored days")
-        XCTAssertEqual(reopened.streak.todayPagesRead, 12)
+        XCTAssertEqual(reopened.streak.todayPagesRead, 13)
         XCTAssertEqual(reopened.days.count, 1, "Reloading does not duplicate today's row")
     }
 
@@ -253,7 +256,8 @@ import XCTest
         store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 4)
         store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 19)
 
-        XCTAssertEqual(store.streak.todayPagesRead, 20,
+        // Index 20 is the twenty-first page, counted from before page one on an unbookmarked book.
+        XCTAssertEqual(store.streak.todayPagesRead, 21,
                        "Bookmarking back into the book cannot reduce today's credit")
         XCTAssertFalse(store.streak.todayMet)
         XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).resolvedPage(), 19,
