@@ -1,6 +1,12 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
+**Status:** PageVault phase-2 spike source `b970e624807972381e8defd70dc74f660e77b0ef` passed Source
+checks, 27 new PageVault domain assertions alongside the 47 Squats ones, 78 hosted tests across both
+UI suites with zero failures, simulator/device builds, IPA inspection and `CI Gate` in
+[PR #17 run #34425616218](https://github.com/akshatksingh18/akshatos/actions/runs/34425616218);
+the PR correctly uploaded no IPA. That PR is open, so `main` does not yet contain the spike, and no
+PageVault behavior has been exercised on the phone.
+Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
 assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
 builds, IPA inspection and `CI Gate` in
 [PR #15 run #57](https://github.com/akshatksingh18/akshatos/actions/runs/34150335957).
