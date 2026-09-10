@@ -16,6 +16,24 @@ import SwiftUI
     @Published var warmPaper: Bool {
         didSet { defaults.set(warmPaper, forKey: "pagevault.warmPaper") }
     }
+    /// How far in the reader is zoomed, as a multiple of the whole-page fit. Remembered so a
+    /// chosen text size survives page turns, other books and relaunches instead of being redialled.
+    @Published var readingZoom: Double {
+        didSet {
+            let clamped = Self.clampZoom(readingZoom)
+            if clamped != readingZoom { readingZoom = clamped; return }
+            defaults.set(readingZoom, forKey: "pagevault.readingZoom")
+        }
+    }
+
+    static let minimumZoom = 1.0
+    static let maximumZoom = 4.0
+
+    /// Never below the whole-page fit: zooming further out only shrinks text that is already small.
+    static func clampZoom(_ value: Double) -> Double {
+        guard value.isFinite else { return minimumZoom }
+        return min(max(value, minimumZoom), maximumZoom)
+    }
 
     private let repository: any PageVaultRepository
     private let storage: PageVaultStorage?
@@ -37,6 +55,8 @@ import SwiftUI
         self.calendar = calendar
         self.defaults = defaults
         self.warmPaper = defaults.object(forKey: "pagevault.warmPaper") as? Bool ?? true
+        self.readingZoom = Self.clampZoom(defaults.object(forKey: "pagevault.readingZoom") as? Double
+                                          ?? Self.minimumZoom)
     }
 
     var books: [PageVaultBook] { library.recent }
@@ -175,8 +195,11 @@ import SwiftUI
         guard let book = library.current, book.activeGoal > 0 else { return }
         let today = PageVaultReadingDay.dayKey(now(), calendar: calendar)
         guard !days.contains(where: { $0.day == today && $0.bookID == book.id }) else { return }
-        let reachedBefore = days.filter { $0.bookID == book.id }.map(\.highestPage).max() ?? 0
-        let page = max(book.resolvedPage(), reachedBefore)
+        // A book with no bookmark yet starts *before* page one, because page one has not been read.
+        // Without this the first session of every book undercounts by exactly one page.
+        let baseline = book.hasPlace ? book.resolvedPage() : -1
+        let reachedBefore = days.filter { $0.bookID == book.id }.map(\.highestPage).max()
+        let page = max(baseline, reachedBefore ?? baseline)
         let row = PageVaultReadingDay(day: today, bookID: book.id, startPage: page,
                                       highestPage: page, goal: book.activeGoal)
         days.append(row)

@@ -231,3 +231,39 @@ assert(PageVaultImportFailure.storage("no space").message.contains("no space"),
 assert(PageVaultImportFailure.unreadable != PageVaultImportFailure.noPages,
        "Distinct failures stay distinguishable")
 print("PASS: 3 import failure assertions (encrypted, storage reason, distinct cases)")
+
+// Margin trimming is what makes fixed-layout text readable on a phone, so its limits are pinned.
+func ink(_ minX: Double, _ minY: Double, _ maxX: Double, _ maxY: Double) -> PageVaultInkBox {
+    PageVaultInkBox(minX: minX, minY: minY, maxX: maxX, maxY: maxY)
+}
+let typical = PageVaultCrop.cropBox(from: [ink(0.10, 0.08, 0.90, 0.92)])
+assert(typical != nil, "A page with ordinary margins is worth trimming")
+assert(typical!.minX > 0.08 && typical!.minX <= PageVaultCrop.maxSideInset,
+       "The trim is padded inward of the ink and never exceeds the cap")
+assert(typical!.width < 1, "Trimming reduces the page width, which is what raises text size")
+
+let generous = PageVaultCrop.cropBox(from: [ink(0.30, 0.30, 0.70, 0.70)])
+assert(generous != nil)
+assert(generous!.minX == PageVaultCrop.maxSideInset && generous!.maxX == 1 - PageVaultCrop.maxSideInset,
+       "A very wide margin is trimmed only up to the cap, so an unsampled figure cannot be shorn off")
+
+assert(PageVaultCrop.cropBox(from: [ink(0, 0, 1, 1)]) == nil,
+       "A scanned page whose ink covers the sheet is left alone")
+assert(PageVaultCrop.cropBox(from: [ink(0.005, 0.005, 0.995, 0.995)]) == nil,
+       "An already tight page is not re-cropped for no gain")
+assert(PageVaultCrop.cropBox(from: []) == nil, "No samples means no crop")
+assert(PageVaultCrop.cropBox(from: [ink(0.5, 0.5, 0.5, 0.5)]) == nil, "Empty ink is ignored")
+
+let unioned = PageVaultCrop.cropBox(from: [ink(0.20, 0.20, 0.60, 0.60),
+                                           ink(0.10, 0.15, 0.85, 0.90)])
+assert(unioned != nil)
+assert(unioned!.minX <= 0.10 && unioned!.maxX >= 0.85,
+       "The crop spans every sample, so the widest page still fits")
+
+assert(PageVaultCrop.samplePageIndices(pageCount: 0).isEmpty, "No pages, no samples")
+assert(PageVaultCrop.samplePageIndices(pageCount: 3) == [0, 1, 2], "A short document samples fully")
+let spread = PageVaultCrop.samplePageIndices(pageCount: 600)
+assert(spread.count == 5 && spread.first == 1 && spread.last == 599,
+       "A long document samples across its whole span, skipping the cover")
+assert(spread == spread.sorted() && Set(spread).count == 5, "Samples are ordered and distinct")
+print("PASS: 15 layout assertions (trim, cap, full-bleed, union, sampling)")
