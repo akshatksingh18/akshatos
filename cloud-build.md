@@ -195,6 +195,24 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
+### Downloaded Build-17 candidate — trimmed margins and bounded zoom
+
+- Version **0.2.0 (17)**; merge source `52181f6108d7338ece19bc9e6cd2ce9375db4352` (PR #24).
+- Artifact `akshatos-ios-76` from main delivery run
+  [34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880): 94 PageVault
+  domain assertions, 89 hosted tests, both builds, IPA inspection and `CI Gate` all passed.
+- Cached at `C:\Users\aksha\Downloads\akshatos-build-17\akshatos-ios-76`.
+- SHA-256 `87c1adce1fb91ceab4925d1e89c3411d0a96217c10e1c03f28a394e61be7b96e` matches the cloud
+  checksum. `validate-ipa.py` passed: structure, identity, metadata and payload.
+- Trims page margins so the text block scales to the screen width, floors zoom at the whole trimmed
+  page with a 4x ceiling, remembers the chosen zoom, and counts a book's first session from before
+  page one.
+- **Unsigned and not phone-verified.** Install over Build 16 without uninstalling. Two things to
+  watch: that no text or figure is clipped at a page edge (trimming is sampled and capped, so an
+  unsampled wide figure is the theoretical risk), and that the 188 MB scan looks untouched because
+  its ink covers the sheet. The open product question is whether the resulting text size is
+  comfortable, since it is the ceiling available without horizontal panning.
+
 ### Build-16 physical test result — reading still felt too small
 
 Reported after use: the reader still did not feel like a book. With a whole page on screen the text
