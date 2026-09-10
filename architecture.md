@@ -115,14 +115,15 @@ real device behavior.
 - `ios/tests/squats/`: feature domain assertions; `ios/UITests/`: app navigation tests.
 - `ios/UnitTests/`: hosted SwiftData integration tests. The test inventory, CI gate, diagnostics,
   and merge-enforcement limitations are defined in `ci.md`; tests do not ship in the IPA.
-- `ios/AkshatOS/features/pagevault/`: store plus `domain/` (Foundation-only book/library/outline
-  logic, reading status, bookmarks and the daily-goal streak engine), `data/` (versioned SwiftData
+- `ios/AkshatOS/features/pagevault/`: store plus `domain/` (Foundation-only book/library logic,
+  reading status, the place marker and the daily-goal streak engine), `data/` (versioned SwiftData
   store for books and reading days, the streamed copy-on-import file storage, and the disposable
   cover cache), `services/` (the only import-time PDFKit inspection and cover rendering), and `ui/`
-  (library grid, `PDFView` reader, book sheet). Its scope, gates, and locked decisions belong to
-  `../book-reader/`. Page changes arrive via `PDFViewPageChanged`, never a `PDFView` delegate, so
+  (library grid, paged `PDFView` reader, book sheet). Its scope, gates, and locked decisions belong
+  to `../book-reader/`. Page changes arrive via `PDFViewPageChanged`, never a `PDFView` delegate, so
   process-wide delegate ownership stays with the app coordinator. Reading days are written whenever
-  a goal is live, so an unread day is a real miss rather than an unrecorded gap.
+  a goal is live, so an unread day is a real miss rather than an unrecorded gap, and page changes
+  record streak progress only — the reading place moves solely on an explicit bookmark.
 - Future ReelVault source belongs in a sibling `features/reelvault/` area with its own store/tests.
   It is not created or implemented yet.
 

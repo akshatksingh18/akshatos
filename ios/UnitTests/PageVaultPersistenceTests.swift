@@ -54,7 +54,7 @@ import XCTest
         let container = try makeContainer()
         var original = PageVaultBook(fingerprint: "abc", title: "Deep Work", pageCount: 300,
                                      byteCount: 4_096, addedAt: Date(timeIntervalSince1970: 1_788_480_000))
-        original.remember(page: 42, at: Date(timeIntervalSince1970: 1_788_483_600))
+        original.setPlace(page: 42, at: Date(timeIntervalSince1970: 1_788_483_600))
         let writer = ModelContext(container)
         writer.insert(try PageVaultSchemaV1.SavedBook(original))
         try writer.save()
@@ -73,7 +73,7 @@ import XCTest
         var book = PageVaultBook(fingerprint: "abc", title: "Deep Work", pageCount: 300,
                                  byteCount: 4_096, addedAt: Date(timeIntervalSince1970: 1_788_480_000))
         try repository.save(book)
-        book.remember(page: 120, at: Date(timeIntervalSince1970: 1_788_487_200))
+        book.setPlace(page: 120, at: Date(timeIntervalSince1970: 1_788_487_200))
         try repository.save(book)
         let loaded = try repository.load()
         XCTAssertEqual(loaded.books.count, 1, "Saving the same book twice must not add a row")
@@ -144,19 +144,23 @@ import XCTest
         XCTAssertTrue(leftovers.isEmpty, "A failed import cleans up its partial copy")
     }
 
-    func testRememberedPageSurvivesStoreRecreation() async throws {
+    func testBookmarkedPlaceSurvivesStoreRecreation() async throws {
         let container = try makeContainer()
         let store = try makeStore(container: container)
         let source = try makePDF(pages: 50)
         await store.load()
         await store.importBook(from: source)
         let book = try XCTUnwrap(store.books.first)
-        store.remember(book, page: 31)
+        store.recordPageView(book, page: 31)
+        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).openingPage, 0,
+                       "Reading alone does not change where the book reopens")
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 31)
 
         let reopened = try makeStore(container: container)
         await reopened.load()
         let restored = try XCTUnwrap(reopened.books.first)
-        XCTAssertEqual(restored.currentPage, 31, "Reopening restores the last read page")
+        XCTAssertEqual(restored.openingPage, 31, "Reopening lands on the bookmarked page")
+        XCTAssertTrue(restored.hasPlace)
         XCTAssertNotNil(restored.lastOpenedAt)
     }
 
@@ -174,15 +178,6 @@ import XCTest
         XCTAssertFalse(FileManager.default.fileExists(atPath: copy.path), "The app copy is deleted")
         XCTAssertTrue(FileManager.default.fileExists(atPath: source.path),
                       "Removing a book never deletes the original source")
-    }
-
-    func testOutlineIsEmptyForADocumentWithoutOne() async throws {
-        let store = try makeStore()
-        await store.load()
-        await store.importBook(from: try makePDF(pages: 3))
-        let book = try XCTUnwrap(store.books.first)
-        let outline = await store.outline(for: book)
-        XCTAssertTrue(outline.isEmpty, "A PDF with no embedded outline reports none rather than faking one")
     }
 
     func testAbandonedStagingIsClearedOnLoad() async throws {
@@ -234,7 +229,7 @@ import XCTest
         XCTAssertFalse(store.streak.todayMet)
         XCTAssertEqual(store.streak.current, 0)
 
-        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 12)
         XCTAssertTrue(store.streak.todayMet, "Reaching the goal completes today")
         XCTAssertEqual(store.streak.current, 1)
 
@@ -254,32 +249,37 @@ import XCTest
         store.setStatus(.reading, for: book)
         store.setDailyGoal(30, for: book)
 
-        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 20)
-        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 4)
-        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 19)
+        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 20)
+        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 4)
+        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 19)
 
         XCTAssertEqual(store.streak.todayPagesRead, 20,
                        "Re-reading earlier pages cannot add progress")
         XCTAssertFalse(store.streak.todayMet)
-        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).currentPage, 19,
-                       "The reading position still follows the reader")
+        XCTAssertFalse(try XCTUnwrap(store.book(id: book.id)).hasPlace,
+                       "Reading never sets a place on its own; only bookmarking does")
     }
 
-    func testBookmarksPersistAcrossStoreRecreation() async throws {
+    func testBookmarkingReplacesThePreviousPlace() async throws {
         let container = try makeContainer()
         let store = try makeStore(container: container)
         await store.load()
         await store.importBook(from: try makePDF(pages: 60))
         let book = try XCTUnwrap(store.books.first)
-        XCTAssertTrue(store.toggleBookmark(book, page: 20, note: "Here"))
+
+        store.setPlace(book, page: 8)
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 20)
 
         let reopened = try makeStore(container: container)
         await reopened.load()
         let restored = try XCTUnwrap(reopened.books.first)
-        XCTAssertEqual(restored.bookmarks.map(\.page), [20])
-        XCTAssertEqual(restored.bookmarks.first?.note, "Here")
-        XCTAssertFalse(reopened.toggleBookmark(restored, page: 20), "Toggling the same page removes it")
-        XCTAssertTrue(try XCTUnwrap(reopened.books.first).bookmarks.isEmpty)
+        XCTAssertEqual(restored.openingPage, 20, "Only the newest bookmark survives")
+        XCTAssertFalse(restored.isPlace(page: 8), "The previous place does not linger")
+
+        reopened.clearPlace(restored)
+        let cleared = try XCTUnwrap(reopened.books.first)
+        XCTAssertFalse(cleared.hasPlace)
+        XCTAssertEqual(cleared.openingPage, 0, "A cleared book opens at page one again")
     }
 
     func testImportGeneratesACoverThumbnail() async throws {
@@ -334,7 +334,7 @@ import XCTest
         let book = try XCTUnwrap(store.books.first)
         store.setStatus(.reading, for: book)
         store.setDailyGoal(10, for: book)
-        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 12)
         XCTAssertEqual(store.streak.current, 1)
 
         store.setStatus(.finished, for: try XCTUnwrap(store.book(id: book.id)))

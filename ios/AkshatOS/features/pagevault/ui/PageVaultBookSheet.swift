@@ -18,7 +18,7 @@ struct PageVaultBookSheet: View {
                     List {
                         statusSection(book)
                         goalSection(book)
-                        bookmarksSection(book)
+                        placeSection(book)
                         detailsSection(book)
                     }
                 } else {
@@ -75,25 +75,15 @@ struct PageVaultBookSheet: View {
         }
     }
 
-    @ViewBuilder private func bookmarksSection(_ book: PageVaultBook) -> some View {
-        Section("Bookmarks") {
-            if book.bookmarks.isEmpty {
-                Text("No bookmarks yet. Use the bookmark button while reading.")
-                    .font(.caption).foregroundStyle(Palette.muted)
+    @ViewBuilder private func placeSection(_ book: PageVaultBook) -> some View {
+        Section("Your place") {
+            if book.hasPlace {
+                LabeledContent("Bookmarked at", value: "Page \(book.resolvedPage() + 1)")
+                Button("Clear your place", role: .destructive) { store.clearPlace(book) }
+                    .accessibilityIdentifier("clear-place")
             } else {
-                ForEach(book.bookmarks) { bookmark in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Page \(bookmark.page + 1)").font(.subheadline.monospacedDigit())
-                        if let note = bookmark.note {
-                            Text(note).font(.caption).foregroundStyle(Palette.muted)
-                        }
-                    }
-                }
-                .onDelete { offsets in
-                    for index in offsets {
-                        store.removeBookmark(book, id: book.bookmarks[index].id)
-                    }
-                }
+                Text("Not bookmarked yet. This book opens at page 1 until you save your place while reading.")
+                    .font(.caption).foregroundStyle(Palette.muted)
             }
         }
     }

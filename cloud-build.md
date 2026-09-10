@@ -41,16 +41,18 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (14)**; minimum iOS 17.
-  Build 14 adds PageVault, so the build number was raised: an installable artifact must never share
-  Build 13's number while carrying different code.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (15)**; minimum iOS 17.
+  Every installable artifact gets its own build number, so a build never shares a number while
+  carrying different code. Build 13 is the installed Squats-only build; 14 added PageVault and was
+  physically tested; 15 carries the reader redesign that followed.
   Build 13 is installed and accepted for its implemented daily workflow, including automatic nudges
   and idle-start behavior. Build 12 is the retained accepted predecessor; Build 11 remains an older fallback.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core, plus PageVault's library, reader, reading status,
-  daily-goal streak, bookmarks and cover cache — none of it phone-verified; ReelVault is a planned
-  card only.
+- Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, warm paper,
+  reading status, daily-goal streak, bookmarked place and cover cache; ReelVault is a planned card
+  only. Build 14's import and large-PDF reading passed on the phone; the reader redesign in build 15
+  has not been device-tested.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an in-place upgrade of the former standalone smoke app.
@@ -192,6 +194,27 @@ The latter published the downloaded artifact below. No build-4 signing, installa
 release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Build-14 physical test result — large-PDF gate passed
+
+Akshat installed Build 14 over Build 13 without uninstalling and ran the fixture set. Squats was
+unaffected: dashboard, settings, history and reminders all intact after the orientation change.
+
+Passed: a 188 MB 120-page scan-like PDF imported and read with all pages loading; a 600-page text
+book, a 180-page three-level outline and a 40-page outline-less PDF; corrupt and password-protected
+files each rejected with a clear message and no library entry; re-importing an existing book
+refused; reader landscape with the rest of the hub staying portrait.
+
+Failed: reopening a book ignored the stored page and started from the beginning. Root cause was a
+`go(to:)` issued before PDFKit laid the document out, whose loss then let the debounced write
+persist page one over the saved position. Fixed in build 15, unverified on device.
+
+Rejected in use: continuous vertical scrolling (showed two half pages, did not read like a book) and
+the table-of-contents navigator (unwanted). Build 15 replaces the former with single-page horizontal
+paging plus warm paper, and removes the latter. `../book-reader/features.md` owns that scope change.
+
+No Instruments memory figures were captured, so memory behavior is an observation rather than a
+measurement.
 
 ### Downloaded Build-14 candidate — PageVault v1 reading loop
 

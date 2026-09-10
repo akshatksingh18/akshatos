@@ -12,23 +12,31 @@ import SwiftUI
     @Published private(set) var lastImportSummary: String?
     @Published private(set) var coverRevision = 0
     @Published var message: String?
+    /// Warm paper is the default: this is meant to read like a book, not like a document viewer.
+    @Published var warmPaper: Bool {
+        didSet { defaults.set(warmPaper, forKey: "pagevault.warmPaper") }
+    }
 
     private let repository: any PageVaultRepository
     private let storage: PageVaultStorage?
     private let documents: any PageVaultDocumentInspecting
     private let now: () -> Date
     private let calendar: Calendar
+    private let defaults: UserDefaults
 
     init(repository: (any PageVaultRepository)? = nil,
          storage: PageVaultStorage? = nil,
          documents: any PageVaultDocumentInspecting = PageVaultDocumentService(),
          now: @escaping () -> Date = Date.init,
-         calendar: Calendar = .current) {
+         calendar: Calendar = .current,
+         defaults: UserDefaults = .standard) {
         self.repository = repository ?? SwiftDataPageVaultRepository()
         self.storage = storage ?? (try? PageVaultStorage())
         self.documents = documents
         self.now = now
         self.calendar = calendar
+        self.defaults = defaults
+        self.warmPaper = defaults.object(forKey: "pagevault.warmPaper") as? Bool ?? true
     }
 
     var books: [PageVaultBook] { library.recent }
@@ -96,18 +104,29 @@ import SwiftUI
         }
     }
 
-    /// Records the page reached and, when this book is the one being read against a goal, advances
-    /// today's high-water mark. Paging backward to re-read never reduces progress.
-    func remember(_ book: PageVaultBook, page: Int) {
+    /// Records how far reading actually reached, for the streak only. This deliberately does not
+    /// move your place: browsing through the book must never lose the page you bookmarked.
+    func recordPageView(_ book: PageVaultBook, page: Int) {
         guard var stored = library.books.first(where: { $0.id == book.id }) else { return }
         let resolved = stored.resolvedPage(page)
-        let firstOpen = stored.lastOpenedAt == nil
-        if resolved != stored.currentPage || firstOpen {
-            stored.remember(page: resolved, at: now())
+        if stored.lastOpenedAt == nil {
+            stored.markOpened(at: now())
             library.update(stored)
             persist(stored)
         }
         advanceToday(for: stored, reaching: resolved)
+    }
+
+    /// Bookmarking is the only thing that moves your place, and therefore the only thing that
+    /// changes where the book reopens and what the library shows as progress.
+    func setPlace(_ book: PageVaultBook, page: Int) {
+        guard let updated = library.setPlace(page: page, for: book.id, at: now()) else { return }
+        persist(updated)
+    }
+
+    func clearPlace(_ book: PageVaultBook) {
+        guard let updated = library.clearPlace(for: book.id, at: now()) else { return }
+        persist(updated)
     }
 
     @discardableResult
@@ -128,22 +147,6 @@ import SwiftUI
         openTodayIfGoalIsActive()
     }
 
-    @discardableResult
-    func toggleBookmark(_ book: PageVaultBook, page: Int, note: String? = nil) -> Bool {
-        guard var stored = library.books.first(where: { $0.id == book.id }) else { return false }
-        let added = stored.toggleBookmark(page: page, note: note, at: now())
-        library.update(stored)
-        persist(stored)
-        return added
-    }
-
-    func removeBookmark(_ book: PageVaultBook, id: UUID) {
-        guard var stored = library.books.first(where: { $0.id == book.id }) else { return }
-        stored.removeBookmark(id: id)
-        library.update(stored)
-        persist(stored)
-    }
-
     func book(id: UUID) -> PageVaultBook? {
         library.books.first { $0.id == id }
     }
@@ -161,15 +164,6 @@ import SwiftUI
         }
     }
 
-    /// Outline traversal can be slow on a large document, so it never runs on the main actor.
-    func outline(for book: PageVaultBook) async -> [PageVaultOutlineNode] {
-        guard let url = documentURL(for: book) else { return [] }
-        let documents = self.documents
-        return await Task.detached(priority: .userInitiated) {
-            documents.outline(of: url)
-        }.value
-    }
-
     // MARK: - Streak bookkeeping
 
     /// Opens today's row as soon as a goal is live, so a day that passes without reading becomes a
@@ -178,7 +172,8 @@ import SwiftUI
         guard let book = library.current, book.activeGoal > 0 else { return }
         let today = PageVaultReadingDay.dayKey(now(), calendar: calendar)
         guard !days.contains(where: { $0.day == today && $0.bookID == book.id }) else { return }
-        let page = book.resolvedPage()
+        let reachedBefore = days.filter { $0.bookID == book.id }.map(\.highestPage).max() ?? 0
+        let page = max(book.resolvedPage(), reachedBefore)
         let row = PageVaultReadingDay(day: today, bookID: book.id, startPage: page,
                                       highestPage: page, goal: book.activeGoal)
         days.append(row)

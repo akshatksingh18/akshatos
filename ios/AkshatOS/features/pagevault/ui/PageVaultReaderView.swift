@@ -4,11 +4,23 @@ import SwiftUI
 /// Commands the wrapped `PDFView` without reaching into undocumented subviews.
 @MainActor final class PageVaultReaderController: ObservableObject {
     @Published var currentPage = 0
+    /// True until the opening page has actually been applied. Page changes are ignored while it is
+    /// set, because PDFKit reports page 0 during layout and that would otherwise overwrite the
+    /// stored place with the beginning of the book.
+    @Published private(set) var restoring = true
     private weak var view: PDFView?
 
     func attach(_ view: PDFView) { self.view = view }
 
-    func prime(page: Int) { currentPage = page }
+    func finishRestoring(at page: Int) {
+        currentPage = page
+        restoring = false
+    }
+
+    func report(page: Int) {
+        guard !restoring else { return }
+        currentPage = page
+    }
 
     func go(to index: Int) {
         guard let view, let page = view.document?.page(at: index) else { return }
@@ -26,197 +38,156 @@ struct PageVaultReaderView: View {
 
     @StateObject private var controller = PageVaultReaderController()
     @Environment(\.scenePhase) private var scenePhase
-    @State private var outline: [PageVaultOutlineNode] = []
-    @State private var outlineLoaded = false
-    @State private var showNavigator = false
-    @State private var navigatorTab = NavigatorTab.contents
 
-    private enum NavigatorTab: String, CaseIterable {
-        case contents, bookmarks
-        var label: String { rawValue.capitalized }
-    }
-
-    /// Bookmarks change while reading, so the live copy is read back from the store.
+    /// The place can change while reading, so the live copy is read back from the store.
     private var live: PageVaultBook { store.book(id: book.id) ?? book }
 
     var body: some View {
-        PageVaultDocumentView(url: url, initialPage: book.resolvedPage(), controller: controller)
+        PageVaultDocumentView(url: url, openingPage: book.openingPage,
+                              warmPaper: store.warmPaper, controller: controller)
             .overlay(alignment: .bottom) { pageIndicator }
             .navigationTitle(book.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { bookmarkButton }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showNavigator = true } label: {
-                        Image(systemName: "list.bullet.indent")
-                    }
-                    .accessibilityIdentifier("open-table-of-contents")
-                    .accessibilityLabel("Contents and bookmarks")
-                }
+                ToolbarItem(placement: .topBarTrailing) { paperButton }
+                ToolbarItem(placement: .topBarTrailing) { placeButton }
             }
-            .sheet(isPresented: $showNavigator) { navigator }
-            .task { await loadOutline() }
-            .task(id: controller.currentPage) { await persistAfterPause() }
-            .onAppear {
-                controller.prime(page: book.resolvedPage())
-                onReadingSessionChange(true)
-            }
+            .onAppear { onReadingSessionChange(true) }
             .onDisappear {
                 onReadingSessionChange(false)
-                store.remember(book, page: controller.currentPage)
+                store.recordPageView(book, page: controller.currentPage)
             }
             .onChange(of: scenePhase) { _, phase in
-                if phase != .active { store.remember(book, page: controller.currentPage) }
+                if phase != .active { store.recordPageView(book, page: controller.currentPage) }
             }
+            .task(id: controller.currentPage) { await recordAfterPause() }
     }
 
-    private var bookmarkButton: some View {
-        let marked = live.hasBookmark(page: controller.currentPage)
+    /// Bookmarking is what moves your place, so this is the only control that changes where the
+    /// book reopens. Browsing away and closing the app leaves the place untouched.
+    private var placeButton: some View {
+        let marked = live.isPlace(page: controller.currentPage)
         return Button {
-            store.toggleBookmark(live, page: controller.currentPage)
+            if marked {
+                store.clearPlace(live)
+            } else {
+                store.setPlace(live, page: controller.currentPage)
+            }
         } label: {
             Image(systemName: marked ? "bookmark.fill" : "bookmark")
         }
+        .disabled(controller.restoring)
         .accessibilityIdentifier("toggle-bookmark")
-        .accessibilityLabel(marked ? "Remove bookmark" : "Bookmark this page")
+        .accessibilityLabel(marked ? "Remove your place" : "Save your place on this page")
+    }
+
+    private var paperButton: some View {
+        Button {
+            store.warmPaper.toggle()
+        } label: {
+            Image(systemName: store.warmPaper ? "sun.max.fill" : "sun.max")
+        }
+        .accessibilityIdentifier("toggle-warm-paper")
+        .accessibilityLabel(store.warmPaper ? "Use plain white pages" : "Use warm paper")
     }
 
     private var pageIndicator: some View {
-        Text("\(controller.currentPage + 1) / \(book.pageCount)")
+        let placeNote = live.isPlace(page: controller.currentPage) ? " · your place" : ""
+        return Text("\(controller.currentPage + 1) / \(book.pageCount)\(placeNote)")
             .font(.caption.weight(.semibold).monospacedDigit())
-            .foregroundStyle(Palette.muted)
+            .foregroundStyle(.white.opacity(0.85))
             .padding(.horizontal, 14).padding(.vertical, 8)
             .background(.black.opacity(0.55), in: Capsule())
             .padding(.bottom, 14)
             .accessibilityIdentifier("reader-page-indicator")
     }
 
-    private var navigator: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                Picker("View", selection: $navigatorTab) {
-                    ForEach(NavigatorTab.allCases, id: \.self) { Text($0.label).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal).padding(.bottom, 8)
-
-                switch navigatorTab {
-                case .contents: contentsList
-                case .bookmarks: bookmarksList
-                }
-            }
-            .navigationTitle("Navigate")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { showNavigator = false }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder private var contentsList: some View {
-        if !outlineLoaded {
-            ProgressView().frame(maxHeight: .infinity)
-        } else if outline.isEmpty {
-            // A PDF without an embedded outline gets an honest state; none is invented.
-            ContentUnavailableView("No table of contents",
-                                   systemImage: "list.bullet.indent",
-                                   description: Text("This PDF has no embedded outline."))
-                .accessibilityIdentifier("reader-no-outline")
-        } else {
-            List(PageVaultOutlineNode.rows(outline)) { row in
-                Button {
-                    if let page = row.page { controller.go(to: page) }
-                    showNavigator = false
-                } label: {
-                    HStack {
-                        Text(row.title).lineLimit(2)
-                        Spacer()
-                        if let page = row.page {
-                            Text("\(page + 1)").font(.caption.monospacedDigit())
-                                .foregroundStyle(Palette.muted)
-                        }
-                    }
-                    .padding(.leading, CGFloat(row.level) * 16)
-                }
-                .disabled(row.page == nil)
-            }
-        }
-    }
-
-    @ViewBuilder private var bookmarksList: some View {
-        let bookmarks = live.bookmarks
-        if bookmarks.isEmpty {
-            ContentUnavailableView("No bookmarks", systemImage: "bookmark",
-                                   description: Text("Tap the bookmark button to save your place."))
-                .accessibilityIdentifier("reader-no-bookmarks")
-        } else {
-            List {
-                ForEach(bookmarks) { bookmark in
-                    Button {
-                        controller.go(to: bookmark.page)
-                        showNavigator = false
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Page \(bookmark.page + 1)").font(.subheadline.monospacedDigit())
-                            if let note = bookmark.note {
-                                Text(note).font(.caption).foregroundStyle(Palette.muted)
-                            }
-                        }
-                    }
-                }
-                .onDelete { offsets in
-                    for index in offsets { store.removeBookmark(live, id: bookmarks[index].id) }
-                }
-            }
-        }
-    }
-
-    private func loadOutline() async {
-        guard !outlineLoaded else { return }
-        outline = await store.outline(for: book)
-        outlineLoaded = true
-    }
-
-    /// Coalesces rapid page changes: `.task(id:)` cancels the pending save on the next turn, so
-    /// scrolling quickly through a long book does not write once per page.
-    private func persistAfterPause() async {
+    /// Coalesces rapid page turns: `.task(id:)` cancels the pending write on the next turn, so
+    /// moving quickly through a long book does not write once per page. This records reading
+    /// progress for the streak only — it never moves your place.
+    private func recordAfterPause() async {
         try? await Task.sleep(for: .seconds(2))
-        guard !Task.isCancelled else { return }
-        store.remember(book, page: controller.currentPage)
+        guard !Task.isCancelled, !controller.restoring else { return }
+        store.recordPageView(book, page: controller.currentPage)
     }
 }
 
-/// Wraps PDFKit's own view. Page changes arrive through `PDFViewPageChanged` rather than a
-/// delegate, keeping process-wide delegate ownership with the app coordinator.
+/// Wraps PDFKit's own view in single-page horizontal paging, so one page fills the screen and a
+/// swipe moves exactly one page instead of scrolling two half pages into view.
 private struct PageVaultDocumentView: UIViewRepresentable {
     let url: URL
-    let initialPage: Int
+    let openingPage: Int
+    let warmPaper: Bool
     @ObservedObject var controller: PageVaultReaderController
 
-    func makeUIView(context: Context) -> PDFView {
+    func makeUIView(context: Context) -> UIView {
+        let container = UIView()
         let view = PDFView()
-        view.displayMode = .singlePageContinuous
-        view.displayDirection = .vertical
+        view.displayMode = .singlePage
+        view.displayDirection = .horizontal
         view.autoScales = true
-        view.backgroundColor = UIColor(Palette.background)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        // One page per screen with real paging, rather than a continuous scroll of partial pages.
+        view.usePageViewController(true, withViewOptions: nil)
         // PDFKit renders on demand; the document is never pre-rendered or fully buffered here.
         view.document = PDFDocument(url: url)
-        if let page = view.document?.page(at: initialPage) { view.go(to: page) }
+
+        let tint = UIView()
+        tint.translatesAutoresizingMaskIntoConstraints = false
+        tint.isUserInteractionEnabled = false
+        // Multiply keeps black text black while warming the white of the page, which a plain
+        // translucent overlay cannot do without washing the text out.
+        tint.layer.compositingFilter = "multiplyBlendMode"
+
+        container.addSubview(view)
+        container.addSubview(tint)
+        for child in [view, tint] {
+            NSLayoutConstraint.activate([
+                child.topAnchor.constraint(equalTo: container.topAnchor),
+                child.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+                child.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                child.trailingAnchor.constraint(equalTo: container.trailingAnchor)
+            ])
+        }
+
         controller.attach(view)
+        context.coordinator.pdfView = view
+        context.coordinator.tint = tint
+        context.coordinator.pendingPage = openingPage
         context.coordinator.observe(view, controller: controller)
-        return view
+        context.coordinator.apply(warmPaper: warmPaper)
+        // The opening page cannot be applied until PDFKit has laid the document out, so it is
+        // retried after layout instead of being set once and silently ignored.
+        context.coordinator.scheduleRestore(controller: controller)
+        return container
     }
 
-    func updateUIView(_ view: PDFView, context: Context) {}
+    func updateUIView(_ view: UIView, context: Context) {
+        context.coordinator.apply(warmPaper: warmPaper)
+        context.coordinator.scheduleRestore(controller: controller)
+    }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    final class Coordinator {
+    @MainActor final class Coordinator {
+        weak var pdfView: PDFView?
+        weak var tint: UIView?
+        var pendingPage: Int?
         private var token: NSObjectProtocol?
+        private var attempts = 0
+
+        func apply(warmPaper: Bool) {
+            pdfView?.backgroundColor = warmPaper
+                ? UIColor(red: 0.16, green: 0.13, blue: 0.10, alpha: 1)
+                : UIColor(Palette.background)
+            tint?.backgroundColor = warmPaper
+                ? UIColor(red: 0.99, green: 0.94, blue: 0.84, alpha: 1)
+                : .white
+            tint?.isHidden = !warmPaper
+        }
 
         func observe(_ view: PDFView, controller: PageVaultReaderController) {
+            guard token == nil else { return }
             token = NotificationCenter.default.addObserver(
                 forName: .PDFViewPageChanged, object: view, queue: .main
             ) { note in
@@ -224,7 +195,44 @@ private struct PageVaultDocumentView: UIViewRepresentable {
                       let document = view.document else { return }
                 let index = document.index(for: page)
                 guard index != NSNotFound else { return }
-                Task { @MainActor in controller.currentPage = index }
+                Task { @MainActor in controller.report(page: index) }
+            }
+        }
+
+        /// Retries the opening page until PDFKit reports it, then hands control to the reader.
+        func scheduleRestore(controller: PageVaultReaderController) {
+            guard let target = pendingPage else { return }
+            guard let view = pdfView, let document = view.document, document.pageCount > 0 else {
+                retry(controller: controller)
+                return
+            }
+            let wanted = min(max(target, 0), document.pageCount - 1)
+            if wanted == 0 {
+                pendingPage = nil
+                controller.finishRestoring(at: 0)
+                return
+            }
+            if let page = document.page(at: wanted) { view.go(to: page) }
+            if let landed = view.currentPage, document.index(for: landed) == wanted {
+                pendingPage = nil
+                controller.finishRestoring(at: wanted)
+            } else {
+                retry(controller: controller)
+            }
+        }
+
+        private func retry(controller: PageVaultReaderController) {
+            attempts += 1
+            // Give up rather than spin forever; a failed restore means reading from page one,
+            // which is recoverable, whereas an endless retry loop is not.
+            guard attempts < 40 else {
+                pendingPage = nil
+                controller.finishRestoring(at: controller.currentPage)
+                return
+            }
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .milliseconds(50))
+                self?.scheduleRestore(controller: controller)
             }
         }
 
