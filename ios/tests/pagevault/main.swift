@@ -139,17 +139,17 @@ assert(tiny.currentPage == 0 && tiny.status == .wantToRead && tiny.bookmarks.isE
        "A minimal record loads with defaults instead of throwing")
 
 // A record missing a genuinely required field is still a corrupt record, not a default.
-let broken = Data("""
+let corruptRecord = Data("""
 {"id":"9C1F0C7E-1A2B-4C3D-8E4F-5A6B7C8D9E0F","title":"No fingerprint","pageCount":3,
  "byteCount":10,"addedAt":0}
 """.utf8)
-var rejectedBroken = false
+var rejectedCorruptRecord = false
 do {
-    _ = try JSONDecoder().decode(PageVaultBook.self, from: broken)
+    _ = try JSONDecoder().decode(PageVaultBook.self, from: corruptRecord)
 } catch {
-    rejectedBroken = true
+    rejectedCorruptRecord = true
 }
-assert(rejectedBroken, "Leniency applies to added fields only, never to identity")
+assert(rejectedCorruptRecord, "Leniency applies to added fields only, never to identity")
 print("PASS: 6 payload migration assertions (defaults, optionals, minimal record, corrupt record)")
 
 func readingDay(_ number: Int, book id: UUID, from: Int, to: Int, goal: Int) -> PageVaultReadingDay {
