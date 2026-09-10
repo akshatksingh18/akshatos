@@ -20,7 +20,9 @@ struct PageVaultLibraryView: View {
                 } else {
                     streakCard
                     continueReading
-                    shelf("Want to read", books: store.books(with: .wantToRead))
+                    // Half-read books get their own shelf rather than sitting among unopened ones.
+                    shelf("Started", books: store.startedBooks)
+                    shelf("Want to read", books: store.unstartedBooks)
                     shelf("Finished", books: store.books(with: .finished))
                 }
                 if let summary = store.lastImportSummary {

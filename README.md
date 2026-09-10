@@ -2,13 +2,13 @@
 
 A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
 dashboard, or **PageVault** for its PDF library. PageVault's import and large-PDF reading passed a
-physical-device test, including a 188 MB scan; its paged one-page-at-a-time reader, warm paper and
-bookmarked place are implemented but not yet phone-verified.
+physical-device test, including a 188 MB scan. Paged reading and warm paper on text pages have since
+been confirmed on the phone; the bookmarked place, margin trimming and bounded zoom have not.
 ReelVault is reserved for later and WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (13)**,
-bundle ID `com.akshatksingh18.akshatos`. Build/device evidence lives in
+recovery, Home auto-pause and expanded goal/streak edge handling, plus the PageVault module,
+bundle ID `com.akshatksingh18.akshatos`. The working source version and build/device evidence live in
 [cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
 by Akshat; that is not evidence that this new hub build works on the phone.
 The Build-11 unsigned IPA is downloaded and hash-verified after main delivery run #49; Builds 9 and

@@ -119,7 +119,24 @@ goalHolder.dailyPageGoal = 10
 assert(goalHolder.activeGoal == 0, "A goal only counts while the book is being read")
 goalHolder.status = .reading
 assert(goalHolder.activeGoal == 10, "The Reading book exposes its goal")
-print("PASS: 15 status assertions (default, single Reading book, demotion, shelves, goal sanitizing)")
+
+// Started is a shelf, not a status: Want to Read books that already carry a place.
+var shelves = PageVaultLibrary()
+try shelves.insert(book(placed: 30, fingerprint: "set-aside", title: "Set Aside"))
+try shelves.insert(book(fingerprint: "unopened", title: "Unopened"))
+try shelves.insert(book(placed: 5, fingerprint: "current", title: "Current"))
+try shelves.insert(book(placed: 99, fingerprint: "done", title: "Done"))
+shelves.setStatus(.reading, for: shelves.books[2].id, at: day(1))
+shelves.setStatus(.finished, for: shelves.books[3].id, at: day(1))
+assert(shelves.started.map(\.title) == ["Set Aside"],
+       "A bookmarked Want to Read book shelves under Started, and Reading or Finished books do not")
+assert(shelves.unstarted.map(\.title) == ["Unopened"], "An unbookmarked book stays on Want to read")
+assert(shelves.started.count + shelves.unstarted.count == shelves.books(with: .wantToRead).count,
+       "Started and Want to read split one status without losing or repeating a book")
+shelves.clearPlace(for: shelves.books[0].id, at: day(2))
+assert(shelves.started.isEmpty && shelves.unstarted.count == 2,
+       "Clearing a place moves the book back to Want to read")
+print("PASS: 19 status assertions (default, single Reading book, demotion, shelves, goal sanitizing, started shelf)")
 
 // Records written by earlier builds must keep loading, including ones with fields since removed.
 let legacy = Data("""

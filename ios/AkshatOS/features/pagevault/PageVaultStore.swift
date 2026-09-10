@@ -69,6 +69,9 @@ import SwiftUI
         library.books(with: status)
     }
 
+    var startedBooks: [PageVaultBook] { library.started }
+    var unstartedBooks: [PageVaultBook] { library.unstarted }
+
     func documentURL(for book: PageVaultBook) -> URL? {
         storage?.documentURL(for: book.id)
     }

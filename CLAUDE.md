@@ -2,7 +2,7 @@
 
 Personal native iPhone hub: the home screen selects a feature, starting with Squat Reminder.
 PageVault is the activated next module — its scope, phases, and progress are owned by
-`../book-reader/CLAUDE.md`, and no PageVault code exists in `ios/` yet. ReelVault is reserved for
+`../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. ReelVault is reserved for
 later; WHOOP stays standalone. This repository evolved
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
@@ -122,10 +122,10 @@ feature is physically verified.
 
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
-  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
-  `0.2.0 (13)`; Build 13 is installed and accepted for its implemented daily workflow, including
-  automatic overdue nudges and the idle 9:00 AM start invitation. Build 12 is the retained accepted
-  predecessor. The broader physical edge-case and repeated-refresh matrix remains open.
+  The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, with the working
+  source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
+  accepted for Squats daily use, including automatic overdue nudges and the idle 9:00 AM start
+  invitation, and Build 12 is its retained accepted predecessor. Later builds add PageVault. The broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
