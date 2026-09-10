@@ -193,6 +193,27 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
+### Downloaded Build-14 candidate — PageVault v1 reading loop
+
+- Version **0.2.0 (14)**; merge source `b3ff429be98042b2f99728e7ef95ec7e3022457a` (PR #18).
+- Artifact `akshatos-ios-66` from main delivery run
+  [34487510067](https://github.com/akshatksingh18/akshatos/actions/runs/34487510067), which passed
+  Source checks, 80 PageVault plus 47 Squats domain assertions, 86 hosted tests, both builds, IPA
+  inspection and `CI Gate`.
+- Cached at `C:\Users\aksha\Downloads\akshatos-build-14\akshatos-ios-66`.
+- SHA-256 `64a8c7da2ada589fd02a04de46d38d43ca16c7d6a9d54feacd864b2ef8b35af8` matches the cloud
+  checksum. `validate-ipa.py` passed: structure, identity, metadata and payload.
+- Contains PageVault's library, reader, reading status, daily-goal streak, bookmarks and covers.
+  Adds app-wide landscape support gated to the reader by `OrientationGate`, so the Squats dashboard
+  must be re-checked for portrait layout after install.
+- **Not yet signed, installed or phone-verified.** Install over Build 13 without uninstalling so
+  Squats data preservation stays testable. Build 13 remains the installed accepted build until this
+  one passes on the phone.
+- Test fixtures for the physical pass are generated locally at
+  `C:\Users\aksha\Downloads\pagevault-test-pdfs` (600-page text, 180-page three-level outline,
+  40-page outline-less, 188 MB scan-like, password-protected, truncated/corrupt). They are synthetic
+  structural fixtures; a real scanned book is still required for the memory-pressure verdict.
+
 ### Downloaded Build-13-numbered PageVault spike artifact
 
 - Artifact `akshatos-ios-62` from main delivery run
