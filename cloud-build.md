@@ -41,7 +41,7 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (16)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (17)**; minimum iOS 17.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Build 13 is the installed Squats-only build; 14 added PageVault and was
   physically tested; 15 carries the reader redesign that followed.
@@ -194,6 +194,20 @@ The latter published the downloaded artifact below. No build-4 signing, installa
 release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Build-16 physical test result — reading still felt too small
+
+Reported after use: the reader still did not feel like a book. With a whole page on screen the text
+was too small, and pinching out could shrink it much further, which looked wrong. Swiping between
+pages was fine, and seeing a whole page at once was explicitly not required as long as text is
+readable.
+
+Build 17 responds by trimming page margins so the text block is what scales to the screen width,
+flooring zoom at the whole trimmed page, and remembering the chosen zoom. It also fixes a one-page
+undercount on a book's first session. None of it is device-verified.
+
+The ceiling is physical and recorded in `../book-reader/features.md`: page width binds in portrait,
+so trimming reaches roughly 0.83x printed size and going further needs horizontal panning.
 
 ### Downloaded Build-16 candidate — bookmark-driven progress and seamless paper
 

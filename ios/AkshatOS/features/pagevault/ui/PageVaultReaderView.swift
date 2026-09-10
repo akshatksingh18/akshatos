@@ -43,7 +43,9 @@ struct PageVaultReaderView: View {
 
     var body: some View {
         PageVaultDocumentView(url: url, openingPage: book.openingPage,
-                              warmPaper: store.warmPaper, controller: controller)
+                              warmPaper: store.warmPaper, zoom: store.readingZoom,
+                              controller: controller,
+                              onZoomChanged: { store.readingZoom = $0 })
             .overlay(alignment: .bottom) { pageIndicator }
             .navigationTitle(book.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -105,7 +107,9 @@ private struct PageVaultDocumentView: UIViewRepresentable {
     let url: URL
     let openingPage: Int
     let warmPaper: Bool
+    let zoom: Double
     @ObservedObject var controller: PageVaultReaderController
+    let onZoomChanged: (Double) -> Void
 
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
@@ -118,7 +122,14 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         // One page per screen with real paging, rather than a continuous scroll of partial pages.
         view.usePageViewController(true, withViewOptions: nil)
         // PDFKit renders on demand; the document is never pre-rendered or fully buffered here.
-        view.document = PDFDocument(url: url)
+        let document = PDFDocument(url: url)
+        if let document {
+            // Trim the page margins before first layout, so the text block is what gets scaled to
+            // the screen width. This is the only automatic way to enlarge fixed-layout text.
+            PageVaultPageLayout().applyCrop(to: document)
+            view.displayBox = .cropBox
+        }
+        view.document = document
 
         let tint = UIView()
         tint.translatesAutoresizingMaskIntoConstraints = false
@@ -142,8 +153,10 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         context.coordinator.pdfView = view
         context.coordinator.tint = tint
         context.coordinator.pendingPage = openingPage
+        context.coordinator.onZoomChanged = onZoomChanged
         context.coordinator.observe(view, controller: controller)
         context.coordinator.apply(warmPaper: warmPaper)
+        context.coordinator.apply(zoom: zoom)
         // The opening page cannot be applied until PDFKit has laid the document out, so it is
         // retried after layout instead of being set once and silently ignored.
         context.coordinator.scheduleRestore(controller: controller)
@@ -151,7 +164,9 @@ private struct PageVaultDocumentView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: UIView, context: Context) {
+        context.coordinator.onZoomChanged = onZoomChanged
         context.coordinator.apply(warmPaper: warmPaper)
+        context.coordinator.apply(zoom: zoom)
         context.coordinator.scheduleRestore(controller: controller)
     }
 
@@ -161,8 +176,12 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         weak var pdfView: PDFView?
         weak var tint: UIView?
         var pendingPage: Int?
+        var onZoomChanged: ((Double) -> Void)?
         private var token: NSObjectProtocol?
+        private var scaleToken: NSObjectProtocol?
         private var attempts = 0
+        private var requestedZoom = PageVaultStore.minimumZoom
+        private var applyingZoom = false
 
         /// The surround is kept the same white as the page, so a page narrower than the screen
         /// blends into it instead of sitting inside dark letterbox bands. The warm overlay then
@@ -173,7 +192,46 @@ private struct PageVaultDocumentView: UIViewRepresentable {
             tint?.isHidden = !warmPaper
         }
 
+        /// Anchors zoom to the fit scale: the floor is the whole cropped page, so the text can
+        /// never be dialled smaller than "everything visible", and the ceiling stops a stray pinch
+        /// leaving the reader somewhere unusable.
+        func apply(zoom: Double) {
+            requestedZoom = PageVaultStore.clampZoom(zoom)
+            guard let view = pdfView, view.document != nil else { return }
+            let fit = view.scaleFactorForSizeToFit
+            guard fit > 0 else { return }
+            view.minScaleFactor = fit
+            view.maxScaleFactor = fit * CGFloat(PageVaultStore.maximumZoom)
+            let target = fit * CGFloat(requestedZoom)
+            guard abs(view.scaleFactor - target) > 0.001 else { return }
+            applyingZoom = true
+            view.scaleFactor = target
+            applyingZoom = false
+        }
+
+        func observeScale(_ view: PDFView) {
+            guard scaleToken == nil else { return }
+            scaleToken = NotificationCenter.default.addObserver(
+                forName: .PDFViewScaleChanged, object: view, queue: .main
+            ) { [weak self] note in
+                guard let self, !self.applyingZoom,
+                      let view = note.object as? PDFView, view.document != nil else { return }
+                let fit = view.scaleFactorForSizeToFit
+                guard fit > 0 else { return }
+                let ratio = Double(view.scaleFactor / fit)
+                Task { @MainActor in self.report(zoom: ratio) }
+            }
+        }
+
+        private func report(zoom: Double) {
+            let clamped = PageVaultStore.clampZoom(zoom)
+            guard abs(clamped - requestedZoom) > 0.01 else { return }
+            requestedZoom = clamped
+            onZoomChanged?(clamped)
+        }
+
         func observe(_ view: PDFView, controller: PageVaultReaderController) {
+            observeScale(view)
             guard token == nil else { return }
             token = NotificationCenter.default.addObserver(
                 forName: .PDFViewPageChanged, object: view, queue: .main
@@ -196,12 +254,14 @@ private struct PageVaultDocumentView: UIViewRepresentable {
             let wanted = min(max(target, 0), document.pageCount - 1)
             if wanted == 0 {
                 pendingPage = nil
+                apply(zoom: requestedZoom)
                 controller.finishRestoring(at: 0)
                 return
             }
             if let page = document.page(at: wanted) { view.go(to: page) }
             if let landed = view.currentPage, document.index(for: landed) == wanted {
                 pendingPage = nil
+                apply(zoom: requestedZoom)
                 controller.finishRestoring(at: wanted)
             } else {
                 retry(controller: controller)
@@ -225,6 +285,7 @@ private struct PageVaultDocumentView: UIViewRepresentable {
 
         deinit {
             if let token { NotificationCenter.default.removeObserver(token) }
+            if let scaleToken { NotificationCenter.default.removeObserver(scaleToken) }
         }
     }
 }

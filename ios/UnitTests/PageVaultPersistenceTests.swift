@@ -406,4 +406,23 @@ import XCTest
         XCTAssertTrue(store.streak.isAtRisk, "The day is open and unmet, so it is at risk")
         XCTAssertEqual(store.streak.current, 0)
     }
+
+    func testFirstSessionCountsThePageYouStartOn() async throws {
+        let clock = Date(timeIntervalSince1970: 1_788_480_000)
+        let store = try makeStore(now: { clock })
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 120))
+        let book = try XCTUnwrap(store.books.first)
+        store.setStatus(.reading, for: book)
+        store.setDailyGoal(20, for: try XCTUnwrap(store.book(id: book.id)))
+        XCTAssertFalse(try XCTUnwrap(store.book(id: book.id)).hasPlace)
+
+        // Reading pages 1...20 and bookmarking page 20 is twenty pages, not nineteen: a book with
+        // no bookmark starts before page one, because page one has not been read yet.
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 19)
+
+        XCTAssertEqual(store.streak.todayPagesRead, 20,
+                       "The first session counts the page it started on")
+        XCTAssertTrue(store.streak.todayMet)
+    }
 }

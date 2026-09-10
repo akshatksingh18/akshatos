@@ -92,11 +92,11 @@ feature is physically verified.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
-  reading status, the place marker and the daily-goal streak engine), `data/` (versioned SwiftData
-  store, streamed copy-on-import storage, disposable cover cache), `services/` (import-time PDFKit
-  inspection and cover rendering), `ui/` (library grid, paged reader, book sheet). Product scope and
-  gates are owned by `../book-reader/`. Its large-PDF gate passed on device; the paged-reader
-  redesign that followed is not phone-verified.
+  reading status, the place marker, the daily-goal streak engine and the margin-trim geometry),
+  `data/` (versioned SwiftData store, streamed copy-on-import storage, disposable cover cache),
+  `services/` (import-time PDFKit inspection, cover rendering and ink-bounds measurement), `ui/`
+  (library grid, paged reader, book sheet). Product scope and gates are owned by `../book-reader/`.
+  Its large-PDF gate passed on device; the reader iterations that followed are not phone-verified.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving

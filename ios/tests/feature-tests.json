@@ -19,7 +19,8 @@
   "pagevault": {
     "domain_sources": [
       "AkshatOS/features/pagevault/domain/PageVaultBook.swift",
-      "AkshatOS/features/pagevault/domain/PageVaultReading.swift"
+      "AkshatOS/features/pagevault/domain/PageVaultReading.swift",
+      "AkshatOS/features/pagevault/domain/PageVaultLayout.swift"
     ],
     "domain_test": "tests/pagevault/main.swift",
     "integration_tests": [

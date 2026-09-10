@@ -78,18 +78,21 @@ preservation and data-management settings now have coverage. Future schema-versi
 add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
 remain separate acceptance gates.
 
-PageVault registers its own suites: 79 domain assertions covering place clamping and the opening
+PageVault registers its own suites: 94 domain assertions covering margin-trim geometry (union,
+per-side cap, full-bleed pages, sampling spread), place clamping and the opening
 page, progress labels, title derivation, fingerprint dedupe, recency ordering, the
 single-Reading-book invariant, goal sanitizing, bookmark replacement, older-payload decoding
 (including records carrying fields since removed), and the streak engine (bookmark-driven progress,
-at-risk today, missed days, paused days, book switches, future-dated rows); 20 hosted integration
+at-risk today, missed days, paused days, book switches, future-dated rows); 21 hosted integration
 tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
 unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming the book
 as the one being read, pages credited between bookmarks, an opened-but-unbookmarked book earning
-nothing, cover generation, copy-only removal and reading-history cleanup; plus a hub → library →
+nothing, the first session counting the page it starts on, cover generation, copy-only removal
+and reading-history cleanup; plus a hub → library →
 back UI test.
 Simulator coverage cannot exercise the system document picker, real large-file memory pressure,
-rotation, paged swipe feel, or how warm paper actually looks. The large-PDF gate passed on device;
+rotation, paged swipe feel, how warm paper actually looks, or whether trimmed margins make text
+large enough to read comfortably. The large-PDF gate passed on device;
 each reader iteration after it needs its own device pass, owned by `../book-reader/CLAUDE.md`.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
