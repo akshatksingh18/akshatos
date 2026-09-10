@@ -1,7 +1,9 @@
 # AkshatOS
 
 A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
-dashboard. PageVault and ReelVault are reserved for later; WHOOP stays a separate app.
+dashboard, or **PageVault** for its PDF library. PageVault currently exists only as its phase-2
+feasibility spike (import, read, outline, resume) and has not been built or run on the phone yet;
+ReelVault is reserved for later and WHOOP stays a separate app.
 
 **Current state:** hub/Squats implementation with notification actions, daily history, local
 recovery, Home auto-pause and expanded goal/streak edge handling, working source version **0.2.0 (13)**,
@@ -27,7 +29,10 @@ Build 13 replaces manual snooze with a bounded pre-scheduled chain of automatic 
 after an ignored normal reminder, and adds an idle-only 9:00 AM invitation to start the day. Done or
 Pause cancels the chain; Done starts a fresh full interval. PR #15 run #57 and main delivery run #58
 passed the complete gate, and the downloaded Build-13 IPA passed checksum/package/screenshot
-inspection. Physical-phone acceptance remains open, so Build 12 is still the installed known-good build.
+inspection. Akshat then installed Build 13 and reports that its implemented phone workflow works
+well in ongoing daily use, including automatic nudges and the idle 9:00 AM start invitation. Build
+13 is the installed current build; Build 12 is its retained accepted predecessor. The formal
+edge-case, refresh/recovery and multi-cycle soak gates remain open.
 Build-7 source completes the dashboard/Settings UI with detailed notification and location
 permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
 Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8

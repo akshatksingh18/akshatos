@@ -19,6 +19,13 @@ keystore.properties
 *.apk
 *.aab
 *.ipa
+*.xcarchive
+*.mobileprovision
+*.p12
+
+# Personal reading material: never commit PageVault feasibility/test PDFs.
+# This repository is currently public; use synthetic or public-domain fixtures instead.
+*.pdf
 
 # Generated iOS project/build artifacts
 ios/*.xcodeproj/

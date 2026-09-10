@@ -23,7 +23,9 @@ preservation. The broader physical and deployment matrix remains outstanding.
 Build 13 source replaces the manual snooze flow with automatic ten-minute nudges after an ignored
 normal reminder and adds an idle-only 9:00 AM start invitation. PR #15 run #57 and main run #58
 passed the complete gate, and the downloaded IPA passed local inspection. Phone acceptance remains
-open; legacy snooze data stays readable for upgrade compatibility.
+accepted for the implemented Build-13 daily workflow: Akshat reports automatic nudges, idle-start
+behavior and the app generally working well in ongoing phone use. The broader physical edge-case,
+refresh/recovery and soak matrix remains open; legacy snooze data stays readable for upgrade compatibility.
 Android is an unverified fallback.
 
 ## Hub entry
@@ -300,7 +302,7 @@ The first usable release includes:
 - default/configurable interval;
 - Start, Pause, Resume, and End;
 - Done +1 from dashboard and notification;
-- one 10-minute snooze;
+- automatic ten-minute nudges after an ignored normal reminder, until Done or Pause;
 - current-day event log, end-of-day overview, and lightweight local daily summaries;
 - configurable daily goal plus deterministic current/best streak calculation and goal progress;
 - optional native Home geofence auto-pause/resume with local-only storage and manual fallbacks;

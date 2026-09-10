@@ -1,6 +1,12 @@
 # AkshatOS CI and delivery contract
 
-**Status:** Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
+**Status:** PageVault phase-2 spike source `b970e624807972381e8defd70dc74f660e77b0ef` passed Source
+checks, 27 new PageVault domain assertions alongside the 47 Squats ones, 78 hosted tests across both
+UI suites with zero failures, simulator/device builds, IPA inspection and `CI Gate` in
+[PR #17 run #34425616218](https://github.com/akshatksingh18/akshatos/actions/runs/34425616218);
+the PR correctly uploaded no IPA. That PR is open, so `main` does not yet contain the spike, and no
+PageVault behavior has been exercised on the phone.
+Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
 assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
 builds, IPA inspection and `CI Gate` in
 [PR #15 run #57](https://github.com/akshatksingh18/akshatos/actions/runs/34150335957).
@@ -71,6 +77,14 @@ versioned backup validation/round-trip, safe repository replacement/deletion, ma
 preservation and data-management settings now have coverage. Future schema-version migrations must
 add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
 remain separate acceptance gates.
+
+PageVault's phase-2 spike registers its own suites: domain assertions for page clamping, title
+derivation, fingerprint dedupe, recency ordering and outline flattening; hosted integration tests
+that generate real PDFs to exercise streamed copy-on-import, duplicate rejection, unreadable-file
+cleanup, resume across store recreation and copy-only removal; plus a hub → library → back UI test.
+Simulator coverage cannot exercise the system document picker, real large-file memory pressure,
+rotation, or PDFKit scroll/zoom performance — those belong to the physical feasibility run owned by
+`../book-reader/CLAUDE.md`.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone

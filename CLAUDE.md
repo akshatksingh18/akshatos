@@ -1,7 +1,9 @@
 # AkshatOS
 
 Personal native iPhone hub: the home screen selects a feature, starting with Squat Reminder.
-PageVault and ReelVault are reserved for later; WHOOP stays standalone. This repository evolved
+PageVault is the activated next module — its scope, phases, and progress are owned by
+`../book-reader/CLAUDE.md`, and no PageVault code exists in `ios/` yet. ReelVault is reserved for
+later; WHOOP stays standalone. This repository evolved
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
 **Status:** Building — the native Squats lifecycle, notification actions, dashboard/Settings UI,
@@ -31,7 +33,10 @@ every ten minutes until Done or Pause, while Done restarts the full interval; th
 button/action is retired. When no day is active and notification access exists, one repeating
 9:00 AM local notification invites the user to open AkshatOS and start, without auto-starting a day.
 PR #15 run #57 and main run #58 passed the complete gate; the Build-13 IPA is downloaded and passed
-checksum/package/screenshot inspection. Physical-phone acceptance remains pending. The
+checksum/package/screenshot inspection. Akshat installed Build 13 and reports that its implemented
+phone workflow works well in ongoing daily use, including the automatic-nudge and idle-start
+behavior introduced by this build. Build 13 is the current installed, accepted build; the broader
+edge-case, refresh/recovery and multi-cycle soak matrix remains pending. The
 removed standalone smoke app proved
 the earlier toolchain only. The full target feature contract below is not a claim that every
 feature is physically verified.
@@ -84,6 +89,15 @@ feature is physically verified.
   and deterministic icon generator; this is the canonical hub source tree.
 - `ios/AkshatOS/app/` — composition/lifetime ownership, sole notification delegate, and `hub/`
   display-only picker with metadata and injected destinations; read for host integration changes.
+- `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
+  everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
+- `ios/AkshatOS/features/pagevault/` — PageVault's phase-2 PDF feasibility spike: `domain/`
+  (Foundation-only book/library/outline logic), `data/` (versioned SwiftData store plus streamed
+  copy-on-import storage), `services/` (import-time PDFKit inspection), `ui/` (library and reader).
+  Product scope and gates are owned by `../book-reader/`; unbuilt and not phone-verified.
+- `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
+- `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
+  rejected/corrupt imports, resume across store recreation, and source-file-preserving removal.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.
@@ -91,8 +105,8 @@ feature is physically verified.
 - `ios/scripts/check-boundaries.py` — source dependency/delegate guard and negative fixtures;
   run locally and in CI. Logical boundaries, not compiler-enforced Swift packages.
 - `ios/tests/squats/main.swift` — executable Squats domain assertions run by the cloud workflow.
-- `ios/UITests/` — simulator hub/dashboard navigation test and screenshot attachments; test runner
-  is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
+- `ios/UITests/` — simulator hub/dashboard/PageVault navigation tests and screenshot attachments;
+  test runner is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
 - `build.gradle.kts` — root Android build configuration and plugin versions.
 - `settings.gradle.kts` — Gradle project and repository configuration.
 - `gradle.properties` — project-wide Gradle and Android settings.
@@ -106,8 +120,9 @@ feature is physically verified.
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
   `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, working source version
-  `0.2.0 (13)`; Build 12 is installed and accepted for its cadence, persistence, interaction and
-  one-cycle same-ID upgrade checks. Build 13 is the downloaded, cloud/local-verified phone candidate.
+  `0.2.0 (13)`; Build 13 is installed and accepted for its implemented daily workflow, including
+  automatic overdue nudges and the idle 9:00 AM start invitation. Build 12 is the retained accepted
+  predecessor. The broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the

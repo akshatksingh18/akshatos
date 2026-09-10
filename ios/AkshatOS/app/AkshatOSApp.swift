@@ -6,7 +6,9 @@ struct AkshatOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HubRootView(squats: delegate.services.squats)
+            HubRootView(squats: delegate.services.squats,
+                        pageVault: delegate.services.pageVault,
+                        orientation: delegate.services.orientation)
                 .preferredColorScheme(.dark)
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataDidBecomeAvailableNotification)) { _ in
                     Task { await delegate.services.squats.refresh() }
@@ -18,11 +20,14 @@ struct AkshatOSApp: App {
 /// Composition root: app-lifetime services must never be owned by navigation destinations.
 @MainActor final class AppServices: ObservableObject {
     let squats: SquatStore
+    let pageVault: PageVaultStore
     let notifications: AppNotificationCoordinator
+    let orientation = OrientationGate()
 
     init() {
         let home = HomeRegionService()
         squats = SquatStore(homeMonitor: home)
+        pageVault = PageVaultStore()
         notifications = AppNotificationCoordinator(squats: squats)
     }
 }
@@ -34,5 +39,10 @@ struct AkshatOSApp: App {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         // Services and the notification delegate exist before launch finishes, including background launch.
         true
+    }
+
+    func application(_ application: UIApplication,
+                     supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        services.orientation.supportedOrientations
     }
 }

@@ -18,45 +18,32 @@ primary; Android remains a separate fallback scaffold.
       hash-verified. Physical verification remains pending in `cloud-build.md`.
       These remain logical modules in one target; future media implementations are not included.
 
-Current focus: Build 10 phone testing exposed a ten-minute countdown reset after backgrounding plus
-Done leaving the unresolved nudge active. Build 11 is now on the phone, persists the snooze deadline,
-makes snooze-related Done cancel it and start a fresh full interval, and adds SwiftData recreation
-plus failure/retry regressions. PR #10 and main delivery run #49 passed; the downloaded Build-11 IPA
-also passed local checksum/package inspection, and its countdown survives leaving and closing the app.
-Finish phone acceptance and refresh/recovery; whether Build 11 was installed over Build 10 without an
-uninstall has not been explicitly reported. Build 12 source now makes every successful Done restart
-the full regular interval and stabilizes transient button/card geometry; PR #12 run #34073932922
-passed 49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA
-inspection and `CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated the complete
-gate and its downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Akshat
-installed it over Build 11 without uninstalling and passed the requested cadence reset, countdown
-persistence, smooth-interaction and state-preservation phone checks. The broader physical and
-refresh/recovery matrix remains. Optional
-Shortcuts remain follow-on work. Cloud/device evidence lives in
-`cloud-build.md`; other modules stay deferred.
-Build 13 source now implements the next accepted behavior: the manual snooze control/action is
-removed, an ignored normal reminder is followed by 59 pre-scheduled ten-minute nudges, foreground
-reconciliation replenishes the bounded batch without moving its anchor, and idle authorized state
-owns one repeating 9:00 AM start invitation. PR #15 run #57 and main run #58 passed the complete
-gate; the downloaded IPA passed checksum/package/screenshot inspection. Phone acceptance remains
-open; Build 12 stays the installed known-good build until that gate passes.
+Current focus: Build 13 is the installed current build. Its manual-snooze replacement with 59
+pre-scheduled ten-minute nudges, foreground replenishment from the stable cadence anchor, and idle
+9:00 AM start invitation passed PR #15 run #57, main run #58, local artifact inspection and Akshat's
+ongoing phone use. Build 12 is the retained accepted predecessor. Continue the explicit physical
+edge-case and refresh/recovery matrix; optional Shortcuts remain follow-on work. Cloud/device
+evidence lives in `cloud-build.md`. PageVault is now an activated parallel module whose own gates
+live in `../book-reader/CLAUDE.md`; ReelVault stays deferred. Squats' unchecked items below remain
+open regardless of PageVault progress.
 
 - [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
       into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
       CI capacity. AkshatOS uses
-      `com.akshatksingh18.akshatos`. Physical provisioning of this identity is still a gate.
-- [ ] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
+      `com.akshatksingh18.akshatos`; installation of Build 13 confirms physical provisioning under
+      this permanent identity.
+- [x] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
       picker → Squats → back navigation; verify reminders continue while the picker is shown.
-      Cloud domain/navigation tests, both builds and downloaded IPA inspection/hash have passed;
-      Build 9 installation and permission prompts are confirmed, while picker/back continuity and
-      the rest of the physical behavior remain pending (see `cloud-build.md`).
+      Cloud domain/navigation tests, both builds and downloaded IPA inspection/hash passed. Build 13
+      is installed and Akshat reports using the implemented hub/Squats workflow successfully in
+      ongoing phone use. The broader device matrix remains separately open (see `cloud-build.md`).
 
 - [x] **Prove the no-local-Mac smoke pipeline.** Cloud simulator/device compilation, packaging,
       download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
       launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
       verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [x] **Retire obsolete preview artifacts.** Build 12 plus its checksum, metadata and screenshots is
-      the installed current build; Build 11 is its retained predecessor and retained Builds 9 and
+- [x] **Retire obsolete preview artifacts.** Build 13 plus its checksum, metadata and screenshots is
+      the installed current build; Build 12 is its retained accepted predecessor and retained Builds 11, 9 and
       4 are fallbacks. Builds 2 and 3 and the
       separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
       cache remains part of deployment acceptance after phone verification.
@@ -132,18 +119,20 @@ open; Build 12 stays the installed known-good build until that gate passes.
       denial is phrased as a revocation ("turned off") instead of reusing first-request wording.
       Correction source `d80653d` records provisional/alerts-disabled notification grants and When
       In Use location grants, and proves both flags plus wording survive store recreation; run #27 passed.
-- [ ] **Verify Build 13 automatic overdue nudges end to end.** Source schedules one normal reminder
+- [x] **Verify Build 13 automatic overdue nudges end to end.** Source schedules one normal reminder
       followed by 59 ten-minute nudges, shows the nudge as the single main countdown after the normal
       deadline, replenishes a low/drained batch from the persisted anchor, and makes Done/Pause/End
       cancel the old batch. Done starts a fresh full interval. The manual snooze UI/category is gone;
       legacy snooze payloads remain decode-safe no-ops. Pass PR/main CI, inspect the IPA/screenshots,
       then verify ignored delivery, repeated delivery, Done and Pause on the physical phone. PR/main
-      CI and IPA/screenshot inspection are complete; only the phone portion remains.
-- [ ] **Verify the idle 9:00 AM start invitation end to end.** Source schedules exactly one repeating
+      CI and IPA/screenshot inspection passed. Akshat installed Build 13 and reports that the
+      automatic-nudge behavior works well in ongoing phone use.
+- [x] **Verify the idle 9:00 AM start invitation end to end.** Source schedules exactly one repeating
       local 9:00 AM notification while no day is active and access exists, cancels it on Start, restores
       it after End, and never auto-starts from a tap. Pass automated/cloud checks, then verify actual
       delivery, tap-to-open, active-day suppression and time-zone behavior on the phone. Automated/
-      cloud and artifact checks are complete; physical delivery behavior remains.
+      cloud and artifact checks passed. Akshat reports that Build 13's idle-start behavior works on
+      the phone in ongoing use.
 - [x] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use a
       bounded normal-plus-nudge batch, and make Start/Pause/Resume/End idempotent. Pause keeps the active
       day, Resume starts a fresh interval, and End cancels active requests and finalizes it.
@@ -201,7 +190,8 @@ open; Build 12 stays the installed known-good build until that gate passes.
       any future schema version must add its own migration tests. Exact Build-9 source/documentation
       head passed PR #4 run #37; physical acceptance remains pending.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
-      dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End, snooze,
+      dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,
+      automatic overdue nudges and legacy-snooze migration,
       foreground/background, explicit force-quit, reboot, Low Power Mode, Focus, Scheduled Summary,
       external notification-setting changes, delivery-boundary races, day summary, streak rollover,
       Home setup/entry/exit, region jitter, Background App Refresh off/on, reboot/first-unlock, missed
@@ -212,10 +202,10 @@ open; Build 12 stays the installed known-good build until that gate passes.
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
       version/source/hash, and cache current plus previous known-good artifacts on Windows.
-      Build 10 passed main delivery run #43, is downloaded with matching checksum/package checks and
-      is installed; retained Builds 9 and 4 are fallbacks. Its phone-reported snooze defects require
-      Build 11 before physical acceptance and durable current/previous release-cache promotion, so
-      Build 10 is not a known-good release.
+      Build 13 passed main delivery run #58, is downloaded with matching checksum/package checks,
+      and is installed and accepted for ongoing daily use. Build 12 is the retained accepted
+      predecessor. Durable current/previous release-cache promotion and the remaining deployment
+      evidence are still required before closing this gate.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.
