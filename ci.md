@@ -1,11 +1,9 @@
 # AkshatOS CI and delivery contract
 
-**Status:** PageVault phase-2 spike source `b970e624807972381e8defd70dc74f660e77b0ef` passed Source
-checks, 27 new PageVault domain assertions alongside the 47 Squats ones, 78 hosted tests across both
-UI suites with zero failures, simulator/device builds, IPA inspection and `CI Gate` in
-[PR #17 run #34425616218](https://github.com/akshatksingh18/akshatos/actions/runs/34425616218);
-the PR correctly uploaded no IPA. That PR is open, so `main` does not yet contain the spike, and no
-PageVault behavior has been exercised on the phone.
+**Status:** PageVault Build-17 source (PR #24, merge `52181f6`) passed Source checks, 94 PageVault
+domain assertions, 89 hosted tests, both builds, IPA inspection and `CI Gate` in
+[main delivery run 34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880).
+`cloud-build.md` owns its artifact evidence; `../book-reader/CLAUDE.md` owns phone verification.
 Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
 assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
 builds, IPA inspection and `CI Gate` in
@@ -78,15 +76,15 @@ preservation and data-management settings now have coverage. Future schema-versi
 add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
 remain separate acceptance gates.
 
-PageVault registers its own suites: 94 domain assertions covering margin-trim geometry (union,
+PageVault registers its own suites: 98 domain assertions covering margin-trim geometry (union,
 per-side cap, full-bleed pages, sampling spread), place clamping and the opening
 page, progress labels, title derivation, fingerprint dedupe, recency ordering, the
-single-Reading-book invariant, goal sanitizing, bookmark replacement, older-payload decoding
+single-Reading-book invariant, the Started shelf split, goal sanitizing, bookmark replacement, older-payload decoding
 (including records carrying fields since removed), and the streak engine (bookmark-driven progress,
 at-risk today, missed days, paused days, book switches, future-dated rows); 21 hosted integration
 tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
 unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming the book
-as the one being read, pages credited between bookmarks, an opened-but-unbookmarked book earning
+as the one being read and shelving the previous one under Started, pages credited between bookmarks, an opened-but-unbookmarked book earning
 nothing, the first session counting the page it starts on, cover generation, copy-only removal
 and reading-history cleanup; plus a hub → library →
 back UI test.

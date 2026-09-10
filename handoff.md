@@ -70,11 +70,12 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Working source version: `0.2.0 (13)`, minimum iOS 17. Build 13 is phone-installed and accepted for
-  its implemented daily workflow; Build 12 is the retained predecessor. Preserve identity on updates.
+  Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Build 13 is the last
+  build accepted for Squats daily use; Build 12 is its retained predecessor. Later builds add PageVault. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault opens its own PDF library — import, reader, reading status, daily-goal
-  streak, bookmarks, covers — implemented and cloud-tested but never phone-run;
+  streak, bookmarks, covers — implemented and cloud-tested; its large-PDF gate passed on the phone,
+  while the reader iterations since are not phone-verified (`../book-reader/CLAUDE.md` owns this);
   ReelVault/Reels remains an unavailable planned card.
 - Squats' daily loop is accepted in ongoing phone use, so PageVault is now the activated next
   module; its scope/phases/progress are owned by `../book-reader/CLAUDE.md` and its phase-1 scaffold
@@ -188,7 +189,7 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The installed, hash-verified current build is **0.2.0 (13)** from main delivery run #58, at:
+The last hash-verified build accepted for Squats daily use is **0.2.0 (13)** from main delivery run #58, at:
 `C:\Users\aksha\Downloads\akshatos-build-13\akshatos-ios-58\AkshatOS-unsigned.ipa`.
 Its SHA-256 is `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`;
 checksum, identity, version/build, payload and screenshots passed local inspection. Build 12 is the

@@ -366,10 +366,15 @@ import XCTest
         XCTAssertEqual(store.current?.title, "Beta", "The newest bookmarked book takes over")
         XCTAssertEqual(store.books(with: .wantToRead).map(\.title), ["Alpha"],
                        "The previous book steps back to Want to read, keeping the single-Reading rule")
+        XCTAssertEqual(store.startedBooks.map(\.title), ["Alpha"],
+                       "The set-aside book keeps its place, so it shelves under Started")
+        XCTAssertTrue(store.unstartedBooks.isEmpty, "No unopened book is left on Want to read")
 
         let reopened = try makeStore(container: container)
         await reopened.load()
         XCTAssertEqual(reopened.current?.title, "Beta")
+        XCTAssertEqual(reopened.startedBooks.map(\.title), ["Alpha"],
+                       "The Started shelf is derived from stored data, so it survives a reload")
     }
 
     func testGoalCountsPagesBetweenBookmarks() async throws {

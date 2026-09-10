@@ -138,6 +138,13 @@ struct PageVaultLibrary: Codable, Equatable {
         recent.filter { $0.status == status }
     }
 
+    /// Want to Read books that already carry a place: begun, then set aside, usually when another
+    /// book was bookmarked. A shelf rather than a fourth status, so nothing extra is persisted.
+    var started: [PageVaultBook] { recent.filter { $0.status == .wantToRead && $0.hasPlace } }
+
+    /// Want to Read books that have never been bookmarked.
+    var unstarted: [PageVaultBook] { recent.filter { $0.status == .wantToRead && !$0.hasPlace } }
+
     func existing(fingerprint: String) -> PageVaultBook? {
         books.first { $0.fingerprint == fingerprint }
     }

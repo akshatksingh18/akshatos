@@ -41,18 +41,18 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (17)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (18)**; minimum iOS 17.
   Every installable artifact gets its own build number, so a build never shares a number while
-  carrying different code. Build 13 is the installed Squats-only build; 14 added PageVault and was
-  physically tested; 15 carries the reader redesign that followed.
-  Build 13 is installed and accepted for its implemented daily workflow, including automatic nudges
+  carrying different code. Build 13 is the last Squats-only build; 14 added PageVault; later builds
+  iterate on the reader and library. The per-build sections below record what each phone pass found.
+  Build 13 is accepted for its implemented Squats daily workflow, including automatic nudges
   and idle-start behavior. Build 12 is the retained accepted predecessor; Build 11 remains an older fallback.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, warm paper,
   reading status, daily-goal streak, bookmarked place and cover cache; ReelVault is a planned card
-  only. Build 14's import and large-PDF reading passed on the phone; the reader redesign in build 15
-  has not been device-tested.
+  only. Build 14's import and large-PDF reading passed on the phone, Builds 15 and 16 each had a
+  phone pass that shaped the next build, and nothing from Build 17 on has been device-tested.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an in-place upgrade of the former standalone smoke app.

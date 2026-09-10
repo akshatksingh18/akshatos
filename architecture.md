@@ -27,8 +27,8 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, working source version 0.2.0 (13); Build 13 is the installed,
-  accepted current build for its implemented daily workflow, and Build 12 is the retained predecessor.
+  `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
+  build accepted for Squats daily use, Build 12 its retained predecessor, and later builds add PageVault.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
