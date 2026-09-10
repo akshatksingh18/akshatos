@@ -26,14 +26,15 @@ uploaded no IPA as intended. PR #15 merged as `f484f663647a2be0cad44f3bb1c7fe267
 [main delivery run #58](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604)
 passed the complete gate and uploaded `akshatos-ios-58`. The downloaded Build-13 IPA matches SHA-256
 `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`, passed local identity/
-metadata/payload validation, and both screenshots were visually inspected. Physical acceptance is pending.
+metadata/payload validation, and both screenshots were visually inspected. Akshat installed Build 13
+and reports that its implemented workflow—including automatic nudges and idle-start behavior—works
+well in ongoing phone use. The broader physical edge-case and refresh/recovery matrix remains open.
 This file owns the build evidence.
 
-Akshat reports that sideloading is working perfectly. Treat the installation workflow as working
-for continued development; do not require another baseline installation before finishing code.
-No specific new AkshatOS build/feature test or automated-refresh result was supplied with that
-report, so it does not close those acceptance gates. Akshat will test the complete native v1 after
-implementation and automated checks; the manual steps below are for that acceptance phase.
+Akshat reports that sideloading and installed Build 13 are working well in ongoing use. Treat the
+installation workflow and implemented Build-13 daily behavior as accepted for continued development;
+do not require another baseline installation before finishing code. This report does not by itself
+close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle soak gates.
 
 ## Current identity and artifact
 
@@ -41,12 +42,12 @@ implementation and automated checks; the manual steps below are for that accepta
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (13)**; minimum iOS 17.
-  Build 12 is installed and accepted for cadence reset, countdown persistence, interaction smoothness
-  and one-cycle same-ID state preservation. Build 13 is downloaded and cloud/local-verified but not
-  yet phone-installed; Build 11 remains the retained predecessor.
+  Build 13 is installed and accepted for its implemented daily workflow, including automatic nudges
+  and idle-start behavior. Build 12 is the retained accepted predecessor; Build 11 remains an older fallback.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core; PageVault/ReelVault are planned cards only.
+- Content: hub picker → Squats dashboard/core, plus the PageVault phase-2 PDF spike (unbuilt and
+  not phone-verified at time of writing); ReelVault is a planned card only.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an in-place upgrade of the former standalone smoke app.
@@ -189,7 +190,7 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
-### Downloaded Build-13 candidate
+### Installed and accepted Build-13 current build
 
 - Version: **0.2.0 (13)**; merge source `f484f663647a2be0cad44f3bb1c7fe2671b6572d`.
 - Artifact: `akshatos-ios-58`, from main delivery run #58 linked above.
@@ -200,8 +201,9 @@ and updating an old category-less schedule through Repair reminders. None has ph
 - The local checksum matches the cloud checksum. ZIP payload, bundle ID, version/build, executable,
   minimum iOS 17 and absence of test bundles, extensions and provisioning profiles were verified;
   both exported simulator screenshots were visually inspected without clipping or malformed layout.
-  This candidate is ready for same-ID over-install and physical automatic-nudge/9:00 AM testing;
-  Build 12 remains the installed accepted fallback until that succeeds.
+  Akshat installed this build and reports that its implemented phone workflow, including automatic
+  nudges and idle-start behavior, works well in ongoing use. The exact install-over-versus-clean-install
+  path was not reported. Build 12 remains the retained accepted predecessor.
 
 ### Installed and accepted Build-12 predecessor
 
@@ -281,7 +283,7 @@ The locally verified Build-3 and Build-2 previews were superseded by Builds 4 an
 Windows Recycle Bin together with their checksum/build metadata. They are recoverable until the bin
 is emptied and remain reproducible from Git history. One physical same-ID upgrade with data
 preservation and the Build-12 cadence fixes passed; broader reminders, refresh/recovery and soak
-testing remain.
+edge-case testing remains. Build 13 is now the installed daily-use baseline.
 
 1. The workflow generates the icon/project and runs `ios/scripts/check-boundaries.py` before compilation.
 2. Compile/run registered domain sources and `ios/tests/squats/main.swift` (49 assertions).
@@ -294,10 +296,11 @@ testing remain.
 No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.
 Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not require a rebuild.
 
-## Build-13 physical acceptance and future replacement flow
+## Remaining physical acceptance and future replacement flow
 
-1. Build 13 has passed its exact-source `CI Gate`, download, checksum, package identity and screenshot
-   checks. Install it over Build 12 without uninstalling so state preservation remains testable.
+1. Build 13 has passed its exact-source `CI Gate`, download, checksum, package identity, screenshot
+   checks and reported ongoing phone use. Keep the remaining explicit edge-case and deployment tests
+   below separate from that accepted daily-use evidence.
 2. Before signing, recheck `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against the
    recorded checksum if the artifact was moved or copied.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported

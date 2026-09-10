@@ -1,8 +1,10 @@
 # AkshatOS — shared integration contract
 
 **Status:** Integration implementation activated — AkshatOS owns the native hub and Squats-first
-build. PageVault/ReelVault remain later modules; WHOOP stays standalone. Build/phone progress
-belongs in `cloud-build.md`, not this integration contract.
+build. Squats' daily loop is accepted in ongoing phone use, so **PageVault is now the activated
+next module** (its scope, phases, and progress are owned by `../book-reader/`); ReelVault remains a
+later module and WHOOP stays standalone. Build/phone progress belongs in `cloud-build.md`, not this
+integration contract.
 
 ## Installed applications
 
@@ -62,7 +64,8 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
   and installation evidence are owned by [the build guide](cloud-build.md). No retained
   feature data is being migrated; do not generalize that exception to future data-bearing updates.
 - Launch into a hub app-selection screen, then select **Squat Reminder** for its dashboard.
-  PageVault/ReelVault may appear as clearly unavailable planned cards; they do not open fake apps.
+  PageVault opens its own PDF library; ReelVault stays a clearly unavailable planned card and does
+  not open a fake app.
   Returning to the hub must leave the Squats session and scheduling untouched.
 - Generate one AkshatOS Xcode target from `akshatos/ios/project.yml` and build through its
   macOS workflow. Ordinary Release IPA, payload inspection and SHA-256, no signing secrets in CI.
@@ -86,16 +89,20 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
 
 ## Acceptance sequence
 
-The current implementation focus is AkshatOS with **Squat Reminder as its first completed feature**.
-Keep PageVault and ReelVault reserved as later modules, not active parallel implementation work.
-A minimal host may expose only Squats initially; the three-module design remains the eventual
-integration contract. Complete and test Squats' daily loop before starting either media module.
-Source/build ownership and the permanent bundle ID are selected above; verify the new identity on the phone.
+Squat Reminder is AkshatOS's first completed feature and its daily loop is accepted in ongoing phone
+use, which releases the "finish Squats first" gate for **one** additional module. PageVault is that
+module and is now active; ReelVault stays reserved, not parallel implementation work. Squats' open
+physical edge-case, refresh/recovery, and soak items remain owned by `todo.md` and `cloud-build.md`
+and must not be dropped because PageVault started. Source/build ownership and the permanent bundle
+ID are selected above; the identity is already phone-verified through Build 13.
 
-1. Build and verify the hub app picker and Squats entry, with the other modules clearly deferred.
+1. Build and verify the hub app picker and Squats entry, with ReelVault clearly deferred.
 2. Implement Squats' existing lifecycle, actions, streak, and optional Home behavior first.
-3. Integrate native PageVault/PDFKit and ReelVault/AVFoundation modules with their existing
-   import/performance/recovery tests; no feature gains are implied merely by a shell button.
+3. Integrate the native PageVault/PDFKit module (active; phases and gates owned by
+   `../book-reader/CLAUDE.md`), then ReelVault/AVFoundation later, each with its own import/
+   performance/recovery tests; no feature gains are implied merely by a shell button. Making a
+   module available also requires updating the hub picker's unavailable-card state and the UI
+   assertion that its entry does not exist.
 4. Verify scheduled/actionable notifications while each other section is foregrounded, background/
    locked handling, section switching, permission denial, memory pressure, and low-storage errors.
 5. Verify all module exports, full restore, schema upgrade, same-ID refresh, and controlled expiry

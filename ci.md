@@ -72,6 +72,14 @@ preservation and data-management settings now have coverage. Future schema-versi
 add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
 remain separate acceptance gates.
 
+PageVault's phase-2 spike registers its own suites: domain assertions for page clamping, title
+derivation, fingerprint dedupe, recency ordering and outline flattening; hosted integration tests
+that generate real PDFs to exercise streamed copy-on-import, duplicate rejection, unreadable-file
+cleanup, resume across store recreation and copy-only removal; plus a hub → library → back UI test.
+Simulator coverage cannot exercise the system document picker, real large-file memory pressure,
+rotation, or PDFKit scroll/zoom performance — those belong to the physical feasibility run owned by
+`../book-reader/CLAUDE.md`.
+
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
 is not sufficient. Fixes must include a regression test where practical. Shared changes must run

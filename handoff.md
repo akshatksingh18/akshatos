@@ -23,8 +23,10 @@ preserved. These fixes are accepted; the broader physical and deployment matrix 
 Build 13 source replaces manual snooze with a bounded chain of automatic ten-minute nudges after
 an ignored normal reminder and adds an idle-only 9:00 AM start invitation. PR #15 run #57 passed the
 full gate and merged as `f484f66`; main delivery run #58 repeated the gate and published the locally
-checksum/package/screenshot-verified Build-13 IPA. Build 13 is ready for same-ID over-install and
-physical nudge/daily-start testing; Build 12 remains the installed accepted build until that passes.
+checksum/package/screenshot-verified Build-13 IPA. Akshat subsequently installed Build 13 and reports that its
+implemented daily workflow—including automatic nudges and idle-start behavior—works well in ongoing
+phone use. Build 13 is the installed current build; Build 12 is the retained accepted predecessor.
+The broader physical edge-case, refresh/recovery and soak matrix remains open.
 This is a current-state entry point,
 not a separate specification or chronological log. Update it in place when its resume guidance
 changes; the linked owning documents control detailed facts.
@@ -68,12 +70,16 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Working source version: `0.2.0 (13)`, minimum iOS 17. Build 12 is the phone-installed predecessor;
-  preserve identity on updates.
+  Working source version: `0.2.0 (13)`, minimum iOS 17. Build 13 is phone-installed and accepted for
+  its implemented daily workflow; Build 12 is the retained predecessor. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
-  combined dashboard. PageVault/PDF Reader and ReelVault/Reels are unavailable planned cards.
-- Finish Squats before implementing either media module. Their requirements remain in the sibling
-  `book-reader` and `reels` projects; future native source goes into this hub. WHOOP stays standalone.
+  combined dashboard. PageVault opens its own PDF library (phase-2 spike, not yet phone-verified);
+  ReelVault/Reels remains an unavailable planned card.
+- Squats' daily loop is accepted in ongoing phone use, so PageVault is now the activated next
+  module; its scope/phases/progress are owned by `../book-reader/CLAUDE.md` and its phase-1 scaffold
+  decisions are locked there. ReelVault stays deferred. Squats' remaining physical/refresh items are
+  still open and are not superseded by PageVault work. Native source for both media modules goes
+  into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
   feature folders are not separately installed apps. Repository visibility and its reversion gate
   are recorded above.
@@ -181,11 +187,11 @@ IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally 
 passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
 the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
 
-The selected hash-verified candidate is **0.2.0 (13)** from main delivery run #58, at:
+The installed, hash-verified current build is **0.2.0 (13)** from main delivery run #58, at:
 `C:\Users\aksha\Downloads\akshatos-build-13\akshatos-ios-58\AkshatOS-unsigned.ipa`.
 Its SHA-256 is `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`;
 checksum, identity, version/build, payload and screenshots passed local inspection. Build 12 is the
-phone-installed accepted predecessor; Builds 11, 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
+retained accepted predecessor; Builds 11, 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
 smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
 
 Build 10 exposed foreground/snooze defects after an uninstall-based update. Build 11 corrected
@@ -194,20 +200,18 @@ targeted cadence, persistence, smooth-interaction and state-preservation checks,
 update cycle. The wider device, refresh/recovery and soak matrix remains pending.
 Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
-Use disposable activity until recovery and device tests pass. Do not uninstall data-bearing builds.
+Back up important history before risky deployment/recovery tests, and do not uninstall data-bearing builds.
 
 ## Recommended continuation order
 
-Finish the agreed native Squats v1 and automated/cloud tests before requesting physical testing.
-Akshat reports sideloading is working and will test the complete feature afterward. Do not pause
-implementation for baseline installation. Existing device gates remain open until that later pass.
+Build 13's implemented daily workflow and automated/cloud gates are accepted. Continue from that
+baseline without repeating installation or routine-use checks unless a later change affects them.
+The remaining explicit edge-case and deployment gates stay open.
 
-1. **Install and phone-verify Build 13 over Build 12:** use the selected IPA without uninstalling;
-   prove normal reminder → repeated automatic ten-minute nudges, the single nudge countdown across
-   background/force-close, Done full-interval reset, Pause cancellation, and the two-action notification.
-   End the day, verify the idle 9:00 AM request, then confirm its next delivery opens without auto-start.
-   Continue picker/back, Undo/replay, permissions, summaries/recovery, Home automation and the broader
-   physical matrix. Record actual results and fix defects; `architecture.md` owns durability limits.
+1. **Complete the remaining physical edge-case matrix:** Build 13 is installed and its implemented
+   daily workflow is accepted from ongoing use. Continue explicit locked/force-quit/reboot, permission,
+   Focus/Scheduled Summary, picker/back, Undo/replay, summaries/recovery and Home-automation checks.
+   Record actual results and fix defects; `architecture.md` owns durability limits.
 2. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck

@@ -4,5 +4,11 @@
     "domain_test": "tests/squats/main.swift",
     "integration_tests": ["UnitTests/SquatsPersistenceTests.swift", "UnitTests/SquatsActionTests.swift"],
     "ui_tests": ["UITests/AkshatOSUITests.swift"]
+  },
+  "pagevault": {
+    "domain_sources": ["AkshatOS/features/pagevault/domain/PageVaultBook.swift"],
+    "domain_test": "tests/pagevault/main.swift",
+    "integration_tests": ["UnitTests/PageVaultPersistenceTests.swift"],
+    "ui_tests": ["UITests/PageVaultUITests.swift"]
   }
 }

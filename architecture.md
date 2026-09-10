@@ -17,7 +17,9 @@ Build 13 source replaces manual snooze with 59 pre-scheduled ten-minute automati
 normal due time and adds one repeating 9:00 AM idle start invitation. Foreground reconciliation
 replenishes the bounded active batch from its persisted anchor; Done/Pause cancel it, and Done
 starts a fresh full interval. PR #15 run #57 and main run #58 passed the full gate; the downloaded
-IPA passed local inspection. Phone acceptance is still pending.
+IPA passed local inspection. Akshat installed Build 13 and reports that its implemented daily
+workflow, including automatic nudges and the idle-start behavior, works well in ongoing phone use.
+The broader edge-case, refresh/recovery and soak matrix remains open.
 The remaining full-product contract below is not all implemented, and cloud checks cannot establish
 real device behavior.
 
@@ -25,15 +27,20 @@ real device behavior.
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
-  `com.akshatksingh18.akshatos`, working source version 0.2.0 (13); Build 12 is the installed,
-  accepted current build for the checks above.
+  `com.akshatksingh18.akshatos`, working source version 0.2.0 (13); Build 13 is the installed,
+  accepted current build for its implemented daily workflow, and Build 12 is the retained predecessor.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
-  completes, including background launches. It owns one `SquatStore` and the sole
-  `AppNotificationCoordinator` and one app-lifetime Core Location region adapter across navigation.
-  `HubRootView` adapts observed Squats state into
+  completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, the sole
+  `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
+  `OrientationGate` across navigation.
+  `HubRootView` adapts observed feature state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
-  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats.
-  PageVault/ReelVault are noninteractive planned cards. WHOOP remains separate.
+  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats and
+  `PageVaultLibraryView.swift` only after choosing PageVault. ReelVault stays a noninteractive
+  planned card. WHOOP remains separate.
+- `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
+  everywhere except an open PDF reader, which reports its own presence rather than setting
+  orientation itself. The Squats dashboard therefore keeps its verified portrait layout.
 - `SquatSession.swift` is a pure Codable event/session model and calendar-day streak calculation.
   `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema. The feature's
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
@@ -89,7 +96,7 @@ real device behavior.
   reconciliation/repair, snooze cleanup, Home-health/disable, DST/time-zone, summary/recovery,
   legacy-payload and Settings UI coverage. It also requires a non-nil next fire date before Resume
   treats an existing repeating request as healthy.
-- Deferred: App Intents and Build-13 physical/refresh acceptance. The notification category exposes
+- Deferred: App Intents and the remaining physical edge-case/refresh acceptance. The notification category exposes
   Done then Pause without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-
   unverified behavior as accepted.
@@ -108,8 +115,14 @@ real device behavior.
 - `ios/tests/squats/`: feature domain assertions; `ios/UITests/`: app navigation tests.
 - `ios/UnitTests/`: hosted SwiftData integration tests. The test inventory, CI gate, diagnostics,
   and merge-enforcement limitations are defined in `ci.md`; tests do not ship in the IPA.
-- Future PageVault/ReelVault source belongs in sibling `features/pagevault/` and `features/reelvault/`
-  areas with their own stores/tests. They are not created or implemented by this refactor.
+- `ios/AkshatOS/features/pagevault/`: the phase-2 PDF feasibility spike — store plus `domain/`
+  (Foundation-only book/library/outline logic), `data/` (versioned SwiftData store and the streamed
+  copy-on-import file storage), `services/` (the only import-time PDFKit inspection), and `ui/`
+  (library and `PDFView` reader). Its scope, gates, and locked decisions belong to
+  `../book-reader/`. Page changes arrive via `PDFViewPageChanged`, never a `PDFView` delegate, so
+  process-wide delegate ownership stays with the app coordinator.
+- Future ReelVault source belongs in a sibling `features/reelvault/` area with its own store/tests.
+  It is not created or implemented yet.
 
 All sources still compile into the existing AkshatOS module/application target. These are logical
 source boundaries, not independently compiled packages or OS security isolation.
@@ -305,8 +318,8 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 
 ### Build/deployment boundary
 
-The workflow now builds AkshatOS from this repository. Its IPA contains the hub and the first
-Squats slice, not PageVault/ReelVault implementations. Keep
+The workflow now builds AkshatOS from this repository. Its IPA contains the hub, the Squats slice,
+and the PageVault phase-2 feasibility spike, but no ReelVault implementation. Keep
 Squats handlers at host scope, namespace requests, and test notifications while other modules are
 foregrounded. One hub refresh must preserve all three modules' state.
 
