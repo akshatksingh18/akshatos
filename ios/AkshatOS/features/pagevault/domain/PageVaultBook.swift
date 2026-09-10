@@ -1,7 +1,7 @@
 import Foundation
 
-// Pure domain types: no PDFKit, SwiftData, SwiftUI, or file-system side effects. The feasibility
-// spike keeps every decision that can be reasoned about without a document in this layer.
+// Pure domain types: no PDFKit, SwiftData, SwiftUI, or file-system side effects.
+// New fields carry defaults so payloads written by an earlier build still decode.
 
 struct PageVaultBook: Codable, Identifiable, Equatable {
     var id = UUID()
@@ -13,6 +13,11 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
     var addedAt: Date
     var lastOpenedAt: Date? = nil
     var currentPage = 0
+    var status: PageVaultReadingStatus = .wantToRead
+    var statusChangedAt: Date? = nil
+    /// Pages per day required for this book to count toward the streak. Nil means untracked.
+    var dailyPageGoal: Int? = nil
+    var bookmarks: [PageVaultBookmark] = []
 
     /// A persisted page can outlive the page count it was valid for, so every read clamps.
     func resolvedPage(_ requested: Int? = nil) -> Int {
@@ -24,9 +29,40 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         pageCount > 0 ? "\(resolvedPage() + 1) / \(pageCount)" : "No pages"
     }
 
+    var progressFraction: Double {
+        guard pageCount > 1 else { return pageCount == 1 ? 1 : 0 }
+        return Double(resolvedPage()) / Double(pageCount - 1)
+    }
+
+    var activeGoal: Int { status == .reading ? max(0, dailyPageGoal ?? 0) : 0 }
+
     mutating func remember(page: Int, at date: Date) {
         currentPage = resolvedPage(page)
         lastOpenedAt = date
+    }
+
+    func hasBookmark(page: Int) -> Bool {
+        bookmarks.contains { $0.page == resolvedPage(page) }
+    }
+
+    /// One bookmark per page: bookmarking a page that already has one removes it.
+    @discardableResult
+    mutating func toggleBookmark(page: Int, note: String? = nil, at date: Date) -> Bool {
+        let target = resolvedPage(page)
+        if let existing = bookmarks.firstIndex(where: { $0.page == target }) {
+            bookmarks.remove(at: existing)
+            return false
+        }
+        let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        bookmarks.append(PageVaultBookmark(page: target,
+                                           note: (trimmed?.isEmpty ?? true) ? nil : trimmed,
+                                           createdAt: date))
+        bookmarks.sort { $0.page < $1.page }
+        return true
+    }
+
+    mutating func removeBookmark(id: UUID) {
+        bookmarks.removeAll { $0.id == id }
     }
 
     /// PDF metadata titles are frequently blank, whitespace, or a leftover file path.
@@ -51,6 +87,13 @@ struct PageVaultLibrary: Codable, Equatable {
         books.sorted { ($0.lastOpenedAt ?? $0.addedAt) > ($1.lastOpenedAt ?? $1.addedAt) }
     }
 
+    /// The single book being read. Enforced by `setStatus`, not merely by the UI.
+    var current: PageVaultBook? { books.first { $0.status == .reading } }
+
+    func books(with status: PageVaultReadingStatus) -> [PageVaultBook] {
+        recent.filter { $0.status == status }
+    }
+
     func existing(fingerprint: String) -> PageVaultBook? {
         books.first { $0.fingerprint == fingerprint }
     }
@@ -71,6 +114,37 @@ struct PageVaultLibrary: Codable, Equatable {
     mutating func remove(id: UUID) -> PageVaultBook? {
         guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
         return books.remove(at: index)
+    }
+
+    /// Moving a book to Reading demotes whichever book was previously Reading back to Want to read,
+    /// never silently to Finished. Returns every book that changed so callers can persist them.
+    @discardableResult
+    mutating func setStatus(_ status: PageVaultReadingStatus, for id: UUID,
+                            at date: Date) -> [PageVaultBook] {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return [] }
+        var changed: [PageVaultBook] = []
+        if status == .reading {
+            for other in books.indices where books[other].id != id && books[other].status == .reading {
+                books[other].status = .wantToRead
+                books[other].statusChangedAt = date
+                changed.append(books[other])
+            }
+        }
+        if books[index].status != status {
+            books[index].status = status
+            books[index].statusChangedAt = date
+            changed.append(books[index])
+        }
+        return changed
+    }
+
+    /// A goal of zero or nil clears tracking rather than storing an unreachable target.
+    @discardableResult
+    mutating func setDailyGoal(_ goal: Int?, for id: UUID) -> PageVaultBook? {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
+        let sanitized = (goal ?? 0) > 0 ? goal : nil
+        books[index].dailyPageGoal = sanitized
+        return books[index]
     }
 }
 

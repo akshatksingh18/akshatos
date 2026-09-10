@@ -41,13 +41,16 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (13)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (14)**; minimum iOS 17.
+  Build 14 adds PageVault, so the build number was raised: an installable artifact must never share
+  Build 13's number while carrying different code.
   Build 13 is installed and accepted for its implemented daily workflow, including automatic nudges
   and idle-start behavior. Build 12 is the retained accepted predecessor; Build 11 remains an older fallback.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core, plus the PageVault phase-2 PDF spike (unbuilt and
-  not phone-verified at time of writing); ReelVault is a planned card only.
+- Content: hub picker → Squats dashboard/core, plus PageVault's library, reader, reading status,
+  daily-goal streak, bookmarks and cover cache — none of it phone-verified; ReelVault is a planned
+  card only.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an in-place upgrade of the former standalone smoke app.
@@ -189,6 +192,20 @@ The latter published the downloaded artifact below. No build-4 signing, installa
 release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Downloaded Build-13-numbered PageVault spike artifact
+
+- Artifact `akshatos-ios-62` from main delivery run
+  [34430943640](https://github.com/akshatksingh18/akshatos/actions/runs/34430943640), merge source
+  `e353c8d28edb6e08021f499b970ccb0dbcf78ba5` (PR #17).
+- Cached at `C:\Users\aksha\Downloads\akshatos-pagevault-spike\akshatos-ios-62`.
+- SHA-256 `e0aa63edf3102a7707d39265b914711976686454956860ca5e3d2c555f372555` matches the cloud
+  checksum; `build-info.txt` confirms the hub bundle ID, Xcode 26.6 and XcodeGen 2.46.0.
+- It reports version **0.2.0 (13)**, the same number as the installed Squats build despite containing
+  PageVault. That is why source moved to build 14. **Do not install this artifact**: prefer a
+  build-14 artifact so installed builds stay distinguishable.
+- Not signed, not installed, and not phone-verified. Its UI-test screenshot of the empty PageVault
+  library was visually inspected.
 
 ### Installed and accepted Build-13 current build
 

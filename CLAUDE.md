@@ -91,13 +91,15 @@ feature is physically verified.
   display-only picker with metadata and injected destinations; read for host integration changes.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
-- `ios/AkshatOS/features/pagevault/` — PageVault's phase-2 PDF feasibility spike: `domain/`
-  (Foundation-only book/library/outline logic), `data/` (versioned SwiftData store plus streamed
-  copy-on-import storage), `services/` (import-time PDFKit inspection), `ui/` (library and reader).
-  Product scope and gates are owned by `../book-reader/`; unbuilt and not phone-verified.
+- `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library/outline
+  logic plus reading status, bookmarks and the daily-goal streak engine), `data/` (versioned
+  SwiftData store, streamed copy-on-import storage, disposable cover cache), `services/` (import-time
+  PDFKit inspection and cover rendering), `ui/` (library grid, reader, book sheet).
+  Product scope and gates are owned by `../book-reader/`; not phone-verified.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
-  rejected/corrupt imports, resume across store recreation, and source-file-preserving removal.
+  rejected/corrupt imports, resume across store recreation, source-file-preserving removal, the
+  single-Reading-book invariant, daily-goal progress, bookmarks and cover generation.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.

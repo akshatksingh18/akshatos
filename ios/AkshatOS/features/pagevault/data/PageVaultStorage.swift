@@ -15,6 +15,7 @@ struct PageVaultStorage: Sendable {
 
     let root: URL
     private var scratch: URL { root.appendingPathComponent("Incoming", isDirectory: true) }
+    private var covers: URL { root.appendingPathComponent("Covers", isDirectory: true) }
 
     init(root: URL? = nil) throws {
         if let root {
@@ -31,6 +32,25 @@ struct PageVaultStorage: Sendable {
     func documentURL(for id: UUID) -> URL {
         root.appendingPathComponent(id.uuidString, isDirectory: true)
             .appendingPathComponent("document.pdf")
+    }
+
+    /// Covers are a disposable cache: always regenerable from page one, so they are kept out of
+    /// device backup rather than inflating it.
+    func coverURL(for id: UUID) -> URL {
+        covers.appendingPathComponent("\(id.uuidString).png")
+    }
+
+    func hasCover(for id: UUID) -> Bool {
+        FileManager.default.fileExists(atPath: coverURL(for: id).path)
+    }
+
+    func writeCover(_ data: Data, for id: UUID) throws {
+        try FileManager.default.createDirectory(at: covers, withIntermediateDirectories: true)
+        var excluded = URLResourceValues()
+        excluded.isExcludedFromBackup = true
+        var directory = covers
+        try? directory.setResourceValues(excluded)
+        try data.write(to: coverURL(for: id), options: .atomic)
     }
 
     /// Coordinates a read of a possibly cloud-backed source and streams it into a scratch file.
@@ -107,8 +127,9 @@ struct PageVaultStorage: Sendable {
         try? FileManager.default.removeItem(at: staged)
     }
 
-    /// Removes only PageVault's own copy. The user's original source file is never touched.
+    /// Removes only PageVault's own copy and cover. The user's original source file is never touched.
     func remove(id: UUID) throws {
+        try? FileManager.default.removeItem(at: coverURL(for: id))
         let directory = documentURL(for: id).deletingLastPathComponent()
         guard FileManager.default.fileExists(atPath: directory.path) else { return }
         try FileManager.default.removeItem(at: directory)

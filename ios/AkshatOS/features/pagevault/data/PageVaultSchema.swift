@@ -2,9 +2,15 @@ import Foundation
 import SwiftData
 
 /// PageVault metadata lives in its own versioned store, logically separate from Squats.
+///
+/// Both models still belong to V1 because no build carrying this store has been installed on a
+/// phone yet, so there is no existing container to migrate. Book fields evolve inside the encoded
+/// JSON payload — new properties are added with defaults and old payloads keep decoding — while a
+/// change to these model *shapes* after the first installed build requires a real V2 stage and its
+/// own migration tests.
 enum PageVaultSchemaV1: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 0, 0)
-    static var models: [any PersistentModel.Type] { [SavedBook.self] }
+    static var models: [any PersistentModel.Type] { [SavedBook.self, SavedReadingDay.self] }
 
     @Model final class SavedBook {
         @Attribute(.unique) var id: UUID
@@ -12,6 +18,16 @@ enum PageVaultSchemaV1: VersionedSchema {
         init(_ book: PageVaultBook) throws {
             id = book.id
             payload = try JSONEncoder().encode(book)
+        }
+    }
+
+    @Model final class SavedReadingDay {
+        /// One row per book per local day, keyed by the domain's own composite identifier.
+        @Attribute(.unique) var key: String
+        var payload: Data
+        init(_ day: PageVaultReadingDay) throws {
+            key = day.id
+            payload = try JSONEncoder().encode(day)
         }
     }
 }

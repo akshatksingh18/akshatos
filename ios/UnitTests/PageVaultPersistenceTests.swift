@@ -24,11 +24,14 @@ import XCTest
                                                                       isStoredInMemoryOnly: true)])
     }
 
-    private func makeStore(container: ModelContainer? = nil) throws -> PageVaultStore {
+    private func makeStore(container: ModelContainer? = nil,
+                          now: @escaping () -> Date = { Date(timeIntervalSince1970: 1_788_480_000) },
+                          calendar: Calendar = .current) throws -> PageVaultStore {
         PageVaultStore(repository: SwiftDataPageVaultRepository(container: try container ?? makeContainer()),
                        storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Library")),
                        documents: PageVaultDocumentService(),
-                       now: { Date(timeIntervalSince1970: 1_788_480_000) })
+                       now: now,
+                       calendar: calendar)
     }
 
     /// A real multi-page PDF, so import exercises actual streaming, hashing, and PDFKit validation.
@@ -195,5 +198,149 @@ import XCTest
         XCTAssertFalse(FileManager.default.fileExists(atPath: orphan.path),
                        "An interrupted copy is not left behind in the container")
         XCTAssertTrue(store.storageAvailable)
+    }
+
+    func testOnlyOneBookStaysReadingAcrossReload() async throws {
+        let container = try makeContainer()
+        let store = try makeStore(container: container)
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 10, title: "Alpha"))
+        await store.importBook(from: try makePDF(pages: 12, title: "Beta"))
+        let alpha = try XCTUnwrap(store.books.first { $0.title == "Alpha" })
+        let beta = try XCTUnwrap(store.books.first { $0.title == "Beta" })
+
+        store.setStatus(.reading, for: alpha)
+        store.setStatus(.reading, for: beta)
+
+        let reopened = try makeStore(container: container)
+        await reopened.load()
+        XCTAssertEqual(reopened.current?.title, "Beta", "The newest Reading choice wins")
+        XCTAssertEqual(reopened.books(with: .wantToRead).map(\.title), ["Alpha"],
+                       "The previous Reading book is demoted, not finished")
+    }
+
+    func testReadingProgressMeetsTodaysGoalAndSurvivesReload() async throws {
+        let container = try makeContainer()
+        let clock = Date(timeIntervalSince1970: 1_788_480_000)
+        let store = try makeStore(container: container, now: { clock })
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 200))
+        let book = try XCTUnwrap(store.books.first)
+
+        store.setStatus(.reading, for: book)
+        store.setDailyGoal(10, for: book)
+        XCTAssertEqual(store.days.count, 1, "A live goal opens today's row immediately")
+        XCTAssertEqual(store.streak.todayGoal, 10)
+        XCTAssertFalse(store.streak.todayMet)
+        XCTAssertEqual(store.streak.current, 0)
+
+        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        XCTAssertTrue(store.streak.todayMet, "Reaching the goal completes today")
+        XCTAssertEqual(store.streak.current, 1)
+
+        let reopened = try makeStore(container: container, now: { clock })
+        await reopened.load()
+        XCTAssertEqual(reopened.streak.current, 1, "The streak is rebuilt from stored days")
+        XCTAssertEqual(reopened.streak.todayPagesRead, 12)
+        XCTAssertEqual(reopened.days.count, 1, "Reloading does not duplicate today's row")
+    }
+
+    func testPagingBackwardDoesNotInflateDailyProgress() async throws {
+        let clock = Date(timeIntervalSince1970: 1_788_480_000)
+        let store = try makeStore(now: { clock })
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 120))
+        let book = try XCTUnwrap(store.books.first)
+        store.setStatus(.reading, for: book)
+        store.setDailyGoal(30, for: book)
+
+        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 20)
+        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 4)
+        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 19)
+
+        XCTAssertEqual(store.streak.todayPagesRead, 20,
+                       "Re-reading earlier pages cannot add progress")
+        XCTAssertFalse(store.streak.todayMet)
+        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).currentPage, 19,
+                       "The reading position still follows the reader")
+    }
+
+    func testBookmarksPersistAcrossStoreRecreation() async throws {
+        let container = try makeContainer()
+        let store = try makeStore(container: container)
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 60))
+        let book = try XCTUnwrap(store.books.first)
+        XCTAssertTrue(store.toggleBookmark(book, page: 20, note: "Here"))
+
+        let reopened = try makeStore(container: container)
+        await reopened.load()
+        let restored = try XCTUnwrap(reopened.books.first)
+        XCTAssertEqual(restored.bookmarks.map(\.page), [20])
+        XCTAssertEqual(restored.bookmarks.first?.note, "Here")
+        XCTAssertFalse(reopened.toggleBookmark(restored, page: 20), "Toggling the same page removes it")
+        XCTAssertTrue(try XCTUnwrap(reopened.books.first).bookmarks.isEmpty)
+    }
+
+    func testImportGeneratesACoverThumbnail() async throws {
+        let store = try makeStore()
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 5))
+        let book = try XCTUnwrap(store.books.first)
+        let cover = try XCTUnwrap(store.coverURL(for: book), "A cover is cached after import")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: cover.path))
+        XCTAssertNotNil(UIImage(contentsOfFile: cover.path), "The cached cover is a usable image")
+    }
+
+    func testRemovingABookClearsItsReadingHistoryAndCover() async throws {
+        let container = try makeContainer()
+        let store = try makeStore(container: container)
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 80))
+        let book = try XCTUnwrap(store.books.first)
+        store.setStatus(.reading, for: book)
+        store.setDailyGoal(5, for: book)
+        let cover = try XCTUnwrap(store.coverURL(for: book))
+        XCTAssertFalse(store.days.isEmpty)
+
+        store.remove(book)
+
+        XCTAssertTrue(store.days.isEmpty)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: cover.path), "The cover cache is cleared")
+        let reopened = try makeStore(container: container)
+        await reopened.load()
+        XCTAssertTrue(reopened.days.isEmpty, "Reading history does not outlive its book")
+    }
+
+    func testStoreClaimingTwoReadingBooksIsRejected() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        for name in ["One", "Two"] {
+            var book = PageVaultBook(fingerprint: name, title: name, pageCount: 10, byteCount: 1,
+                                     addedAt: Date(timeIntervalSince1970: 1_788_480_000))
+            book.status = .reading
+            context.insert(try PageVaultSchemaV1.SavedBook(book))
+        }
+        try context.save()
+        XCTAssertThrowsError(try SwiftDataPageVaultRepository(container: container).load(),
+                             "Two Reading books is a corrupt library, not a valid state")
+    }
+
+    func testFinishingWithoutAReplacementLeavesTodaysProgressIntact() async throws {
+        let clock = Date(timeIntervalSince1970: 1_788_480_000)
+        let store = try makeStore(now: { clock })
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 40))
+        let book = try XCTUnwrap(store.books.first)
+        store.setStatus(.reading, for: book)
+        store.setDailyGoal(10, for: book)
+        store.remember(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        XCTAssertEqual(store.streak.current, 1)
+
+        store.setStatus(.finished, for: try XCTUnwrap(store.book(id: book.id)))
+
+        XCTAssertNil(store.current, "Finishing leaves nothing being read")
+        XCTAssertEqual(store.streak.current, 1,
+                       "A day already completed is not undone by finishing the book")
     }
 }
