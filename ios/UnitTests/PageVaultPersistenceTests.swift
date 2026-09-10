@@ -151,9 +151,9 @@ import XCTest
         await store.load()
         await store.importBook(from: source)
         let book = try XCTUnwrap(store.books.first)
-        store.recordPageView(book, page: 31)
+        store.noteOpened(book)
         XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).openingPage, 0,
-                       "Reading alone does not change where the book reopens")
+                       "Opening a book does not change where it reopens")
         store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 31)
 
         let reopened = try makeStore(container: container)
@@ -229,8 +229,8 @@ import XCTest
         XCTAssertFalse(store.streak.todayMet)
         XCTAssertEqual(store.streak.current, 0)
 
-        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 12)
-        XCTAssertTrue(store.streak.todayMet, "Reaching the goal completes today")
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        XCTAssertTrue(store.streak.todayMet, "Bookmarking past the goal completes today")
         XCTAssertEqual(store.streak.current, 1)
 
         let reopened = try makeStore(container: container, now: { clock })
@@ -240,7 +240,7 @@ import XCTest
         XCTAssertEqual(reopened.days.count, 1, "Reloading does not duplicate today's row")
     }
 
-    func testPagingBackwardDoesNotInflateDailyProgress() async throws {
+    func testBookmarkingBackwardDoesNotReduceDailyProgress() async throws {
         let clock = Date(timeIntervalSince1970: 1_788_480_000)
         let store = try makeStore(now: { clock })
         await store.load()
@@ -249,15 +249,15 @@ import XCTest
         store.setStatus(.reading, for: book)
         store.setDailyGoal(30, for: book)
 
-        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 20)
-        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 4)
-        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 19)
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 20)
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 4)
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 19)
 
         XCTAssertEqual(store.streak.todayPagesRead, 20,
-                       "Re-reading earlier pages cannot add progress")
+                       "Bookmarking back into the book cannot reduce today's credit")
         XCTAssertFalse(store.streak.todayMet)
-        XCTAssertFalse(try XCTUnwrap(store.book(id: book.id)).hasPlace,
-                       "Reading never sets a place on its own; only bookmarking does")
+        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).resolvedPage(), 19,
+                       "Your place still follows the newest bookmark")
     }
 
     func testBookmarkingReplacesThePreviousPlace() async throws {
@@ -334,7 +334,7 @@ import XCTest
         let book = try XCTUnwrap(store.books.first)
         store.setStatus(.reading, for: book)
         store.setDailyGoal(10, for: book)
-        store.recordPageView(try XCTUnwrap(store.book(id: book.id)), page: 12)
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 12)
         XCTAssertEqual(store.streak.current, 1)
 
         store.setStatus(.finished, for: try XCTUnwrap(store.book(id: book.id)))
@@ -342,5 +342,68 @@ import XCTest
         XCTAssertNil(store.current, "Finishing leaves nothing being read")
         XCTAssertEqual(store.streak.current, 1,
                        "A day already completed is not undone by finishing the book")
+    }
+
+    func testBookmarkingClaimsTheBookAsTheOneBeingRead() async throws {
+        let container = try makeContainer()
+        let store = try makeStore(container: container)
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 30, title: "Alpha"))
+        await store.importBook(from: try makePDF(pages: 32, title: "Beta"))
+        let alpha = try XCTUnwrap(store.books.first { $0.title == "Alpha" })
+        let beta = try XCTUnwrap(store.books.first { $0.title == "Beta" })
+        XCTAssertNil(store.current, "Importing does not start reading anything")
+
+        store.setPlace(alpha, page: 4)
+        XCTAssertEqual(store.current?.title, "Alpha",
+                       "Bookmarking is enough to make a book the one being read")
+
+        store.setPlace(beta, page: 2)
+        XCTAssertEqual(store.current?.title, "Beta", "The newest bookmarked book takes over")
+        XCTAssertEqual(store.books(with: .wantToRead).map(\.title), ["Alpha"],
+                       "The previous book steps back to Want to read, keeping the single-Reading rule")
+
+        let reopened = try makeStore(container: container)
+        await reopened.load()
+        XCTAssertEqual(reopened.current?.title, "Beta")
+    }
+
+    func testGoalCountsPagesBetweenBookmarks() async throws {
+        let clock = Date(timeIntervalSince1970: 1_788_480_000)
+        let store = try makeStore(now: { clock })
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 300))
+        let book = try XCTUnwrap(store.books.first)
+
+        store.setPlace(book, page: 40)
+        store.setDailyGoal(10, for: try XCTUnwrap(store.book(id: book.id)))
+        XCTAssertEqual(store.streak.todayPagesRead, 0,
+                       "Today starts from the bookmark that was already there")
+
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 46)
+        XCTAssertEqual(store.streak.todayPagesRead, 6, "Six pages were covered since that bookmark")
+        XCTAssertFalse(store.streak.todayMet)
+
+        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 52)
+        XCTAssertEqual(store.streak.todayPagesRead, 12, "Progress accumulates across bookmarks")
+        XCTAssertTrue(store.streak.todayMet)
+        XCTAssertEqual(store.streak.current, 1)
+    }
+
+    func testOpeningABookWithoutBookmarkingEarnsNoProgress() async throws {
+        let clock = Date(timeIntervalSince1970: 1_788_480_000)
+        let store = try makeStore(now: { clock })
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 90))
+        let book = try XCTUnwrap(store.books.first)
+        store.setStatus(.reading, for: book)
+        store.setDailyGoal(5, for: try XCTUnwrap(store.book(id: book.id)))
+
+        store.noteOpened(try XCTUnwrap(store.book(id: book.id)))
+
+        XCTAssertEqual(store.streak.todayPagesRead, 0,
+                       "Reading without bookmarking records nothing, by design")
+        XCTAssertTrue(store.streak.isAtRisk, "The day is open and unmet, so it is at risk")
+        XCTAssertEqual(store.streak.current, 0)
     }
 }

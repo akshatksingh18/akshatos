@@ -37,7 +37,6 @@ struct PageVaultReaderView: View {
     var onReadingSessionChange: (Bool) -> Void = { _ in }
 
     @StateObject private var controller = PageVaultReaderController()
-    @Environment(\.scenePhase) private var scenePhase
 
     /// The place can change while reading, so the live copy is read back from the store.
     private var live: PageVaultBook { store.book(id: book.id) ?? book }
@@ -52,15 +51,11 @@ struct PageVaultReaderView: View {
                 ToolbarItem(placement: .topBarTrailing) { paperButton }
                 ToolbarItem(placement: .topBarTrailing) { placeButton }
             }
-            .onAppear { onReadingSessionChange(true) }
-            .onDisappear {
-                onReadingSessionChange(false)
-                store.recordPageView(book, page: controller.currentPage)
+            .onAppear {
+                onReadingSessionChange(true)
+                store.noteOpened(book)
             }
-            .onChange(of: scenePhase) { _, phase in
-                if phase != .active { store.recordPageView(book, page: controller.currentPage) }
-            }
-            .task(id: controller.currentPage) { await recordAfterPause() }
+            .onDisappear { onReadingSessionChange(false) }
     }
 
     /// Bookmarking is what moves your place, so this is the only control that changes where the
@@ -95,21 +90,13 @@ struct PageVaultReaderView: View {
         let placeNote = live.isPlace(page: controller.currentPage) ? " · your place" : ""
         return Text("\(controller.currentPage + 1) / \(book.pageCount)\(placeNote)")
             .font(.caption.weight(.semibold).monospacedDigit())
-            .foregroundStyle(.white.opacity(0.85))
+            .foregroundStyle(.white.opacity(0.9))
             .padding(.horizontal, 14).padding(.vertical, 8)
-            .background(.black.opacity(0.55), in: Capsule())
+            .background(.black.opacity(0.4), in: Capsule())
             .padding(.bottom, 14)
             .accessibilityIdentifier("reader-page-indicator")
     }
 
-    /// Coalesces rapid page turns: `.task(id:)` cancels the pending write on the next turn, so
-    /// moving quickly through a long book does not write once per page. This records reading
-    /// progress for the streak only — it never moves your place.
-    private func recordAfterPause() async {
-        try? await Task.sleep(for: .seconds(2))
-        guard !Task.isCancelled, !controller.restoring else { return }
-        store.recordPageView(book, page: controller.currentPage)
-    }
 }
 
 /// Wraps PDFKit's own view in single-page horizontal paging, so one page fills the screen and a
@@ -126,6 +113,7 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         view.displayMode = .singlePage
         view.displayDirection = .horizontal
         view.autoScales = true
+        view.pageShadowsEnabled = false
         view.translatesAutoresizingMaskIntoConstraints = false
         // One page per screen with real paging, rather than a continuous scroll of partial pages.
         view.usePageViewController(true, withViewOptions: nil)
@@ -176,13 +164,12 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         private var token: NSObjectProtocol?
         private var attempts = 0
 
+        /// The surround is kept the same white as the page, so a page narrower than the screen
+        /// blends into it instead of sitting inside dark letterbox bands. The warm overlay then
+        /// tints page and surround together, giving one continuous sheet of paper.
         func apply(warmPaper: Bool) {
-            pdfView?.backgroundColor = warmPaper
-                ? UIColor(red: 0.16, green: 0.13, blue: 0.10, alpha: 1)
-                : UIColor(Palette.background)
-            tint?.backgroundColor = warmPaper
-                ? UIColor(red: 0.99, green: 0.94, blue: 0.84, alpha: 1)
-                : .white
+            pdfView?.backgroundColor = .white
+            tint?.backgroundColor = UIColor(red: 0.99, green: 0.94, blue: 0.84, alpha: 1)
             tint?.isHidden = !warmPaper
         }
 

@@ -112,15 +112,23 @@ struct PageVaultLibraryView: View {
                     .tint(Palette.lime)
                 Text(streak.todayMet
                      ? "Today is done: \(streak.todayPagesRead) of \(streak.todayGoal) pages."
-                     : "\(streak.todayPagesRead) of \(streak.todayGoal) pages today.")
+                     : "\(streak.todayPagesRead) of \(streak.todayGoal) pages bookmarked today.")
                     .font(.caption).foregroundStyle(streak.isAtRisk ? Palette.muted : Palette.lime)
                     .accessibilityIdentifier("streak-today")
-            } else if let current = store.current {
-                Text("Set a daily page goal for \(current.title) to start a streak.")
-                    .font(.caption).foregroundStyle(Palette.muted)
             } else {
-                Text("Mark a book as Reading and give it a daily page goal to start a streak.")
+                Text(store.current == nil
+                     ? "Bookmark a page while reading and that book becomes the one you are reading."
+                     : "Set a daily page goal to start a streak. Pages count from your bookmark to your next one.")
                     .font(.caption).foregroundStyle(Palette.muted)
+            }
+            if let current = store.current {
+                let goalLabel = current.dailyPageGoal.map { "\($0) pages a day · change" }
+                    ?? "Set a daily page goal"
+                Button { detail = current } label: {
+                    Label(goalLabel, systemImage: "target")
+                }
+                .buttonStyle(ActionStyle())
+                .accessibilityIdentifier("set-daily-goal")
             }
         }
         .accessibilityIdentifier("streak-card")

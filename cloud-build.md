@@ -41,7 +41,7 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (15)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (16)**; minimum iOS 17.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Build 13 is the installed Squats-only build; 14 added PageVault and was
   physically tested; 15 carries the reader redesign that followed.
@@ -194,6 +194,23 @@ The latter published the downloaded artifact below. No build-4 signing, installa
 release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Build-15 physical test result — warm paper good, three gaps found
+
+Warm paper renders correctly on text pages and the paged swipe works. Three problems, all addressed
+in build 16 and unverified:
+
+- The daily page goal had no reachable control. The streak card advertised the goal but the only way
+  in was a long-press context menu on a book card, which was not discoverable.
+- Progress counted pages swiped past rather than pages between bookmarks, which did not match how
+  the bookmark is used.
+- Each page sat inside dark letterbox bands, because a PDF page is narrower than the phone screen.
+
+Also requested and implemented: bookmarking now claims the book as the one being read, instead of
+requiring "Mark as reading" first.
+
+Still unconfirmed from this pass: whether reopening lands on the bookmark (the build-15 fix for the
+build-14 defect was not separately reported), and how warm paper looks on the image-heavy scan.
 
 ### Downloaded Build-15 candidate — paged reader, warm paper, bookmarked place
 

@@ -122,8 +122,9 @@ real device behavior.
   (library grid, paged `PDFView` reader, book sheet). Its scope, gates, and locked decisions belong
   to `../book-reader/`. Page changes arrive via `PDFViewPageChanged`, never a `PDFView` delegate, so
   process-wide delegate ownership stays with the app coordinator. Reading days are written whenever
-  a goal is live, so an unread day is a real miss rather than an unrecorded gap, and page changes
-  record streak progress only — the reading place moves solely on an explicit bookmark.
+  a goal is live, so an unbookmarked day is a real miss rather than an unrecorded gap. Page changes
+  persist nothing at all: an explicit bookmark is what moves the place, claims the book as the one
+  being read, and credits the pages covered since the previous bookmark.
 - Future ReelVault source belongs in a sibling `features/reelvault/` area with its own store/tests.
   It is not created or implemented yet.
 
