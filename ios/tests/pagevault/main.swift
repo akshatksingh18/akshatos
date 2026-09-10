@@ -126,7 +126,31 @@ assert(upgraded.status == .wantToRead, "An older payload defaults to Want to rea
 assert(upgraded.dailyPageGoal == nil && upgraded.bookmarks.isEmpty,
        "An older payload gains empty goal and bookmark fields")
 assert(upgraded.currentPage == 7, "An older payload keeps its reading position")
-print("PASS: 3 payload migration assertions (status default, empty additions, preserved position)")
+assert(upgraded.lastOpenedAt == nil && upgraded.statusChangedAt == nil,
+       "Absent optional timestamps decode as nil rather than failing")
+
+// The smallest record any build could have written must still load.
+let minimal = Data("""
+{"id":"9C1F0C7E-1A2B-4C3D-8E4F-5A6B7C8D9E0F","fingerprint":"tiny","title":"Tiny",
+ "pageCount":3,"byteCount":10,"addedAt":0}
+""".utf8)
+let tiny = try JSONDecoder().decode(PageVaultBook.self, from: minimal)
+assert(tiny.currentPage == 0 && tiny.status == .wantToRead && tiny.bookmarks.isEmpty,
+       "A minimal record loads with defaults instead of throwing")
+
+// A record missing a genuinely required field is still a corrupt record, not a default.
+let broken = Data("""
+{"id":"9C1F0C7E-1A2B-4C3D-8E4F-5A6B7C8D9E0F","title":"No fingerprint","pageCount":3,
+ "byteCount":10,"addedAt":0}
+""".utf8)
+var rejectedBroken = false
+do {
+    _ = try JSONDecoder().decode(PageVaultBook.self, from: broken)
+} catch {
+    rejectedBroken = true
+}
+assert(rejectedBroken, "Leniency applies to added fields only, never to identity")
+print("PASS: 6 payload migration assertions (defaults, optionals, minimal record, corrupt record)")
 
 func readingDay(_ number: Int, book id: UUID, from: Int, to: Int, goal: Int) -> PageVaultReadingDay {
     PageVaultReadingDay(day: PageVaultReadingDay.dayKey(day(number), calendar: calendar),

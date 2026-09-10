@@ -5,9 +5,11 @@ import SwiftData
 ///
 /// Both models still belong to V1 because no build carrying this store has been installed on a
 /// phone yet, so there is no existing container to migrate. Book fields evolve inside the encoded
-/// JSON payload — new properties are added with defaults and old payloads keep decoding — while a
-/// change to these model *shapes* after the first installed build requires a real V2 stage and its
-/// own migration tests.
+/// JSON payload, but a property default is *not* enough for that: Swift's synthesized decoder
+/// ignores defaults and rejects any record missing a non-optional key, which would fail the whole
+/// library load. `PageVaultBook` therefore decodes field by field, and every added field must be
+/// given a fallback there. A change to these model *shapes* after the first installed build
+/// requires a real V2 stage and its own migration tests.
 enum PageVaultSchemaV1: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 0, 0)
     static var models: [any PersistentModel.Type] { [SavedBook.self, SavedReadingDay.self] }

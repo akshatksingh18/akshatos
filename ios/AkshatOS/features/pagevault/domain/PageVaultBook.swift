@@ -19,6 +19,49 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
     var dailyPageGoal: Int? = nil
     var bookmarks: [PageVaultBookmark] = []
 
+    init(id: UUID = UUID(), fingerprint: String, title: String, pageCount: Int, byteCount: Int64,
+         addedAt: Date, lastOpenedAt: Date? = nil, currentPage: Int = 0,
+         status: PageVaultReadingStatus = .wantToRead, statusChangedAt: Date? = nil,
+         dailyPageGoal: Int? = nil, bookmarks: [PageVaultBookmark] = []) {
+        self.id = id
+        self.fingerprint = fingerprint
+        self.title = title
+        self.pageCount = pageCount
+        self.byteCount = byteCount
+        self.addedAt = addedAt
+        self.lastOpenedAt = lastOpenedAt
+        self.currentPage = currentPage
+        self.status = status
+        self.statusChangedAt = statusChangedAt
+        self.dailyPageGoal = dailyPageGoal
+        self.bookmarks = bookmarks
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, fingerprint, title, pageCount, byteCount, addedAt, lastOpenedAt, currentPage
+        case status, statusChangedAt, dailyPageGoal, bookmarks
+    }
+
+    /// Decoded field by field rather than by the synthesized initializer, which ignores property
+    /// defaults and would reject any record written before a field existed. Losing the whole
+    /// library to one missing key is not an acceptable upgrade path, so absent fields fall back.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        fingerprint = try container.decode(String.self, forKey: .fingerprint)
+        title = try container.decode(String.self, forKey: .title)
+        pageCount = try container.decode(Int.self, forKey: .pageCount)
+        byteCount = try container.decode(Int64.self, forKey: .byteCount)
+        addedAt = try container.decode(Date.self, forKey: .addedAt)
+        lastOpenedAt = try container.decodeIfPresent(Date.self, forKey: .lastOpenedAt)
+        currentPage = try container.decodeIfPresent(Int.self, forKey: .currentPage) ?? 0
+        status = try container.decodeIfPresent(PageVaultReadingStatus.self, forKey: .status)
+            ?? .wantToRead
+        statusChangedAt = try container.decodeIfPresent(Date.self, forKey: .statusChangedAt)
+        dailyPageGoal = try container.decodeIfPresent(Int.self, forKey: .dailyPageGoal)
+        bookmarks = try container.decodeIfPresent([PageVaultBookmark].self, forKey: .bookmarks) ?? []
+    }
+
     /// A persisted page can outlive the page count it was valid for, so every read clamps.
     func resolvedPage(_ requested: Int? = nil) -> Int {
         guard pageCount > 0 else { return 0 }
