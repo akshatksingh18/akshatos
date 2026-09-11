@@ -249,41 +249,96 @@ assert(PageVaultImportFailure.unreadable != PageVaultImportFailure.noPages,
        "Distinct failures stay distinguishable")
 print("PASS: 3 import failure assertions (encrypted, storage reason, distinct cases)")
 
-// Margin trimming is what makes fixed-layout text readable on a phone, so its limits are pinned.
+// Fitting pages to their text. One shared text area keeps text the same size on every page, and no
+// page is ever clipped: a page with ink beyond that area gets a larger box of its own.
 func ink(_ minX: Double, _ minY: Double, _ maxX: Double, _ maxY: Double) -> PageVaultInkBox {
     PageVaultInkBox(minX: minX, minY: minY, maxX: maxX, maxY: maxY)
 }
-let typical = PageVaultCrop.cropBox(from: [ink(0.10, 0.08, 0.90, 0.92)])
-assert(typical != nil, "A page with ordinary margins is worth trimming")
-assert(typical!.minX > 0.08 && typical!.minX <= PageVaultCrop.maxSideInset,
-       "The trim is padded inward of the ink and never exceeds the cap")
-assert(typical!.width < 1, "Trimming reduces the page width, which is what raises text size")
+func near(_ first: Double, _ second: Double) -> Bool { abs(first - second) < 0.0005 }
+func neverClips(_ survey: [PageVaultInkBox?]) -> Bool {
+    zip(survey, PageVaultCrop.cropBoxes(for: survey)).allSatisfy { box, crop in
+        guard let box, !box.isEmpty, let crop else { return true }
+        return crop.contains(box)
+    }
+}
 
-let generous = PageVaultCrop.cropBox(from: [ink(0.30, 0.30, 0.70, 0.70)])
-assert(generous != nil)
-assert(generous!.minX == PageVaultCrop.maxSideInset && generous!.maxX == 1 - PageVaultCrop.maxSideInset,
-       "A very wide margin is trimmed only up to the cap, so an unsampled figure cannot be shorn off")
+let body = [PageVaultInkBox?](repeating: ink(0.20, 0.15, 0.80, 0.85), count: 40)
+let bodyCrops = PageVaultCrop.cropBoxes(for: body)
+assert(bodyCrops.allSatisfy { $0 == bodyCrops[0] } && near(bodyCrops[0]!.minX, 0.188)
+       && near(bodyCrops[0]!.maxX, 0.812) && near(bodyCrops[0]!.minY, 0.138)
+       && near(bodyCrops[0]!.maxY, 0.862),
+       "Every ordinary page is cropped to one padded text area, trimmed from all four sides")
 
-assert(PageVaultCrop.cropBox(from: [ink(0, 0, 1, 1)]) == nil,
-       "A scanned page whose ink covers the sheet is left alone")
-assert(PageVaultCrop.cropBox(from: [ink(0.005, 0.005, 0.995, 0.995)]) == nil,
-       "An already tight page is not re-cropped for no gain")
-assert(PageVaultCrop.cropBox(from: []) == nil, "No samples means no crop")
-assert(PageVaultCrop.cropBox(from: [ink(0.5, 0.5, 0.5, 0.5)]) == nil, "Empty ink is ignored")
+var stray = body
+stray[7] = ink(0.02, 0.15, 0.80, 0.85)
+let strayCrops = PageVaultCrop.cropBoxes(for: stray)
+assert(strayCrops[9] == bodyCrops[9], "One stray mark does not widen every other page")
+assert(near(strayCrops[7]!.minX, 0.008) && strayCrops[7]!.contains(stray[7]!),
+       "The page carrying the mark gets a box grown to contain it rather than being clipped")
 
-let unioned = PageVaultCrop.cropBox(from: [ink(0.20, 0.20, 0.60, 0.60),
-                                           ink(0.10, 0.15, 0.85, 0.90)])
-assert(unioned != nil)
-assert(unioned!.minX <= 0.10 && unioned!.maxX >= 0.85,
-       "The crop spans every sample, so the widest page still fits")
+var short = [PageVaultInkBox?](repeating: ink(0.20, 0.15, 0.80, 0.85), count: 5)
+short[2] = ink(0.10, 0.15, 0.90, 0.85)
+assert(PageVaultCrop.cropBoxes(for: short).allSatisfy { near($0!.minX, 0.088) },
+       "A short document has too few pages to call anything an outlier, so its area covers them all")
 
-assert(PageVaultCrop.samplePageIndices(pageCount: 0).isEmpty, "No pages, no samples")
-assert(PageVaultCrop.samplePageIndices(pageCount: 3) == [0, 1, 2], "A short document samples fully")
-let spread = PageVaultCrop.samplePageIndices(pageCount: 600)
-assert(spread.count == 5 && spread.first == 1 && spread.last == 599,
-       "A long document samples across its whole span, skipping the cover")
-assert(spread == spread.sorted() && Set(spread).count == 5, "Samples are ordered and distinct")
-print("PASS: 15 layout assertions (trim, cap, full-bleed, union, sampling)")
+let facing: [PageVaultInkBox?] = (0..<40).map {
+    $0 % 2 == 0 ? ink(0.25, 0.10, 0.85, 0.90) : ink(0.15, 0.10, 0.70, 0.90)
+}
+let facingCrops = PageVaultCrop.cropBoxes(for: facing)
+assert(near(facingCrops[0]!.minX, 0.238) && near(facingCrops[1]!.minX, 0.113),
+       "Left and right pages are positioned on their own text rather than on a union of both")
+assert(near(facingCrops[0]!.width, facingCrops[1]!.width),
+       "Facing pages share one box size, so text is the same size on both")
+
+var mixed = body
+mixed[3] = ink(0, 0, 1, 1)
+mixed[4] = PageVaultInkBox.blank
+mixed[5] = nil
+let mixedCrops = PageVaultCrop.cropBoxes(for: mixed)
+assert(mixedCrops[3] == nil, "A full-page image or scan is left exactly as published")
+assert(mixedCrops[4] == bodyCrops[4], "A blank page takes the shared area, so paging stays steady")
+assert(mixedCrops[5] == nil, "A page that could not be measured is left alone rather than guessed at")
+assert(PageVaultCrop.cropBoxes(for: [PageVaultInkBox?](repeating: ink(0, 0, 1, 1), count: 12))
+       .allSatisfy { $0 == nil }, "A scanned book whose ink covers every sheet is not cropped at all")
+assert(PageVaultCrop.cropBoxes(for: [PageVaultInkBox?](repeating: ink(0.01, 0.02, 0.99, 0.975), count: 12))
+       .allSatisfy { $0 == nil }, "A document already trimmed tight is not re-cropped for no gain")
+assert([body, stray, short, facing, mixed].allSatisfy(neverClips), "No page's ink is ever cropped away")
+
+let slid = PageVaultCrop.sized(ink(0.90, 0.10, 0.95, 0.20), width: 0.30, height: 0.30)
+assert(near(slid.maxX, 1) && near(slid.width, 0.30) && slid.minY >= 0,
+       "A box resized near the edge slides back onto the page instead of running off it")
+
+// Measuring ink on a rendered page: bitmap rows run top-down, page coordinates bottom-up.
+func bitmap(_ width: Int, _ height: Int, paper: UInt8, marks: [(Int, Int)], tone: UInt8 = 0) -> [UInt8] {
+    var pixels = [UInt8](repeating: paper, count: width * height)
+    for (row, column) in marks { pixels[row * width + column] = tone }
+    return pixels
+}
+let block = (2...5).flatMap { row in (3...6).map { (row, $0) } }
+let found = PageVaultInkScan.inkBox(pixels: bitmap(10, 10, paper: 255, marks: block), width: 10, height: 10)
+assert(found == ink(0.3, 0.4, 0.7, 0.8), "Ink bounds are found, with bitmap rows inverted into page coordinates")
+let speckled = PageVaultInkScan.inkBox(pixels: bitmap(10, 10, paper: 255, marks: block + [(9, 9)]),
+                                       width: 10, height: 10)
+assert(speckled == found, "A lone speck of dust does not stretch the text area")
+let yellowed = PageVaultInkScan.inkBox(pixels: bitmap(10, 10, paper: 200, marks: block, tone: 120),
+                                       width: 10, height: 10)
+assert(yellowed == found, "An off-white scan still has margins, because ink is judged against its own paper")
+let blankScan = PageVaultInkScan.inkBox(pixels: bitmap(10, 10, paper: 250, marks: []), width: 10, height: 10)
+assert(blankScan?.isEmpty == true, "A blank page reports no ink")
+let darkScan = PageVaultInkScan.inkBox(pixels: bitmap(10, 10, paper: 20, marks: []), width: 10, height: 10)
+assert(darkScan.map(PageVaultCrop.isFullBleed) == true,
+       "A page that is dark all over counts as a full-page image")
+assert(PageVaultInkScan.inkBox(pixels: [255, 255], width: 10, height: 10) == nil,
+       "A bitmap that does not match its dimensions is rejected")
+
+let survey = PageVaultInkSurvey(boxes: [ink(0.1, 0.1, 0.9, 0.9), nil, PageVaultInkBox.blank])
+assert(survey.isCurrent(pageCount: 3) && !survey.isCurrent(pageCount: 4),
+       "A measurement only applies to a document with the page count it measured")
+assert(!PageVaultInkSurvey(version: 0, boxes: survey.boxes).isCurrent(pageCount: 3),
+       "A measurement taken by an older method is retaken rather than trusted")
+let surveyRoundTrip = try JSONDecoder().decode(PageVaultInkSurvey.self, from: JSONEncoder().encode(survey))
+assert(surveyRoundTrip == survey, "A measurement with unmeasured and blank pages survives the cache round trip")
+print("PASS: 22 layout assertions (four-sided crop, outliers, facing pages, scans, blank pages, ink scan, cache)")
 
 // Export and restore. The manifest is validated whole, and restore planning never breaks the
 // single-Reading rule or silently overwrites a book already in the library.

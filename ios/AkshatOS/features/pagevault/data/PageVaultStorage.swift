@@ -29,6 +29,7 @@ struct PageVaultStorage: Sendable {
     private var scratch: URL { root.appendingPathComponent("Incoming", isDirectory: true) }
     private var covers: URL { root.appendingPathComponent("Covers", isDirectory: true) }
     private var outgoing: URL { root.appendingPathComponent("Outgoing", isDirectory: true) }
+    private var layouts: URL { root.appendingPathComponent("Layouts", isDirectory: true) }
 
     init(root: URL? = nil) throws {
         if let root {
@@ -64,6 +65,25 @@ struct PageVaultStorage: Sendable {
         var directory = covers
         try? directory.setResourceValues(excluded)
         try data.write(to: coverURL(for: id), options: .atomic)
+    }
+
+    // MARK: - Page measurements
+
+    /// Measured ink positions are a regenerable cache like covers, so they stay out of device backup
+    /// and out of exports.
+    func surveyURL(for id: UUID) -> URL {
+        layouts.appendingPathComponent("\(id.uuidString).json")
+    }
+
+    func readSurvey(for id: UUID) -> PageVaultInkSurvey? {
+        guard let data = try? Data(contentsOf: surveyURL(for: id)) else { return nil }
+        return try? JSONDecoder().decode(PageVaultInkSurvey.self, from: data)
+    }
+
+    func writeSurvey(_ survey: PageVaultInkSurvey, for id: UUID) throws {
+        try FileManager.default.createDirectory(at: layouts, withIntermediateDirectories: true)
+        excludeFromBackup(layouts)
+        try JSONEncoder().encode(survey).write(to: surveyURL(for: id), options: .atomic)
     }
 
     /// Coordinates a read of a possibly cloud-backed source and streams it into a scratch file.
@@ -216,6 +236,7 @@ struct PageVaultStorage: Sendable {
     /// Removes only PageVault's own copy and cover. The user's original source file is never touched.
     func remove(id: UUID) throws {
         try? FileManager.default.removeItem(at: coverURL(for: id))
+        try? FileManager.default.removeItem(at: surveyURL(for: id))
         let directory = documentURL(for: id).deletingLastPathComponent()
         guard FileManager.default.fileExists(atPath: directory.path) else { return }
         try FileManager.default.removeItem(at: directory)
