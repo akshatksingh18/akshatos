@@ -88,6 +88,7 @@ import SwiftUI
             return
         }
         storage.clearAbandonedStaging()
+        storage.clearOutgoing()
         do {
             library = try repository.load()
             days = try repository.loadDays()
@@ -230,6 +231,191 @@ import SwiftUI
                                       highestPage: 0, goal: 0)
         days.append(row)
         persist(row)
+    }
+
+    // MARK: - Export and restore
+
+    /// A validated export waiting for the user to confirm. It keeps the picked location so the
+    /// confirmed restore can reach the export's PDFs again.
+    struct PageVaultPreparedRestore {
+        let source: URL
+        let backup: PageVaultBackup
+        let plan: PageVaultRestorePlan
+    }
+
+    /// Stages an export for the system file mover: a folder holding every PDF beside the manifest,
+    /// or with `includeDocuments` off, one small JSON file of reading data.
+    func prepareExport(includeDocuments: Bool) async throws -> URL {
+        guard let storage, storageAvailable else {
+            throw PageVaultBackupError.storage("the app container is unavailable")
+        }
+        guard !library.books.isEmpty else { throw PageVaultBackupError.emptyLibrary }
+        busy = true
+        defer { busy = false }
+        let backup = PageVaultBackup(createdAt: now(), library: library, days: days,
+                                     includesDocuments: includeDocuments)
+        let manifest = try backup.encoded()
+        let stamp = PageVaultReadingDay.dayKey(now(), calendar: calendar)
+        let name = includeDocuments ? "PageVault \(stamp)" : "PageVault reading data \(stamp)"
+        var items: [PageVaultStorage.PageVaultExportItem]?
+        if includeDocuments {
+            items = backup.entries.compactMap { entry in
+                entry.file.map { path in
+                    PageVaultStorage.PageVaultExportItem(source: storage.documentURL(for: entry.book.id),
+                                                         path: path)
+                }
+            }
+        }
+        let staged = items
+        return try await Task.detached(priority: .userInitiated) {
+            try storage.stageExport(manifest: manifest, name: name, documents: staged)
+        }.value
+    }
+
+    /// Clears a staged export once the file mover is done with it, whether it was saved or not.
+    func finishExport() {
+        storage?.clearOutgoing()
+    }
+
+    /// Reads and validates an export, then works out what restoring it would do. Nothing changes.
+    func prepareRestore(from source: URL) async throws -> PageVaultPreparedRestore {
+        guard let storage, storageAvailable else {
+            throw PageVaultBackupError.storage("the app container is unavailable")
+        }
+        let read = try await Task.detached(priority: .userInitiated) {
+            let scoped = source.startAccessingSecurityScopedResource()
+            defer { if scoped { source.stopAccessingSecurityScopedResource() } }
+            return try storage.readManifest(at: source)
+        }.value
+        let backup = try PageVaultBackup.decode(read.data)
+        if backup.includesDocuments && read.folder == nil { throw PageVaultBackupError.folderRequired }
+        let plan = PageVaultRestorePlan(backup: backup, library: library)
+        guard plan.hasWork else {
+            throw PageVaultBackupError.nothingToRestore(missingDocuments: plan.missingDocuments.count)
+        }
+        return PageVaultPreparedRestore(source: read.folder ?? source, backup: backup, plan: plan)
+    }
+
+    /// Applies a confirmed restore and returns a summary for the user. Every added book's PDF is
+    /// copied and checked against its fingerprint, size and page count before the library changes
+    /// at all, so a damaged export restores nothing rather than part of a library.
+    func restore(_ prepared: PageVaultPreparedRestore, mode: PageVaultRestoreMode) async throws -> String {
+        guard let storage, storageAvailable else {
+            throw PageVaultBackupError.storage("the app container is unavailable")
+        }
+        // Planned again against the library as it is now, in case it changed while confirming.
+        let plan = PageVaultRestorePlan(backup: prepared.backup, library: library)
+        guard plan.hasWork else {
+            throw PageVaultBackupError.nothingToRestore(missingDocuments: plan.missingDocuments.count)
+        }
+        busy = true
+        defer { busy = false }
+        let additions = plan.additions
+        let source = prepared.source
+        let documents = self.documents
+        let staged = try await Task.detached(priority: .userInitiated) {
+            try Self.stageRestoredDocuments(additions, from: source, storage: storage,
+                                            documents: documents)
+        }.value
+
+        let result = plan.applied(to: library, days: days, backup: prepared.backup, mode: mode,
+                                  at: now())
+        var promoted: [UUID] = []
+        do {
+            for (backupID, libraryID) in result.additionIDs {
+                guard let url = staged[backupID] else {
+                    throw PageVaultImportFailure.storage("a verified copy went missing")
+                }
+                try storage.promote(url, to: libraryID)
+                promoted.append(libraryID)
+            }
+        } catch {
+            for id in promoted { try? storage.remove(id: id) }
+            for url in staged.values { storage.discard(url) }
+            throw PageVaultBackupError.storage((error as? PageVaultImportFailure)?.message
+                                               ?? error.localizedDescription)
+        }
+        for (backupID, url) in staged where result.additionIDs[backupID] == nil {
+            storage.discard(url)
+        }
+
+        do {
+            for id in result.changedBookIDs {
+                guard let book = result.library.books.first(where: { $0.id == id }) else { continue }
+                try repository.save(book)
+            }
+            for id in result.replacedHistory { try repository.deleteDays(bookID: id) }
+            let touched = result.replacedHistory.union(result.additionIDs.values)
+            for day in result.days where touched.contains(day.bookID) { try repository.save(day) }
+        } catch {
+            // Whatever did land is real, so show the stored state rather than the intended one.
+            library = (try? repository.load()) ?? library
+            days = (try? repository.loadDays()) ?? days
+            throw PageVaultBackupError.storage(error.localizedDescription)
+        }
+        library = result.library
+        days = result.days
+        openTodayIfGoalIsActive()
+        await ensureCovers()
+        return Self.restoreSummary(plan, mode: mode)
+    }
+
+    nonisolated private static func stageRestoredDocuments(
+        _ additions: [PageVaultBackupEntry], from source: URL, storage: PageVaultStorage,
+        documents: any PageVaultDocumentInspecting
+    ) throws -> [UUID: URL] {
+        guard !additions.isEmpty else { return [:] }
+        let scoped = source.startAccessingSecurityScopedResource()
+        defer { if scoped { source.stopAccessingSecurityScopedResource() } }
+        var staged: [UUID: URL] = [:]
+        do {
+            for entry in additions {
+                guard let file = entry.file else {
+                    throw PageVaultBackupError.missingDocument(title: entry.book.title)
+                }
+                let location = source.appendingPathComponent(file)
+                let copy: PageVaultStorage.Staged
+                do {
+                    copy = try storage.stage(from: location)
+                } catch {
+                    // Distinguish an absent PDF from one that exists but could not be copied in.
+                    if (try? location.checkResourceIsReachable()) == true {
+                        throw PageVaultBackupError.storage((error as? PageVaultImportFailure)?.message
+                                                           ?? error.localizedDescription)
+                    }
+                    throw PageVaultBackupError.missingDocument(title: entry.book.title)
+                }
+                staged[entry.book.id] = copy.url
+                let pages = try? documents.inspect(copy.url).pageCount
+                guard copy.fingerprint == entry.book.fingerprint,
+                      copy.byteCount == entry.book.byteCount,
+                      pages == entry.book.pageCount else {
+                    throw PageVaultBackupError.documentMismatch(title: entry.book.title)
+                }
+            }
+        } catch {
+            for url in staged.values { storage.discard(url) }
+            throw error
+        }
+        return staged
+    }
+
+    private static func restoreSummary(_ plan: PageVaultRestorePlan, mode: PageVaultRestoreMode) -> String {
+        var lines: [String] = []
+        if !plan.additions.isEmpty { lines.append("Added \(bookCount(plan.additions.count)).") }
+        if !plan.matches.isEmpty {
+            lines.append(mode == .replaceMatching
+                         ? "Restored the place and reading history of \(bookCount(plan.matches.count)) already here."
+                         : "Left \(bookCount(plan.matches.count)) already here unchanged.")
+        }
+        if !plan.missingDocuments.isEmpty {
+            lines.append("Skipped \(bookCount(plan.missingDocuments.count)) whose PDF is not in your library.")
+        }
+        return lines.joined(separator: " ")
+    }
+
+    private static func bookCount(_ count: Int) -> String {
+        count == 1 ? "1 book" : "\(count) books"
     }
 
     // MARK: - Covers

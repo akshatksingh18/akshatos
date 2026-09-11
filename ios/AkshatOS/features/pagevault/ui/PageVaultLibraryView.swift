@@ -6,6 +6,7 @@ struct PageVaultLibraryView: View {
     var onReadingSessionChange: (Bool) -> Void = { _ in }
 
     @State private var showImporter = false
+    @State private var showBackup = false
     @State private var pendingRemoval: PageVaultBook?
     @State private var detail: PageVaultBook?
 
@@ -84,7 +85,16 @@ struct PageVaultLibraryView: View {
             .buttonStyle(ActionStyle(primary: true))
             .disabled(store.busy || !store.storageAvailable)
             .accessibilityIdentifier("import-pdf")
+            // Reachable with an empty library too, which is exactly the state after a clean install.
+            Button {
+                showBackup = true
+            } label: {
+                Label("Back up or restore", systemImage: "externaldrive")
+            }
+            .buttonStyle(ActionStyle())
+            .accessibilityIdentifier("pagevault-backup")
         }
+        .sheet(isPresented: $showBackup) { PageVaultBackupSheet(store: store) }
     }
 
     private var emptyState: some View {

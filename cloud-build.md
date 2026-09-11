@@ -41,7 +41,7 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (18)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (19)**; minimum iOS 17.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Build 13 is the last Squats-only build; 14 added PageVault; later builds
   iterate on the reader and library. The per-build sections below record what each phone pass found.
@@ -50,7 +50,7 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, warm paper,
-  reading status, daily-goal streak, bookmarked place and cover cache; ReelVault is a planned card
+  reading status, daily-goal streak, bookmarked place, cover cache, Started shelf and export/restore; ReelVault is a planned card
   only. Build 14's import and large-PDF reading passed on the phone, Builds 15 and 16 each had a
   phone pass that shaped the next build, and nothing from Build 17 on has been device-tested.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.

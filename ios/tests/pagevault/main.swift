@@ -284,3 +284,144 @@ assert(spread.count == 5 && spread.first == 1 && spread.last == 599,
        "A long document samples across its whole span, skipping the cover")
 assert(spread == spread.sorted() && Set(spread).count == 5, "Samples are ordered and distinct")
 print("PASS: 15 layout assertions (trim, cap, full-bleed, union, sampling)")
+
+// Export and restore. The manifest is validated whole, and restore planning never breaks the
+// single-Reading rule or silently overwrites a book already in the library.
+func digest(_ seed: Character) -> String { String(repeating: seed, count: 64) }
+func exportable(_ seed: Character, title: String, placed: Int? = nil,
+                status: PageVaultReadingStatus = .wantToRead) -> PageVaultBook {
+    var made = book(pages: 100, placed: placed, fingerprint: digest(seed), title: title)
+    made.status = status
+    return made
+}
+func manifest(_ entries: [PageVaultBackupEntry], days: [PageVaultReadingDay] = [],
+              documents: Bool = true, version: Int = PageVaultBackup.currentVersion) -> PageVaultBackup {
+    PageVaultBackup(version: version, createdAt: reference, includesDocuments: documents,
+                    entries: entries, days: days)
+}
+func rejection(_ candidate: PageVaultBackup) -> PageVaultBackupError? {
+    do { _ = try candidate.validated(); return nil } catch { return error as? PageVaultBackupError }
+}
+func decodeFailure(_ data: Data) -> PageVaultBackupError? {
+    do { _ = try PageVaultBackup.decode(data); return nil } catch { return error as? PageVaultBackupError }
+}
+
+var exportLibrary = PageVaultLibrary()
+try exportLibrary.insert(exportable("a", title: "Deep: Work / Notes?", placed: 40, status: .reading))
+try exportLibrary.insert(exportable("b", title: "Deep: Work / Notes?"))
+try exportLibrary.insert(exportable("c", title: "   "))
+let readingID = exportLibrary.books[0].id
+let exportDays = [readingDay(1, book: readingID, from: -1, to: 20, goal: 10),
+                  readingDay(2, book: UUID(), from: 0, to: 5, goal: 5)]
+let full = PageVaultBackup(createdAt: reference, library: exportLibrary, days: exportDays,
+                           includesDocuments: true)
+let files = full.entries.compactMap(\.file)
+let alphaFile = full.entries.first(where: { $0.book.fingerprint == digest("a") })?.file ?? ""
+let blankFile = full.entries.first(where: { $0.book.fingerprint == digest("c") })?.file ?? ""
+assert(full.entries.count == 3 && full.days.count == 1,
+       "Reading days are exported only for books that are in the library")
+assert(files.count == 3 && Set(files.map { $0.lowercased() }).count == 3,
+       "Two books sharing a title still export to distinct files")
+assert(files.allSatisfy(PageVaultBackup.isSafeDocumentPath),
+       "Every generated path passes the check a restore applies")
+assert(alphaFile.hasPrefix("books/Deep Work Notes ") && alphaFile.hasSuffix(".pdf"),
+       "Titles are cleaned into Windows-safe file names")
+assert(blankFile.hasPrefix("books/Book "), "A blank title still produces a usable file name")
+let decodedFull = try PageVaultBackup.decode(full.encoded())
+assert(decodedFull == full, "A full export manifest survives encoding")
+let dataOnly = PageVaultBackup(createdAt: reference, library: exportLibrary, days: exportDays,
+                               includesDocuments: false)
+let decodedData = try PageVaultBackup.decode(dataOnly.encoded())
+assert(decodedData == dataOnly && dataOnly.entries.allSatisfy({ $0.file == nil }),
+       "A reading-data export carries no document paths and survives encoding")
+
+let alphaBook = exportable("a", title: "Alpha")
+let good = PageVaultBackupEntry(book: alphaBook, file: "books/Alpha.pdf")
+assert(rejection(manifest([good])) == nil, "A well-formed manifest validates")
+assert(rejection(manifest([good], version: 2)) == .unsupportedVersion(2),
+       "A newer manifest is refused by its version number")
+assert(rejection(manifest([good, PageVaultBackupEntry(book: exportable("a", title: "Copy"),
+                                                      file: "books/Copy.pdf")])) == .inconsistentLibrary,
+       "Two entries with one fingerprint are refused")
+assert(rejection(manifest([
+    PageVaultBackupEntry(book: exportable("a", title: "A", status: .reading), file: "books/A.pdf"),
+    PageVaultBackupEntry(book: exportable("b", title: "B", status: .reading), file: "books/B.pdf"),
+])) == .inconsistentLibrary, "An export claiming two Reading books is refused")
+for path in ["../Alpha.pdf", "books/../Alpha.pdf", "books/sub/Alpha.pdf", "/books/Alpha.pdf",
+             "books/.pdf", "books/Alpha.txt", "Books/Alpha.pdf", "books/C:Alpha.pdf"] {
+    assert(rejection(manifest([PageVaultBackupEntry(book: alphaBook, file: path)])) == .inconsistentLibrary,
+           "The unsafe document path \(path) is refused")
+}
+assert(rejection(manifest([good, PageVaultBackupEntry(book: exportable("b", title: "B"),
+                                                      file: "books/ALPHA.pdf")])) == .inconsistentLibrary,
+       "Two documents differing only by letter case would collide on disk, so they are refused")
+assert(rejection(manifest([PageVaultBackupEntry(book: alphaBook, file: nil)])) == .inconsistentLibrary,
+       "A full export must say where every PDF is")
+assert(rejection(manifest([good], documents: false)) == .inconsistentLibrary,
+       "A reading-data export cannot claim document paths")
+assert(rejection(manifest([PageVaultBackupEntry(book: book(fingerprint: "not-a-digest"),
+                                                file: "books/X.pdf")])) == .inconsistentLibrary,
+       "Fingerprints must be SHA-256 hex, because they double as checksums")
+assert(rejection(manifest([good], days: [readingDay(1, book: UUID(), from: 0, to: 5, goal: 5)]))
+       == .inconsistentHistory, "History for a book outside the export is refused")
+var impossibleDay = readingDay(1, book: alphaBook.id, from: 0, to: 5, goal: 5)
+impossibleDay.day = "2026-02-30"
+assert(rejection(manifest([good], days: [impossibleDay])) == .inconsistentHistory,
+       "An impossible calendar day is refused")
+assert(decodeFailure(Data("not json".utf8)) == .invalidFile, "A file that is not a manifest is refused")
+assert(decodeFailure(Data(#"{"version":7,"future":true}"#.utf8)) == .unsupportedVersion(7),
+       "A newer manifest reports its version instead of looking corrupt")
+assert(decodeFailure(Data(count: PageVaultBackup.maximumManifestBytes + 1)) == .tooLarge,
+       "An oversized file is refused before it is parsed")
+
+var here = PageVaultLibrary()
+try here.insert(exportable("a", title: "Alpha", placed: 3))
+try here.insert(exportable("d", title: "Delta", placed: 7, status: .reading))
+let hereAlpha = here.books[0].id
+let hereDelta = here.books[1].id
+let hereDays = [readingDay(1, book: hereAlpha, from: 0, to: 3, goal: 5)]
+let plan = PageVaultRestorePlan(backup: full, library: here)
+assert(plan.matches.map(\.existingID) == [hereAlpha] && plan.additions.count == 2
+       && plan.missingDocuments.isEmpty,
+       "Books are matched by content fingerprint, and the rest of a full export are additions")
+let dataPlan = PageVaultRestorePlan(backup: dataOnly, library: here)
+assert(dataPlan.matches.count == 1 && dataPlan.additions.isEmpty && dataPlan.missingDocuments.count == 2,
+       "Reading data can only restore books whose PDFs are already here")
+
+let added = plan.applied(to: here, days: hereDays, backup: full, mode: .addMissing, at: day(5))
+let keptAlpha = added.library.books.first(where: { $0.id == hereAlpha })
+assert(keptAlpha?.currentPage == 3 && keptAlpha?.status == .wantToRead,
+       "Only adding leaves a book already here untouched")
+assert(added.library.books.count == 4 && added.library.current?.id == hereDelta,
+       "An added book never displaces the book already being read")
+assert(added.replacedHistory.isEmpty && added.days == hereDays,
+       "Only adding keeps existing reading history as it was")
+
+let replacing = plan.applied(to: here, days: hereDays, backup: full, mode: .replaceMatching, at: day(5))
+let restoredAlpha = replacing.library.books.first(where: { $0.id == hereAlpha })
+assert(restoredAlpha?.currentPage == 40 && restoredAlpha?.hasPlace == true,
+       "Replacing gives the book already here the export's place")
+assert(replacing.library.current?.id == hereAlpha
+       && replacing.library.books.first(where: { $0.id == hereDelta })?.status == .wantToRead,
+       "The export's Reading book takes over and the previous one is demoted, never finished")
+assert(replacing.library.books.filter({ $0.status == .reading }).count == 1,
+       "A restore never leaves two Reading books")
+assert(replacing.days.map(\.bookID) == [hereAlpha] && replacing.days.first?.highestPage == 20,
+       "The matched book's history is replaced by the export's, keyed to the book already here")
+assert(Set(replacing.changedBookIDs).count == replacing.changedBookIDs.count
+       && replacing.changedBookIDs.contains(hereDelta),
+       "Every changed book is reported once, including the one demoted")
+
+let freshID = UUID()
+var clash = PageVaultLibrary()
+var clashing = exportable("e", title: "Unrelated")
+clashing.id = readingID
+try clash.insert(clashing)
+let remapped = PageVaultRestorePlan(backup: full, library: clash)
+    .applied(to: clash, days: [], backup: full, mode: .addMissing, at: day(5), makeID: { freshID })
+assert(remapped.additionIDs[readingID] == freshID && remapped.library.books.count == 4,
+       "An id already used by a different book is replaced instead of overwriting that book")
+assert(remapped.days.map(\.bookID) == [freshID], "Reading history follows the book to its new id")
+assert(remapped.library.current?.id == freshID,
+       "With nothing being read, the export's Reading book resumes as the one being read")
+print("PASS: 34 backup assertions (manifest round trip, file names, validation, versions, planning, add, replace, id collision)")

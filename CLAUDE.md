@@ -92,15 +92,19 @@ feature is physically verified.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
-  reading status, the place marker, the daily-goal streak engine and the margin-trim geometry),
-  `data/` (versioned SwiftData store, streamed copy-on-import storage, disposable cover cache),
-  `services/` (import-time PDFKit inspection, cover rendering and ink-bounds measurement), `ui/`
-  (library grid, paged reader, book sheet). Product scope and gates are owned by `../book-reader/`.
+  reading status, the place marker, the daily-goal streak engine, the margin-trim geometry, and the
+  export manifest with restore planning), `data/` (versioned SwiftData store, streamed
+  copy-on-import storage, export staging, disposable cover cache), `services/` (import-time PDFKit
+  inspection, cover rendering and ink-bounds measurement), `ui/` (library grid, paged reader, book
+  sheet, backup sheet). Product scope and gates are owned by `../book-reader/`.
   Its large-PDF gate passed on device; the reader iterations that followed are not phone-verified.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
   removal, the single-Reading-book invariant, daily-goal progress and cover generation.
+- `ios/UnitTests/PageVaultBackupTests.swift` — real-file export/restore: full export into a fresh
+  library, reading data onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus
+  replace against a live library, and malformed or mis-picked exports.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.
