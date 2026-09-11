@@ -7,7 +7,7 @@ struct PageVaultBookSheet: View {
     let bookID: UUID
 
     @Environment(\.dismiss) private var dismiss
-    @State private var goal = 0
+    @State private var showHighlights = false
 
     private var book: PageVaultBook? { store.book(id: bookID) }
 
@@ -17,7 +17,7 @@ struct PageVaultBookSheet: View {
                 if let book {
                     List {
                         statusSection(book)
-                        goalSection(book)
+                        highlightsSection(book)
                         placeSection(book)
                         detailsSection(book)
                     }
@@ -32,7 +32,9 @@ struct PageVaultBookSheet: View {
                 ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } }
             }
         }
-        .onAppear { goal = book?.dailyPageGoal ?? 0 }
+        .sheet(isPresented: $showHighlights) {
+            PageVaultHighlightsView(store: store, bookID: bookID)
+        }
     }
 
     private func statusSection(_ book: PageVaultBook) -> some View {
@@ -58,20 +60,26 @@ struct PageVaultBookSheet: View {
         }
     }
 
-    private func goalSection(_ book: PageVaultBook) -> some View {
-        Section("Daily page goal") {
-            Stepper(value: $goal, in: 0...200, step: 1) {
-                Text(goal > 0 ? "\(goal) pages a day" : "No goal")
-                    .monospacedDigit()
+    @ViewBuilder private func highlightsSection(_ book: PageVaultBook) -> some View {
+        Section("Highlights") {
+            if book.highlights.isEmpty {
+                Text("Select a line while reading, then tap the highlighter to save it here.")
+                    .font(.caption).foregroundStyle(Palette.muted)
+            } else {
+                Button {
+                    showHighlights = true
+                } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(book.highlights.count == 1 ? "1 passage saved"
+                             : "\(book.highlights.count) passages saved")
+                        if let latest = book.highlightsInReadingOrder.last {
+                            Text(latest.preview).font(.caption).foregroundStyle(Palette.muted)
+                                .lineLimit(2)
+                        }
+                    }
+                }
+                .accessibilityIdentifier("open-highlights-from-details")
             }
-            .accessibilityIdentifier("daily-page-goal")
-            .onChange(of: goal) { _, value in
-                store.setDailyGoal(value > 0 ? value : nil, for: book)
-            }
-            Text(book.status == .reading
-                 ? "Reading this many pages counts today toward your streak."
-                 : "The goal starts counting once this book is the one you are Reading.")
-                .font(.caption).foregroundStyle(Palette.muted)
         }
     }
 

@@ -5,9 +5,8 @@ import SwiftData
     func load() throws -> PageVaultLibrary
     func save(_ book: PageVaultBook) throws
     func delete(id: UUID) throws
-    func loadDays() throws -> [PageVaultReadingDay]
-    func save(_ day: PageVaultReadingDay) throws
-    func deleteDays(bookID: UUID) throws
+    /// Clears rows left behind by the removed reading-streak feature.
+    func purgeReadingDays() throws
 }
 
 @MainActor final class SwiftDataPageVaultRepository: PageVaultRepository {
@@ -63,34 +62,14 @@ import SwiftData
         }
     }
 
-    func loadDays() throws -> [PageVaultReadingDay] {
-        let rows = try context().fetch(FetchDescriptor<PageVaultSchemaV1.SavedReadingDay>())
-        return try rows.map { try JSONDecoder().decode(PageVaultReadingDay.self, from: $0.payload) }
-            .sorted { $0.day < $1.day }
-    }
-
-    func save(_ day: PageVaultReadingDay) throws {
+    /// Reading streaks are gone. Their rows are deleted rather than migrated away, so an installed
+    /// store keeps the schema it already has and no library can be lost to a migration.
+    func purgeReadingDays() throws {
         let context = try context()
+        let rows = try context.fetch(FetchDescriptor<PageVaultSchemaV1.SavedReadingDay>())
+        guard !rows.isEmpty else { return }
         do {
-            let payload = try JSONEncoder().encode(day)
-            let rows = try context.fetch(FetchDescriptor<PageVaultSchemaV1.SavedReadingDay>())
-            if let row = rows.first(where: { $0.key == day.id }) { row.payload = payload }
-            else { context.insert(try PageVaultSchemaV1.SavedReadingDay(day)) }
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
-    }
-
-    /// Removing a book takes its streak history with it; nothing else references those rows.
-    func deleteDays(bookID: UUID) throws {
-        let context = try context()
-        do {
-            for row in try context.fetch(FetchDescriptor<PageVaultSchemaV1.SavedReadingDay>()) {
-                let day = try JSONDecoder().decode(PageVaultReadingDay.self, from: row.payload)
-                if day.bookID == bookID { context.delete(row) }
-            }
+            for row in rows { context.delete(row) }
             try context.save()
         } catch {
             context.rollback()

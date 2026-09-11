@@ -79,8 +79,9 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 - Foreground reconciliation of preferences, notification settings, pending requests, the action
   inbox, day data and the actual monitored Home region.
 - PageVault: copy-on-import library with covers and a Started shelf, a paged reader that crops each
-  page to its measured text, warm paper, the bookmark as your place, one Reading book at a time,
-  daily-goal streaks, and folder/JSON export with validated, conflict-aware restore.
+  page to its measured text, warm paper, the bookmark as your place, one Reading book at a time, and
+  folder/JSON export with validated, conflict-aware restore. Its reading loop is phone-confirmed as
+  of Build 20; reading streaks were removed in Build 21.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` and `features/pagevault/` own their domain, data,

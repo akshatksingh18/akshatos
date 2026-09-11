@@ -66,14 +66,12 @@ import XCTest
         await original.importBook(from: try makePDF(pages: 12, title: "Beta"))
         let alpha = try XCTUnwrap(original.books.first { $0.title == "Alpha" })
         original.setPlace(alpha, page: 9)
-        original.setDailyGoal(5, for: try XCTUnwrap(original.book(id: alpha.id)))
         XCTAssertNil(original.message)
 
         let folder = try await original.prepareExport(includeDocuments: true)
         let manifestURL = folder.appendingPathComponent(PageVaultBackup.manifestName)
         let backup = try PageVaultBackup.decode(Data(contentsOf: manifestURL))
         XCTAssertEqual(backup.entries.count, 2)
-        XCTAssertEqual(backup.days.count, original.days.count)
         for entry in backup.entries {
             let copy = folder.appendingPathComponent(try XCTUnwrap(entry.file))
             XCTAssertEqual(PDFDocument(url: copy)?.pageCount, entry.book.pageCount,
@@ -90,10 +88,7 @@ import XCTest
 
         let restoredAlpha = try XCTUnwrap(restored.books.first { $0.title == "Alpha" })
         XCTAssertEqual(restoredAlpha.openingPage, 9, "The bookmarked place comes back")
-        XCTAssertEqual(restoredAlpha.dailyPageGoal, 5)
         XCTAssertEqual(restored.current?.title, "Alpha", "The book being read comes back as that book")
-        XCTAssertEqual(restored.days.count, original.days.count, "Reading history comes back")
-        XCTAssertEqual(restored.streak, original.streak, "The streak rebuilds identically")
         let restoredCopy = try XCTUnwrap(restored.documentURL(for: restoredAlpha))
         let originalCopy = try XCTUnwrap(original.documentURL(for: alpha))
         XCTAssertEqual(try Data(contentsOf: restoredCopy), try Data(contentsOf: originalCopy),

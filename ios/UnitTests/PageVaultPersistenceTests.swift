@@ -214,56 +214,6 @@ import XCTest
                        "The previous Reading book is demoted, not finished")
     }
 
-    func testReadingProgressMeetsTodaysGoalAndSurvivesReload() async throws {
-        let container = try makeContainer()
-        let clock = Date(timeIntervalSince1970: 1_788_480_000)
-        let store = try makeStore(container: container, now: { clock })
-        await store.load()
-        await store.importBook(from: try makePDF(pages: 200))
-        let book = try XCTUnwrap(store.books.first)
-
-        store.setStatus(.reading, for: book)
-        store.setDailyGoal(10, for: book)
-        XCTAssertEqual(store.days.count, 1, "A live goal opens today's row immediately")
-        XCTAssertEqual(store.streak.todayGoal, 10)
-        XCTAssertFalse(store.streak.todayMet)
-        XCTAssertEqual(store.streak.current, 0)
-
-        // Page index 12 is the thirteenth page, and the book had no earlier bookmark, so pages
-        // one through thirteen have been read: thirteen, not twelve.
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 12)
-        XCTAssertEqual(store.streak.todayPagesRead, 13)
-        XCTAssertTrue(store.streak.todayMet, "Bookmarking past the goal completes today")
-        XCTAssertEqual(store.streak.current, 1)
-
-        let reopened = try makeStore(container: container, now: { clock })
-        await reopened.load()
-        XCTAssertEqual(reopened.streak.current, 1, "The streak is rebuilt from stored days")
-        XCTAssertEqual(reopened.streak.todayPagesRead, 13)
-        XCTAssertEqual(reopened.days.count, 1, "Reloading does not duplicate today's row")
-    }
-
-    func testBookmarkingBackwardDoesNotReduceDailyProgress() async throws {
-        let clock = Date(timeIntervalSince1970: 1_788_480_000)
-        let store = try makeStore(now: { clock })
-        await store.load()
-        await store.importBook(from: try makePDF(pages: 120))
-        let book = try XCTUnwrap(store.books.first)
-        store.setStatus(.reading, for: book)
-        store.setDailyGoal(30, for: book)
-
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 20)
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 4)
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 19)
-
-        // Index 20 is the twenty-first page, counted from before page one on an unbookmarked book.
-        XCTAssertEqual(store.streak.todayPagesRead, 21,
-                       "Bookmarking back into the book cannot reduce today's credit")
-        XCTAssertFalse(store.streak.todayMet)
-        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).resolvedPage(), 19,
-                       "Your place still follows the newest bookmark")
-    }
-
     func testBookmarkingReplacesThePreviousPlace() async throws {
         let container = try makeContainer()
         let store = try makeStore(container: container)
@@ -296,24 +246,21 @@ import XCTest
         XCTAssertNotNil(UIImage(contentsOfFile: cover.path), "The cached cover is a usable image")
     }
 
-    func testRemovingABookClearsItsReadingHistoryAndCover() async throws {
+    func testRemovingABookClearsItsCoverAndRecord() async throws {
         let container = try makeContainer()
         let store = try makeStore(container: container)
         await store.load()
         await store.importBook(from: try makePDF(pages: 80))
         let book = try XCTUnwrap(store.books.first)
         store.setStatus(.reading, for: book)
-        store.setDailyGoal(5, for: book)
         let cover = try XCTUnwrap(store.coverURL(for: book))
-        XCTAssertFalse(store.days.isEmpty)
 
         store.remove(book)
 
-        XCTAssertTrue(store.days.isEmpty)
         XCTAssertFalse(FileManager.default.fileExists(atPath: cover.path), "The cover cache is cleared")
         let reopened = try makeStore(container: container)
         await reopened.load()
-        XCTAssertTrue(reopened.days.isEmpty, "Reading history does not outlive its book")
+        XCTAssertTrue(reopened.books.isEmpty, "The book does not outlive its removal")
     }
 
     func testStoreClaimingTwoReadingBooksIsRejected() throws {
@@ -330,22 +277,19 @@ import XCTest
                              "Two Reading books is a corrupt library, not a valid state")
     }
 
-    func testFinishingWithoutAReplacementLeavesTodaysProgressIntact() async throws {
-        let clock = Date(timeIntervalSince1970: 1_788_480_000)
-        let store = try makeStore(now: { clock })
+    func testFinishingABookLeavesNothingBeingRead() async throws {
+        let store = try makeStore()
         await store.load()
         await store.importBook(from: try makePDF(pages: 40))
         let book = try XCTUnwrap(store.books.first)
-        store.setStatus(.reading, for: book)
-        store.setDailyGoal(10, for: book)
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 12)
-        XCTAssertEqual(store.streak.current, 1)
+        store.setPlace(book, page: 12)
+        XCTAssertEqual(store.current?.id, book.id)
 
         store.setStatus(.finished, for: try XCTUnwrap(store.book(id: book.id)))
 
         XCTAssertNil(store.current, "Finishing leaves nothing being read")
-        XCTAssertEqual(store.streak.current, 1,
-                       "A day already completed is not undone by finishing the book")
+        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).resolvedPage(), 12,
+                       "Finishing a book keeps the place it ended on")
     }
 
     func testBookmarkingClaimsTheBookAsTheOneBeingRead() async throws {
@@ -377,61 +321,49 @@ import XCTest
                        "The Started shelf is derived from stored data, so it survives a reload")
     }
 
-    func testGoalCountsPagesBetweenBookmarks() async throws {
-        let clock = Date(timeIntervalSince1970: 1_788_480_000)
-        let store = try makeStore(now: { clock })
-        await store.load()
-        await store.importBook(from: try makePDF(pages: 300))
-        let book = try XCTUnwrap(store.books.first)
+    /// An installed build stored only a warm-paper switch, so that choice has to carry over to the
+    /// themes that replaced it rather than resetting the reader's appearance.
+    func testAnInstalledWarmPaperChoiceCarriesOverToThemes() throws {
+        let suite = "pagevault-theme-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(false, forKey: "pagevault.warmPaper")
 
-        store.setPlace(book, page: 40)
-        store.setDailyGoal(10, for: try XCTUnwrap(store.book(id: book.id)))
-        XCTAssertEqual(store.streak.todayPagesRead, 0,
-                       "Today starts from the bookmark that was already there")
+        let store = PageVaultStore(
+            repository: SwiftDataPageVaultRepository(container: try makeContainer()),
+            storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Themes")),
+            documents: PageVaultDocumentService(), defaults: defaults)
+        XCTAssertEqual(store.theme, .paper, "Warm paper turned off carries over as the plain page")
 
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 46)
-        XCTAssertEqual(store.streak.todayPagesRead, 6, "Six pages were covered since that bookmark")
-        XCTAssertFalse(store.streak.todayMet)
+        XCTAssertFalse(store.pageCurl, "The page curl stays off until it is asked for")
 
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 52)
-        XCTAssertEqual(store.streak.todayPagesRead, 12, "Progress accumulates across bookmarks")
-        XCTAssertTrue(store.streak.todayMet)
-        XCTAssertEqual(store.streak.current, 1)
+        store.theme = .night
+        store.pageCurl = true
+        let reopened = PageVaultStore(
+            repository: SwiftDataPageVaultRepository(container: try makeContainer()),
+            storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Themes")),
+            documents: PageVaultDocumentService(), defaults: defaults)
+        XCTAssertEqual(reopened.theme, .night, "A chosen theme is remembered across launches")
+        XCTAssertTrue(reopened.pageCurl, "So is the page-curl choice")
     }
 
-    func testOpeningABookWithoutBookmarkingEarnsNoProgress() async throws {
-        let clock = Date(timeIntervalSince1970: 1_788_480_000)
-        let store = try makeStore(now: { clock })
+    /// Streaks are gone, but an installed build wrote per-day rows into the same store. They are
+    /// deleted on load rather than migrated away, so the library itself is never at risk.
+    func testReadingDayRowsFromAnOlderBuildAreCleared() async throws {
+        let container = try makeContainer()
+        let seed = ModelContext(container)
+        seed.insert(PageVaultSchemaV1.SavedReadingDay(key: "2026-09-01#\(UUID().uuidString)",
+                                                      payload: Data(#"{"goal":10}"#.utf8)))
+        try seed.save()
+
+        let store = try makeStore(container: container)
         await store.load()
-        await store.importBook(from: try makePDF(pages: 90))
-        let book = try XCTUnwrap(store.books.first)
-        store.setStatus(.reading, for: book)
-        store.setDailyGoal(5, for: try XCTUnwrap(store.book(id: book.id)))
+        await store.importBook(from: try makePDF(pages: 12))
 
-        store.noteOpened(try XCTUnwrap(store.book(id: book.id)))
-
-        XCTAssertEqual(store.streak.todayPagesRead, 0,
-                       "Reading without bookmarking records nothing, by design")
-        XCTAssertTrue(store.streak.isAtRisk, "The day is open and unmet, so it is at risk")
-        XCTAssertEqual(store.streak.current, 0)
-    }
-
-    func testFirstSessionCountsThePageYouStartOn() async throws {
-        let clock = Date(timeIntervalSince1970: 1_788_480_000)
-        let store = try makeStore(now: { clock })
-        await store.load()
-        await store.importBook(from: try makePDF(pages: 120))
-        let book = try XCTUnwrap(store.books.first)
-        store.setStatus(.reading, for: book)
-        store.setDailyGoal(20, for: try XCTUnwrap(store.book(id: book.id)))
-        XCTAssertFalse(try XCTUnwrap(store.book(id: book.id)).hasPlace)
-
-        // Reading pages 1...20 and bookmarking page 20 is twenty pages, not nineteen: a book with
-        // no bookmark starts before page one, because page one has not been read yet.
-        store.setPlace(try XCTUnwrap(store.book(id: book.id)), page: 19)
-
-        XCTAssertEqual(store.streak.todayPagesRead, 20,
-                       "The first session counts the page it started on")
-        XCTAssertTrue(store.streak.todayMet)
+        XCTAssertTrue(store.storageAvailable)
+        XCTAssertEqual(store.books.count, 1, "The library still loads normally")
+        let left = try ModelContext(container)
+            .fetch(FetchDescriptor<PageVaultSchemaV1.SavedReadingDay>())
+        XCTAssertTrue(left.isEmpty, "Rows left by the streak feature are cleared")
     }
 }

@@ -8,6 +8,8 @@ import SwiftUI
     /// set, because PDFKit reports page 0 during layout and that would otherwise overwrite the
     /// stored place with the beginning of the book.
     @Published private(set) var restoring = true
+    /// Drives the highlighter button: there is nothing to highlight without a selection.
+    @Published private(set) var hasSelection = false
     private weak var view: PDFView?
 
     func attach(_ view: PDFView) { self.view = view }
@@ -20,6 +22,27 @@ import SwiftUI
     func report(page: Int) {
         guard !restoring else { return }
         currentPage = page
+    }
+
+    func report(selection: Bool) { hasSelection = selection }
+
+    /// The current text selection, split per page, ready to be stored as highlights.
+    func captureSelection() -> [PageVaultHighlightService.Capture] {
+        guard let view, let document = view.document,
+              let selection = view.currentSelection else { return [] }
+        return PageVaultHighlightService.capture(selection, in: document)
+    }
+
+    func clearSelection() {
+        view?.clearSelection()
+        hasSelection = false
+    }
+
+    /// Redraws the stored highlights on the open document, in memory only.
+    func refreshHighlights(_ highlights: [PageVaultHighlight]) {
+        guard let view, let document = view.document else { return }
+        PageVaultHighlightService.apply(highlights, to: document)
+        view.setNeedsDisplay()
     }
 
     func go(to index: Int) {
@@ -41,6 +64,8 @@ struct PageVaultReaderView: View {
     /// being read, so a measurement that lands later is used the next time the book is opened.
     @State private var opened: Bool
     @State private var crops: [PageVaultInkBox?]?
+    @State private var showHighlights = false
+    @State private var showSearch = false
 
     init(book: PageVaultBook, url: URL, store: PageVaultStore,
          onReadingSessionChange: @escaping (Bool) -> Void = { _ in }) {
@@ -60,10 +85,7 @@ struct PageVaultReaderView: View {
     var body: some View {
         Group {
             if opened {
-                PageVaultDocumentView(url: url, openingPage: book.openingPage, crops: crops,
-                                      warmPaper: store.warmPaper, zoom: store.readingZoom,
-                                      controller: controller,
-                                      onZoomChanged: { store.readingZoom = $0 })
+                document
                     .overlay(alignment: .bottom) { pageIndicator }
             } else {
                 fitting
@@ -72,8 +94,21 @@ struct PageVaultReaderView: View {
         .navigationTitle(book.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) { paperButton }
+            ToolbarItem(placement: .topBarTrailing) { highlightButton }
+            ToolbarItem(placement: .topBarTrailing) { readerMenu }
             ToolbarItem(placement: .topBarTrailing) { placeButton }
+        }
+        .sheet(isPresented: $showHighlights) {
+            PageVaultHighlightsView(store: store, bookID: book.id) { page in
+                showHighlights = false
+                controller.go(to: page)
+            }
+        }
+        .sheet(isPresented: $showSearch) {
+            PageVaultSearchView(store: store, book: live) { page in
+                showSearch = false
+                controller.go(to: page)
+            }
         }
         .task { await openWhenFitted() }
         .onAppear {
@@ -81,6 +116,23 @@ struct PageVaultReaderView: View {
             store.noteOpened(book)
         }
         .onDisappear { onReadingSessionChange(false) }
+    }
+
+    /// Switching the curl on or off rebuilds the page host, so it reopens on the page being read
+    /// rather than jumping back to the bookmark.
+    @ViewBuilder private var document: some View {
+        let start = controller.restoring ? book.openingPage : controller.currentPage
+        if store.pageCurl {
+            PageVaultCurlDocumentView(url: url, openingPage: start, crops: crops,
+                                      highlights: live.highlights, theme: store.theme,
+                                      zoom: store.readingZoom, controller: controller)
+        } else {
+            PageVaultDocumentView(url: url, openingPage: start, crops: crops,
+                                  highlights: live.highlights,
+                                  theme: store.theme, zoom: store.readingZoom,
+                                  controller: controller,
+                                  onZoomChanged: { store.readingZoom = $0 })
+        }
     }
 
     /// Measures the book's pages first when that has not happened yet — joining a measurement
@@ -131,14 +183,66 @@ struct PageVaultReaderView: View {
         .accessibilityLabel(marked ? "Remove your place" : "Save your place on this page")
     }
 
-    private var paperButton: some View {
-        Button {
-            store.warmPaper.toggle()
-        } label: {
-            Image(systemName: store.warmPaper ? "sun.max.fill" : "sun.max")
+    /// Select text with the usual gestures, then tap this. Keeping it in the toolbar avoids
+    /// rebuilding PDFKit's own selection menu, which the reader does not own.
+    @ViewBuilder private var highlightButton: some View {
+        if controller.hasSelection {
+            Button {
+                saveHighlight()
+            } label: {
+                Image(systemName: "highlighter")
+            }
+            .accessibilityIdentifier("save-highlight")
+            .accessibilityLabel("Highlight the selected text")
         }
-        .accessibilityIdentifier("toggle-warm-paper")
-        .accessibilityLabel(store.warmPaper ? "Use plain white pages" : "Use warm paper")
+    }
+
+    /// Highlights, search and the page appearance share one menu, so the toolbar stays readable
+    /// beside the highlighter and the bookmark.
+    private var readerMenu: some View {
+        Menu {
+            Button {
+                showHighlights = true
+            } label: {
+                Label("Highlights", systemImage: "quote.opening")
+            }
+            .accessibilityIdentifier("open-highlights")
+            Button {
+                showSearch = true
+            } label: {
+                Label("Search this book", systemImage: "magnifyingglass")
+            }
+            .accessibilityIdentifier("open-search")
+            Divider()
+            Picker("Page", selection: $store.theme) {
+                ForEach(PageVaultTheme.allCases, id: \.self) { theme in
+                    Text(theme.label).tag(theme)
+                }
+            }
+            .pickerStyle(.inline)
+            .accessibilityIdentifier("reader-theme")
+            Divider()
+            Toggle(isOn: $store.pageCurl) {
+                Label("Page curl", systemImage: "book.pages")
+            }
+            .accessibilityIdentifier("toggle-page-curl")
+        } label: {
+            Image(systemName: "ellipsis.circle")
+        }
+        .accessibilityIdentifier("reader-menu")
+        .accessibilityLabel("Reader options")
+    }
+
+    /// A passage running across a page break is stored as one highlight per page, because each page
+    /// carries its own rectangles.
+    private func saveHighlight() {
+        let captures = controller.captureSelection()
+        guard !captures.isEmpty else { return }
+        for capture in captures {
+            store.addHighlight(text: capture.text, page: capture.page, rects: capture.rects, to: live)
+        }
+        controller.clearSelection()
+        controller.refreshHighlights(store.book(id: book.id)?.highlights ?? [])
     }
 
     private var pageIndicator: some View {
@@ -161,7 +265,8 @@ private struct PageVaultDocumentView: UIViewRepresentable {
     let openingPage: Int
     /// Per-page crop boxes from the book's measurement, or nil to show pages as published.
     let crops: [PageVaultInkBox?]?
-    let warmPaper: Bool
+    let highlights: [PageVaultHighlight]
+    let theme: PageVaultTheme
     let zoom: Double
     @ObservedObject var controller: PageVaultReaderController
     let onZoomChanged: (Double) -> Void
@@ -183,6 +288,8 @@ private struct PageVaultDocumentView: UIViewRepresentable {
             // than the paper fills the screen. Without a measurement the pages open as published.
             if let crops { PageVaultPageLayout.apply(crops, to: document) }
             view.displayBox = .cropBox
+            // Highlights are annotations on the in-memory document; the file is never written to.
+            PageVaultHighlightService.apply(highlights, to: document)
         }
         view.document = document
 
@@ -210,7 +317,7 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         context.coordinator.pendingPage = openingPage
         context.coordinator.onZoomChanged = onZoomChanged
         context.coordinator.observe(view, controller: controller)
-        context.coordinator.apply(warmPaper: warmPaper)
+        context.coordinator.apply(theme: theme)
         context.coordinator.apply(zoom: zoom)
         // The opening page cannot be applied until PDFKit has laid the document out, so it is
         // retried after layout instead of being set once and silently ignored.
@@ -220,7 +327,7 @@ private struct PageVaultDocumentView: UIViewRepresentable {
 
     func updateUIView(_ view: UIView, context: Context) {
         context.coordinator.onZoomChanged = onZoomChanged
-        context.coordinator.apply(warmPaper: warmPaper)
+        context.coordinator.apply(theme: theme)
         context.coordinator.apply(zoom: zoom)
         context.coordinator.scheduleRestore(controller: controller)
     }
@@ -234,17 +341,35 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         var onZoomChanged: ((Double) -> Void)?
         private var token: NSObjectProtocol?
         private var scaleToken: NSObjectProtocol?
+        private var selectionToken: NSObjectProtocol?
         private var attempts = 0
         private var requestedZoom = PageVaultStore.minimumZoom
         private var applyingZoom = false
 
         /// The surround is kept the same white as the page, so a page narrower than the screen
-        /// blends into it instead of sitting inside dark letterbox bands. The warm overlay then
-        /// tints page and surround together, giving one continuous sheet of paper.
-        func apply(warmPaper: Bool) {
+        /// blends into it instead of sitting inside dark letterbox bands. The overlay then covers
+        /// page and surround together, giving one continuous sheet.
+        ///
+        /// Warm and sepia multiply a tint, which warms the paper while leaving black text black.
+        /// Night blends white with a difference filter, which inverts everything beneath it into
+        /// light text on a dark page — a plain translucent overlay could never do that.
+        func apply(theme: PageVaultTheme) {
             pdfView?.backgroundColor = .white
-            tint?.backgroundColor = UIColor(red: 0.99, green: 0.94, blue: 0.84, alpha: 1)
-            tint?.isHidden = !warmPaper
+            guard let tint else { return }
+            switch theme {
+            case .paper:
+                tint.isHidden = true
+            case .warm, .sepia:
+                tint.layer.compositingFilter = "multiplyBlendMode"
+                tint.backgroundColor = theme == .warm
+                    ? UIColor(red: 0.99, green: 0.94, blue: 0.84, alpha: 1)
+                    : UIColor(red: 0.93, green: 0.86, blue: 0.72, alpha: 1)
+                tint.isHidden = false
+            case .night:
+                tint.layer.compositingFilter = "differenceBlendMode"
+                tint.backgroundColor = .white
+                tint.isHidden = false
+            }
         }
 
         /// Anchors zoom to the fit scale: the floor is the whole cropped page, so the text can
@@ -285,8 +410,20 @@ private struct PageVaultDocumentView: UIViewRepresentable {
             onZoomChanged?(clamped)
         }
 
+        func observeSelection(_ view: PDFView, controller: PageVaultReaderController) {
+            guard selectionToken == nil else { return }
+            selectionToken = NotificationCenter.default.addObserver(
+                forName: .PDFViewSelectionChanged, object: view, queue: .main
+            ) { note in
+                let selected = (note.object as? PDFView)?.currentSelection?.string?
+                    .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+                Task { @MainActor in controller.report(selection: selected) }
+            }
+        }
+
         func observe(_ view: PDFView, controller: PageVaultReaderController) {
             observeScale(view)
+            observeSelection(view, controller: controller)
             guard token == nil else { return }
             token = NotificationCenter.default.addObserver(
                 forName: .PDFViewPageChanged, object: view, queue: .main
@@ -341,6 +478,7 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         deinit {
             if let token { NotificationCenter.default.removeObserver(token) }
             if let scaleToken { NotificationCenter.default.removeObserver(scaleToken) }
+            if let selectionToken { NotificationCenter.default.removeObserver(selectionToken) }
         }
     }
 }

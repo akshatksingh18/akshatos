@@ -42,23 +42,28 @@ migration, idle-start scheduling, Home pause/resume guards and backup exclusion,
 file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion;
 plus hub, dashboard and Settings UI coverage.
 
-PageVault suites: 139 domain assertions covering place clamping and the opening page, progress
+PageVault suites: 146 domain assertions covering place clamping and the opening page, progress
 labels, title derivation, fingerprint dedupe, recency ordering, the single-Reading-book invariant,
-the Started shelf split, goal sanitizing, older-payload decoding (including records carrying fields
-since removed), the streak engine (bookmark-driven progress, at-risk today, missed days, paused days,
-book switches, future-dated rows), export/restore (manifest round trip, Windows-safe file names,
+the Started shelf split, older-payload decoding (including records carrying fields since removed,
+such as the daily page goal), export/restore (manifest round trip, Windows-safe file names,
 whole-manifest validation and versions, content-matched planning, add-only versus replace, id
-collisions), and page fitting (four-sided crop, outlier edges, short documents, facing pages, scans,
-blank and unmeasured pages, specks, off-white paper, a no-clipping property and cache versioning).
-31 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
+collisions), page fitting (four-sided crop, outlier edges, short documents, facing pages, scans,
+blank and unmeasured pages, specks, off-white paper, a no-clipping property and cache versioning),
+highlights (rejoining selections broken at line ends and hyphens, duplicate and empty passages,
+reading order, page lookup, record round trip, records written before highlights existed), search
+(matching, case and accent insensitivity, result limits, one-letter queries, snippet context and
+ellipses, pages with no text) and page themes (stored raw values, default, inversion, fallback).
+35 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
 rejection, unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming
-the book and shelving the previous one under Started, pages credited between bookmarks, an unbookmarked
-book earning nothing, the first session counting its starting page, cover generation, copy-only
-removal and history cleanup, a full export restored into a fresh library, reading data restored onto
-a re-imported PDF, a tampered PDF restoring nothing, add-only versus replace against a live library,
-malformed or mis-picked exports, pages measured and cropped on all four sides, a wide figure never
-clipped, a full-page scan left untouched, the measurement reused after relaunch and removed with its
-book, and crop boxes applied in points. UI tests cover hub → library → back and the backup sheet.
+the book and shelving the previous one under Started, finishing a book, cover generation, copy-only
+removal, clearing reading-day rows left by an older build, carrying a warm-paper choice over to
+themes, a full export restored into a fresh library, reading data restored onto a re-imported PDF, a
+tampered PDF restoring nothing, add-only versus replace against a live library, malformed or
+mis-picked exports, pages measured and cropped on all four sides, a wide figure never clipped, a
+full-page scan left untouched, the measurement reused after relaunch and removed with its book, crop
+boxes applied in points, a highlight saved and reloaded, highlights travelling with an export,
+highlights rendered into their own PDF, and search over a real text layer including an image-only
+page that finds nothing. UI tests cover hub → library → back and the backup sheet.
 
 Simulator coverage cannot exercise the system document picker, the file mover that saves an export,
 real large-file memory pressure, rotation, paged swipe feel, how warm paper looks, or whether fitted
