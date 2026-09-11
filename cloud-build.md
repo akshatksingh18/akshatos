@@ -1,8 +1,8 @@
 # AkshatOS cloud build and iPhone installation
 
 **State:** Builds come only from the GitHub Actions macOS workflow and are verified on Windows before
-handover. Build 13 is the accepted Squats daily-use baseline. Build 19 is the latest PageVault
-candidate handed over; nothing from Build 17 on has been device-tested. Build 20's page-fitting
+handover. Build 13 is the accepted Squats daily-use baseline. Build 20 is the latest PageVault
+candidate, downloaded and verified; nothing from Build 17 on has been device-tested. Its page-fitting
 source `f237054` passed PR #29 run
 [34649315790](https://github.com/akshatksingh18/akshatos/actions/runs/34649315790): 139 PageVault
 domain assertions, 99 hosted tests, 3 UI tests, both builds and `CI Gate`. This file owns build and
@@ -55,7 +55,8 @@ never downloaded, because Build 19 superseded it before any device pass.
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 19 | `akshatos-build-19\akshatos-ios-82` | `089cc15` (#27) | [34548930454](https://github.com/akshatksingh18/akshatos/actions/runs/34548930454) | `932432e0b8d52895b4837c071cfb6a8023033826c31fe1fb82c2206010ea84c8` | Latest handed-over candidate; not device-tested |
+| 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Latest handed-over candidate; not device-tested |
+| 19 | `akshatos-build-19\akshatos-ios-82` | `089cc15` (#27) | [34548930454](https://github.com/akshatksingh18/akshatos/actions/runs/34548930454) | `932432e0b8d52895b4837c071cfb6a8023033826c31fe1fb82c2206010ea84c8` | Superseded by 20; not device-tested |
 | 17 | `akshatos-build-17\akshatos-ios-76` | `52181f6` (#24) | [34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880) | `87c1adce1fb91ceab4925d1e89c3411d0a96217c10e1c03f28a394e61be7b96e` | Superseded by 19 |
 | 16 | `akshatos-build-16\akshatos-ios-72` | `c1f378f` (#22) | [34524075937](https://github.com/akshatksingh18/akshatos/actions/runs/34524075937) | `3205ae71f7bb93cbbd381daab23ab914fcafbaee521d8fdc361e4dec21899053` | Phone-tested |
 | 15 | `akshatos-build-15\akshatos-ios-69` | `e209269` (#20) | [34511400591](https://github.com/akshatksingh18/akshatos/actions/runs/34511400591) | `c90f5c83ceb22f5ed49d153902e01d2991c182316f98492b136aaa9c92266bed` | Phone-tested |
@@ -63,13 +64,17 @@ never downloaded, because Build 19 superseded it before any device pass.
 | 13 | `akshatos-build-13\akshatos-ios-58` | `f484f66` (#15) | [34151147604](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604) | `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0` | Accepted Squats daily-use baseline |
 | — | `akshatos-pagevault-spike\akshatos-ios-62` | `e353c8d` (#17) | [34430943640](https://github.com/akshatksingh18/akshatos/actions/runs/34430943640) | `e0aa63edf3102a7707d39265b914711976686454956860ca5e3d2c555f372555` | Reports 0.2.0 (13) despite containing PageVault; never install |
 
-Build 19 notes: its packaged `Info.plist` reports build 19, version 0.2.0 and minimum iOS 17.0, and
+Build 20 notes: its packaged `Info.plist` reports build 20, version 0.2.0 and minimum iOS 17.0, and
 all four screenshots (hub, Squats dashboard, empty PageVault library, backup sheet) were inspected.
-With an empty library its backup sheet's footer reads "every PDF (Zero KB)" — harmless, to be fixed
-with a later code change. Install it over the current build without uninstalling, and exercise
-export/restore on a disposable library first: add two fixture PDFs, bookmark one, export both ways to
-Files, remove the books, then restore and confirm the place, status, streak and Started shelf come
-back. Never make a real library the first restore.
+It carries everything in Build 19 plus page fitting, so install it over the current build without
+uninstalling. On the phone, check that a book's text fills the screen width with its margins gone,
+that text stays the same size from page to page, that no table or figure is cut off at an edge, that
+the 188 MB scan is left untouched, and that a book imported before this build shows the brief
+"Fitting pages" screen once. Export/restore is still unexercised on the phone: try it on a disposable
+library first — add two fixture PDFs, bookmark one, export both ways to Files, remove the books, then
+restore and confirm the place, status, streak and Started shelf come back. Never make a real library
+the first restore. With an empty library the backup sheet's footer still reads "every PDF (Zero KB)" —
+cosmetic, to be fixed with a later code change.
 
 ## Phone findings
 
