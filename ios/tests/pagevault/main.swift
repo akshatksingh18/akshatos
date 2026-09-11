@@ -255,6 +255,12 @@ func ink(_ minX: Double, _ minY: Double, _ maxX: Double, _ maxY: Double) -> Page
     PageVaultInkBox(minX: minX, minY: minY, maxX: maxX, maxY: maxY)
 }
 func near(_ first: Double, _ second: Double) -> Bool { abs(first - second) < 0.0005 }
+/// Crop boxes reached by different arithmetic can differ in the last floating-point digit.
+func sameBox(_ first: PageVaultInkBox?, _ second: PageVaultInkBox?) -> Bool {
+    guard let first, let second else { return first == nil && second == nil }
+    return near(first.minX, second.minX) && near(first.minY, second.minY)
+        && near(first.maxX, second.maxX) && near(first.maxY, second.maxY)
+}
 func neverClips(_ survey: [PageVaultInkBox?]) -> Bool {
     zip(survey, PageVaultCrop.cropBoxes(for: survey)).allSatisfy { box, crop in
         guard let box, !box.isEmpty, let crop else { return true }
@@ -272,7 +278,7 @@ assert(bodyCrops.allSatisfy { $0 == bodyCrops[0] } && near(bodyCrops[0]!.minX, 0
 var stray = body
 stray[7] = ink(0.02, 0.15, 0.80, 0.85)
 let strayCrops = PageVaultCrop.cropBoxes(for: stray)
-assert(strayCrops[9] == bodyCrops[9], "One stray mark does not widen every other page")
+assert(sameBox(strayCrops[9], bodyCrops[9]), "One stray mark does not widen every other page")
 assert(near(strayCrops[7]!.minX, 0.008) && strayCrops[7]!.contains(stray[7]!),
        "The page carrying the mark gets a box grown to contain it rather than being clipped")
 
@@ -296,7 +302,7 @@ mixed[4] = PageVaultInkBox.blank
 mixed[5] = nil
 let mixedCrops = PageVaultCrop.cropBoxes(for: mixed)
 assert(mixedCrops[3] == nil, "A full-page image or scan is left exactly as published")
-assert(mixedCrops[4] == bodyCrops[4], "A blank page takes the shared area, so paging stays steady")
+assert(sameBox(mixedCrops[4], bodyCrops[4]), "A blank page takes the shared area, so paging stays steady")
 assert(mixedCrops[5] == nil, "A page that could not be measured is left alone rather than guessed at")
 assert(PageVaultCrop.cropBoxes(for: [PageVaultInkBox?](repeating: ink(0, 0, 1, 1), count: 12))
        .allSatisfy { $0 == nil }, "A scanned book whose ink covers every sheet is not cropped at all")
