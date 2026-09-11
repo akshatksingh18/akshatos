@@ -195,6 +195,27 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
+### Downloaded Build-19 candidate — Started shelf, export and restore
+
+- Version **0.2.0 (19)**; merge source `089cc1572785d60caddc8291584078fd267b6c78` (PR #27), on top of
+  PR #26's Started shelf.
+- Artifact `akshatos-ios-82` from main delivery run
+  [34548930454](https://github.com/akshatksingh18/akshatos/actions/runs/34548930454), which passed
+  Source checks, the build and `CI Gate`. The same application source passed 132 PageVault domain
+  assertions, 94 hosted tests and 3 UI tests in PR #27 run 34547571050.
+- Cached at `C:\Users\aksha\Downloads\akshatos-build-19\akshatos-ios-82`.
+- SHA-256 `932432e0b8d52895b4837c071cfb6a8023033826c31fe1fb82c2206010ea84c8` matches the cloud
+  checksum. `validate-ipa.py` passed, and the packaged `Info.plist` reports build 19, version 0.2.0
+  and minimum iOS 17.0. All four simulator screenshots (hub, Squats dashboard, empty PageVault
+  library, backup sheet) were inspected.
+- Carries every Build-17 reader change plus the Started shelf and export/restore, so it replaces
+  Build 17 as the build to install. Install over the current build without uninstalling.
+- Known cosmetic defect: with an empty library the backup sheet's footer reads "every PDF (Zero KB)".
+  Harmless; to be fixed with the next code change.
+- **Unsigned and not phone-verified.** Exercise export/restore on a disposable library first: add two
+  fixture PDFs, bookmark one, export both ways to Files, remove the books, then restore and confirm
+  the place, status, streak and Started shelf come back. Never make a real library the first restore.
+
 ### Build-18 artifact — produced, superseded before handover
 
 - Version **0.2.0 (18)**; merge source `9861f440c62874752c8b1a4601557ed2e82a7e5a` (PR #26), adding
@@ -217,8 +238,8 @@ and updating an old category-less schedule through Repair reminders. None has ph
 - Trims page margins so the text block scales to the screen width, floors zoom at the whole trimmed
   page with a 4x ceiling, remembers the chosen zoom, and counts a book's first session from before
   page one.
-- **Unsigned and not phone-verified.** Install over Build 16 without uninstalling. Two things to
-  watch: that no text or figure is clipped at a page edge (trimming is sampled and capped, so an
+- **Unsigned and not phone-verified; superseded by Build 19**, which carries these changes too, so
+  install that instead. Two things to watch, in either build: that no text or figure is clipped at a page edge (trimming is sampled and capped, so an
   unsampled wide figure is the theoretical risk), and that the 188 MB scan looks untouched because
   its ink covers the sheet. The open product question is whether the resulting text size is
   comfortable, since it is the ceiling available without horizontal panning.
