@@ -16,10 +16,11 @@ and device evidence.
   carrying different code.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, warm paper,
-  reading status, bookmarked place, covers, Started shelf, export/restore, and pages cropped to their
-  measured text; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and were
-  removed in Build 21.
+- Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, page themes
+  (paper, warm, sepia, night), reading status, bookmarked place, covers, Started shelf,
+  export/restore, pages cropped to their measured text, highlights with their own PDF export, and
+  full-text search; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
+  were removed in Build 21, which also adds an experimental page curl that is off by default.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an upgrade of the standalone Squat Reminder smoke app (`0.1.0 (1)`,

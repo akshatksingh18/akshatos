@@ -7,6 +7,7 @@ struct PageVaultBookSheet: View {
     let bookID: UUID
 
     @Environment(\.dismiss) private var dismiss
+    @State private var showHighlights = false
 
     private var book: PageVaultBook? { store.book(id: bookID) }
 
@@ -16,6 +17,7 @@ struct PageVaultBookSheet: View {
                 if let book {
                     List {
                         statusSection(book)
+                        highlightsSection(book)
                         placeSection(book)
                         detailsSection(book)
                     }
@@ -29,6 +31,9 @@ struct PageVaultBookSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } }
             }
+        }
+        .sheet(isPresented: $showHighlights) {
+            PageVaultHighlightsView(store: store, bookID: bookID)
         }
     }
 
@@ -51,6 +56,29 @@ struct PageVaultBookSheet: View {
             if book.status != .reading, store.current != nil {
                 Text("Only one book is Reading at a time. Choosing Reading here moves the current one back to Want to read.")
                     .font(.caption).foregroundStyle(Palette.muted)
+            }
+        }
+    }
+
+    @ViewBuilder private func highlightsSection(_ book: PageVaultBook) -> some View {
+        Section("Highlights") {
+            if book.highlights.isEmpty {
+                Text("Select a line while reading, then tap the highlighter to save it here.")
+                    .font(.caption).foregroundStyle(Palette.muted)
+            } else {
+                Button {
+                    showHighlights = true
+                } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(book.highlights.count == 1 ? "1 passage saved"
+                             : "\(book.highlights.count) passages saved")
+                        if let latest = book.highlightsInReadingOrder.last {
+                            Text(latest.preview).font(.caption).foregroundStyle(Palette.muted)
+                                .lineLimit(2)
+                        }
+                    }
+                }
+                .accessibilityIdentifier("open-highlights-from-details")
             }
         }
     }

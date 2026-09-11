@@ -65,12 +65,14 @@ not a claim that every feature is physically verified.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
-  reading status, the place marker, page-fitting geometry and ink
-  scanning, and the export manifest with restore planning), `data/` (versioned SwiftData store,
+  reading status, the place marker, highlights, search matching and snippets, page themes,
+  page-fitting geometry and ink scanning, and the export manifest with restore planning),
+  `data/` (versioned SwiftData store,
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
-  `services/` (import-time PDFKit inspection, cover rendering and whole-book ink measurement), `ui/`
-  (library grid, paged reader with its fitting screen, book sheet, backup sheet). Product scope and
-  gates are owned by `../book-reader/`. Its large-PDF gate passed on device; the reader iterations
+  `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
+  capture and the highlights PDF, page-text search), `ui/` (library grid, paged reader with its
+  fitting screen, book sheet, backup sheet, highlights list, search sheet, and the experimental
+  page-curl host). Product scope and gates are owned by `../book-reader/`. Its large-PDF gate passed on device; the reader iterations
   that followed are not phone-verified.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
@@ -82,6 +84,10 @@ not a claim that every feature is physically verified.
 - `ios/UnitTests/PageVaultLayoutTests.swift` — page fitting on generated PDFs: every page measured and
   cropped on all four sides, a wide figure never clipped, a full-page scan left untouched, the
   measurement reused after relaunch and removed with its book, and crop boxes applied in points.
+- `ios/UnitTests/PageVaultHighlightTests.swift` — highlights saved through the store and reloaded,
+  carried by a full export and restored, rendered into their own PDF, and refused when there are none.
+- `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
+  phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.

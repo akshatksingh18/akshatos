@@ -321,6 +321,32 @@ import XCTest
                        "The Started shelf is derived from stored data, so it survives a reload")
     }
 
+    /// An installed build stored only a warm-paper switch, so that choice has to carry over to the
+    /// themes that replaced it rather than resetting the reader's appearance.
+    func testAnInstalledWarmPaperChoiceCarriesOverToThemes() throws {
+        let suite = "pagevault-theme-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(false, forKey: "pagevault.warmPaper")
+
+        let store = PageVaultStore(
+            repository: SwiftDataPageVaultRepository(container: try makeContainer()),
+            storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Themes")),
+            documents: PageVaultDocumentService(), defaults: defaults)
+        XCTAssertEqual(store.theme, .paper, "Warm paper turned off carries over as the plain page")
+
+        XCTAssertFalse(store.pageCurl, "The page curl stays off until it is asked for")
+
+        store.theme = .night
+        store.pageCurl = true
+        let reopened = PageVaultStore(
+            repository: SwiftDataPageVaultRepository(container: try makeContainer()),
+            storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Themes")),
+            documents: PageVaultDocumentService(), defaults: defaults)
+        XCTAssertEqual(reopened.theme, .night, "A chosen theme is remembered across launches")
+        XCTAssertTrue(reopened.pageCurl, "So is the page-curl choice")
+    }
+
     /// Streaks are gone, but an installed build wrote per-day rows into the same store. They are
     /// deleted on load rather than migrated away, so the library itself is never at risk.
     func testReadingDayRowsFromAnOlderBuildAreCleared() async throws {

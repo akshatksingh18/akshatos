@@ -13,9 +13,15 @@ import SwiftUI
     /// Page-measurement progress per book, shown while a book is being fitted. Absent once done.
     @Published private(set) var measuringProgress: [UUID: Double] = [:]
     @Published var message: String?
-    /// Warm paper is the default: this is meant to read like a book, not like a document viewer.
-    @Published var warmPaper: Bool {
-        didSet { defaults.set(warmPaper, forKey: "pagevault.warmPaper") }
+    /// How the page is tinted. Warm is the default: this is meant to read like a book, not like a
+    /// document viewer.
+    @Published var theme: PageVaultTheme {
+        didSet { defaults.set(theme.rawValue, forKey: "pagevault.theme") }
+    }
+    /// Experimental: the system page-curl transition instead of PDFKit's paging. Off by default,
+    /// because the curl's drag gesture competes with dragging to select text for a highlight.
+    @Published var pageCurl: Bool {
+        didSet { defaults.set(pageCurl, forKey: "pagevault.pageCurl") }
     }
     /// How far in the reader is zoomed, as a multiple of the whole-page fit. Remembered so a
     /// chosen text size survives page turns, other books and relaunches instead of being redialled.
@@ -58,7 +64,15 @@ import SwiftUI
         self.now = now
         self.calendar = calendar
         self.defaults = defaults
-        self.warmPaper = defaults.object(forKey: "pagevault.warmPaper") as? Bool ?? true
+        // A build before themes stored only a warm-paper switch, so that choice carries over.
+        if let chosen = defaults.string(forKey: "pagevault.theme") {
+            self.theme = PageVaultTheme.stored(chosen)
+        } else if let warm = defaults.object(forKey: "pagevault.warmPaper") as? Bool {
+            self.theme = warm ? .warm : .paper
+        } else {
+            self.theme = .default
+        }
+        self.pageCurl = defaults.bool(forKey: "pagevault.pageCurl")
         self.readingZoom = Self.clampZoom(defaults.object(forKey: "pagevault.readingZoom") as? Double
                                           ?? Self.minimumZoom)
     }
@@ -152,6 +166,40 @@ import SwiftUI
         persist(updated)
     }
 
+    // MARK: - Search
+
+    /// Searches one book's text off the main actor. Cancelling the calling task — which SwiftUI does
+    /// on the next keystroke — stops the work rather than letting stale results arrive.
+    func search(_ query: String, in book: PageVaultBook) async -> [PageVaultSearchHit] {
+        guard let storage, storageAvailable, PageVaultSearch.isSearchable(query) else { return [] }
+        let url = storage.documentURL(for: book.id)
+        let flag = PageVaultCancellationFlag()
+        return await withTaskCancellationHandler {
+            await Task.detached(priority: .userInitiated) {
+                PageVaultSearchService.search(query, in: url, isCancelled: { flag.isCancelled })
+            }.value
+        } onCancel: {
+            flag.cancel()
+        }
+    }
+
+    // MARK: - Highlights
+
+    /// Saves a passage. Highlights are part of the book's record, so they travel with an export,
+    /// are removed with the book, and never touch the PDF file itself.
+    func addHighlight(text: String, page: Int, rects: [PageVaultRect], to book: PageVaultBook) {
+        let highlight = PageVaultHighlight(page: page, text: PageVaultHighlight.tidy(text),
+                                           createdAt: now(), rects: rects)
+        guard !highlight.text.isEmpty,
+              let updated = library.addHighlight(highlight, for: book.id) else { return }
+        persist(updated)
+    }
+
+    func removeHighlight(_ id: UUID, from book: PageVaultBook) {
+        guard let updated = library.removeHighlight(id, for: book.id) else { return }
+        persist(updated)
+    }
+
     func clearPlace(_ book: PageVaultBook) {
         guard let updated = library.clearPlace(for: book.id, at: now()) else { return }
         persist(updated)
@@ -220,6 +268,23 @@ import SwiftUI
         let staged = items
         return try await Task.detached(priority: .userInitiated) {
             try storage.stageExport(manifest: manifest, name: name, documents: staged)
+        }.value
+    }
+
+    /// Renders this book's highlights into a PDF of their own and stages it for the file mover.
+    /// It is a list of the passages, not an annotated copy of the book.
+    func prepareHighlightsExport(for book: PageVaultBook) async throws -> URL {
+        guard let storage, storageAvailable else {
+            throw PageVaultBackupError.storage("the app container is unavailable")
+        }
+        let live = library.books.first { $0.id == book.id } ?? book
+        guard !live.highlights.isEmpty else { throw PageVaultBackupError.noHighlights }
+        busy = true
+        defer { busy = false }
+        let data = PageVaultHighlightService.exportPDF(for: live, generatedAt: now())
+        let name = "\(PageVaultBackup.safeName(live.title)) highlights"
+        return try await Task.detached(priority: .userInitiated) {
+            try storage.stageDocument(data, name: name, extension: "pdf")
         }.value
     }
 

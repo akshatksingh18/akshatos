@@ -194,6 +194,23 @@ struct PageVaultStorage: Sendable {
         }
     }
 
+    /// Stages one generated file — a highlights PDF, say — for the system file mover, in the same
+    /// disposable place exports use.
+    func stageDocument(_ data: Data, name: String, extension fileExtension: String) throws -> URL {
+        clearOutgoing()
+        let container = outgoing.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: container, withIntermediateDirectories: true)
+            excludeFromBackup(outgoing)
+            let file = container.appendingPathComponent(name).appendingPathExtension(fileExtension)
+            try data.write(to: file, options: .atomic)
+            return file
+        } catch {
+            try? FileManager.default.removeItem(at: container)
+            throw PageVaultBackupError.storage(error.localizedDescription)
+        }
+    }
+
     /// Whatever is left here belongs to an export that was saved, cancelled or interrupted.
     func clearOutgoing() {
         try? FileManager.default.removeItem(at: outgoing)

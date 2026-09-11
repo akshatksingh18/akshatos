@@ -389,3 +389,104 @@ assert(remapped.additionIDs[readingID] == freshID && remapped.library.books.coun
 assert(remapped.library.current?.id == freshID,
        "With nothing being read, the export's Reading book resumes as the one being read")
 print("PASS: 29 backup assertions (manifest round trip, file names, validation, versions, planning, add, replace, id collision)")
+
+// Highlights live on the book, so they travel with an export and leave when the book does.
+func passage(_ page: Int, _ text: String, at number: Int = 1) -> PageVaultHighlight {
+    PageVaultHighlight(page: page, text: text, createdAt: day(number))
+}
+assert(PageVaultHighlight.tidy("grit is\npassion and\nperseverance") == "grit is passion and perseverance",
+       "A selection broken at every rendered line is rejoined into one sentence")
+assert(PageVaultHighlight.tidy("de-\nmanding work") == "demanding work",
+       "A word hyphenated across a line break is put back together")
+assert(PageVaultHighlight.tidy("  spaced   out \n\n words  ") == "spaced out words",
+       "Runs of whitespace collapse and the ends are trimmed")
+assert(PageVaultHighlight.tidy("   \n  ").isEmpty, "A selection of pure whitespace produces nothing")
+assert(passage(3, String(repeating: "a", count: 200)).preview.count == 140,
+       "A long passage previews as one truncated line")
+assert(passage(3, "short").preview == "short", "A short passage previews whole")
+
+var marked = book(pages: 300)
+marked.addHighlight(passage(12, "the first line", at: 2))
+marked.addHighlight(passage(4, "an earlier line", at: 3))
+marked.addHighlight(passage(12, "the first line", at: 4))
+assert(marked.highlights.count == 2, "Highlighting the same passage twice stores it once")
+marked.addHighlight(passage(5, "", at: 5))
+assert(marked.highlights.count == 2, "An empty passage is not stored")
+assert(marked.highlightsInReadingOrder.map(\.page) == [4, 12],
+       "Highlights are listed in the order they appear in the book")
+assert(marked.highlights(onPage: 12).count == 1 && marked.highlights(onPage: 7).isEmpty,
+       "Highlights can be found by page, which is how the reader redraws them")
+let doomed = marked.highlightsInReadingOrder[0].id
+marked.removeHighlight(id: doomed)
+assert(marked.highlights.map(\.page) == [12], "Removing one highlight leaves the others alone")
+
+let markedRoundTrip = try JSONDecoder().decode(PageVaultBook.self,
+                                               from: try JSONEncoder().encode(marked))
+assert(markedRoundTrip == marked, "Highlights survive the record's persistence round trip")
+let beforeHighlights = Data("""
+{"id":"7C1F0C7E-1A2B-4C3D-8E4F-5A6B7C8D9E0F","fingerprint":"old","title":"Before Highlights",
+ "pageCount":80,"byteCount":64,"addedAt":0}
+""".utf8)
+let beforeHighlightsBook = try JSONDecoder().decode(PageVaultBook.self, from: beforeHighlights)
+assert(beforeHighlightsBook.highlights.isEmpty,
+       "A record written before highlights existed loads with none rather than failing")
+
+var shelfWithMarks = PageVaultLibrary()
+try shelfWithMarks.insert(book(fingerprint: "marked", title: "Marked"))
+let markedID = shelfWithMarks.books[0].id
+assert(shelfWithMarks.addHighlight(passage(2, "a line"), for: markedID)?.highlights.count == 1,
+       "The library stores a highlight on the book it belongs to")
+assert(shelfWithMarks.addHighlight(passage(2, "a line"), for: UUID()) == nil,
+       "An unknown book cannot be highlighted")
+let storedHighlightID = shelfWithMarks.books[0].highlights[0].id
+assert(shelfWithMarks.removeHighlight(storedHighlightID, for: markedID)?.highlights.isEmpty == true,
+       "The library removes a highlight by id")
+print("PASS: 16 highlight assertions (tidy, preview, dedupe, ordering, page lookup, round trip, older records, library)")
+
+// Searching a book's text. Matching and snippets are pure, so they are pinned without a document.
+let pageText = "Grit is passion and perseverance. Grit grows when you practise deliberately."
+let gritHits = PageVaultSearch.hits(in: pageText, page: 4, query: "grit", limit: 10)
+assert(gritHits.count == 2, "Every occurrence on a page is its own result")
+assert(gritHits.allSatisfy { $0.page == 4 }, "A hit carries the page it was found on")
+assert(gritHits[0].offset == 0 && gritHits[1].offset == 34,
+       "A hit carries where on the page it matched")
+assert(gritHits[0].id != gritHits[1].id, "Two matches on one page stay distinguishable in a list")
+assert(PageVaultSearch.hits(in: pageText, page: 0, query: "GRIT", limit: 10).count == 2,
+       "Search ignores letter case")
+assert(PageVaultSearch.hits(in: "café society", page: 0, query: "cafe", limit: 5).count == 1,
+       "Search ignores accents, so plainly typed letters still find the word")
+assert(PageVaultSearch.hits(in: pageText, page: 0, query: "grit", limit: 1).count == 1,
+       "The result limit is respected")
+assert(PageVaultSearch.hits(in: pageText, page: 0, query: "g", limit: 10).isEmpty,
+       "A single letter is not a search")
+assert(PageVaultSearch.hits(in: "", page: 0, query: "grit", limit: 10).isEmpty,
+       "A page with no text layer yields nothing, which is exactly what a scan gives")
+assert(!PageVaultSearch.isSearchable(" a ") && PageVaultSearch.isSearchable(" at "),
+       "Whitespace does not pad a query into a search")
+
+let longPage = String(repeating: "x", count: 200) + "needle" + String(repeating: "y", count: 200)
+let middleSnippet = PageVaultSearch.snippet(from: longPage, at: 200, length: 6)
+assert(middleSnippet.hasPrefix("…") && middleSnippet.hasSuffix("…"),
+       "A match inside a long page is shown with ellipses on both sides")
+assert(middleSnippet.contains("needle"), "The match itself is in the snippet")
+assert(middleSnippet.count == 6 + PageVaultSearch.context * 2 + 2,
+       "The snippet keeps a fixed amount of context around the match")
+assert(PageVaultSearch.snippet(from: "short and sweet", at: 0, length: 5) == "short and sweet",
+       "A short page needs no ellipses")
+assert(PageVaultSearch.snippet(from: "line\nbreaks   collapse", at: 0, length: 4) == "line breaks collapse",
+       "A snippet reads as one line")
+assert(PageVaultSearch.snippet(from: "abc", at: 5, length: 2).isEmpty,
+       "An impossible range yields nothing rather than crashing")
+print("PASS: 16 search assertions (matching, case, accents, limits, snippets, empty pages)")
+
+// Page themes. The raw values are what an installed build has already written to disk.
+assert(PageVaultTheme.allCases.map(\.rawValue) == ["paper", "warm", "sepia", "night"],
+       "Theme raw values are the stored form and must not be renamed")
+assert(PageVaultTheme.allCases.allSatisfy { !$0.label.isEmpty }, "Every theme is named in the menu")
+assert(PageVaultTheme.default == .warm, "Warm paper stays the default")
+assert(PageVaultTheme.night.inverts && !PageVaultTheme.sepia.inverts && !PageVaultTheme.paper.inverts,
+       "Night inverts the page; the others tint it")
+assert(PageVaultTheme.stored("sepia") == .sepia, "A stored theme is restored")
+assert(PageVaultTheme.stored("moonlight") == .warm && PageVaultTheme.stored(nil) == .warm,
+       "An unknown or missing stored theme falls back to the default rather than failing")
+print("PASS: 6 theme assertions (stored values, labels, default, inversion, fallback)")

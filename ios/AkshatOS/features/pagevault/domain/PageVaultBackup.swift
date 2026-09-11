@@ -112,20 +112,25 @@ struct PageVaultBackup: Codable, Equatable {
         return try manifest.validated()
     }
 
-    /// A readable, Windows-safe name that stays unique by carrying the start of the book's id.
-    static func documentPath(for book: PageVaultBook) -> String {
+    /// A readable, Windows-safe file name stem for a title, used by exports and by any other file
+    /// PageVault hands to Files.
+    static func safeName(_ title: String) -> String {
         let forbidden = CharacterSet(charactersIn: "/\\:*?\"<>|").union(.controlCharacters)
         let space: Unicode.Scalar = " "
         var scalars = String.UnicodeScalarView()
-        for scalar in book.title.unicodeScalars {
+        for scalar in title.unicodeScalars {
             scalars.append(forbidden.contains(scalar) ? space : scalar)
         }
         let collapsed = String(scalars).split(separator: " ").joined(separator: " ")
         let trimmable = CharacterSet(charactersIn: " .").union(.whitespacesAndNewlines)
-        var stem = String(collapsed.trimmingCharacters(in: trimmable).prefix(80))
+        let stem = String(collapsed.trimmingCharacters(in: trimmable).prefix(80))
             .trimmingCharacters(in: trimmable)
-        if stem.isEmpty { stem = "Book" }
-        return "\(documentsFolder)/\(stem) \(book.id.uuidString.prefix(8)).pdf"
+        return stem.isEmpty ? "Book" : stem
+    }
+
+    /// A document's place inside a full export: readable, and unique through the book's id.
+    static func documentPath(for book: PageVaultBook) -> String {
+        "\(documentsFolder)/\(safeName(book.title)) \(book.id.uuidString.prefix(8)).pdf"
     }
 
     /// Only `books/<name>.pdf`, exactly one level deep, so a crafted manifest cannot point a
@@ -161,12 +166,15 @@ enum PageVaultBackupError: LocalizedError, Equatable {
     case documentMismatch(title: String)
     case nothingToRestore(missingDocuments: Int)
     case emptyLibrary
+    case noHighlights
     case storage(String)
 
     var errorDescription: String? {
         switch self {
         case .emptyLibrary:
             return "There are no books to export yet."
+        case .noHighlights:
+            return "This book has no highlights yet."
         case .unsupportedVersion(let version):
             return "This export uses version \(version), which this build of PageVault cannot read."
         case .invalidFile:

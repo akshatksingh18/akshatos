@@ -19,6 +19,9 @@
   "pagevault": {
     "domain_sources": [
       "AkshatOS/features/pagevault/domain/PageVaultBook.swift",
+      "AkshatOS/features/pagevault/domain/PageVaultHighlight.swift",
+      "AkshatOS/features/pagevault/domain/PageVaultSearch.swift",
+      "AkshatOS/features/pagevault/domain/PageVaultTheme.swift",
       "AkshatOS/features/pagevault/domain/PageVaultReading.swift",
       "AkshatOS/features/pagevault/domain/PageVaultLayout.swift",
       "AkshatOS/features/pagevault/domain/PageVaultBackup.swift"
@@ -26,6 +29,8 @@
     "domain_test": "tests/pagevault/main.swift",
     "integration_tests": [
       "UnitTests/PageVaultPersistenceTests.swift",
+      "UnitTests/PageVaultHighlightTests.swift",
+      "UnitTests/PageVaultSearchTests.swift",
       "UnitTests/PageVaultBackupTests.swift",
       "UnitTests/PageVaultLayoutTests.swift"
     ],
