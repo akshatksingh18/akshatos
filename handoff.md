@@ -1,35 +1,9 @@
 # AkshatOS session handoff
 
-**Status:** The repository is temporarily public with protected `main`. Build-9 application source
-`e999ed2` chooses the eight-set/150-meter defaults, expands native-v1 regression coverage, and fixes
-repair of a repeating request without a next fire date. PR #4 is merged; main delivery run #39
-passed the complete pipeline and produced the downloaded, checksum-verified Build-9 IPA. Build 10
-implemented the snooze-first countdown, completion-only timeline and regular-cadence persistence;
-PR #7/main run #43 passed and its verified IPA is installed. Phone testing found its ten-minute
-deadline still resets on foreground and Done leaves that nudge active. Build 11 persists the snooze
-deadline and makes snooze-related Done begin a fresh full interval. PR #10 merged as `8b5b8c4`; main
-delivery run #49 passed and its downloaded Build-11 IPA passed local checksum/package and screenshot
-inspection. Phone testing confirms the displayed countdown survives leaving and closing the app;
-it also confirms ordinary Done does not reset the active 45-minute countdown. The accepted next
-behavior is for every successful Done to start a fresh full interval. Build 12 source `c5f787e`
-implements that shared cadence reset and stable action-state layout; PR #12 run #34073932922 passed
-49 domain assertions, 63 integration/persistence tests, the UI test, both builds, IPA inspection and
-`CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated the complete gate and its
-downloaded Build-12 IPA passed local checksum/package/screenshot inspection. Akshat installed it
-over Build 11 without uninstalling and reports all requested phone checks passed: ordinary and
-snoozed Done reset to a fresh interval, the countdown persists across background/force-close,
-buttons no longer jump vertically, and settings, permissions, Home configuration and history were
-preserved. These fixes are accepted; the broader physical and deployment matrix remains.
-Build 13 source replaces manual snooze with a bounded chain of automatic ten-minute nudges after
-an ignored normal reminder and adds an idle-only 9:00 AM start invitation. PR #15 run #57 passed the
-full gate and merged as `f484f66`; main delivery run #58 repeated the gate and published the locally
-checksum/package/screenshot-verified Build-13 IPA. Akshat subsequently installed Build 13 and reports that its
-implemented daily workflow—including automatic nudges and idle-start behavior—works well in ongoing
-phone use. Build 13 is the installed current build; Build 12 is the retained accepted predecessor.
-The broader physical edge-case, refresh/recovery and soak matrix remains open.
-This is a current-state entry point,
-not a separate specification or chronological log. Update it in place when its resume guidance
-changes; the linked owning documents control detailed facts.
+**Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Squats
+v1 is accepted in daily phone use on Build 13, with its physical edge-case and deployment matrix still
+open; PageVault is under active implementation with one end-of-implementation device pass pending.
+Update this file in place when resume guidance changes; the linked owning documents control detail.
 
 ## Start here
 
@@ -37,6 +11,7 @@ changes; the linked owning documents control detailed facts.
    [CLAUDE.md](CLAUDE.md). Follow any applicable deeper instructions.
 2. Read [architecture.md](architecture.md) for implemented versus planned behavior,
    [todo.md](todo.md) for remaining gates, and [features.md](features.md) for the full product scope.
+   PageVault work also reads `../book-reader/CLAUDE.md`, `features.md` and `architecture.md`.
 3. Read [cloud-build.md](cloud-build.md) before building/installing and [ci.md](ci.md) before
    accepting changes. [hub-plan.md](hub-plan.md) owns cross-project integration.
 4. Inspect local Git status, source and current GitHub checks before continuing. Do not assume
@@ -58,11 +33,11 @@ accepted the low-risk Windows username/path and project-plan exposure without a 
 All 26 then-retained Actions artifacts were deleted before public visibility was enabled.
 
 GitHub confirms `main` protection with strict/up-to-date `CI Gate`, administrator enforcement, and
-force pushes/deletions disabled. Every PR still produces Source checks and `CI Gate`; only a PR whose
-changed paths are all Markdown skips the macOS build. When Akshat says the public-CI need has passed,
-return the repository to private and synchronize the docs. That stops new public access but cannot
-undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied while public.
-`ci.md` owns the full operational contract.
+force pushes/deletions disabled, so every change — documentation included — lands through a PR.
+Every PR produces Source checks and `CI Gate`; only a PR whose changed paths are all Markdown skips
+the macOS build. When Akshat says the public-CI need has passed, return the repository to private
+and synchronize the docs. That stops new public access but cannot undo anything cloned, forked,
+downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the full contract.
 
 ## Identity and accepted scope
 
@@ -70,155 +45,75 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
-  Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Build 13 is the last
-  build accepted for Squats daily use; Build 12 is its retained predecessor. Later builds add PageVault. Preserve identity on updates.
-- Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
-  combined dashboard. PageVault opens its own PDF library — import, reader, reading status, daily-goal
-  streak, bookmarks, covers, export/restore — implemented and cloud-tested; its large-PDF gate passed on the phone,
-  while the reader iterations since are not phone-verified (`../book-reader/CLAUDE.md` owns this);
-  ReelVault/Reels remains an unavailable planned card.
-- Squats' daily loop is accepted in ongoing phone use, so PageVault is now the activated next
-  module; its scope/phases/progress are owned by `../book-reader/CLAUDE.md` and its phase-1 scaffold
-  decisions are locked there. ReelVault stays deferred. Squats' remaining physical/refresh items are
-  still open and are not superseded by PageVault work. Native source for both media modules goes
-  into this hub. WHOOP stays standalone.
+  Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
+  updates.
+- Launch into an app picker; select Squat Reminder to open its own dashboard, or PageVault for its own
+  PDF library. This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
+- Squats' daily loop is accepted in ongoing phone use, so PageVault is the activated next module; its
+  scope, phases and progress are owned by `../book-reader/CLAUDE.md`. ReelVault stays deferred.
+  Squats' remaining physical/refresh items stay open and are not superseded by PageVault work.
+  Native source for both media modules goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
-  feature folders are not separately installed apps. Repository visibility and its reversion gate
-  are recorded above.
+  feature folders are not separately installed apps.
 - Local-only, single-user data; no backend, analytics, accounts or cloud sync. Windows authors
   source; GitHub macOS/Xcode builds; Sideloadly signs locally. Never put Apple secrets or IPAs in Git.
 
-## Already implemented in source
+## Implemented in source
 
-- Picker, Squats dashboard, shared visual components, and app-lifetime services across navigation.
-- Start/Pause/Resume/End; dashboard Done +1 and Undo. Ignored normal reminders advance to automatic
-  ten-minute nudges on the single primary countdown until Done or Pause.
-- Notification Done and Pause; bounded normal-plus-59-nudge scheduling, idle 9:00 AM start invitation;
-  atomic after-first-unlock command inbox,
-  receipt persistence surviving Undo, shared commands, protected-store retry and queued-action UI.
-- One bounded active reminder batch plus one repeating idle daily-start request; permission/pending-
-  request reconciliation and foreground batch replenishment.
-- Versioned SwiftData session storage, recent session summaries, configurable daily goal,
-  same-day set aggregation, and current/best streak calculation. New installs start at eight sets;
-  zero turns tracking off.
-- Build-5 source adds one daily history entry across same-date sessions, active/paused duration,
-  pause/snooze/completion detail, deterministic foreground rollover at the next local calendar
-  boundary, versioned JSON export/validated restore, and completed-history deletion.
-- Build-6 source adds future-clock-safe streak derivation and explicit same-day goal snapshot tests,
-  plus staged Home setup, map/radius confirmation, one app-lifetime region monitor, protected local
-  boundary/event files, source-aware away pause/arrival resume, outside-Home choices, truthful health,
-  and edit/disable/delete. It requests no continuous background-location mode.
-- Build-7 source completes the dashboard/Settings UI task: authoritative notification/location
-  permission enums (replacing a boolean and fragile status-string matching) with a dedicated
-  Notifications settings section, Focus/Scheduled Summary/banner caveats, distinct denied/restricted/
-  when-in-use Home messaging, a `SettingsRoute`-driven one-tap action on blocking alerts, per-state
-  hero icons, and VoiceOver/Dynamic Type/Reduce Motion/Increased Contrast accessibility behavior.
-  Its exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22.
-- Build-8 source closes three gaps identified in a follow-up review of that same task: a monotonic
-  `notificationEverAuthorized`/`homeEverAuthorized` flag so a later denial reads as a revocation
-  ("turned off") rather than reusing first-request wording, an icon-based Home automation-health row
-  on the main dashboard itself, and a shared `AdaptiveRow` component that stacks label/value rows
-  vertically at accessibility Dynamic Type sizes. Its exact source `81bc36b58814c69e174013219d577ad5a4699f4d` passed PR run #24.
-- Post-review source corrects the remembered-grant semantics for provisional/alerts-disabled
-  notifications and When In Use location, proves both flags and revoked wording survive store
-  recreation, and excludes the protected Home files/directory from device backup. Exact source
-  `d80653da39433815c1d12fb9470adb9417a6f819` passed PR run #27.
-- Foreground reconciliation canonicalizes invalid idle preferences, validates the expected
-  recurring request and current-session snooze, removes stale/malformed snoozes, and compares the
-  actual monitored Home circle with protected configuration. Missing/mismatched Home registration
-  resets stale presence to Unknown before automatic re-registration. Exact source `8c1cc96` passed
-  PR run #32 and was merged through PR #1.
-- Build-9 source expands lifecycle/idempotency, preference/default, permission, request/snooze,
-  Home-health/disable, DST/time-zone, recovery and Settings-status coverage. A repair action now
-  re-arms a repeating request whose trigger has no next fire date.
+- Hub picker, Squats dashboard, shared visual components, and app-lifetime services across navigation.
+- Squats lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
+  normal-plus-59-nudge schedule with foreground replenishment, and one idle 9:00 AM start invitation
+  that never auto-starts a day.
+- Durable actions: atomic after-first-unlock command inbox, receipts that survive Undo, shared
+  commands, protected-store retry and queued-action UI.
+- Squats data: versioned SwiftData sessions, same-date daily history with active/paused durations,
+  next-calendar-boundary rollover on foreground, configurable goal (eight sets initially; zero turns
+  tracking off), deterministic current/best streak, versioned JSON export with validated restore, and
+  completed-history deletion.
+- Home auto-pause: staged When In Use → Always authorization, one monitored circular region in
+  protected storage excluded from backups, source-aware pause/resume, outside-Home choices, truthful
+  health, and edit/disable/delete. No continuous background-location mode.
+- Permissions and accessibility: authoritative notification/location authorization with
+  revoked-versus-denied wording, Settings routing from blocking alerts, Focus/Scheduled Summary
+  caveats, VoiceOver, Dynamic Type, Reduce Motion and Increased Contrast behavior.
+- Foreground reconciliation of preferences, notification settings, pending requests, the action
+  inbox, day data and the actual monitored Home region.
+- PageVault: copy-on-import library with covers and a Started shelf, a paged reader that crops each
+  page to its measured text, warm paper, the bookmark as your place, one Reading book at a time,
+  daily-goal streaks, and folder/JSON export with validated, conflict-aware restore.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
-  is feature-independent; `features/squats/` owns domain/data/services/UI and its store.
-  All compile into one Swift module. Extend these systems rather than recreating them.
+  is feature-independent; `features/squats/` and `features/pagevault/` own their domain, data,
+  services, UI and store. All compile into one Swift module. Extend these systems rather than
+  recreating them.
 - Android remains an untouched, unverified fallback; no parity or successful Android build claimed.
 
-Important limitations: build-4 actions passed cloud checks but still need physical acceptance; the existing
-downloaded build-3 preview has no action buttons. Build-5 daily/recovery source passed its cloud
-gate but has no downloaded or phone-tested artifact. Build-6 Home source passed the cloud gate but
-is not phone-verified. Build-7 dashboard/Settings-UI source passed its cloud gate (PR run #22) but
-is not phone-verified either. Build-8 source (revoked-vs-denied wording, dashboard automation-health
-icon, Dynamic Type hardening) passed its cloud gate (PR run #24) but is not phone-verified either.
-Rollover happens on the next app
-launch/foreground entry; the app does not claim a background midnight execution.
-Many unchecked TODOs are full-contract acceptance gates for partially implemented systems.
+Limits that still apply: simulator and cloud tests do not prove locked-device actions, real delivery,
+geofences, Focus, reboot, signing refresh, or how reading feels. Day rollover happens on the next
+launch or foreground entry; the app does not claim a background midnight execution.
 
 ## Build and device evidence
 
-PR #1 is merged into `main` as `1996004ea56353f53ef1bccde4366b2741e9f099`. Build-4 source
-`3cfea6176d43e79b8af899b579e0ac602b480715` passed
-[run #10](https://github.com/akshatksingh18/akshatos/actions/runs/33897588498): 20 domain assertions,
-24 integration tests, one hub/settings UI test, source/inventory/workflow checks, simulator/device
-compilation, IPA inspection and CI Gate. Documentation revision
-`ede1e492bedf8bfbc8c76fb938a3a0676aa97b32` passed PR run #11 and delivery run #12 with unchanged
-application source. Follow-up documentation preserves this evidence; inspect current PR checks
-when resuming. `cloud-build.md` owns exact source/hash/build records and manual install instructions.
-
-Build-6 source `3037348257938dcd545838a7b54d5bd53dafccd1` passed
-[PR run #18](https://github.com/akshatksingh18/akshatos/actions/runs/33972978593): 37 domain
-assertions, 34 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
-IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
-
-Build-7 source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed
-[PR run #22](https://github.com/akshatksingh18/akshatos/actions/runs/33979169339): 37 domain
-assertions, 39 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
-IPA inspection and CI Gate. An initial push of this feature (commit `58c6ff7`) failed run #21's UI
-test because the new Notifications settings section pushed a Data-management button below the
-Form's initial fold; the test was fixed to scroll once more before checking that section, and the
-corrected commit passed cleanly. The PR run intentionally did not upload an IPA.
-
-Build-8 source `81bc36b58814c69e174013219d577ad5a4699f4d` passed
-[PR run #24](https://github.com/akshatksingh18/akshatos/actions/runs/33981449101) on its first push:
-37 domain assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device
-compilation, IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
-
-Post-review correction source `d80653da39433815c1d12fb9470adb9417a6f819` passed
-[PR run #27](https://github.com/akshatksingh18/akshatos/actions/runs/33985917032): 37 domain
-assertions, 41 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
-IPA inspection and CI Gate. The PR run intentionally did not upload an IPA.
-
-Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` passed
-[PR run #32](https://github.com/akshatksingh18/akshatos/actions/runs/33999479820): 37 domain
-assertions, 45 integration/persistence tests, the hub/settings UI test, simulator/device compilation,
-IPA inspection and CI Gate. PR #1 merged it to `main`; the PR run intentionally did not upload an IPA.
-[Main delivery run #33](https://github.com/akshatksingh18/akshatos/actions/runs/34000405465)
-passed the complete pipeline for merge commit `1996004ea56353f53ef1bccde4366b2741e9f099` and uploaded
-the expected `akshatos-ios-33` artifact; it has not been downloaded or hash-verified locally.
-
-The last hash-verified build accepted for Squats daily use is **0.2.0 (13)** from main delivery run #58, at:
-`C:\Users\aksha\Downloads\akshatos-build-13\akshatos-ios-58\AkshatOS-unsigned.ipa`.
-Its SHA-256 is `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0`;
-checksum, identity, version/build, payload and screenshots passed local inspection. Build 12 is the
-retained accepted predecessor; Builds 11, 9 and 4 remain retained fallbacks. Builds 2 and 3 plus the obsolete standalone
-smoke artifact were sent to the Windows Recycle Bin and are recoverable until it is emptied.
-
-Build 10 exposed foreground/snooze defects after an uninstall-based update. Build 11 corrected
-countdown persistence. Build 12 is now installed over Build 11 without uninstalling and passes the
-targeted cadence, persistence, smooth-interaction and state-preservation checks, proving one same-ID
-update cycle. The wider device, refresh/recovery and soak matrix remains pending.
-Sideloadly is installed; use manual user-facing steps, not computer control. The previously helpful
+`cloud-build.md` owns every build record: source commits, runs, checksums, retained local artifacts
+and phone findings. Two facts matter when resuming: Build 13 is the last build accepted for Squats
+daily use, and one same-ID update without uninstalling has preserved app data (Build 12 over Build 11).
+Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Back up important history before risky deployment/recovery tests, and do not uninstall data-bearing builds.
 
 ## Recommended continuation order
 
-Build 13's implemented daily workflow and automated/cloud gates are accepted. Continue from that
-baseline without repeating installation or routine-use checks unless a later change affects them.
-The remaining explicit edge-case and deployment gates stay open.
-
-1. **Complete the remaining physical edge-case matrix:** Build 13 is installed and its implemented
-   daily workflow is accepted from ongoing use. Continue explicit locked/force-quit/reboot, permission,
+1. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
+   and record what the phone shows there and in `../book-reader/CLAUDE.md`. Fix defects before
+   calling any reader behavior working.
+2. **Complete the remaining Squats physical edge-case matrix:** locked/force-quit/reboot, permission,
    Focus/Scheduled Summary, picker/back, Undo/replay, summaries/recovery and Home-automation checks.
    Record actual results and fix defects; `architecture.md` owns durability limits.
-2. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
+3. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-3. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
@@ -229,11 +124,10 @@ freezes, achievements and extra places are not committed.
 
 Every feature/fix needs meaningful regression coverage. Register suites in
 `ios/tests/feature-tests.json`; run boundary and inventory checks plus relevant tests, then inspect
-the exact source commit's GitHub CI Gate before claiming cloud verification. Prefer feature branches
-and PRs. The public repository's `main` protection requires a strict/up-to-date `CI Gate`, applies
-to administrators, and disables force pushes/deletion. Docs-only PRs skip macOS but retain the gate.
-Real PR-trigger/failure-diagnostic paths have been exercised. Simulator tests do not prove locked
-actions, actual delivery, geofences, Focus, reboot or signing refresh.
+the exact source commit's GitHub CI Gate before claiming cloud verification. Verify job conclusions
+directly rather than trusting a watch command's exit status. Docs-only PRs skip macOS but retain the
+gate. Simulator tests do not prove locked actions, actual delivery, geofences, Focus, reboot or
+signing refresh.
 
 Keep this handoff, its index and source changes together when publishing. Commit/PR/check evidence
-belongs in `cloud-build.md`; no phone installation or signing state changed during source continuation.
+belongs in `cloud-build.md`.

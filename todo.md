@@ -1,196 +1,66 @@
 # TODO / known gaps
 
 This is current-state work, not a claim that either platform is already usable. The iPhone path is
-primary; Android remains a separate fallback scaffold.
+primary; Android remains a separate fallback scaffold. PageVault's gates live in
+`../book-reader/CLAUDE.md`; this file owns Squats and hub-wide gates.
+
+**Current focus:** Build 13 is accepted in ongoing daily phone use for Squats. The unchecked physical,
+release-cache and refresh items below stay open regardless of PageVault progress. Akshat deferred
+PageVault's physical testing to one end-of-implementation pass. Build evidence lives in `cloud-build.md`.
 
 ## iPhone-primary work
 
-- [x] **Verify the expanded CI pipeline on main.** Source checks, workflow lint, feature domains,
-      three SwiftData tests, hub/settings navigation, package inspection and `CI Gate` passed in
-      run #7; notification-action PR #1 also passed run #10. Real PR triggering and failure-diagnostic
-      download/correction are exercised (see `ci.md`).
-      The repository is temporarily public for hosted macOS CI capacity. GitHub confirms `main`
-      protection requiring strict/up-to-date `CI Gate`, including administrators, with force pushes
-      and deletion disabled. Docs-only PRs retain the gate and skip the macOS job; see `ci.md`.
-- [x] **Separate source-module responsibilities.** App composition/sole notification delegate,
-      metadata-only hub, shared design system, and isolated Squats source/test areas are implemented.
-      Boundary checks, domain/navigation tests and both builds pass; Build 9 is downloaded and
-      hash-verified. Physical verification remains pending in `cloud-build.md`.
-      These remain logical modules in one target; future media implementations are not included.
+### Done
 
-Current focus: Build 13 is the last build accepted for Squats daily use. Its manual-snooze replacement with 59
-pre-scheduled ten-minute nudges, foreground replenishment from the stable cadence anchor, and idle
-9:00 AM start invitation passed PR #15 run #57, main run #58, local artifact inspection and Akshat's
-ongoing phone use. Build 12 is the retained accepted predecessor. Continue the explicit physical
-edge-case and refresh/recovery matrix; optional Shortcuts remain follow-on work. Cloud/device
-evidence lives in `cloud-build.md`. PageVault's v1 reading loop is implemented in source and
-cloud-tested; its large-PDF gate passed on the phone, and the reader and library iterations since are
-not phone-verified. Its gates live in `../book-reader/CLAUDE.md`, and Akshat deferred
-the remaining physical testing to one end-of-implementation pass. ReelVault stays deferred. Squats'
-unchecked items below remain open regardless of PageVault progress.
+- [x] **Cloud pipeline and repository controls.** Source, inventory and workflow checks, registered
+      domain suites, hosted persistence tests, UI navigation, device build, IPA inspection and
+      `CI Gate` run on every PR; real PR triggering and failure diagnostics have been exercised. The
+      repository is temporarily public with strict `main` protection; `ci.md` owns the contract.
+- [x] **No-local-Mac smoke pipeline.** Cloud compile, package and checksum at `cc9fe46`, then
+      Sideloadly signing and physical launch of smoke build `0.1.0 (1)`. Not evidence for reminders,
+      same-ID upgrades or automatic refresh.
+- [x] **Hub identity and first hub build.** `akshatksingh18/akshatos` with the permanent
+      `com.akshatksingh18.akshatos`, history and Android preserved. Build 13 installs under that
+      identity, and its picker → Squats → back navigation is in daily use.
+- [x] **Module boundaries and host.** App composition owns the sole notification delegate, the hub is
+      display-only, and the shared design system and feature folders are isolated and enforced by
+      `check-boundaries.py`. Notifications and geofences stay at host scope with namespaced requests.
+- [x] **Product constants.** New installs start with an eight-set goal (zero opts out) and a
+      configurable 150-meter Home boundary; saved choices survive relaunch. Physical Home-radius
+      suitability stays in the phone matrix.
+- [x] **Dashboard, permissions and accessibility.** State hero with one countdown, sets and
+      goal/streak cards, contextual controls and a completion-only **Your day so far**. Authoritative
+      notification and location authorization with revoked-versus-denied wording, Settings routing,
+      Focus/Scheduled Summary caveats, VoiceOver, Dynamic Type, Reduce Motion and Increased Contrast.
+      Button interactions without vertical jumps are phone-confirmed.
+- [x] **Daily lifecycle and cadence.** Validated whole-minute interval, idempotent
+      Start/Pause/Resume/End, a persisted cadence anchor, and every Done — dashboard or notification —
+      starting a fresh full interval. Countdown persistence across background/force-close and the
+      Done reset are phone-confirmed.
+- [x] **Automatic overdue nudges and idle start invitation.** One normal reminder then 59 ten-minute
+      nudges with foreground replenishment, a Done/Pause category with legacy snooze payloads as
+      no-ops, and one repeating 9:00 AM invitation that never auto-starts. Akshat reports both working
+      in ongoing Build-13 use.
+- [x] **Actions, completed sets and local day data.** After-first-unlock atomic inbox, receipts that
+      survive Undo, one set per explicit Done, same-date daily history with durations and rollover,
+      versioned JSON export with validated restore, and completed-history deletion. Locked-device and
+      recovery acceptance stay in the matrix below.
+- [x] **Goal and streak engine.** Per-date goal snapshots, at-most-once qualification, an at-risk
+      current date, skipped dates as misses, prospective goal changes and deterministic
+      recomputation after Undo or past-day edits.
+- [x] **Opt-in Home auto-pause.** Staged authorization, one monitored circular region in protected
+      storage excluded from backups, pause-source guards, outside-Home choices, visible health and
+      edit/disable/delete, with no continuous tracking or movement trail.
+- [x] **Foreground reconciliation.** Preferences, notification settings, pending requests, the action
+      inbox, day data and the actual Home region are reconciled on launch and foreground return,
+      exposing repair or degraded states instead of a false Running state.
+- [x] **Logic and persistence tests.** Lifecycle, reconciliation, actions, permissions, summaries,
+      goal/streak boundaries, DST and time zones, Home guards, legacy decoding and protected-data
+      fallbacks are covered; `ci.md` owns the coverage description. Any future schema version must add
+      its own migration tests. Simulator tests do not replace hardware tests.
 
-- [x] **Select and implement hub identity/source transition.** Evolve the existing Git repository
-      into `akshatksingh18/akshatos`; keep history and Android. The source is temporarily public for
-      CI capacity. AkshatOS uses
-      `com.akshatksingh18.akshatos`; installation of Build 13 confirms physical provisioning under
-      this permanent identity.
-- [x] **Accept the first hub build.** Cloud compile/tests, IPA inspection/hash, and physical
-      picker → Squats → back navigation; verify reminders continue while the picker is shown.
-      Cloud domain/navigation tests, both builds and downloaded IPA inspection/hash passed. Build 13
-      is installed and Akshat reports using the implemented hub/Squats workflow successfully in
-      ongoing phone use. The broader device matrix remains separately open (see `cloud-build.md`).
+### Open
 
-- [x] **Prove the no-local-Mac smoke pipeline.** Cloud simulator/device compilation, packaging,
-      download, and checksum passed at commit `cc9fe46`; Sideloadly signing/install and physical
-      launch passed, with Akshat's screenshot showing smoke build `0.1.0 (1)`. This does not
-      verify reminders, a combined hub, same-ID upgrades, or automatic refresh.
-- [x] **Retire obsolete preview artifacts.** Build 13 plus its checksum, metadata and screenshots is
-      the installed current build; Build 12 is its retained accepted predecessor and retained Builds 11, 9 and
-      4 are fallbacks. Builds 2 and 3 and the
-      separate standalone smoke artifact were sent to the Windows Recycle Bin. A durable release
-      cache remains part of deployment acceptance after phone verification.
-- [x] **Choose the product constants before behavior acceptance.** New installs start with an
-      eight-completed-set daily goal and a configurable 150-meter Home boundary. Goal zero remains
-      an explicit opt-out and existing saved choices survive relaunch. Automated default/range tests
-      pass; physical Home-radius suitability remains part of the phone matrix rather than the choice.
-- [x] **Build the native hub host and Squats module in source.** The target/workflow and
-      picker/dashboard exist with reserved later modules and Android preserved. Notifications and
-      geofences remain at host scope and module data/requests are namespaced. Physical verification
-      remains in the first-hub-build and device-matrix gates.
-
-- [x] **Build the visual dashboard foundation.** Reusable colors/type/spacing/components, the state
-      hero and scheduled countdown, sets-completed card, daily-goal progress/current/best streak card,
-      contextual lifecycle controls, and Today timeline were already implemented. Build-7 source adds
-      per-state hero icons, an automation-health-aware Home settings section, VoiceOver labels/values
-      (a stable "next reminder around HH:MM" summary instead of a per-second announcement, combined
-      decorative icons hidden from the accessibility tree), `@ScaledMetric` Dynamic Type scaling for
-      the three fixed-size hero numerals, a Reduce-Motion-aware slower countdown tick, and an
-      Increased-Contrast-aware `Surface` border. Exact source `995e11f` passed PR run #22. Build-8
-      source adds an icon-based Home automation-health row on the main dashboard itself (previously a
-      plain muted line) and a shared `AdaptiveRow` component that stacks every remaining label/value
-      row vertically at accessibility Dynamic Type sizes instead of squeezing them; exact source
-      `81bc36b` passed PR run #24.
-- [x] **Deliver and physically verify the countdown-persistence correction.** Build 10 was installed
-      after uninstalling Build 9, so it did not prove same-ID data preservation. It correctly makes a
-      pending ten-minute deadline the main countdown and keeps **Your day so far** completion-only,
-      but phone testing found that foregrounding restarts that snooze clock and Done leaves it active.
-      Build 11 source persists both deadlines and makes snooze-related Done start a fresh full interval.
-      PR #10 run #34067380053 and main delivery run #49 passed 49 domain assertions, 61 XCTest cases,
-      the UI test, both builds, IPA inspection and `CI Gate`. Artifact `akshatos-ios-49` is downloaded
-      and checksum/package-verified. Phone testing confirms the displayed countdown survives leaving
-      and closing the app. Build 12 was installed over Build 11 without uninstalling; its phone tests
-      confirm the snooze countdown remains persistent and Done during a snooze begins a fresh full
-      interval while app state survives the same-ID update.
-- [x] **Cloud- and phone-verify regular cadence reset after every completed set.** Phone testing confirms that Build 11
-      leaves the existing 45-minute countdown running when Done +1 is tapped without a snooze. The
-      accepted behavior is that dashboard Done and notification Done both represent a set completed
-      now: record exactly one set, cancel any unresolved snooze, replace the recurring request, persist
-      a new cadence anchor, and show one full configured interval (45 minutes by default). Preserve
-      idempotency and retry safety; add tests for ordinary and snoozed Done, dashboard/notification
-      sources, persistence failure, duplicate callbacks and foreground/relaunch. This is an accepted
-      behavior change. Build 12 source `c5f787e` implements it; PR #12 run #34073932922 passed the
-      complete cloud gate. PR #12 merged as `061272f`; main delivery run #53 repeated the full gate,
-      and its downloaded IPA passed local inspection. Build 12 phone testing confirms Done during
-      both the ordinary cadence and a pending ten-minute nudge logs the set and starts a fresh full
-      interval; countdown persistence across background/force-close also remains intact.
-- [x] **Cloud- and phone-verify smooth button interactions without behavior changes.** Phone testing
-      reports a small vertical jump when buttons are tapped. Apply this polish consistently to every
-      interactive button on the dashboard, Settings, summaries and confirmation flows—not only Done,
-      snooze or lifecycle controls. The current views change several published values asynchronously
-      and conditionally insert/remove the busy indicator, helper/Undo row, countdown text and controls,
-      so SwiftUI recalculates card heights and the surrounding `ScrollView` shifts. Preserve stable
-      card/control geometry and scroll position, and use deliberate transitions where appropriate.
-      Acceptance requires no visible up/down jump for tap, working, success, failure or disabled-state
-      changes. Do not alter reminder cadence, action semantics, persistence, navigation, permissions,
-      accessibility behavior or any other functionality while making this presentation-only change.
-      Build 12 source `c5f787e` reserves stable busy/reminder/control/helper geometry, animates state
-      transitions with Reduce Motion respected, and keeps hidden controls out of hit testing and
-      accessibility. PR #12 run #34073932922 and main delivery run #53 passed compilation and UI
-      evidence, and the downloaded IPA screenshots passed visual inspection. Build 12 phone testing
-      confirms button interactions are smooth without the reported vertical jump and the associated
-      cadence/persistence behavior remains correct.
-- [x] **Implement permission/status UI.** Build-7 source replaces the boolean notification-allowed
-      flag and fragile Home-health string matching with authoritative `NotificationAuthorization`
-      (not-determined/authorized/provisional/ephemeral/denied) and `HomeAuthorization` (not-determined/
-      when-in-use/always/denied/restricted) enums tracked on `SquatStore`, adds a dedicated Settings
-      "Notifications" section covering every status plus Focus/Scheduled Summary/banner caveats, gives
-      Home auto-pause distinct denied/restricted/when-in-use explanations, and routes blocking alerts
-      to the correct Settings screen via a `SettingsRoute` rather than showing a bare OK button. Never
-      displays a false Running state. Exact source `995e11f` passed PR run #22. Build-8 source adds a
-      monotonic, UserDefaults-backed `notificationEverAuthorized`/`homeEverAuthorized` flag so a later
-      denial is phrased as a revocation ("turned off") instead of reusing first-request wording.
-      Correction source `d80653d` records provisional/alerts-disabled notification grants and When
-      In Use location grants, and proves both flags plus wording survive store recreation; run #27 passed.
-- [x] **Verify Build 13 automatic overdue nudges end to end.** Source schedules one normal reminder
-      followed by 59 ten-minute nudges, shows the nudge as the single main countdown after the normal
-      deadline, replenishes a low/drained batch from the persisted anchor, and makes Done/Pause/End
-      cancel the old batch. Done starts a fresh full interval. The manual snooze UI/category is gone;
-      legacy snooze payloads remain decode-safe no-ops. Pass PR/main CI, inspect the IPA/screenshots,
-      then verify ignored delivery, repeated delivery, Done and Pause on the physical phone. PR/main
-      CI and IPA/screenshot inspection passed. Akshat installed Build 13 and reports that the
-      automatic-nudge behavior works well in ongoing phone use.
-- [x] **Verify the idle 9:00 AM start invitation end to end.** Source schedules exactly one repeating
-      local 9:00 AM notification while no day is active and access exists, cancels it on Start, restores
-      it after End, and never auto-starts from a tap. Pass automated/cloud checks, then verify actual
-      delivery, tap-to-open, active-day suppression and time-zone behavior on the phone. Automated/
-      cloud and artifact checks passed. Akshat reports that Build 13's idle-start behavior works on
-      the phone in ongoing use.
-- [x] **Implement the daily lifecycle.** Validate whole minutes (default 45, minimum one), use a
-      bounded normal-plus-nudge batch, and make Start/Pause/Resume/End idempotent. Pause keeps the active
-      day, Resume starts a fresh interval, and End cancels active requests and finalizes it.
-- [x] **Implement actionable notifications and legacy-safe migration.** Register Done then Pause,
-      route them through shared commands, retire manual snooze without breaking old payload decoding,
-      and handle locked-device persistence and callback deadlines safely.
-      Source now includes ordered categories, a shared command path, after-first-unlock atomic inbox,
-      delivery receipts that survive Undo, busy-action draining, protected-store retry and matching
-      Pause cancellation. The action suite passed exact-source CI in run #10; physical
-      locked/force-quit/deadline acceptance remains open in `ci.md` and `cloud-build.md`.
-- [x] **Implement completed-set tracking.** Record one timestamped set per explicit Done action,
-      deduplicate callbacks, offer Undo, and never infer reps or notification-delivery counts.
-- [x] **Implement local day data and overview.** Add versioned session/event persistence, pause
-      segments, snooze events, Today timeline, End-my-day summary, lightweight daily history, local
-      midnight/time-zone handling, migration coverage, and explicit history deletion.
-      Build-5 source now groups same-date sessions, derives active/paused duration and event detail,
-      closes stale days at the next local calendar boundary on foreground, and provides versioned
-      JSON export/validated restore plus completed-history deletion. Exact-source CI passed in
-      PR run #14; physical recovery acceptance remains open.
-- [x] **Implement the daily goal and streak engine.** Store the goal used for each local date, qualify
-      at most once from explicit non-undone Done events, derive current/best streak, keep the current
-      date at risk until rollover, treat skipped post-activation dates as missed, apply goal changes
-      prospectively, and recompute safely after Undo or past-day edits.
-      Build-6 source adds same-day goal-change, pre-activation neutral-date, future-clock-date and
-      Home-independent streak regression cases; exact-source cloud tests pass and physical calendar
-      acceptance remains open.
-- [x] **Implement opt-in Home auto-pause.** Add explanatory staged When In Use → Always authorization,
-      one-shot Home selection plus map/radius confirmation, one stable monitored circular region,
-      protected this-device-only boundary storage, pause-reason guards, duplicate/jitter handling,
-      deliberate-pause precedence, outside-Home Start/Resume handling, launch reconciliation, visible
-      automation health, and edit/disable/delete. Never continuously track location or persist a
-      movement trail.
-      Build-6 source implements this contract without continuous background-location mode and keeps
-      Home coordinates out of device backups and backup exports. Exact-source cloud tests pass; physical geofence
-      acceptance remains open.
-- [x] **Implement foreground reconciliation.** Compare persisted SwiftData session intent, idle
-      `UserDefaults` preferences, actual notification settings,
-      recurring/snooze requests, pending action inbox, day data, and Home-region configuration on
-      launch/foreground return; cancel stale requests and expose reminder or geofence repair/degraded
-      states. Exact source `8c1cc96` canonicalizes invalid idle settings, removes foreign/malformed
-      snoozes without moving a healthy cadence, requires a usable matching recurring request, and
-      compares/replaces the actual system Home circle while resetting stale presence. Run #32 passed
-      37 domain assertions, 45 integration/persistence tests, one UI test, both builds, IPA inspection
-      and `CI Gate`; PR #1 merged it to `main`.
-- [x] **Add logic and persistence tests.** Cover lifecycle transitions, interval validation, state
-      reconciliation, action deduplication, permission transitions, snooze replacement, summary
-      derivation, goal/streak boundaries, skipped dates, same-day sessions, Undo/past edits,
-      prospective goal changes, day/DST/time-zone boundaries, geofence pause-source guards and
-      duplicate events, migrations, and protected-data fallback. Simulator tests do not replace
-      hardware tests. Build-9 source expands the suite to 47 domain assertions, 55 integration/
-      persistence tests and one UI test, including chosen defaults, idempotent lifecycle, schedule-
-      failure recovery, exact request repair, stale-request/snooze cleanup, alerts-disabled handling,
-      Home degraded/disable paths, spring/fall DST and time-zone ownership. Current-schema legacy
-      decoding, malformed payloads, atomic replacement and protected-data fallbacks remain covered;
-      any future schema version must add its own migration tests. Exact Build-9 source/documentation
-      head passed PR #4 run #37; physical acceptance remains pending.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,
       automatic overdue nudges and legacy-snooze migration,
@@ -203,11 +73,9 @@ unchecked items below remain open regardless of PageVault progress.
       duplicate native-plus-Shortcut callbacks, and disabled/failure behavior as backup/alternate
       triggers.
 - [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
-      version/source/hash, and cache current plus previous known-good artifacts on Windows.
-      Build 13 passed main delivery run #58, is downloaded with matching checksum/package checks,
-      and is installed and accepted for ongoing daily use. Build 12 is the retained accepted
-      predecessor. Durable current/previous release-cache promotion and the remaining deployment
-      evidence are still required before closing this gate.
+      version/source/hash, and cache current plus previous known-good artifacts on Windows. Verified
+      builds currently sit in per-build `Downloads` folders listed in `cloud-build.md`; durable
+      current/previous release-cache promotion is still required before closing this gate.
 - [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
       and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
       recovery, and pass multiple cycles without uninstalling.
@@ -228,37 +96,12 @@ unchecked items below remain open regardless of PageVault progress.
 
 - Configurable repetitions per set and actual total-rep tracking.
 - Streak freezes/grace days, broader achievements, deeper charts, or shareable summaries.
-- More snooze durations, an optional end-of-day prompt, or scheduled quiet window.
+- Configurable nudge spacing, an optional end-of-day prompt, or a scheduled quiet window.
 - Multiple saved places/geofences, multiple profiles/schedules, HealthKit, or a widget remain out of
   scope unless Akshat explicitly expands the one-purpose product after the core is reliable.
-
-## First-slice source coverage (not acceptance)
-
-Implemented source covers visual dashboard, permission/reconciliation, lifecycle, Done/Undo,
-dashboard/notification snooze, durable notification Done/Pause actions, SwiftData session storage/recent session overview, and configurable goals/streaks.
-The unchecked items above describe remaining full-contract implementation and acceptance, not an
-instruction to create second copies of those systems. Cloud domain assertions cover event dedup,
-round-trip encoding, streak threshold/aggregation/Undo/skipped dates and DST. Action service/persistence
-integration tests now pass; remaining full-contract scenarios and physical evidence are required
-before closing the larger gates. The cloud UI test covers
-picker → dashboard → back navigation and captures both screens; it does not test reminder delivery.
-Build-7 source adds five integration tests covering notification/Home authorization tracking and
-`SettingsRoute` message routing (37 domain assertions, 39 integration/persistence tests, one UI test
-in the registered suite) plus one new UI-test assertion for the Notifications settings section;
-exact source `995e11fd64e074eb7810f0ab1b8acfe47eee9866` passed PR run #22. Build-8 source adds two
-more integration tests covering the revoked-vs-denied wording for both notification and Home
-authorization (37 domain assertions, 41 integration/persistence tests, one UI test). Correction source
-`d80653da39433815c1d12fb9470adb9417a6f819` strengthens those same tests across store recreation,
-fixes their grant semantics, and verifies Home backup exclusion; PR run #27 passed.
-Foreground-reconciliation source `8c1cc96` adds four integration tests for persisted preference
-repair, valid/foreign snooze handling, and mismatched Home-boundary replacement. PR run #32 passed
-37 domain assertions, 45 integration/persistence tests and one UI test before PR #1 merged.
-Build-9 application source `e999ed2` adds ten integration tests and ten domain assertions across
-defaults, lifecycle, repair, permissions, snooze cleanup, Home degradation/disable, DST/time-zone
-and recovery behavior; it also extends the UI test over the chosen goal and permission/Home status.
 
 ## Documentation synchronization
 
 When an item changes product/platform behavior, notification/location permissions, streak rules, or
 becomes implemented/verified, update `features.md`, `README.md`, `architecture.md`, and `CLAUDE.md`
-in the same change; remove or rewrite the item rather than appending a dated progress log.
+in the same change; rewrite the item rather than appending a dated progress log.

@@ -1,27 +1,11 @@
 # AkshatOS and Squats architecture
 
-**State:** Native hub/Squats lifecycle, actions, history, Home automation, foreground
-reconciliation, chosen defaults and the expanded native-v1 regression suite are implemented.
-Exact Build-9 verification passed in PR #4 run #37. Build 10 implements snooze-first countdown
-priority, a completion-only dashboard timeline and a persisted regular cadence anchor; PR #7 and
-main run #43 passed. Device testing then exposed that the snooze deadline still came from an unstable
-reconstructed trigger and that Done left the nudge active. Build 11 source persists the snooze
-deadline and resets cadence after a snooze-related Done. PR #10 merged as `8b5b8c4`; main delivery
-run #49 passed the complete gate and its Build-11 artifact passed local checksum/package inspection.
-Build 12 source `c5f787e` makes every running Done replace the recurring cadence and stabilizes
-transient dashboard geometry; PR #12 run #34073932922 and main delivery run #53 passed the complete
-cloud gate, and the downloaded IPA passed local inspection. Build 12 then passed the listed physical
-cadence, persistence, smooth-interaction and same-ID state-preservation checks; the broader device,
-refresh/recovery and soak matrix remains open.
-Build 13 source replaces manual snooze with 59 pre-scheduled ten-minute automatic nudges after the
-normal due time and adds one repeating 9:00 AM idle start invitation. Foreground reconciliation
-replenishes the bounded active batch from its persisted anchor; Done/Pause cancel it, and Done
-starts a fresh full interval. PR #15 run #57 and main run #58 passed the full gate; the downloaded
-IPA passed local inspection. Akshat installed Build 13 and reports that its implemented daily
-workflow, including automatic nudges and the idle-start behavior, works well in ongoing phone use.
-The broader edge-case, refresh/recovery and soak matrix remains open.
-The remaining full-product contract below is not all implemented, and cloud checks cannot establish
-real device behavior.
+**State:** The native hub and Squats v1 — lifecycle with bounded automatic nudges and the idle
+9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
+chosen defaults — are implemented, and Build 13 is accepted in ongoing daily phone use; the broader
+edge-case, refresh/recovery and soak matrix remains open. The remaining full-product contract below
+is not all implemented, and cloud checks cannot establish real device behavior. PageVault's technical
+plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation
 

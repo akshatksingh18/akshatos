@@ -6,40 +6,13 @@ PageVault is the activated next module — its scope, phases, and progress are o
 later; WHOOP stays standalone. This repository evolved
 from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
 
-**Status:** Building — the native Squats lifecycle, notification actions, dashboard/Settings UI,
-daily history/recovery, Home auto-pause and foreground reconciliation are implemented. Build-9
-application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` chooses configurable defaults of
-eight completed sets and a 150-meter Home boundary, expands the native-v1 regression suite, and
-repairs a repeating request that has no next fire date instead of incorrectly treating it as
-healthy. PR #4 is merged, and main delivery run #39 produced the downloaded, checksum-verified
-Build-9 IPA. Phone testing confirmed notification/location prompts and exposed countdown resets
-after leaving the app. Build 10 fixed the regular clock but phone testing showed its ten-minute
-clock still reset on foreground, and Done left that pending nudge active. Build 11 persists both
-deadlines and makes Done resolve a snooze into a fresh full interval. PR #10 merged as
-`8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`; main delivery run #49 passed the complete cloud gate,
-and its Build-11 IPA is downloaded and independently verified. Phone testing confirms the displayed
-countdown now survives leaving and closing the app, while ordinary Done still did not reset it.
-Build 12 source `c5f787efb628cf63531c57e4cf9478edf5d8731b` resets every running Done to a
-full interval and stabilizes button-state layout without changing actions. PR #12 run
-#34073932922 passed 49 domain assertions, 63 integration/persistence tests, the UI test, both
-builds, IPA inspection and `CI Gate`. PR #12 merged as `061272f`; main delivery run #53 repeated
-the complete gate and its Build-12 IPA passed local checksum/package/screenshot inspection. Akshat
-installed Build 12 over Build 11 without uninstalling and confirmed preserved settings, permissions,
-Home configuration and history; persistent background/force-quit countdowns; fresh full intervals
-after ordinary and snoozed Done; and smooth button interactions without vertical jumps. The broader
-physical, refresh/recovery and soak matrix remains pending. Build 13 implements the accepted
-follow-up: after the normal interval becomes due, pre-scheduled local notifications nudge
-every ten minutes until Done or Pause, while Done restarts the full interval; the manual snooze
-button/action is retired. When no day is active and notification access exists, one repeating
-9:00 AM local notification invites the user to open AkshatOS and start, without auto-starting a day.
-PR #15 run #57 and main run #58 passed the complete gate; the Build-13 IPA is downloaded and passed
-checksum/package/screenshot inspection. Akshat installed Build 13 and reports that its implemented
-phone workflow works well in ongoing daily use, including the automatic-nudge and idle-start
-behavior introduced by this build. Build 13 is the current installed, accepted build; the broader
-edge-case, refresh/recovery and multi-cycle soak matrix remains pending. The
-removed standalone smoke app proved
-the earlier toolchain only. The full target feature contract below is not a claim that every
-feature is physically verified.
+**Status:** Building. Squats' native v1 — lifecycle, notification actions, dashboard/Settings UI,
+daily history and recovery, Home auto-pause and foreground reconciliation — is implemented, and
+Build 13 is accepted in ongoing daily phone use; its edge-case, refresh/recovery and multi-cycle soak
+matrix remains open. PageVault is implemented in source through export/restore and page fitting and
+awaits one end-of-implementation device pass (`../book-reader/CLAUDE.md`). `cloud-build.md` owns build
+evidence and the working source version; `todo.md` owns open gates. The full target contract below is
+not a claim that every feature is physically verified.
 
 ## Files
 
@@ -92,12 +65,13 @@ feature is physically verified.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
-  reading status, the place marker, the daily-goal streak engine, the margin-trim geometry, and the
-  export manifest with restore planning), `data/` (versioned SwiftData store, streamed
-  copy-on-import storage, export staging, disposable cover cache), `services/` (import-time PDFKit
-  inspection, cover rendering and ink-bounds measurement), `ui/` (library grid, paged reader, book
-  sheet, backup sheet). Product scope and gates are owned by `../book-reader/`.
-  Its large-PDF gate passed on device; the reader iterations that followed are not phone-verified.
+  reading status, the place marker, the daily-goal streak engine, page-fitting geometry and ink
+  scanning, and the export manifest with restore planning), `data/` (versioned SwiftData store,
+  streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
+  `services/` (import-time PDFKit inspection, cover rendering and whole-book ink measurement), `ui/`
+  (library grid, paged reader with its fitting screen, book sheet, backup sheet). Product scope and
+  gates are owned by `../book-reader/`. Its large-PDF gate passed on device; the reader iterations
+  that followed are not phone-verified.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
@@ -105,6 +79,9 @@ feature is physically verified.
 - `ios/UnitTests/PageVaultBackupTests.swift` — real-file export/restore: full export into a fresh
   library, reading data onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus
   replace against a live library, and malformed or mis-picked exports.
+- `ios/UnitTests/PageVaultLayoutTests.swift` — page fitting on generated PDFs: every page measured and
+  cropped on all four sides, a wide figure never clipped, a full-page scan left untouched, the
+  measurement reused after relaunch and removed with its book, and crop boxes applied in points.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.
