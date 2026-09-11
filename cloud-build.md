@@ -3,8 +3,9 @@
 **State:** Builds come only from the GitHub Actions macOS workflow and are verified on Windows before
 handover. Build 13 is the accepted Squats daily-use baseline, and **Build 20 is installed and accepted
 for PageVault's reading loop**: page fitting, bookmark restore, warm paper, paged swiping and a
-full-library export all passed on the phone. Build 21 removes reading streaks. This file owns build
-and device evidence.
+full-library export all passed on the phone. Build 21 removes reading streaks and adds highlights,
+full-text search, page themes and an opt-in page curl; it passed the cloud gate but has deliberately
+not been built into an artifact yet. This file owns build and device evidence.
 
 ## Current identity and artifact
 
