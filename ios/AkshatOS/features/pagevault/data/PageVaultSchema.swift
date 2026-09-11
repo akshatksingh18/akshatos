@@ -23,13 +23,15 @@ enum PageVaultSchemaV1: VersionedSchema {
         }
     }
 
+    /// Left over from the removed reading-streak feature. The model stays declared so a store
+    /// written by an installed build still opens without a schema migration; nothing writes these
+    /// rows any more and `purgeReadingDays()` deletes the ones already there.
     @Model final class SavedReadingDay {
-        /// One row per book per local day, keyed by the domain's own composite identifier.
         @Attribute(.unique) var key: String
         var payload: Data
-        init(_ day: PageVaultReadingDay) throws {
-            key = day.id
-            payload = try JSONEncoder().encode(day)
+        init(key: String, payload: Data) {
+            self.key = key
+            self.payload = payload
         }
     }
 }

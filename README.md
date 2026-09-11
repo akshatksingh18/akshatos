@@ -5,9 +5,10 @@ or **PageVault** for its PDF library. ReelVault is reserved for later and WHOOP 
 
 **Current state:** Squats v1 — notification actions, daily history, local recovery, Home auto-pause
 and goal/streak handling — is implemented, and Build 13 is accepted in ongoing daily phone use; its
-edge-case, refresh/recovery and soak matrix remains open. PageVault's library, paged reader, reading
-streaks, export/restore and page fitting are implemented; its large-PDF import passed on the phone,
-and the reader builds since then await one device pass. Bundle ID `com.akshatksingh18.akshatos`.
+edge-case, refresh/recovery and soak matrix remains open. PageVault's library, paged reader with page
+fitting, bookmarks and export/restore are implemented, and its reading loop is confirmed on the phone
+as of Build 20; reading streaks were built and then removed at Akshat's request. Bundle ID
+`com.akshatksingh18.akshatos`.
 The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
 open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.
 

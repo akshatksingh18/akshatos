@@ -14,9 +14,11 @@ struct PageVaultBackupSheet: View {
     @State private var notice: String?
     @State private var working = false
 
+    /// Empty until there is something to size, so an empty library does not advertise "Zero KB".
     private var librarySize: String {
-        ByteCountFormatter.string(fromByteCount: store.books.reduce(Int64(0)) { $0 + $1.byteCount },
-                                  countStyle: .file)
+        guard !store.books.isEmpty else { return "" }
+        let bytes = store.books.reduce(Int64(0)) { $0 + $1.byteCount }
+        return " (\(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)))"
     }
 
     var body: some View {
@@ -36,7 +38,7 @@ struct PageVaultBackupSheet: View {
                 } header: {
                     Text("Export")
                 } footer: {
-                    Text("The full export is a folder with every PDF (\(librarySize)) and a manifest. Reading data is one small file of places, statuses, goals and streak history that restores onto PDFs you add again. Uninstalling AkshatOS deletes PageVault's copies, so keep a full export somewhere else first.")
+                    Text("The full export is a folder with every PDF\(librarySize) and a manifest. Reading data is one small file of places and statuses that restores onto PDFs you add again. Uninstalling AkshatOS deletes PageVault's copies, so keep a full export somewhere else first.")
                 }
                 Section {
                     Button { showImporter = true } label: {
@@ -92,7 +94,7 @@ struct PageVaultBackupSheet: View {
             if prepared.plan.matches.isEmpty {
                 Button("Restore") { restore(prepared, mode: .addMissing) }
             } else {
-                Button("Replace their place and history", role: .destructive) {
+                Button("Replace their place and status", role: .destructive) {
                     restore(prepared, mode: .replaceMatching)
                 }
                 if !prepared.plan.additions.isEmpty {
@@ -158,7 +160,7 @@ struct PageVaultBackupSheet: View {
             lines.append("Adds \(books(plan.additions.count)) with their PDFs.")
         }
         if !plan.matches.isEmpty {
-            lines.append("Already in your library: \(books(plan.matches.count)). Replacing gives them this export's place, status, goal and reading history, and their current ones are lost.")
+            lines.append("Already in your library: \(books(plan.matches.count)). Replacing gives them this export's place and status, and their current ones are lost.")
         }
         if !plan.missingDocuments.isEmpty {
             lines.append("\(books(plan.missingDocuments.count)) not in your library cannot come back without their PDFs.")

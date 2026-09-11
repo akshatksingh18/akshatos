@@ -19,7 +19,6 @@ struct PageVaultLibraryView: View {
                 if store.books.isEmpty {
                     emptyState
                 } else {
-                    streakCard
                     continueReading
                     // Half-read books get their own shelf rather than sitting among unopened ones.
                     shelf("Started", books: store.startedBooks)
@@ -67,7 +66,7 @@ struct PageVaultLibraryView: View {
             }
             Button("Keep", role: .cancel) { pendingRemoval = nil }
         } message: {
-            Text("This deletes only PageVault's copy, your place, bookmarks and streak history for it. Your original file is untouched.")
+            Text("This deletes only PageVault's copy and your place in it. Your original file is untouched.")
         }
     }
 
@@ -107,45 +106,6 @@ struct PageVaultLibraryView: View {
         .accessibilityIdentifier("pagevault-empty-state")
     }
 
-    @ViewBuilder private var streakCard: some View {
-        let streak = store.streak
-        Surface {
-            AdaptiveRow {
-                Label("\(streak.current) day streak", systemImage: "flame")
-                    .font(.system(.headline, design: .rounded))
-                    .foregroundStyle(streak.current > 0 ? Palette.lime : Palette.muted)
-            } trailing: {
-                Text(streak.best > 0 ? "Best \(streak.best)" : "No streak yet")
-                    .font(.caption).foregroundStyle(Palette.muted)
-            }
-            if streak.todayGoal > 0 {
-                ProgressView(value: Double(min(streak.todayPagesRead, streak.todayGoal)),
-                             total: Double(streak.todayGoal))
-                    .tint(Palette.lime)
-                Text(streak.todayMet
-                     ? "Today is done: \(streak.todayPagesRead) of \(streak.todayGoal) pages."
-                     : "\(streak.todayPagesRead) of \(streak.todayGoal) pages bookmarked today.")
-                    .font(.caption).foregroundStyle(streak.isAtRisk ? Palette.muted : Palette.lime)
-                    .accessibilityIdentifier("streak-today")
-            } else {
-                Text(store.current == nil
-                     ? "Bookmark a page while reading and that book becomes the one you are reading."
-                     : "Set a daily page goal to start a streak. Pages count from your bookmark to your next one.")
-                    .font(.caption).foregroundStyle(Palette.muted)
-            }
-            if let current = store.current {
-                let goalLabel = current.dailyPageGoal.map { "\($0) pages a day · change" }
-                    ?? "Set a daily page goal"
-                Button { detail = current } label: {
-                    Label(goalLabel, systemImage: "target")
-                }
-                .buttonStyle(ActionStyle())
-                .accessibilityIdentifier("set-daily-goal")
-            }
-        }
-        .accessibilityIdentifier("streak-card")
-    }
-
     @ViewBuilder private var continueReading: some View {
         if let book = store.current {
             VStack(alignment: .leading, spacing: 12) {
@@ -163,10 +123,6 @@ struct PageVaultLibraryView: View {
                                 Text(book.progressLabel)
                                     .font(.caption.monospacedDigit()).foregroundStyle(Palette.lime)
                                 ProgressView(value: book.progressFraction).tint(Palette.lime)
-                                if let goal = book.dailyPageGoal {
-                                    Text("\(goal) pages a day").font(.caption2)
-                                        .foregroundStyle(Palette.muted)
-                                }
                             }
                         }
                     }

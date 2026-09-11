@@ -20,13 +20,10 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
     var placeSetAt: Date? = nil
     var status: PageVaultReadingStatus = .wantToRead
     var statusChangedAt: Date? = nil
-    /// Pages per day required for this book to count toward the streak. Nil means untracked.
-    var dailyPageGoal: Int? = nil
 
     init(id: UUID = UUID(), fingerprint: String, title: String, pageCount: Int, byteCount: Int64,
          addedAt: Date, lastOpenedAt: Date? = nil, currentPage: Int = 0, placeSetAt: Date? = nil,
-         status: PageVaultReadingStatus = .wantToRead, statusChangedAt: Date? = nil,
-         dailyPageGoal: Int? = nil) {
+         status: PageVaultReadingStatus = .wantToRead, statusChangedAt: Date? = nil) {
         self.id = id
         self.fingerprint = fingerprint
         self.title = title
@@ -38,12 +35,11 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         self.placeSetAt = placeSetAt
         self.status = status
         self.statusChangedAt = statusChangedAt
-        self.dailyPageGoal = dailyPageGoal
     }
 
     enum CodingKeys: String, CodingKey {
         case id, fingerprint, title, pageCount, byteCount, addedAt, lastOpenedAt, currentPage
-        case placeSetAt, status, statusChangedAt, dailyPageGoal
+        case placeSetAt, status, statusChangedAt
     }
 
     /// Decoded field by field rather than by the synthesized initializer, which ignores property
@@ -63,7 +59,6 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         status = try container.decodeIfPresent(PageVaultReadingStatus.self, forKey: .status)
             ?? .wantToRead
         statusChangedAt = try container.decodeIfPresent(Date.self, forKey: .statusChangedAt)
-        dailyPageGoal = try container.decodeIfPresent(Int.self, forKey: .dailyPageGoal)
     }
 
     /// A persisted page can outlive the page count it was valid for, so every read clamps.
@@ -86,8 +81,6 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         guard hasPlace, pageCount > 1 else { return 0 }
         return Double(resolvedPage()) / Double(pageCount - 1)
     }
-
-    var activeGoal: Int { status == .reading ? max(0, dailyPageGoal ?? 0) : 0 }
 
     func isPlace(page: Int) -> Bool { hasPlace && resolvedPage(page) == resolvedPage() }
 
@@ -187,15 +180,6 @@ struct PageVaultLibrary: Codable, Equatable {
             changed.append(books[index])
         }
         return changed
-    }
-
-    /// A goal of zero or nil clears tracking rather than storing an unreachable target.
-    @discardableResult
-    mutating func setDailyGoal(_ goal: Int?, for id: UUID) -> PageVaultBook? {
-        guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
-        let sanitized = (goal ?? 0) > 0 ? goal : nil
-        books[index].dailyPageGoal = sanitized
-        return books[index]
     }
 
     @discardableResult

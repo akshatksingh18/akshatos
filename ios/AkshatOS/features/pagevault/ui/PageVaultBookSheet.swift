@@ -7,7 +7,6 @@ struct PageVaultBookSheet: View {
     let bookID: UUID
 
     @Environment(\.dismiss) private var dismiss
-    @State private var goal = 0
 
     private var book: PageVaultBook? { store.book(id: bookID) }
 
@@ -17,7 +16,6 @@ struct PageVaultBookSheet: View {
                 if let book {
                     List {
                         statusSection(book)
-                        goalSection(book)
                         placeSection(book)
                         detailsSection(book)
                     }
@@ -32,7 +30,6 @@ struct PageVaultBookSheet: View {
                 ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } }
             }
         }
-        .onAppear { goal = book?.dailyPageGoal ?? 0 }
     }
 
     private func statusSection(_ book: PageVaultBook) -> some View {
@@ -55,23 +52,6 @@ struct PageVaultBookSheet: View {
                 Text("Only one book is Reading at a time. Choosing Reading here moves the current one back to Want to read.")
                     .font(.caption).foregroundStyle(Palette.muted)
             }
-        }
-    }
-
-    private func goalSection(_ book: PageVaultBook) -> some View {
-        Section("Daily page goal") {
-            Stepper(value: $goal, in: 0...200, step: 1) {
-                Text(goal > 0 ? "\(goal) pages a day" : "No goal")
-                    .monospacedDigit()
-            }
-            .accessibilityIdentifier("daily-page-goal")
-            .onChange(of: goal) { _, value in
-                store.setDailyGoal(value > 0 ? value : nil, for: book)
-            }
-            Text(book.status == .reading
-                 ? "Reading this many pages counts today toward your streak."
-                 : "The goal starts counting once this book is the one you are Reading.")
-                .font(.caption).foregroundStyle(Palette.muted)
         }
     }
 

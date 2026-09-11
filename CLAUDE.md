@@ -65,7 +65,7 @@ not a claim that every feature is physically verified.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
-  reading status, the place marker, the daily-goal streak engine, page-fitting geometry and ink
+  reading status, the place marker, page-fitting geometry and ink
   scanning, and the export manifest with restore planning), `data/` (versioned SwiftData store,
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering and whole-book ink measurement), `ui/`
@@ -75,7 +75,7 @@ not a claim that every feature is physically verified.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
-  removal, the single-Reading-book invariant, daily-goal progress and cover generation.
+  removal, the single-Reading-book invariant and cover generation.
 - `ios/UnitTests/PageVaultBackupTests.swift` — real-file export/restore: full export into a fresh
   library, reading data onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus
   replace against a live library, and malformed or mis-picked exports.

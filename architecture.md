@@ -100,7 +100,7 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
 - `ios/UnitTests/`: hosted SwiftData integration tests. The test inventory, CI gate, diagnostics,
   and merge-enforcement limitations are defined in `ci.md`; tests do not ship in the IPA.
 - `ios/AkshatOS/features/pagevault/`: store plus `domain/` (Foundation-only book/library logic,
-  reading status, the place marker and the daily-goal streak engine), `data/` (versioned SwiftData
+  reading status, the place marker and page-fitting geometry), `data/` (versioned SwiftData
   store for books and reading days, the streamed copy-on-import file storage, and the disposable
   cover cache), `services/` (the only import-time PDFKit inspection and cover rendering), and `ui/`
   (library grid, paged `PDFView` reader, book sheet). Its scope, gates, and locked decisions belong

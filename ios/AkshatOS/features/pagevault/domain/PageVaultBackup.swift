@@ -23,21 +23,19 @@ struct PageVaultBackup: Codable, Equatable {
     let createdAt: Date
     let includesDocuments: Bool
     let entries: [PageVaultBackupEntry]
-    let days: [PageVaultReadingDay]
 
     init(version: Int = PageVaultBackup.currentVersion, createdAt: Date, includesDocuments: Bool,
-         entries: [PageVaultBackupEntry], days: [PageVaultReadingDay]) {
+         entries: [PageVaultBackupEntry]) {
         self.version = version
         self.createdAt = createdAt
         self.includesDocuments = includesDocuments
         self.entries = entries
-        self.days = days
     }
 
-    /// Snapshots a library. Reading days are kept only for books in it, and every document gets a
-    /// readable file name that stays unique even when two books share a title.
-    init(createdAt: Date, library: PageVaultLibrary, days: [PageVaultReadingDay],
-         includesDocuments: Bool) {
+    /// Snapshots a library. Every document gets a readable file name that stays unique even when
+    /// two books share a title. An export written before reading streaks were removed also carries
+    /// per-day rows; they are simply ignored when it is read back.
+    init(createdAt: Date, library: PageVaultLibrary, includesDocuments: Bool) {
         let ordered = library.books.sorted {
             ($0.addedAt, $0.id.uuidString) < ($1.addedAt, $1.id.uuidString)
         }
@@ -55,9 +53,7 @@ struct PageVaultBackup: Codable, Equatable {
             used.insert(path.lowercased())
             made.append(PageVaultBackupEntry(book: book, file: path))
         }
-        let known = Set(library.books.map(\.id))
-        self.init(createdAt: createdAt, includesDocuments: includesDocuments, entries: made,
-                  days: days.filter { known.contains($0.bookID) }.sorted { $0.id < $1.id })
+        self.init(createdAt: createdAt, includesDocuments: includesDocuments, entries: made)
     }
 
     /// Whole-file validation: a manifest is accepted completely or not at all, before anything in
@@ -74,8 +70,8 @@ struct PageVaultBackup: Codable, Equatable {
         }
         for entry in entries {
             let book = entry.book
-            guard PageVaultBackup.isDigest(book.fingerprint), book.pageCount > 0, book.byteCount > 0,
-                  (book.dailyPageGoal ?? 1) > 0 else {
+            guard PageVaultBackup.isDigest(book.fingerprint), book.pageCount > 0,
+                  book.byteCount > 0 else {
                 throw PageVaultBackupError.inconsistentLibrary
             }
             if includesDocuments {
@@ -89,15 +85,6 @@ struct PageVaultBackup: Codable, Equatable {
         // Compared case-insensitively because the export may land on a case-insensitive disk.
         let files = entries.compactMap(\.file).map { $0.lowercased() }
         guard Set(files).count == files.count else { throw PageVaultBackupError.inconsistentLibrary }
-
-        let ids = Set(books.map(\.id))
-        guard Set(days.map(\.id)).count == days.count,
-              days.allSatisfy({ day in
-                  ids.contains(day.bookID) && PageVaultBackup.isDayKey(day.day) && day.goal >= 0
-                      && day.startPage >= -1 && day.highestPage >= day.startPage
-              }) else {
-            throw PageVaultBackupError.inconsistentHistory
-        }
         return self
     }
 
@@ -158,18 +145,6 @@ struct PageVaultBackup: Codable, Equatable {
         return value.unicodeScalars.count == 64 && value.unicodeScalars.allSatisfy(hex.contains)
     }
 
-    static func isDayKey(_ value: String) -> Bool {
-        let parts = value.split(separator: "-", omittingEmptySubsequences: false)
-        guard value.count == 10, parts.count == 3, parts[0].count == 4, parts[1].count == 2,
-              parts[2].count == 2,
-              parts.allSatisfy({ $0.unicodeScalars.allSatisfy { (48...57).contains($0.value) } }),
-              let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2]) else {
-            return false
-        }
-        var gregorian = Calendar(identifier: .gregorian)
-        gregorian.timeZone = TimeZone(identifier: "UTC")!
-        return DateComponents(calendar: gregorian, year: year, month: month, day: day).isValidDate
-    }
 }
 
 private struct PageVaultBackupVersionProbe: Decodable {
@@ -181,7 +156,6 @@ enum PageVaultBackupError: LocalizedError, Equatable {
     case invalidFile
     case tooLarge
     case inconsistentLibrary
-    case inconsistentHistory
     case folderRequired
     case missingDocument(title: String)
     case documentMismatch(title: String)
@@ -201,8 +175,6 @@ enum PageVaultBackupError: LocalizedError, Equatable {
             return "This file is too large to be a PageVault export."
         case .inconsistentLibrary:
             return "This export's book list is inconsistent, so nothing was restored."
-        case .inconsistentHistory:
-            return "This export's reading history is inconsistent, so nothing was restored."
         case .folderRequired:
             return "This export includes its PDFs. Choose the whole export folder, not the manifest inside it."
         case .missingDocument(let title):
@@ -220,9 +192,9 @@ enum PageVaultBackupError: LocalizedError, Equatable {
 }
 
 enum PageVaultRestoreMode: Equatable {
-    /// Adds books the library lacks. Every book already here keeps its place, status and history.
+    /// Adds books the library lacks. Every book already here keeps its place and status.
     case addMissing
-    /// Also gives books already here the export's place, status, goal and reading history.
+    /// Also gives books already here the export's place and status.
     case replaceMatching
 }
 
@@ -233,11 +205,8 @@ struct PageVaultRestoreMatch: Equatable {
 
 struct PageVaultRestoreResult: Equatable {
     var library: PageVaultLibrary
-    var days: [PageVaultReadingDay]
     /// Books whose stored records must be written, each listed once.
     var changedBookIDs: [UUID]
-    /// Books whose reading history is replaced wholesale, so their old rows are deleted first.
-    var replacedHistory: Set<UUID>
     /// Export book id to library id for every added book, which is where its PDF must be promoted.
     var additionIDs: [UUID: UUID]
 }
@@ -267,15 +236,14 @@ struct PageVaultRestorePlan: Equatable {
 
     var hasWork: Bool { !additions.isEmpty || !matches.isEmpty }
 
-    /// The library and reading history after restoring. Pure: the store verifies and copies every
-    /// PDF first, and only then persists what this returns.
-    func applied(to library: PageVaultLibrary, days: [PageVaultReadingDay], backup: PageVaultBackup,
+    /// The library after restoring. Pure: the store verifies and copies every PDF first, and only
+    /// then persists what this returns.
+    func applied(to library: PageVaultLibrary, backup: PageVaultBackup,
                  mode: PageVaultRestoreMode, at date: Date,
                  makeID: () -> UUID = UUID.init) -> PageVaultRestoreResult {
         var result = library
         var mapped: [UUID: UUID] = [:]
         var changed: [UUID] = []
-        var replaced = Set<UUID>()
         var additionIDs: [UUID: UUID] = [:]
         func noteChanged(_ id: UUID) {
             if !changed.contains(id) { changed.append(id) }
@@ -287,7 +255,6 @@ struct PageVaultRestorePlan: Equatable {
                 book.currentPage = match.backup.currentPage
                 book.placeSetAt = match.backup.placeSetAt
                 book.lastOpenedAt = match.backup.lastOpenedAt
-                book.dailyPageGoal = match.backup.dailyPageGoal
                 // Reading is claimed below through the library, which keeps the single-Reading rule.
                 if match.backup.status != .reading {
                     book.status = match.backup.status
@@ -295,7 +262,6 @@ struct PageVaultRestorePlan: Equatable {
                 }
                 result.update(book)
                 mapped[match.backup.id] = book.id
-                replaced.insert(book.id)
                 noteChanged(book.id)
             }
         }
@@ -323,18 +289,7 @@ struct PageVaultRestorePlan: Equatable {
             }
         }
 
-        var restoredDays = days.filter { !replaced.contains($0.bookID) }
-        var keys = Set(restoredDays.map(\.id))
-        for day in backup.days {
-            guard let target = mapped[day.bookID] else { continue }
-            var row = day
-            row.bookID = target
-            guard !keys.contains(row.id) else { continue }
-            keys.insert(row.id)
-            restoredDays.append(row)
-        }
-        restoredDays.sort { ($0.day, $0.bookID.uuidString) < ($1.day, $1.bookID.uuidString) }
-        return PageVaultRestoreResult(library: result, days: restoredDays, changedBookIDs: changed,
-                                      replacedHistory: replaced, additionIDs: additionIDs)
+        return PageVaultRestoreResult(library: result, changedBookIDs: changed,
+                                      additionIDs: additionIDs)
     }
 }

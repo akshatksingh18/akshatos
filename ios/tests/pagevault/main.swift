@@ -111,15 +111,6 @@ shelf.setStatus(.finished, for: beta, at: day(4))
 assert(shelf.current == nil, "Finishing the only Reading book leaves nothing being read")
 assert(shelf.books(with: .finished).count == 1 && shelf.books(with: .wantToRead).count == 1,
        "Shelves group by status")
-assert(shelf.setDailyGoal(20, for: alpha)?.dailyPageGoal == 20, "A goal is stored")
-assert(shelf.setDailyGoal(0, for: alpha)?.dailyPageGoal == nil, "A zero goal clears tracking")
-assert(shelf.setDailyGoal(-5, for: alpha)?.dailyPageGoal == nil, "A negative goal cannot be stored")
-var goalHolder = book(pages: 200)
-goalHolder.dailyPageGoal = 10
-assert(goalHolder.activeGoal == 0, "A goal only counts while the book is being read")
-goalHolder.status = .reading
-assert(goalHolder.activeGoal == 10, "The Reading book exposes its goal")
-
 // Started is a shelf, not a status: Want to Read books that already carry a place.
 var shelves = PageVaultLibrary()
 try shelves.insert(book(placed: 30, fingerprint: "set-aside", title: "Set Aside"))
@@ -136,7 +127,7 @@ assert(shelves.started.count + shelves.unstarted.count == shelves.books(with: .w
 shelves.clearPlace(for: shelves.books[0].id, at: day(2))
 assert(shelves.started.isEmpty && shelves.unstarted.count == 2,
        "Clearing a place moves the book back to Want to read")
-print("PASS: 19 status assertions (default, single Reading book, demotion, shelves, goal sanitizing, started shelf)")
+print("PASS: 14 status assertions (default, single Reading book, demotion, shelves, started shelf)")
 
 // Records written by earlier builds must keep loading, including ones with fields since removed.
 let legacy = Data("""
@@ -146,7 +137,6 @@ let legacy = Data("""
 """.utf8)
 let upgraded = try JSONDecoder().decode(PageVaultBook.self, from: legacy)
 assert(upgraded.status == .wantToRead, "An older payload defaults to Want to read")
-assert(upgraded.dailyPageGoal == nil, "An older payload has no goal")
 assert(upgraded.currentPage == 7, "An older payload keeps its stored page")
 assert(!upgraded.hasPlace, "A payload from before places existed is treated as unbookmarked")
 assert(upgraded.lastOpenedAt == nil, "Absent optional timestamps decode as nil rather than failing")
@@ -170,76 +160,7 @@ do {
     rejectedCorruptRecord = true
 }
 assert(rejectedCorruptRecord, "Leniency applies to added fields only, never to identity")
-print("PASS: 7 payload migration assertions (defaults, removed fields, minimal, corrupt)")
-
-func readingDay(_ number: Int, book id: UUID, from: Int, to: Int, goal: Int) -> PageVaultReadingDay {
-    PageVaultReadingDay(day: PageVaultReadingDay.dayKey(day(number), calendar: calendar),
-                        bookID: id, startPage: from, highestPage: to, goal: goal)
-}
-let tracked = UUID()
-assert(PageVaultReadingDay.dayKey(day(4), calendar: calendar) == "2026-09-04", "Day keys are local dates")
-var oneDay = readingDay(1, book: tracked, from: 0, to: 5, goal: 10)
-assert(oneDay.pagesRead == 5 && !oneDay.goalMet, "Progress short of the goal does not meet it")
-oneDay.reach(page: 3)
-assert(oneDay.highestPage == 5, "Paging backward never lowers the high-water mark")
-oneDay.reach(page: 12)
-assert(oneDay.pagesRead == 12 && oneDay.goalMet, "Passing the goal meets it")
-assert(!readingDay(1, book: tracked, from: 0, to: 99, goal: 0).isEvaluated,
-       "A zero goal marks a deliberately unevaluated day")
-
-assert(PageVaultReadingDay.streak([], now: day(5), calendar: calendar) == PageVaultStreak(),
-       "No recorded days means no streak")
-
-let met = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
-           readingDay(2, book: tracked, from: 10, to: 25, goal: 10),
-           readingDay(3, book: tracked, from: 25, to: 30, goal: 10)]
-let atRisk = PageVaultReadingDay.streak(met, now: day(3), calendar: calendar)
-assert(atRisk.current == 2, "Today short of the goal keeps yesterday's streak")
-assert(atRisk.isAtRisk && !atRisk.todayMet, "Today is reported as at risk")
-assert(atRisk.todayPagesRead == 5 && atRisk.todayGoal == 10, "Today's progress is reported")
-assert(atRisk.best == 2, "The best run so far is two days")
-
-var finishedToday = met
-finishedToday[2].reach(page: 40)
-let complete = PageVaultReadingDay.streak(finishedToday, now: day(3), calendar: calendar)
-assert(complete.current == 3 && complete.todayMet && !complete.isAtRisk,
-       "Meeting today's goal extends the streak and clears the risk")
-
-let gapped = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
-              readingDay(3, book: tracked, from: 10, to: 20, goal: 10)]
-let broken = PageVaultReadingDay.streak(gapped, now: day(3), calendar: calendar)
-assert(broken.current == 1, "A skipped day resets the streak")
-assert(broken.best == 1, "The best run reflects the reset")
-
-let paused = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
-              readingDay(2, book: tracked, from: 0, to: 0, goal: 0),
-              readingDay(3, book: tracked, from: 10, to: 20, goal: 10)]
-let held = PageVaultReadingDay.streak(paused, now: day(3), calendar: calendar)
-assert(held.current == 2, "Finishing a book without a replacement does not break the streak")
-
-let other = UUID()
-let switched = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
-                readingDay(2, book: other, from: 0, to: 15, goal: 10)]
-assert(PageVaultReadingDay.streak(switched, now: day(2), calendar: calendar).current == 2,
-       "The streak follows the habit, not one particular book")
-
-let future = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
-              readingDay(9, book: tracked, from: 10, to: 40, goal: 10)]
-assert(PageVaultReadingDay.streak(future, now: day(1), calendar: calendar).current == 1,
-       "A row dated after today is ignored")
-
-let missedYesterday = [readingDay(1, book: tracked, from: 0, to: 10, goal: 10),
-                       readingDay(2, book: tracked, from: 10, to: 12, goal: 10),
-                       readingDay(3, book: tracked, from: 12, to: 12, goal: 10)]
-let reset = PageVaultReadingDay.streak(missedYesterday, now: day(3), calendar: calendar)
-assert(reset.current == 0, "Yesterday's miss resets the streak regardless of today")
-assert(reset.best == 1, "The best run is preserved after a reset")
-
-let dayRoundTrip = try JSONDecoder().decode(PageVaultReadingDay.self,
-                                            from: try JSONEncoder().encode(oneDay))
-assert(dayRoundTrip == oneDay, "A reading day survives a persistence round trip")
-assert(oneDay.id == "2026-09-01#\(tracked.uuidString)", "Rows are keyed by day and book")
-print("PASS: 20 streak assertions (day keys, high-water, at risk, misses, pauses, book switch, round trip)")
+print("PASS: 6 payload migration assertions (defaults, removed fields, minimal, corrupt)")
 
 assert(PageVaultImportFailure.passwordProtected.message.contains("password"),
        "Encrypted files fail with an explanation")
@@ -355,10 +276,10 @@ func exportable(_ seed: Character, title: String, placed: Int? = nil,
     made.status = status
     return made
 }
-func manifest(_ entries: [PageVaultBackupEntry], days: [PageVaultReadingDay] = [],
-              documents: Bool = true, version: Int = PageVaultBackup.currentVersion) -> PageVaultBackup {
+func manifest(_ entries: [PageVaultBackupEntry], documents: Bool = true,
+              version: Int = PageVaultBackup.currentVersion) -> PageVaultBackup {
     PageVaultBackup(version: version, createdAt: reference, includesDocuments: documents,
-                    entries: entries, days: days)
+                    entries: entries)
 }
 func rejection(_ candidate: PageVaultBackup) -> PageVaultBackupError? {
     do { _ = try candidate.validated(); return nil } catch { return error as? PageVaultBackupError }
@@ -372,15 +293,11 @@ try exportLibrary.insert(exportable("a", title: "Deep: Work / Notes?", placed: 4
 try exportLibrary.insert(exportable("b", title: "Deep: Work / Notes?"))
 try exportLibrary.insert(exportable("c", title: "   "))
 let readingID = exportLibrary.books[0].id
-let exportDays = [readingDay(1, book: readingID, from: -1, to: 20, goal: 10),
-                  readingDay(2, book: UUID(), from: 0, to: 5, goal: 5)]
-let full = PageVaultBackup(createdAt: reference, library: exportLibrary, days: exportDays,
-                           includesDocuments: true)
+let full = PageVaultBackup(createdAt: reference, library: exportLibrary, includesDocuments: true)
 let files = full.entries.compactMap(\.file)
 let alphaFile = full.entries.first(where: { $0.book.fingerprint == digest("a") })?.file ?? ""
 let blankFile = full.entries.first(where: { $0.book.fingerprint == digest("c") })?.file ?? ""
-assert(full.entries.count == 3 && full.days.count == 1,
-       "Reading days are exported only for books that are in the library")
+assert(full.entries.count == 3, "Every book in the library is exported")
 assert(files.count == 3 && Set(files.map { $0.lowercased() }).count == 3,
        "Two books sharing a title still export to distinct files")
 assert(files.allSatisfy(PageVaultBackup.isSafeDocumentPath),
@@ -390,8 +307,7 @@ assert(alphaFile.hasPrefix("books/Deep Work Notes ") && alphaFile.hasSuffix(".pd
 assert(blankFile.hasPrefix("books/Book "), "A blank title still produces a usable file name")
 let decodedFull = try PageVaultBackup.decode(full.encoded())
 assert(decodedFull == full, "A full export manifest survives encoding")
-let dataOnly = PageVaultBackup(createdAt: reference, library: exportLibrary, days: exportDays,
-                               includesDocuments: false)
+let dataOnly = PageVaultBackup(createdAt: reference, library: exportLibrary, includesDocuments: false)
 let decodedData = try PageVaultBackup.decode(dataOnly.encoded())
 assert(decodedData == dataOnly && dataOnly.entries.allSatisfy({ $0.file == nil }),
        "A reading-data export carries no document paths and survives encoding")
@@ -423,12 +339,6 @@ assert(rejection(manifest([good], documents: false)) == .inconsistentLibrary,
 assert(rejection(manifest([PageVaultBackupEntry(book: book(fingerprint: "not-a-digest"),
                                                 file: "books/X.pdf")])) == .inconsistentLibrary,
        "Fingerprints must be SHA-256 hex, because they double as checksums")
-assert(rejection(manifest([good], days: [readingDay(1, book: UUID(), from: 0, to: 5, goal: 5)]))
-       == .inconsistentHistory, "History for a book outside the export is refused")
-var impossibleDay = readingDay(1, book: alphaBook.id, from: 0, to: 5, goal: 5)
-impossibleDay.day = "2026-02-30"
-assert(rejection(manifest([good], days: [impossibleDay])) == .inconsistentHistory,
-       "An impossible calendar day is refused")
 assert(decodeFailure(Data("not json".utf8)) == .invalidFile, "A file that is not a manifest is refused")
 assert(decodeFailure(Data(#"{"version":7,"future":true}"#.utf8)) == .unsupportedVersion(7),
        "A newer manifest reports its version instead of looking corrupt")
@@ -440,7 +350,6 @@ try here.insert(exportable("a", title: "Alpha", placed: 3))
 try here.insert(exportable("d", title: "Delta", placed: 7, status: .reading))
 let hereAlpha = here.books[0].id
 let hereDelta = here.books[1].id
-let hereDays = [readingDay(1, book: hereAlpha, from: 0, to: 3, goal: 5)]
 let plan = PageVaultRestorePlan(backup: full, library: here)
 assert(plan.matches.map(\.existingID) == [hereAlpha] && plan.additions.count == 2
        && plan.missingDocuments.isEmpty,
@@ -449,16 +358,13 @@ let dataPlan = PageVaultRestorePlan(backup: dataOnly, library: here)
 assert(dataPlan.matches.count == 1 && dataPlan.additions.isEmpty && dataPlan.missingDocuments.count == 2,
        "Reading data can only restore books whose PDFs are already here")
 
-let added = plan.applied(to: here, days: hereDays, backup: full, mode: .addMissing, at: day(5))
+let added = plan.applied(to: here, backup: full, mode: .addMissing, at: day(5))
 let keptAlpha = added.library.books.first(where: { $0.id == hereAlpha })
 assert(keptAlpha?.currentPage == 3 && keptAlpha?.status == .wantToRead,
        "Only adding leaves a book already here untouched")
 assert(added.library.books.count == 4 && added.library.current?.id == hereDelta,
        "An added book never displaces the book already being read")
-assert(added.replacedHistory.isEmpty && added.days == hereDays,
-       "Only adding keeps existing reading history as it was")
-
-let replacing = plan.applied(to: here, days: hereDays, backup: full, mode: .replaceMatching, at: day(5))
+let replacing = plan.applied(to: here, backup: full, mode: .replaceMatching, at: day(5))
 let restoredAlpha = replacing.library.books.first(where: { $0.id == hereAlpha })
 assert(restoredAlpha?.currentPage == 40 && restoredAlpha?.hasPlace == true,
        "Replacing gives the book already here the export's place")
@@ -467,8 +373,6 @@ assert(replacing.library.current?.id == hereAlpha
        "The export's Reading book takes over and the previous one is demoted, never finished")
 assert(replacing.library.books.filter({ $0.status == .reading }).count == 1,
        "A restore never leaves two Reading books")
-assert(replacing.days.map(\.bookID) == [hereAlpha] && replacing.days.first?.highestPage == 20,
-       "The matched book's history is replaced by the export's, keyed to the book already here")
 assert(Set(replacing.changedBookIDs).count == replacing.changedBookIDs.count
        && replacing.changedBookIDs.contains(hereDelta),
        "Every changed book is reported once, including the one demoted")
@@ -479,10 +383,9 @@ var clashing = exportable("e", title: "Unrelated")
 clashing.id = readingID
 try clash.insert(clashing)
 let remapped = PageVaultRestorePlan(backup: full, library: clash)
-    .applied(to: clash, days: [], backup: full, mode: .addMissing, at: day(5), makeID: { freshID })
+    .applied(to: clash, backup: full, mode: .addMissing, at: day(5), makeID: { freshID })
 assert(remapped.additionIDs[readingID] == freshID && remapped.library.books.count == 4,
        "An id already used by a different book is replaced instead of overwriting that book")
-assert(remapped.days.map(\.bookID) == [freshID], "Reading history follows the book to its new id")
 assert(remapped.library.current?.id == freshID,
        "With nothing being read, the export's Reading book resumes as the one being read")
-print("PASS: 34 backup assertions (manifest round trip, file names, validation, versions, planning, add, replace, id collision)")
+print("PASS: 29 backup assertions (manifest round trip, file names, validation, versions, planning, add, replace, id collision)")
