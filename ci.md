@@ -1,9 +1,11 @@
 # AkshatOS CI and delivery contract
 
-**Status:** PageVault Build-17 source (PR #24, merge `52181f6`) passed Source checks, 94 PageVault
-domain assertions, 89 hosted tests, both builds, IPA inspection and `CI Gate` in
-[main delivery run 34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880).
-`cloud-build.md` owns its artifact evidence; `../book-reader/CLAUDE.md` owns phone verification.
+**Status:** PageVault export/restore source `1eac072` (PR #27) passed Source checks, 132 PageVault
+domain assertions, 94 hosted integration/persistence tests (five of them new export/restore tests),
+3 UI tests, both builds, IPA inspection and `CI Gate` in
+[PR #27 run 34547571050](https://github.com/akshatksingh18/akshatos/actions/runs/34547571050) on its
+first push; the PR correctly uploaded no IPA. `cloud-build.md` owns artifact evidence;
+`../book-reader/CLAUDE.md` owns phone verification.
 Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
 assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
 builds, IPA inspection and `CI Gate` in

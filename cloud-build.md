@@ -195,6 +195,16 @@ release-cache promotion has occurred. Test Done/Pause/snooze from expanded and c
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
 
+### Build-18 artifact — produced, superseded before handover
+
+- Version **0.2.0 (18)**; merge source `9861f440c62874752c8b1a4601557ed2e82a7e5a` (PR #26), adding
+  the Started shelf.
+- Main delivery run
+  [34538261451](https://github.com/akshatksingh18/akshatos/actions/runs/34538261451) passed Source
+  checks, the build and `CI Gate`, and uploaded `akshatos-ios-79`.
+- **Not downloaded or installed.** Build 19 followed in the same session before any device pass and
+  carries this change, so Build 18 exists only to keep build numbers unique.
+
 ### Downloaded Build-17 candidate — trimmed margins and bounded zoom
 
 - Version **0.2.0 (17)**; merge source `52181f6108d7338ece19bc9e6cd2ce9375db4352` (PR #24).
