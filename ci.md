@@ -1,9 +1,11 @@
 # AkshatOS CI and delivery contract
 
-**Status:** PageVault Build-17 source (PR #24, merge `52181f6`) passed Source checks, 94 PageVault
-domain assertions, 89 hosted tests, both builds, IPA inspection and `CI Gate` in
-[main delivery run 34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880).
-`cloud-build.md` owns its artifact evidence; `../book-reader/CLAUDE.md` owns phone verification.
+**Status:** PageVault export/restore source `1eac072` (PR #27) passed Source checks, 132 PageVault
+domain assertions, 94 hosted integration/persistence tests (five of them new export/restore tests),
+3 UI tests, both builds, IPA inspection and `CI Gate` in
+[PR #27 run 34547571050](https://github.com/akshatksingh18/akshatos/actions/runs/34547571050) on its
+first push; the PR correctly uploaded no IPA. `cloud-build.md` owns artifact evidence;
+`../book-reader/CLAUDE.md` owns phone verification.
 Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
 assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
 builds, IPA inspection and `CI Gate` in
@@ -76,19 +78,21 @@ preservation and data-management settings now have coverage. Future schema-versi
 add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
 remain separate acceptance gates.
 
-PageVault registers its own suites: 98 domain assertions covering margin-trim geometry (union,
+PageVault registers its own suites: 132 domain assertions covering margin-trim geometry (union,
 per-side cap, full-bleed pages, sampling spread), place clamping and the opening
 page, progress labels, title derivation, fingerprint dedupe, recency ordering, the
 single-Reading-book invariant, the Started shelf split, goal sanitizing, bookmark replacement, older-payload decoding
 (including records carrying fields since removed), and the streak engine (bookmark-driven progress,
-at-risk today, missed days, paused days, book switches, future-dated rows); 21 hosted integration
-tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
+at-risk today, missed days, paused days, book switches, future-dated rows), and export/restore
+(manifest round trip, Windows-safe file names, whole-manifest validation and versions, content-matched
+restore planning, add-only versus replace, id collisions); 26 hosted integration tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
 unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming the book
 as the one being read and shelving the previous one under Started, pages credited between bookmarks, an opened-but-unbookmarked book earning
 nothing, the first session counting the page it starts on, cover generation, copy-only removal
-and reading-history cleanup; plus a hub → library →
-back UI test.
-Simulator coverage cannot exercise the system document picker, real large-file memory pressure,
+and reading-history cleanup, plus a full export restored into a fresh library, reading data restored
+onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus replace against a live
+library, and malformed or mis-picked exports; plus hub → library → back and backup-sheet UI tests.
+Simulator coverage cannot exercise the system document picker, the file mover that saves an export, real large-file memory pressure,
 rotation, paged swipe feel, how warm paper actually looks, or whether trimmed margins make text
 large enough to read comfortably. The large-PDF gate passed on device;
 each reader iteration after it needs its own device pass, owned by `../book-reader/CLAUDE.md`.

@@ -41,7 +41,7 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (18)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (19)**; minimum iOS 17.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Build 13 is the last Squats-only build; 14 added PageVault; later builds
   iterate on the reader and library. The per-build sections below record what each phone pass found.
@@ -50,7 +50,7 @@ close unreported edge-case, automated-refresh, expiry-recovery or multi-cycle so
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, warm paper,
-  reading status, daily-goal streak, bookmarked place and cover cache; ReelVault is a planned card
+  reading status, daily-goal streak, bookmarked place, cover cache, Started shelf and export/restore; ReelVault is a planned card
   only. Build 14's import and large-PDF reading passed on the phone, Builds 15 and 16 each had a
   phone pass that shaped the next build, and nothing from Build 17 on has been device-tested.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
@@ -194,6 +194,16 @@ The latter published the downloaded artifact below. No build-4 signing, installa
 release-cache promotion has occurred. Test Done/Pause/snooze from expanded and compact
 notifications while locked and at the hub, duplicate/Undo behavior, relaunch, queued-action recovery,
 and updating an old category-less schedule through Repair reminders. None has phone evidence yet.
+
+### Build-18 artifact — produced, superseded before handover
+
+- Version **0.2.0 (18)**; merge source `9861f440c62874752c8b1a4601557ed2e82a7e5a` (PR #26), adding
+  the Started shelf.
+- Main delivery run
+  [34538261451](https://github.com/akshatksingh18/akshatos/actions/runs/34538261451) passed Source
+  checks, the build and `CI Gate`, and uploaded `akshatos-ios-79`.
+- **Not downloaded or installed.** Build 19 followed in the same session before any device pass and
+  carries this change, so Build 18 exists only to keep build numbers unique.
 
 ### Downloaded Build-17 candidate — trimmed margins and bounded zoom
 

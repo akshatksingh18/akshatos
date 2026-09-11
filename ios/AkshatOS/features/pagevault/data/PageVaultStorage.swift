@@ -13,9 +13,22 @@ struct PageVaultStorage: Sendable {
         var byteCount: Int64
     }
 
+    /// One PDF to place in a full export: the app's copy, and its path inside the export folder.
+    struct PageVaultExportItem: Sendable {
+        var source: URL
+        var path: String
+    }
+
+    struct PageVaultManifestRead: Sendable {
+        var data: Data
+        /// The export folder, when a folder rather than a lone JSON file was picked.
+        var folder: URL?
+    }
+
     let root: URL
     private var scratch: URL { root.appendingPathComponent("Incoming", isDirectory: true) }
     private var covers: URL { root.appendingPathComponent("Covers", isDirectory: true) }
+    private var outgoing: URL { root.appendingPathComponent("Outgoing", isDirectory: true) }
 
     init(root: URL? = nil) throws {
         if let root {
@@ -125,6 +138,79 @@ struct PageVaultStorage: Sendable {
 
     func discard(_ staged: URL) {
         try? FileManager.default.removeItem(at: staged)
+    }
+
+    // MARK: - Export staging
+
+    /// Builds an export in a disposable folder that the system file mover then moves out of the
+    /// app. PDFs are duplicated with `copyItem`, which APFS can satisfy with a clone, and are never
+    /// read into memory. The manifest is written last, so a staged folder with a manifest is
+    /// complete. Returns the folder for a full export, or the JSON file when `documents` is nil.
+    func stageExport(manifest: Data, name: String, documents: [PageVaultExportItem]?) throws -> URL {
+        clearOutgoing()
+        let container = outgoing.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: container, withIntermediateDirectories: true)
+            excludeFromBackup(outgoing)
+            guard let documents else {
+                let file = container.appendingPathComponent(name).appendingPathExtension("json")
+                try manifest.write(to: file, options: .atomic)
+                return file
+            }
+            let folder = container.appendingPathComponent(name, isDirectory: true)
+            try FileManager.default.createDirectory(
+                at: folder.appendingPathComponent(PageVaultBackup.documentsFolder, isDirectory: true),
+                withIntermediateDirectories: true)
+            for item in documents {
+                try FileManager.default.copyItem(at: item.source,
+                                                 to: folder.appendingPathComponent(item.path))
+            }
+            try manifest.write(to: folder.appendingPathComponent(PageVaultBackup.manifestName),
+                               options: .atomic)
+            return folder
+        } catch {
+            try? FileManager.default.removeItem(at: container)
+            throw PageVaultBackupError.storage(error.localizedDescription)
+        }
+    }
+
+    /// Whatever is left here belongs to an export that was saved, cancelled or interrupted.
+    func clearOutgoing() {
+        try? FileManager.default.removeItem(at: outgoing)
+    }
+
+    /// Reads the manifest from what the user picked: an export folder, or a lone JSON file of
+    /// reading data. A folder without a readable manifest is simply not an export.
+    func readManifest(at source: URL) throws -> PageVaultManifestRead {
+        let isFolder = (try? source.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+        let file = isFolder ? source.appendingPathComponent(PageVaultBackup.manifestName) : source
+        var data: Data?
+        var failure: Error?
+        var coordinationFailure: NSError?
+        NSFileCoordinator().coordinate(readingItemAt: file, options: [],
+                                       error: &coordinationFailure) { readable in
+            do {
+                let size = try readable.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+                guard size <= PageVaultBackup.maximumManifestBytes else {
+                    throw PageVaultBackupError.tooLarge
+                }
+                data = try Data(contentsOf: readable)
+            } catch {
+                failure = error
+            }
+        }
+        if let failure = failure as? PageVaultBackupError { throw failure }
+        guard coordinationFailure == nil, failure == nil, let data else {
+            throw PageVaultBackupError.invalidFile
+        }
+        return PageVaultManifestRead(data: data, folder: isFolder ? source : nil)
+    }
+
+    private func excludeFromBackup(_ url: URL) {
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        var target = url
+        try? target.setResourceValues(values)
     }
 
     /// Removes only PageVault's own copy and cover. The user's original source file is never touched.

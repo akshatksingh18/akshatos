@@ -20,11 +20,13 @@
     "domain_sources": [
       "AkshatOS/features/pagevault/domain/PageVaultBook.swift",
       "AkshatOS/features/pagevault/domain/PageVaultReading.swift",
-      "AkshatOS/features/pagevault/domain/PageVaultLayout.swift"
+      "AkshatOS/features/pagevault/domain/PageVaultLayout.swift",
+      "AkshatOS/features/pagevault/domain/PageVaultBackup.swift"
     ],
     "domain_test": "tests/pagevault/main.swift",
     "integration_tests": [
-      "UnitTests/PageVaultPersistenceTests.swift"
+      "UnitTests/PageVaultPersistenceTests.swift",
+      "UnitTests/PageVaultBackupTests.swift"
     ],
     "ui_tests": [
       "UITests/PageVaultUITests.swift"

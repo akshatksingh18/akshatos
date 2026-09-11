@@ -74,7 +74,7 @@ undo anything cloned, forked, downloaded, indexed, cached, or otherwise copied w
   build accepted for Squats daily use; Build 12 is its retained predecessor. Later builds add PageVault. Preserve identity on updates.
 - Launch into an app picker; select Squat Reminder to open its own dashboard. This is not a
   combined dashboard. PageVault opens its own PDF library — import, reader, reading status, daily-goal
-  streak, bookmarks, covers — implemented and cloud-tested; its large-PDF gate passed on the phone,
+  streak, bookmarks, covers, export/restore — implemented and cloud-tested; its large-PDF gate passed on the phone,
   while the reader iterations since are not phone-verified (`../book-reader/CLAUDE.md` owns this);
   ReelVault/Reels remains an unavailable planned card.
 - Squats' daily loop is accepted in ongoing phone use, so PageVault is now the activated next
