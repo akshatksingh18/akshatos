@@ -1,48 +1,10 @@
 # AkshatOS CI and delivery contract
 
-**Status:** PageVault export/restore source `1eac072` (PR #27) passed Source checks, 132 PageVault
-domain assertions, 94 hosted integration/persistence tests (five of them new export/restore tests),
-3 UI tests, both builds, IPA inspection and `CI Gate` in
-[PR #27 run 34547571050](https://github.com/akshatksingh18/akshatos/actions/runs/34547571050) on its
-first push; the PR correctly uploaded no IPA. `cloud-build.md` owns artifact evidence;
-`../book-reader/CLAUDE.md` owns phone verification.
-Build-13 application source `94d186b189859363a8ddce7abe963b46deab9175` passed 49 domain
-assertions, 63 integration/persistence tests, five SwiftData tests, the UI test, simulator/device
-builds, IPA inspection and `CI Gate` in
-[PR #15 run #57](https://github.com/akshatksingh18/akshatos/actions/runs/34150335957).
-The PR correctly uploaded no IPA. PR #15 merged as `f484f663647a2be0cad44f3bb1c7fe2671b6572d`;
-[main delivery run #58](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604)
-repeated the complete gate and uploaded the independently verified Build-13 artifact recorded in
-`cloud-build.md`. An earlier PR run #56 failed eight outdated/new fixture expectations after the
-app compiled and the UI test passed; the tests and missing-anchor reconciliation were corrected,
-then the full gate was rerun rather than accepting the failure.
-Build 10 previously passed 49 domain assertions and 58 integration/persistence tests in PR #7 and
-main run #43. Earlier Build-9
-application source `e999ed282392abb0cc0f3f230e794aa79a26c12c` expanded the native-v1 suite to
-47 domain assertions and 55 integration/persistence tests. Its app-logic parent
-`db9c59f1ad23ec7f5f5199e2a3216ccd10490c56` passed Source checks,
-both builds, all tests, IPA inspection and `CI Gate` in
-[PR #4 run #36](https://github.com/akshatksingh18/akshatos/actions/runs/34002015676). The exact
-Build-9 source/documentation head `b11623ed50c1fdc77b0897b1a74a98cbd57a9cf5` passed the same
-macOS simulator/device compile, 55 XCTest cases, UI test, IPA inspection and `CI Gate` in the
-[rerun of PR #4 run #37](https://github.com/akshatksingh18/akshatos/actions/runs/34002685377);
-the PR correctly did not upload an IPA artifact.
-[Main delivery run #39](https://github.com/akshatksingh18/akshatos/actions/runs/34042431950)
-passed the complete pipeline on merge commit `87003204292dec58210432479a3522abc2cc6bf7`
-and uploaded the checksum-verified Build-9 artifact recorded in `cloud-build.md`.
-The public repository's `main` branch is server-protected with a
-strict required `CI Gate`, administrator enforcement, and force pushes/deletions disabled.
-Documentation-only PRs retain Source checks and `CI Gate` while intentionally skipping the macOS
-build. PR runs do not upload an IPA artifact; exact downloadable build/hash evidence belongs in
-`cloud-build.md`.
-Final classifier/documentation source `d3864970a2beb2ebcc463bf73fca0574542ca942` passed the full
-pipeline in [PR #1 run #28](https://github.com/akshatksingh18/akshatos/actions/runs/33986900743);
-that update contained the workflow itself, so classification correctly required macOS.
-The subsequent Markdown-only source `931d3a568d5540167dbf9734020a1715a3cd3420` passed Source
-checks and the required `CI Gate` in
-[PR #1 run #29](https://github.com/akshatksingh18/akshatos/actions/runs/33987404033) while `Build
-installable IPA` concluded `skipped`, directly verifying that the protected check does not remain
-pending when a PR update changes only documentation.
+**Status:** Enforced on every pull request and on `main`. The public repository's `main` branch
+requires a strict, up-to-date `CI Gate`; documentation-only PRs keep Source checks and the gate while
+skipping the macOS build, which is directly verified. The gate result for the current source is
+recorded in `cloud-build.md`, which owns artifact and device evidence; `../book-reader/CLAUDE.md` owns
+PageVault's phone verification.
 
 ## Automated checks
 
@@ -66,36 +28,43 @@ pending when a PR update changes only documentation.
   fail, when produced, with seven-day retention. Coverage is collected, not a numeric pass threshold.
 - IPA upload requires successful checks/tests/packaging and a non-PR run. Artifacts expire after
   14 days; they are not signed releases or durable backups. No Apple credentials or auto-install step.
+- `gh run watch --exit-status` has reported success for a failed run. Verify each job's conclusion
+  directly before treating a run as green.
 
 ## Coverage and limits
 
-Current automated coverage: domain event deduplication/Undo/streak/date assertions; SwiftData
-in-memory round-trip across contexts, persisted Undo/End and malformed-payload preservation;
-hub entry/back/reopen, settings open/dismiss and unavailable media entries; plus the action suite
-below. File-backed reopen, legacy payload decoding, daily aggregation/durations, DST rollover,
-versioned backup validation/round-trip, safe repository replacement/deletion, malformed restore
-preservation and data-management settings now have coverage. Future schema-version migrations must
-add dedicated fixtures when a V2 exists. OS-process/device restart and protected-device storage
-remain separate acceptance gates.
+Squats suites: domain assertions for event deduplication, Undo, streaks, dates, DST and time zones,
+Home decisions and backup validation; integration tests for notification routing and category order,
+repeated deliveries, duplicate receipts after Undo or restart, save/schedule/inbox faults,
+protected-store retry, permission tracking and Settings routing, remembered grants across store
+recreation, lifecycle idempotency, cadence persistence and the Done reset, bounded nudge refill and
+migration, idle-start scheduling, Home pause/resume guards and backup exclusion, foreground repair,
+file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion;
+plus hub, dashboard and Settings UI coverage.
 
-PageVault registers its own suites: 132 domain assertions covering margin-trim geometry (union,
-per-side cap, full-bleed pages, sampling spread), place clamping and the opening
-page, progress labels, title derivation, fingerprint dedupe, recency ordering, the
-single-Reading-book invariant, the Started shelf split, goal sanitizing, bookmark replacement, older-payload decoding
-(including records carrying fields since removed), and the streak engine (bookmark-driven progress,
-at-risk today, missed days, paused days, book switches, future-dated rows), and export/restore
-(manifest round trip, Windows-safe file names, whole-manifest validation and versions, content-matched
-restore planning, add-only versus replace, id collisions); 26 hosted integration tests that generate real PDFs to exercise streamed copy-on-import, duplicate rejection,
-unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming the book
-as the one being read and shelving the previous one under Started, pages credited between bookmarks, an opened-but-unbookmarked book earning
-nothing, the first session counting the page it starts on, cover generation, copy-only removal
-and reading-history cleanup, plus a full export restored into a fresh library, reading data restored
-onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus replace against a live
-library, and malformed or mis-picked exports; plus hub → library → back and backup-sheet UI tests.
-Simulator coverage cannot exercise the system document picker, the file mover that saves an export, real large-file memory pressure,
-rotation, paged swipe feel, how warm paper actually looks, or whether trimmed margins make text
-large enough to read comfortably. The large-PDF gate passed on device;
-each reader iteration after it needs its own device pass, owned by `../book-reader/CLAUDE.md`.
+PageVault suites: 139 domain assertions covering place clamping and the opening page, progress
+labels, title derivation, fingerprint dedupe, recency ordering, the single-Reading-book invariant,
+the Started shelf split, goal sanitizing, older-payload decoding (including records carrying fields
+since removed), the streak engine (bookmark-driven progress, at-risk today, missed days, paused days,
+book switches, future-dated rows), export/restore (manifest round trip, Windows-safe file names,
+whole-manifest validation and versions, content-matched planning, add-only versus replace, id
+collisions), and page fitting (four-sided crop, outlier edges, short documents, facing pages, scans,
+blank and unmeasured pages, specks, off-white paper, a no-clipping property and cache versioning).
+31 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
+rejection, unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming
+the book and shelving the previous one under Started, pages credited between bookmarks, an unbookmarked
+book earning nothing, the first session counting its starting page, cover generation, copy-only
+removal and history cleanup, a full export restored into a fresh library, reading data restored onto
+a re-imported PDF, a tampered PDF restoring nothing, add-only versus replace against a live library,
+malformed or mis-picked exports, pages measured and cropped on all four sides, a wide figure never
+clipped, a full-page scan left untouched, the measurement reused after relaunch and removed with its
+book, and crop boxes applied in points. UI tests cover hub → library → back and the backup sheet.
+
+Simulator coverage cannot exercise the system document picker, the file mover that saves an export,
+real large-file memory pressure, rotation, paged swipe feel, how warm paper looks, or whether fitted
+pages read comfortably. Each reader change needs its own device pass, owned by
+`../book-reader/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
+acceptance gates.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
@@ -106,87 +75,18 @@ Physical acceptance still owns lock-screen notifications, Focus, permission chan
 Shortcuts, force-quit/reboot, Sideloadly upgrades/expiry, performance and real data recovery.
 Android, WHOOP and unimplemented media features are not tested by this pipeline.
 
-Build-4 source adds eight domain assertions and 21 action integration tests, plus notification-help
-UI coverage. Tests exercise routing/category order, repeated deliveries, duplicate receipts after
-Undo/restart, save/schedule/inbox faults, protected-store retry, Pause during Resume, cancellation,
-expired/denied snooze, old-category repair, atomic inbox recreation/corruption/write-failure preservation,
-legacy JSON payload decoding and a file-backed SwiftData reopen. These passed in run #10.
-CI verifies the write options passed to the real file writer; actual
-protection attributes are asserted only in device test runs because Simulator returns no metadata.
-Build-6 adds pure Home decision tests for exit/entry, debounce, deliberate-pause precedence and
-same-day guards; store integration tests for automatic pause/resume, manual override, outside Resume
-suppression and same-day goal snapshots; plus a settings UI assertion. Run #18 passed all 37 domain
-assertions, 34 integration/persistence tests, the UI test, simulator/device compilation and IPA inspection.
-Injected protection failures do not prove
-real locked-device access, background callback deadlines or system notification delivery.
-
-Build-7 adds five integration tests covering `NotificationAuthorization`/`HomeAuthorization` tracking
-on `SquatStore` (denied vs. restricted location, denied notifications) and `SettingsRoute` message
-routing for Start/Resume-without-permission and Home-setup-denied paths, plus one UI-test assertion
-for the new Notifications settings section. Run #22 passed all 37 domain assertions, 39
-integration/persistence tests, the UI test, simulator/device compilation and IPA inspection. An
-initial push (run #21, commit `58c6ff7`) failed because the new Notifications section pushed
-`delete-squats-history` below the Settings form's initial fold, so the lazily rendered row was not
-yet in the accessibility tree when a bare `.exists` check ran; the UI test now scrolls once more
-before checking Data management buttons, matching the file's existing scroll-then-wait pattern.
-
-Build-8 introduced two integration tests for remembered notification/Home authorization. A security
-review found the implementation and tests too narrow: notification history depended on alert
-availability, Home history counted only Always access, and neither test reconstructed the store.
-Correction source `d80653da39433815c1d12fb9470adb9417a6f819` records granted notification enum states even
-when alerts are disabled, records both When In Use and Always location grants, and exercises the
-persisted flags plus revoked wording after store recreation. It also verifies that the Home boundary
-file and containing directory are excluded from device backup. The totals remain 37 domain
-assertions, 41 integration/persistence tests and one UI test; run #27 passed.
-
-Foreground-reconciliation source `8c1cc96469ea6f74fe81e60de1690064181bbac2` adds four integration
-tests for canonical repair of invalid idle preferences, preservation/removal of valid/foreign
-snoozes, and replacement of a mismatched monitored Home boundary with stale presence reset. Run #32
-passed 37 domain assertions, 45 integration/persistence tests, one UI test, simulator/device
-compilation, IPA inspection and `CI Gate`; PR #1 merged it to `main`.
-
-Build-9 source adds ten domain assertions for spring DST, cross-time-zone day ownership, Home
-defaults/validation/monitor rounding, explicit Done while paused, ended-action rejection, open-pause
-duration and conflicting-active-session backup rejection. Ten integration tests cover fresh defaults
-and explicit goal opt-out, Home-radius clamping, lifecycle idempotency/settings snapshots, schedule-
-failure recovery, stale requests, missing-next-trigger repair, malformed snooze cleanup, alerts-
-disabled permission behavior, degraded Home health and safe Home disable. The UI test now verifies
-the eight-set default plus notification/Home status surfaces. The expanded totals are 47 domain
-assertions, 55 integration/persistence tests and one UI test.
-
-Build-10 source `f7fa520` adds three integration regressions for persisted cadence across foreground/
-relaunch, one-time migration of a Build-9 active session, snooze ownership of the primary countdown,
-and completion-only dashboard history. PR #7 and main delivery run #43 each passed 49 domain
-assertions, 58 integration/persistence tests, one UI test, simulator/device compilation, IPA
-inspection and `CI Gate`. Main run #43 uploaded the checksum-verified Build-10 artifact.
-
-Build-11 application source `9586f8a` adds three more integration regressions: a trigger snapshot cannot move the
-persisted snooze deadline, Done during an unresolved snooze cancels it and starts a full new cadence,
-and that cross-system reset retries after persistence failure. A real file-backed SwiftData reopen
-also proves both stored deadlines survive repository recreation. PR #10 run #34067380053 passed all
-49 domain assertions, 61 integration/persistence tests, the UI test, simulator/device builds, IPA
-inspection and required `CI Gate`; PR runs intentionally upload no IPA. PR #10 then merged as
-`8b5b8c4c8cba5ef251abe90938fa000f8b4c5f24`, and main delivery run #49 repeated the full passing
-pipeline and uploaded `akshatos-ios-49`.
-
-Build-13 source `94d186b` replaces manual snooze coverage with automatic ten-minute-nudge behavior,
-bounded-batch refill/migration, full-interval Done reset, two-action routing, legacy-snooze no-op,
-and idle 9:00 AM schedule/cancel/restore tests while retaining 63 integration/persistence tests.
-PR #15 run #57 and main run #58 each passed 49 domain assertions, 63 action/integration tests, five
-SwiftData tests, the UI test, simulator/device builds, IPA inspection and required `CI Gate`.
-
-The initial PR run failed because Simulator returned no file-protection metadata. The test now
-checks actual writer options and file durability in CI while retaining the filesystem protection
-assertion for device tests. Its diagnostic artifact was successfully downloaded; no behavior check
-was disabled, no failure was accepted as a pass, and no app protection setting was relaxed.
+Testing lessons that still apply: Simulator returns no file-protection metadata, so CI asserts the
+write options passed to the real file writer and leaves protection attributes to device test runs;
+injected protection failures do not prove real locked-device access, callback deadlines or delivery.
+Lazily rendered Form rows must be scrolled into view before a UI test checks that they exist.
 
 ## Branch protection
 
-GitHub now confirms a `main` branch-protection rule requiring strict/up-to-date `CI Gate`, enforcing
+GitHub confirms a `main` branch-protection rule requiring strict/up-to-date `CI Gate`, enforcing
 the rule for administrators, and disabling force pushes and branch deletion. Pull-request reviews
 and actor restrictions are not required. Agents must still inspect the exact source SHA's
 `CI Gate`, fix red checks and wait for success before declaring code/build work verified or
-promoting an IPA. Prefer feature branches and PR validation for subsequent changes.
+promoting an IPA. Documentation changes also land through a PR.
 
 ## GitHub Actions minutes and repository visibility
 

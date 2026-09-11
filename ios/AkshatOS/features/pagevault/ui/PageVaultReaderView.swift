@@ -34,30 +34,83 @@ struct PageVaultReaderView: View {
     let url: URL
     @ObservedObject var store: PageVaultStore
     /// The app layer decides orientation; the reader only reports when it is on screen.
-    var onReadingSessionChange: (Bool) -> Void = { _ in }
+    let onReadingSessionChange: (Bool) -> Void
 
     @StateObject private var controller = PageVaultReaderController()
+    /// Decided once, as the reader opens. Rebuilding the page view afterwards would lose the page
+    /// being read, so a measurement that lands later is used the next time the book is opened.
+    @State private var opened: Bool
+    @State private var crops: [PageVaultInkBox?]?
+
+    init(book: PageVaultBook, url: URL, store: PageVaultStore,
+         onReadingSessionChange: @escaping (Bool) -> Void = { _ in }) {
+        self.book = book
+        self.url = url
+        _store = ObservedObject(wrappedValue: store)
+        self.onReadingSessionChange = onReadingSessionChange
+        // An already-measured book opens fitted on the first frame, with no fitting screen at all.
+        let fitted = store.pageCrops(for: book)
+        _crops = State(initialValue: fitted)
+        _opened = State(initialValue: fitted != nil)
+    }
 
     /// The place can change while reading, so the live copy is read back from the store.
     private var live: PageVaultBook { store.book(id: book.id) ?? book }
 
     var body: some View {
-        PageVaultDocumentView(url: url, openingPage: book.openingPage,
-                              warmPaper: store.warmPaper, zoom: store.readingZoom,
-                              controller: controller,
-                              onZoomChanged: { store.readingZoom = $0 })
-            .overlay(alignment: .bottom) { pageIndicator }
-            .navigationTitle(book.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { paperButton }
-                ToolbarItem(placement: .topBarTrailing) { placeButton }
+        Group {
+            if opened {
+                PageVaultDocumentView(url: url, openingPage: book.openingPage, crops: crops,
+                                      warmPaper: store.warmPaper, zoom: store.readingZoom,
+                                      controller: controller,
+                                      onZoomChanged: { store.readingZoom = $0 })
+                    .overlay(alignment: .bottom) { pageIndicator }
+            } else {
+                fitting
             }
-            .onAppear {
-                onReadingSessionChange(true)
-                store.noteOpened(book)
-            }
-            .onDisappear { onReadingSessionChange(false) }
+        }
+        .navigationTitle(book.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) { paperButton }
+            ToolbarItem(placement: .topBarTrailing) { placeButton }
+        }
+        .task { await openWhenFitted() }
+        .onAppear {
+            onReadingSessionChange(true)
+            store.noteOpened(book)
+        }
+        .onDisappear { onReadingSessionChange(false) }
+    }
+
+    /// Measures the book's pages first when that has not happened yet — joining a measurement
+    /// already under way — then opens. A book that cannot be measured opens as published.
+    private func openWhenFitted() async {
+        if store.pageCrops(for: book) == nil && !store.layoutUnavailable(for: book) {
+            await store.ensureLayout(for: book)
+        }
+        guard !opened else { return }
+        crops = store.pageCrops(for: book)
+        opened = true
+    }
+
+    private var fitting: some View {
+        VStack(spacing: 18) {
+            ProgressView(value: store.fittingProgress(for: book))
+                .tint(Palette.lime)
+            Text("Fitting pages to your screen")
+                .font(.system(.headline, design: .rounded))
+            Text("PageVault finds where the text sits on every page, once per book, so each page opens cropped to its text.")
+                .font(.caption).foregroundStyle(Palette.muted)
+                .multilineTextAlignment(.center)
+            Button("Read without fitting") { opened = true }
+                .buttonStyle(ActionStyle())
+                .accessibilityIdentifier("read-without-fitting")
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Palette.background.ignoresSafeArea())
+        .accessibilityIdentifier("pagevault-fitting")
     }
 
     /// Bookmarking is what moves your place, so this is the only control that changes where the
@@ -106,6 +159,8 @@ struct PageVaultReaderView: View {
 private struct PageVaultDocumentView: UIViewRepresentable {
     let url: URL
     let openingPage: Int
+    /// Per-page crop boxes from the book's measurement, or nil to show pages as published.
+    let crops: [PageVaultInkBox?]?
     let warmPaper: Bool
     let zoom: Double
     @ObservedObject var controller: PageVaultReaderController
@@ -124,9 +179,9 @@ private struct PageVaultDocumentView: UIViewRepresentable {
         // PDFKit renders on demand; the document is never pre-rendered or fully buffered here.
         let document = PDFDocument(url: url)
         if let document {
-            // Trim the page margins before first layout, so the text block is what gets scaled to
-            // the screen width. This is the only automatic way to enlarge fixed-layout text.
-            PageVaultPageLayout().applyCrop(to: document)
+            // Crop every page to its measured text before first layout, so the text block rather
+            // than the paper fills the screen. Without a measurement the pages open as published.
+            if let crops { PageVaultPageLayout.apply(crops, to: document) }
             view.displayBox = .cropBox
         }
         view.document = document

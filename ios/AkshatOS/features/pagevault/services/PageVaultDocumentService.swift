@@ -8,6 +8,7 @@ import UIKit
 protocol PageVaultDocumentInspecting: Sendable {
     func inspect(_ url: URL) throws -> PageVaultDocumentService.Inspection
     func coverPNG(of url: URL, maxPixel: CGFloat) -> Data?
+    func inkSurvey(of url: URL, progress: @escaping @Sendable (Double) -> Void) -> PageVaultInkSurvey?
 }
 
 struct PageVaultDocumentService: PageVaultDocumentInspecting {
@@ -34,5 +35,14 @@ struct PageVaultDocumentService: PageVaultDocumentInspecting {
         let scale = min(1, maxPixel / longest)
         let size = CGSize(width: max(1, bounds.width * scale), height: max(1, bounds.height * scale))
         return page.thumbnail(of: size, for: .cropBox).pngData()
+    }
+
+    /// Measures where the text sits on every page, once per book, so the reader can crop each page
+    /// to it. Nil for a document that cannot be opened.
+    func inkSurvey(of url: URL, progress: @escaping @Sendable (Double) -> Void) -> PageVaultInkSurvey? {
+        guard let document = PDFDocument(url: url), !document.isLocked, document.pageCount > 0 else {
+            return nil
+        }
+        return PageVaultPageLayout().survey(of: document, progress: progress)
     }
 }

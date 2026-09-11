@@ -11,6 +11,8 @@ import SwiftUI
     /// Measurement readout kept from the feasibility spike: size, page count, elapsed import time.
     @Published private(set) var lastImportSummary: String?
     @Published private(set) var coverRevision = 0
+    /// Page-measurement progress per book, shown while a book is being fitted. Absent once done.
+    @Published private(set) var measuringProgress: [UUID: Double] = [:]
     @Published var message: String?
     /// Warm paper is the default: this is meant to read like a book, not like a document viewer.
     @Published var warmPaper: Bool {
@@ -41,6 +43,9 @@ import SwiftUI
     private let now: () -> Date
     private let calendar: Calendar
     private let defaults: UserDefaults
+    private var cropCache: [UUID: [PageVaultInkBox?]] = [:]
+    private var surveyTasks: [UUID: Task<Void, Never>] = [:]
+    private var surveyFailed: Set<UUID> = []
 
     init(repository: (any PageVaultRepository)? = nil,
          storage: PageVaultStorage? = nil,
@@ -95,6 +100,8 @@ import SwiftUI
             storageAvailable = true
             openTodayIfGoalIsActive()
             await ensureCovers()
+            // Books imported before page fitting existed are measured in the background.
+            Task { await ensureLayouts() }
         } catch {
             storageAvailable = false
             message = "Your library could not be read: \(error.localizedDescription)"
@@ -121,6 +128,9 @@ import SwiftUI
             try repository.save(outcome.book)
             lastImportSummary = Self.summary(for: outcome)
             await ensureCover(for: outcome.book)
+            // Measured right after import, so the book normally opens already fitted.
+            let imported = outcome.book
+            Task { await ensureLayout(for: imported) }
         } catch let failure as PageVaultImportFailure {
             message = failure.message
         } catch {
@@ -185,6 +195,8 @@ import SwiftUI
             try storage.remove(id: book.id)
             library.remove(id: book.id)
             days.removeAll { $0.bookID == book.id }
+            cropCache[book.id] = nil
+            surveyFailed.remove(book.id)
         } catch {
             message = "That book could not be removed: \(error.localizedDescription)"
         }
@@ -357,6 +369,7 @@ import SwiftUI
         days = result.days
         openTodayIfGoalIsActive()
         await ensureCovers()
+        Task { await ensureLayouts() }
         return Self.restoreSummary(plan, mode: mode)
     }
 
@@ -416,6 +429,67 @@ import SwiftUI
 
     private static func bookCount(_ count: Int) -> String {
         count == 1 ? "1 book" : "\(count) books"
+    }
+
+    // MARK: - Page fitting
+
+    /// Per-page crop boxes for a book once its pages have been measured, or nil if they have not.
+    /// Measurements are cached on disk, so the boxes are derived at most once per launch per book.
+    func pageCrops(for book: PageVaultBook) -> [PageVaultInkBox?]? {
+        if let cached = cropCache[book.id] { return cached }
+        guard let survey = storage?.readSurvey(for: book.id),
+              survey.isCurrent(pageCount: book.pageCount) else { return nil }
+        let crops = PageVaultCrop.cropBoxes(for: survey.boxes)
+        cropCache[book.id] = crops
+        return crops
+    }
+
+    /// True when measuring this book failed during this launch, so the reader opens it as published.
+    func layoutUnavailable(for book: PageVaultBook) -> Bool {
+        surveyFailed.contains(book.id)
+    }
+
+    func fittingProgress(for book: PageVaultBook) -> Double {
+        measuringProgress[book.id] ?? 0
+    }
+
+    /// Measures every book that has not been measured yet, one at a time.
+    func ensureLayouts() async {
+        for book in library.books { await ensureLayout(for: book) }
+    }
+
+    /// Measures where the text sits on every page of a book, once. A caller arriving while that
+    /// measurement is already running waits for it instead of starting another.
+    func ensureLayout(for book: PageVaultBook) async {
+        if let running = surveyTasks[book.id] {
+            await running.value
+            return
+        }
+        guard let storage, !surveyFailed.contains(book.id), pageCrops(for: book) == nil else { return }
+        let task = Task { await measure(book, storage: storage) }
+        surveyTasks[book.id] = task
+        await task.value
+        surveyTasks[book.id] = nil
+    }
+
+    private func measure(_ book: PageVaultBook, storage: PageVaultStorage) async {
+        let id = book.id
+        let url = storage.documentURL(for: id)
+        let documents = self.documents
+        let survey = await Task.detached(priority: .utility) {
+            documents.inkSurvey(of: url) { fraction in
+                Task { @MainActor [weak self] in self?.measuringProgress[id] = fraction }
+            }
+        }.value
+        measuringProgress[id] = nil
+        // A book removed while it was being measured must not leave a measurement behind.
+        guard library.books.contains(where: { $0.id == id }) else { return }
+        if let survey, survey.isCurrent(pageCount: book.pageCount) {
+            try? storage.writeSurvey(survey, for: id)
+            cropCache[id] = PageVaultCrop.cropBoxes(for: survey.boxes)
+        } else {
+            surveyFailed.insert(id)
+        }
     }
 
     // MARK: - Covers

@@ -1,57 +1,15 @@
 # AkshatOS
 
-A native personal iPhone hub. Open AkshatOS, select **Squat Reminder**, and enter its movement
-dashboard, or **PageVault** for its PDF library. PageVault's import and large-PDF reading passed a
-physical-device test, including a 188 MB scan. Paged reading and warm paper on text pages have since
-been confirmed on the phone; the bookmarked place, margin trimming and bounded zoom have not.
-ReelVault is reserved for later and WHOOP stays a separate app.
+A native personal iPhone hub. Open AkshatOS and select **Squat Reminder** for its movement dashboard
+or **PageVault** for its PDF library. ReelVault is reserved for later and WHOOP stays a separate app.
 
-**Current state:** hub/Squats implementation with notification actions, daily history, local
-recovery, Home auto-pause and expanded goal/streak edge handling, plus the PageVault module,
-bundle ID `com.akshatksingh18.akshatos`. The working source version and build/device evidence live in
-[cloud-build.md](cloud-build.md). The old standalone smoke successfully launched and was removed
-by Akshat; that is not evidence that this new hub build works on the phone.
-The Build-11 unsigned IPA is downloaded and hash-verified after main delivery run #49; Builds 9 and
-4 are retained fallbacks. The build guide contains the exact paths and manual Sideloadly steps.
-Physical testing confirmed that notification and location permission prompts appear. Build 10 fixed
-Build 9's regular-countdown reset, but after installation phone testing found that the ten-minute
-countdown still restarts on foreground and Done does not dismiss it. Build 11 persists that deadline
-too and turns Done during/after a snooze into a fresh full interval. PR #10 and main delivery run #49
-passed the full cloud pipeline; the Build-11 IPA is downloaded and checksum/package-verified. Phone
-testing confirms its displayed countdown survives leaving and closing the app, while ordinary Done
-still did not restart the interval. Build 12 source now resets every running Done to a full interval
-and stabilizes changing button/card geometry. PR #12 run #34073932922 passed the complete 49-domain/
-63-integration-test cloud gate; main delivery run #53 repeated it and produced the downloaded,
-checksum/package/screenshot-verified Build-12 IPA. Build 12 was installed over Build 11 without an
-uninstall; phone testing passed cadence reset after ordinary and snoozed Done, countdown persistence
-across background/force-close, smooth button interactions, and preservation of settings, permissions,
-Home configuration and history. The broader device/refresh/recovery matrix remains pending.
-Build 13 replaces manual snooze with a bounded pre-scheduled chain of automatic ten-minute nudges
-after an ignored normal reminder, and adds an idle-only 9:00 AM invitation to start the day. Done or
-Pause cancels the chain; Done starts a fresh full interval. PR #15 run #57 and main delivery run #58
-passed the complete gate, and the downloaded Build-13 IPA passed checksum/package/screenshot
-inspection. Akshat then installed Build 13 and reports that its implemented phone workflow works
-well in ongoing daily use, including automatic nudges and the idle 9:00 AM start invitation. Build
-13 is the installed current build; Build 12 is its retained accepted predecessor. The formal
-edge-case, refresh/recovery and multi-cycle soak gates remain open.
-Build-7 source completes the dashboard/Settings UI with detailed notification and location
-permission presentation, per-state automation-health icons, and VoiceOver/Dynamic Type/Reduce
-Motion/contrast accessibility behavior; its exact source passed cloud CI (see `ci.md`). Build-8
-source adds revoked-vs-denied wording, a dashboard-level Home automation-health icon, and Dynamic
-Type hardening for accessibility text sizes. Post-review source corrects remembered-grant semantics,
-proves the flags persist across store recreation, and excludes Home files from device backup.
-Foreground reconciliation now repairs invalid idle preferences, removes stale or malformed snoozes,
-requires the expected recurring-request identity/interval/category, and replaces a missing or
-mismatched system Home boundary without trusting stale presence. Exact source `8c1cc96` passed the
-full cloud gate in run #32 and was merged to `main` through PR #1.
-Build-9 source chooses an eight-set default goal and 150-meter Home radius, expands lifecycle,
-permission, reconciliation, snooze, day/time-zone, recovery, Home-health and Settings UI tests,
-and fixes repair of a repeating request with no next fire date. PR #4 is merged and main delivery
-run #39 produced the checksum-verified Build-9 IPA. Build 10 prioritizes a pending ten-minute nudge,
-keeps **Your day so far** completion-only, and persists the regular cadence anchor; PR #7 and main
-run #43 passed. Build 11 addresses the two phone-reported snooze/foreground defects, merged through
-PR #10, and passed main delivery run #49; countdown persistence now passes phone testing, while its
-remaining behavior is not fully device-verified.
+**Current state:** Squats v1 — notification actions, daily history, local recovery, Home auto-pause
+and goal/streak handling — is implemented, and Build 13 is accepted in ongoing daily phone use; its
+edge-case, refresh/recovery and soak matrix remains open. PageVault's library, paged reader, reading
+streaks, export/restore and page fitting are implemented; its large-PDF import passed on the phone,
+and the reader builds since then await one device pass. Bundle ID `com.akshatksingh18.akshatos`.
+The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
+open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.
 
 This repository evolved from Squat Reminder, retaining Git history and the unverified Android
 fallback. Source is temporarily public at
@@ -66,7 +24,7 @@ build skipping, and the server-enforced `main` protection. Green CI is not physi
 App composition, display-only hub, shared styling and Squats feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- Hub app picker; Squats dashboard; visibly planned PageVault/ReelVault entries.
+- Hub app picker, Squats dashboard and PageVault library; ReelVault is a visibly planned entry.
 - Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
 - Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
   minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,
@@ -91,9 +49,9 @@ disposable test activity only.
 - Tap **Start my day**; the first reminder is one interval later.
 - Receive ordinary local notifications until pausing or tapping **End my day**.
 - Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
-  not unrecorded individual repetitions. Done should dismiss any unresolved nudge and restart the
-  full regular interval from that completed set, including when the ordinary 45-minute countdown was
-  active. Build 12 implements the universal reset in the shared dashboard/notification command.
+  not unrecorded individual repetitions. Done dismisses any unresolved nudge and restarts the full
+  regular interval from that completed set, including when the ordinary 45-minute countdown was
+  active.
 - Reach the configurable daily set goal to qualify that local date for the streak. New installs
   start at eight completed sets; setting the goal to zero turns streak tracking off. The dashboard
   shows today's progress plus current and personal-best streak.
@@ -101,13 +59,13 @@ disposable test activity only.
 - Optionally configure Home once so a system geofence pauses a Running day after leaving and resumes
   only that same day if the geofence caused the pause. Manual controls remain available at all times.
 - If a normal reminder is ignored, the main clock advances to the next automatic ten-minute nudge
-  and iOS continues those nudges until Done or Pause. Done begins a fresh full interval. Build 13
-  pre-schedules a bounded horizon and replenishes it when the app returns to the foreground.
+  and iOS continues those nudges until Done or Pause. Done begins a fresh full interval. The app
+  pre-schedules a bounded horizon and replenishes it when it returns to the foreground.
 - While no day is active and notification access exists, a repeating 9:00 AM local notification
   invites you to open AkshatOS. Tapping it opens the app but does not start the timer automatically.
-- **Your day so far** shows only completed sets and their times, not pause/resume/snooze bookkeeping.
-- End finalizes the session and shows completed sets, goal/streak status, timing, pauses, snoozes, and
-  a completion timeline. A below-goal current date stays marked at risk until that date ends.
+- **Your day so far** shows only completed sets and their times, not pause/resume bookkeeping.
+- End finalizes the session and shows completed sets, goal/streak status, timing, pauses and a
+  completion timeline. A below-goal current date stays marked at risk until that date ends.
 - Keep lightweight daily summaries locally. There is no account, cloud sync, remote analytics,
   movement history, multiple schedules, second reminder engine, or backend.
 
@@ -115,7 +73,7 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 
 ## Primary iPhone plan
 
-The `ios/` source now opens the hub picker and a separate Squats dashboard. The build path is
+The `ios/` source opens the hub picker, a separate Squats dashboard and the PageVault library. The build path is
 Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses a bounded batch
 of one-off `UNTimeIntervalNotificationTrigger` requests for the normal reminder and automatic nudges,
 plus one repeating 9:00 AM calendar request while idle. iOS schedules delivery, so the app does not
@@ -126,9 +84,9 @@ idempotent lifecycle commands. Legacy Build-12 snooze actions remain decode-safe
 An old preview's schedule may show Repair reminders after update; re-arm it once to attach the
 current buttons. Actions are queued before processing and receipts survive Undo. If protected
 session data is unavailable, logging waits for unlock and merge; a matching Pause can still cancel
-the schedule. Snooze expires ten minutes from its tap, even during recovery. Before first unlock
-after reboot or on inbox-write failure, saving an action cannot be guaranteed; check the visible
-error and your count after opening Squats. These conditions still need physical-phone acceptance.
+the schedule. Before first unlock after reboot or on inbox-write failure, saving an action cannot be
+guaranteed; check the visible error and your count after opening Squats. These conditions still need
+physical-phone acceptance.
 
 Interval/goal settings live in `UserDefaults`; the current session also persists the regular cadence
 anchor so closing or foregrounding the app cannot restart the displayed interval. Session intent and events live in the
@@ -147,8 +105,8 @@ location to choose/confirm a circular Home boundary with a configurable 150-mete
 then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
 state stay in protected local storage excluded from both device backups and Squats backup exports;
-the app never continuously tracks location or saves a route. Build-6 passed exact-source cloud checks; physical
-geofence behavior remains unverified.
+the app never continuously tracks location or saves a route. Physical geofence behavior remains
+unverified.
 Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
 is Home-away automation. A deliberate pause always wins; an explicit run-anyway choice while outside
 temporarily suppresses repeat exit events.
@@ -218,4 +176,5 @@ source ownership are in `architecture.md`; open work is in `todo.md`.
 When product behavior, platform priority, scheduling, notification/location permission handling,
 streak rules, persistence, build/signing, status, or recovery changes, update this README,
 `features.md`, `architecture.md`, `todo.md`, and `CLAUDE.md` together. Keep accepted plan, present
-source, and physically verified behavior separate.
+source, and physically verified behavior separate. Build-by-build evidence belongs only in
+`cloud-build.md`.
