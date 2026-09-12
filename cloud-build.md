@@ -121,6 +121,12 @@ memory verdict. `../book-reader/CLAUDE.md` owns what these findings mean for Pag
   restoring an export into a library missing those books, reading-data-only restore, and how warm
   paper looks on the image-heavy scan.
 
+- **Build 21** (installed over Build 20): the page curl works, including dragging to select a line to
+  highlight under it, and highlights themselves work. Akshat then asked for three changes — undo a
+  highlight by tapping the highlighter again, make the curl permanent with no setting, and drop warm
+  for sepia — all of which are in Build 22. Search, the themes and the highlights export were not
+  tested in this pass.
+
 ## Signing and physical acceptance flow
 
 1. Pick the build from Retained artifacts. Build 13 is the Squats baseline; PageVault candidates are
