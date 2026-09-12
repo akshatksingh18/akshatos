@@ -61,8 +61,12 @@ not a claim that every feature is physically verified.
   paths, and the refresh/recovery gates still open. Read before changing anything about weekly
   signing.
 - `scripts/check-signing-health.ps1` — the scheduled health check. Reports only a completed install
-  moving forward as success, and escalates to a blocking dialog when an app is close to expiry,
-  errored, or uncheckable. Refreshes nothing itself.
+  moving forward as success, and only once corroborated — the install date past the first install and
+  the new expiry in the future — because a changed record alone has already produced a refresh report
+  for a refresh that never happened; an uncorroborated difference is logged as `RECORD-CHANGED`. A
+  `-DatabasePath` test run is redirected to its own sidecar log/state so a fixture cannot write into
+  the real record. Escalates to a blocking dialog when an app is close to expiry, errored, or
+  uncheckable. Refreshes nothing itself.
 - `scripts/read-signing-state.py` — reads a read-only copy of Sideloadly's `installations.db` and
   emits per-app expiry as JSON; never touches the signing material stored beside it. Carries the
   documented `RETIRED_BUNDLE_PREFIXES` list so an app removed from the phone (Sideloadly keeps its
@@ -327,10 +331,12 @@ not a claim that every feature is physically verified.
   automation that treats opening Sideloadly, a process exit, or a changed cache timestamp as a
   successful phone installation.
 - The Windows health check is **installed**: the `AkshatOS Signing Health` scheduled task runs at
-  logon and twice daily, reads Sideloadly's own install record, and treats only a completed install
-  moving forward as success — a quiet daemon or a clean process exit is explicitly not proof. It
+  logon and twice daily, reads Sideloadly's own install record, and treats only a corroborated
+  completed install moving forward as success — a quiet daemon, a clean process exit, or a merely
+  changed install record is explicitly not proof. It
   escalates to a blocking dialog at two days or on any recorded error. `setup.md` owns the detail
-  and the gates still open. It deliberately refreshes nothing: Sideloadly's daemon does that, and a
+  and the gates still open, including which of the log's existing `REFRESHED` lines are test
+  artifacts that must not be counted toward them. It deliberately refreshes nothing: Sideloadly's daemon does that, and a
   second signer racing it would be worse than none.
 - After the first install and after the first several refresh cycles, open the app and confirm its
   running/interval state and pending notification request survived. Once the process is trusted,
