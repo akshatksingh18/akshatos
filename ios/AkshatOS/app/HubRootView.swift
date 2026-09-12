@@ -4,8 +4,10 @@ import SwiftUI
 struct HubRootView: View {
     @ObservedObject var squats: SquatStore
     @ObservedObject var pageVault: PageVaultStore
+    @ObservedObject var navigator: HubNavigator
     let orientation: OrientationGate
     @Environment(\.scenePhase) private var scenePhase
+    @State private var path: [HubRoute] = []
 
     var body: some View {
         HubView(entries: [
@@ -20,7 +22,7 @@ struct HubRootView: View {
                      statusIcon: "book"),
             HubEntry(id: .reelVault, title: "ReelVault", subtitle: "Your personal reel collection",
                      icon: "play.rectangle", isAvailable: false)
-        ]) { route in
+        ], path: $path) { route in
             switch route {
             case .squats:
                 SquatDashboard().environmentObject(squats)
@@ -36,6 +38,14 @@ struct HubRootView: View {
         .task { await squats.refresh() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await squats.refresh() } }
+        }
+        // A tapped notification opens the feature that sent it. Replacing the path rather than
+        // appending is what makes that true from anywhere: whatever was open — PageVault, a book,
+        // a sheet's parent — is left behind instead of the feature being pushed on top of it.
+        .onChange(of: navigator.requested) { _, route in
+            guard let route else { return }
+            if path != [route] { path = [route] }
+            navigator.clear()
         }
     }
 }

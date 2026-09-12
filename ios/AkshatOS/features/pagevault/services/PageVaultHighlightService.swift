@@ -64,10 +64,42 @@ enum PageVaultHighlightService {
         return order.compactMap { byPage[$0] }
     }
 
+    /// Namespace marking an annotation as PageVault's own.
+    ///
+    /// A bare id is not enough. PageVault used to claim every annotation carrying any `userName`,
+    /// which got ownership wrong in both directions: a mark the PDF itself carried with an author
+    /// name would be deleted, while one carrying no name could never be removed at all — it stayed
+    /// on the page, absent from the passage list, with nothing able to clear it.
+    static let ownershipPrefix = "pagevault:"
+
+    /// Annotation subtypes that mark up text the way a highlighter does, and so would be mistaken
+    /// for a PageVault mark. Links and form widgets are deliberately not in this set: hiding those
+    /// would break navigating the book.
+    ///
+    /// Compared without a leading slash because PDFKit is inconsistent about it —
+    /// `PDFAnnotationSubtype.highlight.rawValue` is `/Highlight` while `annotation.type` commonly
+    /// reads back as `Highlight`.
+    private static let markupSubtypes: Set<String> = ["Highlight", "Underline", "StrikeOut", "Squiggly"]
+
     /// Draws every stored highlight onto the open document. Called once after the document is set,
     /// and again whenever a highlight is added or removed.
+    ///
+    /// The document's own text markup is hidden rather than removed, because PageVault never writes
+    /// to the PDF: a mark it cannot list or clear is indistinguishable from one of its own and reads
+    /// as a highlight that will not go away. Hiding is in-memory only, so the file keeps whatever it
+    /// came with and re-importing it changes nothing.
     static func apply(_ highlights: [PageVaultHighlight], to document: PDFDocument) {
-        removeAll(from: document)
+        for index in 0..<document.pageCount {
+            guard let page = document.page(at: index) else { continue }
+            // `page.annotations` hands back a fresh array, so removing while iterating is safe.
+            for annotation in page.annotations {
+                if isOurs(annotation) {
+                    page.removeAnnotation(annotation)
+                } else if isTextMarkup(annotation) {
+                    annotation.shouldDisplay = false
+                }
+            }
+        }
         for highlight in highlights {
             guard highlight.page >= 0, highlight.page < document.pageCount,
                   let page = document.page(at: highlight.page) else { continue }
@@ -75,21 +107,21 @@ enum PageVaultHighlightService {
                 let bounds = CGRect(x: rect.x, y: rect.y, width: rect.width, height: rect.height)
                 let annotation = PDFAnnotation(bounds: bounds, forType: .highlight, withProperties: nil)
                 annotation.color = marker
-                // Tags the annotation as ours, so replacing highlights never disturbs anything the
-                // document itself carries.
-                annotation.userName = highlight.id.uuidString
+                annotation.userName = ownershipPrefix + highlight.id.uuidString
                 page.addAnnotation(annotation)
             }
         }
     }
 
-    private static func removeAll(from document: PDFDocument) {
-        for index in 0..<document.pageCount {
-            guard let page = document.page(at: index) else { continue }
-            for annotation in page.annotations where annotation.userName != nil {
-                page.removeAnnotation(annotation)
-            }
-        }
+    /// Whether PageVault drew this annotation in this session. Its marks are never saved into the
+    /// file, so anything carrying the namespace was put there by the code above.
+    static func isOurs(_ annotation: PDFAnnotation) -> Bool {
+        annotation.userName?.hasPrefix(ownershipPrefix) == true
+    }
+
+    static func isTextMarkup(_ annotation: PDFAnnotation) -> Bool {
+        guard let type = annotation.type else { return false }
+        return markupSubtypes.contains(type.hasPrefix("/") ? String(type.dropFirst()) : type)
     }
 
     /// Renders the book's highlights as a plain PDF: the title, then every passage with the page it

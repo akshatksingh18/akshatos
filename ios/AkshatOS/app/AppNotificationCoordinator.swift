@@ -5,13 +5,43 @@ import UIKit
 /// Sole owner of the process-wide delegate. Feature schedulers never replace it.
 @MainActor final class AppNotificationCoordinator: NSObject, UNUserNotificationCenterDelegate {
     private let squats: SquatStore
+    private let navigator: HubNavigator
 
-    init(squats: SquatStore) {
+    /// Which feature owns a notification, by the namespace its request identifier starts with.
+    ///
+    /// Keyed on the identifier rather than the category because not every notification declares a
+    /// category — Squats' 9:00 AM invitation does not, and that is precisely the one whose whole
+    /// purpose is to open its feature. Every feature already namespaces its identifiers, so the
+    /// prefix is the one thing all of its notifications share.
+    ///
+    /// **A new feature adds its namespace here in the same change that registers its category
+    /// below.** Nothing breaks if it is forgotten: an unrecognised notification routes nowhere and
+    /// the hub stays where it was, which is the behaviour this replaced.
+    static let featureNamespaces: [(namespace: String, route: HubRoute)] = [
+        (ReminderService.namespace, .squats)
+    ]
+
+    init(squats: SquatStore, navigator: HubNavigator) {
         self.squats = squats
+        self.navigator = navigator
         super.init()
         UNUserNotificationCenter.current().delegate = self
         // This is the hub's complete category registry; add future feature categories here.
         UNUserNotificationCenter.current().setNotificationCategories([ReminderService.category()])
+    }
+
+    /// The feature a tapped notification belongs to, or nil when nothing claims it.
+    static func route(forNotification identifier: String) -> HubRoute? {
+        featureNamespaces.first { identifier.hasPrefix($0.namespace) }?.route
+    }
+
+    /// Whether this response should move the hub at all.
+    ///
+    /// Only opening the notification itself should navigate. Done and Pause are handled without
+    /// bringing the app forward, and if the app happens to be open already, logging a set must not
+    /// yank the reader away mid-page. Dismissing is not a request to go anywhere either.
+    static func shouldNavigate(actionIdentifier: String) -> Bool {
+        actionIdentifier == UNNotificationDefaultActionIdentifier
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -26,6 +56,12 @@ import UIKit
         Task { @MainActor in
             defer { completion() }
             let notification = response.notification
+            // Routing is requested before the await, so opening a notification lands on its feature
+            // even if persisting the action takes a moment or the store is briefly unavailable.
+            if Self.shouldNavigate(actionIdentifier: response.actionIdentifier),
+               let route = Self.route(forNotification: notification.request.identifier) {
+                navigator.request(route)
+            }
             if let action = Self.action(request: notification.request, delivered: notification.date,
                                         identifier: response.actionIdentifier) {
                 // receive persists to the inbox before any asynchronous service work or busy check.

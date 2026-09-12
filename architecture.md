@@ -168,10 +168,19 @@ background-capable services at app lifetime; load future media views/resources o
   were pending. Pause calls the same idempotent command as the UI. Legacy snooze callbacks decode
   safely and are acknowledged without changing cadence.
 - While idle and authorized, keep one repeating 9:00 AM local calendar notification. Start cancels
-  it; returning to idle restores it. Its default tap only opens the app and never starts a session.
+  it; returning to idle restores it. Its default tap opens the app on the Squats screen and never
+  starts a session.
 - `UNUserNotificationCenterDelegate` routes responses by category/action identifier and always calls
   its completion handler after durable/idempotent processing. The normal app, notification handler,
   and App Intents never implement separate state-transition logic.
+- The same delegate also routes a tap to the feature that sent it. `featureNamespaces` maps a
+  notification-identifier prefix to a `HubRoute`; the coordinator sets one pending route on
+  `HubNavigator` and `HubRootView` replaces the navigation path with it. The path is replaced rather
+  than appended so the feature is reached from anywhere, including with a book open, instead of
+  being pushed on top of whatever was there. `HubView` is therefore a path-driven `NavigationStack`
+  with `NavigationLink(value:)` cards. Routing keys on the request identifier because the 9:00 AM
+  request carries no category, and navigation is limited to the default action so a background Done
+  or Pause cannot move the screen. `hub-plan.md` owns the contract.
 - Do not use an in-process timer, background loop, unbounded list of future notifications, Web Push,
   a Shortcut/Personal Automation as the reminder engine, or a server.
 

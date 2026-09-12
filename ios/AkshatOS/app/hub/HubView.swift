@@ -2,10 +2,13 @@ import SwiftUI
 
 struct HubView<Destination: View>: View {
     let entries: [HubEntry]
+    /// Held outside the stack so a feature can be opened without the user tapping its card — which
+    /// is what a tapped alert needs.
+    @Binding var path: [HubRoute]
     @ViewBuilder var destination: (HubRoute) -> Destination
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
                     HStack {
@@ -23,9 +26,7 @@ struct HubView<Destination: View>: View {
                     }
 
                     ForEach(entries.filter(\.isAvailable)) { entry in
-                        NavigationLink {
-                            destination(entry.id)
-                        } label: {
+                        NavigationLink(value: entry.id) {
                             Surface {
                                 HStack(alignment: .top) {
                                     Image(systemName: entry.icon)
@@ -73,6 +74,7 @@ struct HubView<Destination: View>: View {
             }
             .background(Palette.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: HubRoute.self) { destination($0) }
         }.tint(Palette.lime)
     }
 }

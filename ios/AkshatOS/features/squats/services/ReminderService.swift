@@ -23,14 +23,21 @@ struct ReminderSnapshot {
 }
 
 @MainActor final class ReminderService: SquatReminders {
-    static let regular = "akshatos.squats.regular"
-    static let automaticPrefix = "akshatos.squats.automatic-nudge."
-    static let dailyStart = "akshatos.squats.daily-start"
-    static let legacySnooze = "akshatos.squats.snooze"
-    static let categoryID = "akshatos.squats.reminder"
-    static let doneAction = "akshatos.squats.done"
-    static let pauseAction = "akshatos.squats.pause"
-    static let legacySnoozeAction = "akshatos.squats.snooze-ten"
+    /// Every Squats notification identifier begins with this, which is how the app layer tells a
+    /// tapped Squats notification from another feature's and opens the right one.
+    ///
+    /// The identifiers below are composed from it rather than written out, so the namespace is
+    /// provably their prefix. Their resulting strings are unchanged: a different value would orphan
+    /// the requests already pending on the phone.
+    static let namespace = "akshatos.squats."
+    static let regular = namespace + "regular"
+    static let automaticPrefix = namespace + "automatic-nudge."
+    static let dailyStart = namespace + "daily-start"
+    static let legacySnooze = namespace + "snooze"
+    static let categoryID = namespace + "reminder"
+    static let doneAction = namespace + "done"
+    static let pauseAction = namespace + "pause"
+    static let legacySnoozeAction = namespace + "snooze-ten"
     static let automaticNudgeInterval: TimeInterval = 600
     static let automaticNudgeCount = 59
     static let scheduleVersion = 2

@@ -133,6 +133,11 @@ The removed Build-12 snooze action remains decode-safe only so an already queued
 loop or corrupt state. It is absent from both dashboard and notification category. Physical-device
 testing must confirm Done/Pause presentation and repeated automatic delivery on the target iPhone.
 
+Opening a Squats notification opens the **Squats screen**, whatever was last on display — reading a
+book included. Tapping **Done** or **Pause** does not move the screen, so logging a set never pulls
+the reader off the page. This applies to every hub module, not just Squats: `hub-plan.md` owns the
+contract and the rule that a new module registers its notification namespace with its category.
+
 Notification actions run through the same domain commands as dashboard buttons. Action handling must
 be safe while the phone is locked, persist an idempotent event before returning control to iOS, and
 merge any small pending-action inbox into the main day log on the next foreground reconciliation.

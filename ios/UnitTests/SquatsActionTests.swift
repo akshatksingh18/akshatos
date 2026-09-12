@@ -1122,4 +1122,55 @@ import UserNotifications
         XCTAssertEqual(reminders.state.sessionID, existing[0].id)
         XCTAssertTrue(inbox.values.isEmpty)
     }
+
+    // MARK: - Opening a notification lands on the feature that sent it
+
+    func testEverySquatsNotificationIsRoutedToSquats() {
+        // The 9:00 AM invitation is the one that matters most here: it carries no category, so
+        // routing on category alone would leave it opening whatever was last on screen.
+        for identifier in [ReminderService.regular, ReminderService.dailyStart,
+                           ReminderService.legacySnooze, ReminderService.automaticPrefix + "17"] {
+            XCTAssertEqual(AppNotificationCoordinator.route(forNotification: identifier), .squats,
+                           "\(identifier) belongs to Squats")
+        }
+    }
+
+    func testSquatsIdentifiersAllCarryItsNamespace() {
+        // Routing depends on this being true, so it is asserted rather than assumed.
+        for identifier in ReminderService.activeIdentifiers + [ReminderService.dailyStart] {
+            XCTAssertTrue(identifier.hasPrefix(ReminderService.namespace), identifier)
+        }
+        XCTAssertEqual(ReminderService.regular, "akshatos.squats.regular",
+                       "Composing identifiers from the namespace must not change their stored value")
+        XCTAssertEqual(ReminderService.dailyStart, "akshatos.squats.daily-start")
+        XCTAssertEqual(ReminderService.categoryID, "akshatos.squats.reminder")
+    }
+
+    func testAnUnclaimedNotificationRoutesNowhere() {
+        XCTAssertNil(AppNotificationCoordinator.route(forNotification: "akshatos.reels.something"),
+                     "A feature that has not registered its namespace leaves the hub where it was")
+        XCTAssertNil(AppNotificationCoordinator.route(forNotification: ""))
+    }
+
+    func testOnlyOpeningTheNotificationItselfNavigates() {
+        XCTAssertTrue(AppNotificationCoordinator
+            .shouldNavigate(actionIdentifier: UNNotificationDefaultActionIdentifier))
+        // Logging a set must not yank the reader away from the page being read.
+        XCTAssertFalse(AppNotificationCoordinator.shouldNavigate(actionIdentifier: ReminderService.doneAction))
+        XCTAssertFalse(AppNotificationCoordinator.shouldNavigate(actionIdentifier: ReminderService.pauseAction))
+        XCTAssertFalse(AppNotificationCoordinator
+            .shouldNavigate(actionIdentifier: UNNotificationDismissActionIdentifier))
+    }
+
+    func testRoutingAFeatureKeepsOnlyTheLatestRequest() {
+        let navigator = HubNavigator()
+        XCTAssertNil(navigator.requested)
+        navigator.request(.pageVault)
+        navigator.request(.squats)
+        XCTAssertEqual(navigator.requested, .squats,
+                       "Two notifications tapped in a row land on the second, not both in turn")
+        navigator.clear()
+        XCTAssertNil(navigator.requested,
+                     "Clearing after navigating stops the hub bouncing back into the feature")
+    }
 }
