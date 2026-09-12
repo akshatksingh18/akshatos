@@ -130,5 +130,10 @@ directly rather than trusting a watch command's exit status. Docs-only PRs skip 
 gate. Simulator tests do not prove locked actions, actual delivery, geofences, Focus, reboot or
 signing refresh.
 
+Authoring on Windows has two traps worth knowing before they cost a round trip. A long or
+quote-heavy bash heredoc gets mangled or truncated by the shell, so write a script with the Write
+tool and run it rather than piping a large one inline. And a Python string holding a Windows path
+needs to be raw: `"C:\Users\..."` parses `\U` as a unicode escape and fails outright.
+
 Keep this handoff, its index and source changes together when publishing. Commit/PR/check evidence
 belongs in `cloud-build.md`.
