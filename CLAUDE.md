@@ -56,6 +56,17 @@ not a claim that every feature is physically verified.
   update items in place as their real state changes.
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
+- `setup.md` — keeping an installed build signed: the split between Sideloadly's refreshing daemon
+  and the health check that proves it happened, what counts as success, the installed task and its
+  paths, and the refresh/recovery gates still open. Read before changing anything about weekly
+  signing.
+- `scripts/check-signing-health.ps1` — the scheduled health check. Reports only a completed install
+  moving forward as success, and escalates to a blocking dialog when an app is close to expiry,
+  errored, or uncheckable. Refreshes nothing itself.
+- `scripts/read-signing-state.py` — reads a read-only copy of Sideloadly's `installations.db` and
+  emits per-app expiry as JSON; never touches the signing material stored beside it. Carries the
+  documented `RETIRED_BUNDLE_PREFIXES` list so an app removed from the phone (Sideloadly keeps its
+  row forever) is reported, not raised as a false alarm.
 - `.github/workflows/ios-build.yml` — public-repository macOS-runner job that generates the Xcode
   project, runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
 - `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,
@@ -315,10 +326,12 @@ not a claim that every feature is physically verified.
   supported **Refresh All Apps Manually**/normal same-IPA install path. Do not build blind GUI
   automation that treats opening Sideloadly, a process exit, or a changed cache timestamp as a
   successful phone installation.
-- Add a Windows health check when implementation reaches deployment. It must record and verify the
-  last successful re-sign/install, distinguish “attempted” from “succeeded,” retry with a bounded
-  cadence, and raise a visible failure alert no later than two days before profile expiry. A quiet
-  daemon or successful process exit alone is not proof that the phone received a fresh profile.
+- The Windows health check is **installed**: the `AkshatOS Signing Health` scheduled task runs at
+  logon and twice daily, reads Sideloadly's own install record, and treats only a completed install
+  moving forward as success — a quiet daemon or a clean process exit is explicitly not proof. It
+  escalates to a blocking dialog at two days or on any recorded error. `setup.md` owns the detail
+  and the gates still open. It deliberately refreshes nothing: Sideloadly's daemon does that, and a
+  second signer racing it would be worse than none.
 - After the first install and after the first several refresh cycles, open the app and confirm its
   running/interval state and pending notification request survived. Once the process is trusted,
   keep periodic manual launch checks in addition to automated signing verification.
