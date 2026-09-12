@@ -45,6 +45,24 @@ final class PageVaultUITests: XCTestCase {
                       "Closing the sheet returns to the library")
     }
 
+    func testTakeawaysIsReachableAndEmptyUntilSomethingIsKept() {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["open-pageVault"].waitForExistence(timeout: 10))
+        app.buttons["open-pageVault"].tap()
+
+        XCTAssertTrue(app.buttons["open-takeaways"].waitForExistence(timeout: 10))
+        app.buttons["open-takeaways"].tap()
+
+        XCTAssertTrue(app.staticTexts["Nothing kept yet"].waitForExistence(timeout: 5),
+                      "With nothing highlighted, Takeaways says so rather than showing an empty list")
+        capture("PageVault takeaways")
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["import-pdf"].waitForExistence(timeout: 5),
+                      "Leaving Takeaways returns to the library")
+    }
+
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name

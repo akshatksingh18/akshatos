@@ -416,6 +416,10 @@ assert(marked.highlightsInReadingOrder.map(\.page) == [4, 12],
        "Highlights are listed in the order they appear in the book")
 assert(marked.highlights(onPage: 12).count == 1 && marked.highlights(onPage: 7).isEmpty,
        "Highlights can be found by page, which is how the reader redraws them")
+assert(marked.highlight(onPage: 12, matching: "the first line") != nil
+       && marked.highlight(onPage: 12, matching: "a different line") == nil
+       && marked.highlight(onPage: 4, matching: "the first line") == nil,
+       "A passage is matched by page and text together, which is what makes the highlighter a toggle")
 let doomed = marked.highlightsInReadingOrder[0].id
 marked.removeHighlight(id: doomed)
 assert(marked.highlights.map(\.page) == [12], "Removing one highlight leaves the others alone")
@@ -438,10 +442,21 @@ assert(shelfWithMarks.addHighlight(passage(2, "a line"), for: markedID)?.highlig
        "The library stores a highlight on the book it belongs to")
 assert(shelfWithMarks.addHighlight(passage(2, "a line"), for: UUID()) == nil,
        "An unknown book cannot be highlighted")
+var keeping = PageVaultLibrary()
+try keeping.insert(book(fingerprint: "kept-early", title: "Kept Early"))
+try keeping.insert(book(fingerprint: "kept-late", title: "Kept Late"))
+try keeping.insert(book(fingerprint: "unmarked", title: "Unmarked"))
+keeping.addHighlight(passage(1, "an early line", at: 2), for: keeping.books[0].id)
+keeping.addHighlight(passage(2, "a later line", at: 6), for: keeping.books[1].id)
+assert(keeping.withHighlights.map(\.title) == ["Kept Late", "Kept Early"],
+       "Takeaways lists only books with kept passages, most recently marked first")
+assert(keeping.withHighlights.allSatisfy { !$0.highlights.isEmpty },
+       "A book nothing was kept from never appears in Takeaways")
+
 let storedHighlightID = shelfWithMarks.books[0].highlights[0].id
 assert(shelfWithMarks.removeHighlight(storedHighlightID, for: markedID)?.highlights.isEmpty == true,
        "The library removes a highlight by id")
-print("PASS: 16 highlight assertions (tidy, preview, dedupe, ordering, page lookup, round trip, older records, library)")
+print("PASS: 19 highlight assertions (tidy, preview, dedupe, ordering, page lookup, toggle match, round trip, older records, library, takeaways)")
 
 // Searching a book's text. Matching and snippets are pure, so they are pinned without a document.
 let pageText = "Grit is passion and perseverance. Grit grows when you practise deliberately."
@@ -480,13 +495,15 @@ assert(PageVaultSearch.snippet(from: "abc", at: 5, length: 2).isEmpty,
 print("PASS: 16 search assertions (matching, case, accents, limits, snippets, empty pages)")
 
 // Page themes. The raw values are what an installed build has already written to disk.
-assert(PageVaultTheme.allCases.map(\.rawValue) == ["paper", "warm", "sepia", "night"],
+assert(PageVaultTheme.allCases.map(\.rawValue) == ["paper", "sepia", "night"],
        "Theme raw values are the stored form and must not be renamed")
 assert(PageVaultTheme.allCases.allSatisfy { !$0.label.isEmpty }, "Every theme is named in the menu")
-assert(PageVaultTheme.default == .warm, "Warm paper stays the default")
+assert(PageVaultTheme.default == .sepia, "Sepia is the default, chosen over the warmer white")
 assert(PageVaultTheme.night.inverts && !PageVaultTheme.sepia.inverts && !PageVaultTheme.paper.inverts,
        "Night inverts the page; the others tint it")
 assert(PageVaultTheme.stored("sepia") == .sepia, "A stored theme is restored")
-assert(PageVaultTheme.stored("moonlight") == .warm && PageVaultTheme.stored(nil) == .warm,
+assert(PageVaultTheme.stored("warm") == .sepia,
+       "A build that chose the retired warm theme lands on sepia rather than losing the choice")
+assert(PageVaultTheme.stored("moonlight") == .sepia && PageVaultTheme.stored(nil) == .sepia,
        "An unknown or missing stored theme falls back to the default rather than failing")
-print("PASS: 6 theme assertions (stored values, labels, default, inversion, fallback)")
+print("PASS: 7 theme assertions (stored values, labels, default, inversion, retired warm, fallback)")

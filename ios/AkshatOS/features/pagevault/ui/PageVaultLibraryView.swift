@@ -85,6 +85,13 @@ struct PageVaultLibraryView: View {
             .disabled(store.busy || !store.storageAvailable)
             .accessibilityIdentifier("import-pdf")
             // Reachable with an empty library too, which is exactly the state after a clean install.
+            NavigationLink {
+                PageVaultTakeawaysView(store: store)
+            } label: {
+                Label("Takeaways", systemImage: "quote.opening")
+            }
+            .buttonStyle(ActionStyle())
+            .accessibilityIdentifier("open-takeaways")
             Button {
                 showBackup = true
             } label: {

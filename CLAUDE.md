@@ -70,10 +70,11 @@ not a claim that every feature is physically verified.
   `data/` (versioned SwiftData store,
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
-  capture and the highlights PDF, page-text search), `ui/` (library grid, paged reader with its
-  fitting screen, book sheet, backup sheet, highlights list, search sheet, and the experimental
-  page-curl host). Product scope and gates are owned by `../book-reader/`. Its large-PDF gate passed on device; the reader iterations
-  that followed are not phone-verified.
+  capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
+  its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
+  search sheet). Product scope and
+  gates are owned by `../book-reader/`. Its reading loop, the page curl and highlights are
+  phone-confirmed; search and the page themes are not.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
