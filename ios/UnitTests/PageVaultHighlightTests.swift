@@ -73,6 +73,27 @@ import XCTest
                       "Removal is persisted, not just shown")
     }
 
+    func testHighlightingTheSamePassageAgainRemovesIt() async throws {
+        let store = try makeStore(root: "Phone", container: try makeContainer("A"))
+        await store.load()
+        await store.importBook(from: try makePDF(pages: 6))
+        let book = try XCTUnwrap(store.books.first)
+
+        store.toggleHighlight(text: "a line to keep", page: 1, rects: [], to: book)
+        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).highlights.count, 1)
+
+        // The same selection again. This is how a highlight made by mistake is undone.
+        store.toggleHighlight(text: "a line to keep", page: 1, rects: [],
+                              to: try XCTUnwrap(store.book(id: book.id)))
+        XCTAssertTrue(try XCTUnwrap(store.book(id: book.id)).highlights.isEmpty,
+                      "Highlighting an already-highlighted passage removes it")
+
+        store.toggleHighlight(text: "a line to keep", page: 2, rects: [],
+                              to: try XCTUnwrap(store.book(id: book.id)))
+        XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).highlights.first?.page, 2,
+                       "The same words on another page are a different passage")
+    }
+
     func testHighlightsTravelWithAFullExport() async throws {
         let source = try makePDF(pages: 12, name: "shared")
         let origin = try makeStore(root: "PhoneA", container: try makeContainer("A"))

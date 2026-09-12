@@ -335,16 +335,23 @@ import XCTest
             documents: PageVaultDocumentService(), defaults: defaults)
         XCTAssertEqual(store.theme, .paper, "Warm paper turned off carries over as the plain page")
 
-        XCTAssertFalse(store.pageCurl, "The page curl stays off until it is asked for")
-
         store.theme = .night
-        store.pageCurl = true
         let reopened = PageVaultStore(
             repository: SwiftDataPageVaultRepository(container: try makeContainer()),
             storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Themes")),
             documents: PageVaultDocumentService(), defaults: defaults)
         XCTAssertEqual(reopened.theme, .night, "A chosen theme is remembered across launches")
-        XCTAssertTrue(reopened.pageCurl, "So is the page-curl choice")
+
+        // Build 21 had a separate warm theme; anyone who chose it should land on sepia.
+        let warmSuite = "pagevault-warm-\(UUID().uuidString)"
+        let warmDefaults = try XCTUnwrap(UserDefaults(suiteName: warmSuite))
+        defer { warmDefaults.removePersistentDomain(forName: warmSuite) }
+        warmDefaults.set("warm", forKey: "pagevault.theme")
+        let carried = PageVaultStore(
+            repository: SwiftDataPageVaultRepository(container: try makeContainer()),
+            storage: try PageVaultStorage(root: sandbox.appendingPathComponent("Warm")),
+            documents: PageVaultDocumentService(), defaults: warmDefaults)
+        XCTAssertEqual(carried.theme, .sepia, "The retired warm theme carries over as sepia")
     }
 
     /// Streaks are gone, but an installed build wrote per-day rows into the same store. They are

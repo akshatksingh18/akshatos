@@ -17,11 +17,12 @@ and not yet device-tested. This file owns build and device evidence.
   carrying different code.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core, plus PageVault's library, paged reader, page themes
-  (paper, warm, sepia, night), reading status, bookmarked place, covers, Started shelf,
+- Content: hub picker → Squats dashboard/core, plus PageVault's library, page-curl reader, page
+  themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
   full-text search; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
-  were removed in Build 21, which also adds an experimental page curl that is off by default.
+  were removed in Build 21. Build 22 makes the curl the only reader, turns the highlighter into a
+  toggle so a mistaken highlight can be undone, and retires the warm theme in favour of sepia.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an upgrade of the standalone Squat Reminder smoke app (`0.1.0 (1)`,
@@ -81,11 +82,11 @@ What to check on the phone, most valuable first:
 - **Search.** From the reader menu, search a word that appears more than once and confirm the results
   land on the right pages. The 188 MB scan should find nothing: it has no text layer, and there is
   no OCR.
-- **Themes.** Paper, Warm, Sepia and Night from the reader menu. Night should invert the page into
+- **Themes.** Paper, Sepia and Night from the reader menu. Night should invert the page into
   light text on dark rather than merely dimming it.
-- **Page curl, off by default.** Turn it on, then try to drag-select a line and highlight it. If the
-  curl makes selecting text impractical, say so: it is isolated in one file and will be deleted
-  rather than worked around.
+- **Page curl and highlights: confirmed on Build 21.** Both worked on the phone, including dragging
+  to select a line under the curl. Build 22 therefore makes the curl the only reader, removes its
+  setting, and turns the highlighter into a toggle so a mistaken highlight can be undone.
 - **Export/restore is still unexercised on the phone.** Use a disposable library first: add two
   fixture PDFs, highlight and bookmark one, export both ways to Files, remove the books, then restore
   and confirm places, statuses, the Started shelf and the highlights all come back. Never make a real

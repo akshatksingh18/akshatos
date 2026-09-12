@@ -13,15 +13,10 @@ import SwiftUI
     /// Page-measurement progress per book, shown while a book is being fitted. Absent once done.
     @Published private(set) var measuringProgress: [UUID: Double] = [:]
     @Published var message: String?
-    /// How the page is tinted. Warm is the default: this is meant to read like a book, not like a
+    /// How the page is tinted. Sepia is the default: this is meant to read like a book, not like a
     /// document viewer.
     @Published var theme: PageVaultTheme {
         didSet { defaults.set(theme.rawValue, forKey: "pagevault.theme") }
-    }
-    /// Experimental: the system page-curl transition instead of PDFKit's paging. Off by default,
-    /// because the curl's drag gesture competes with dragging to select text for a highlight.
-    @Published var pageCurl: Bool {
-        didSet { defaults.set(pageCurl, forKey: "pagevault.pageCurl") }
     }
     /// How far in the reader is zoomed, as a multiple of the whole-page fit. Remembered so a
     /// chosen text size survives page turns, other books and relaunches instead of being redialled.
@@ -68,11 +63,10 @@ import SwiftUI
         if let chosen = defaults.string(forKey: "pagevault.theme") {
             self.theme = PageVaultTheme.stored(chosen)
         } else if let warm = defaults.object(forKey: "pagevault.warmPaper") as? Bool {
-            self.theme = warm ? .warm : .paper
+            self.theme = warm ? .sepia : .paper
         } else {
             self.theme = .default
         }
-        self.pageCurl = defaults.bool(forKey: "pagevault.pageCurl")
         self.readingZoom = Self.clampZoom(defaults.object(forKey: "pagevault.readingZoom") as? Double
                                           ?? Self.minimumZoom)
     }
@@ -193,6 +187,22 @@ import SwiftUI
         guard !highlight.text.isEmpty,
               let updated = library.addHighlight(highlight, for: book.id) else { return }
         persist(updated)
+    }
+
+    /// The highlighter is a toggle: selecting a passage that is already highlighted and tapping it
+    /// again removes it, which is how a highlight made by mistake is undone.
+    @discardableResult
+    func toggleHighlight(text: String, page: Int, rects: [PageVaultRect],
+                         to book: PageVaultBook) -> Bool {
+        let tidied = PageVaultHighlight.tidy(text)
+        guard !tidied.isEmpty else { return false }
+        if let existing = library.books.first(where: { $0.id == book.id })?
+            .highlight(onPage: page, matching: tidied) {
+            removeHighlight(existing.id, from: book)
+            return false
+        }
+        addHighlight(text: text, page: page, rects: rects, to: book)
+        return true
     }
 
     func removeHighlight(_ id: UUID, from book: PageVaultBook) {

@@ -11,6 +11,7 @@ import SwiftUI
     /// Drives the highlighter button: there is nothing to highlight without a selection.
     @Published private(set) var hasSelection = false
     private weak var view: PDFView?
+    private var jumper: ((Int) -> Void)?
 
     func attach(_ view: PDFView) { self.view = view }
 
@@ -45,9 +46,12 @@ import SwiftUI
         view.setNeedsDisplay()
     }
 
+    /// Supplied by the pager, because each page is its own view: moving between them is not
+    /// something the visible PDF view can do by itself.
+    func attachJump(_ jump: @escaping (Int) -> Void) { jumper = jump }
+
     func go(to index: Int) {
-        guard let view, let page = view.document?.page(at: index) else { return }
-        view.go(to: page)
+        jumper?(index)
         currentPage = index
     }
 }
@@ -118,21 +122,11 @@ struct PageVaultReaderView: View {
         .onDisappear { onReadingSessionChange(false) }
     }
 
-    /// Switching the curl on or off rebuilds the page host, so it reopens on the page being read
-    /// rather than jumping back to the bookmark.
-    @ViewBuilder private var document: some View {
-        let start = controller.restoring ? book.openingPage : controller.currentPage
-        if store.pageCurl {
-            PageVaultCurlDocumentView(url: url, openingPage: start, crops: crops,
-                                      highlights: live.highlights, theme: store.theme,
-                                      zoom: store.readingZoom, controller: controller)
-        } else {
-            PageVaultDocumentView(url: url, openingPage: start, crops: crops,
-                                  highlights: live.highlights,
-                                  theme: store.theme, zoom: store.readingZoom,
-                                  controller: controller,
+    private var document: some View {
+        PageVaultCurlDocumentView(url: url, openingPage: book.openingPage, crops: crops,
+                                  highlights: live.highlights, theme: store.theme,
+                                  zoom: store.readingZoom, controller: controller,
                                   onZoomChanged: { store.readingZoom = $0 })
-        }
     }
 
     /// Measures the book's pages first when that has not happened yet — joining a measurement
@@ -221,11 +215,6 @@ struct PageVaultReaderView: View {
             }
             .pickerStyle(.inline)
             .accessibilityIdentifier("reader-theme")
-            Divider()
-            Toggle(isOn: $store.pageCurl) {
-                Label("Page curl", systemImage: "book.pages")
-            }
-            .accessibilityIdentifier("toggle-page-curl")
         } label: {
             Image(systemName: "ellipsis.circle")
         }
@@ -233,13 +222,15 @@ struct PageVaultReaderView: View {
         .accessibilityLabel("Reader options")
     }
 
-    /// A passage running across a page break is stored as one highlight per page, because each page
-    /// carries its own rectangles.
+    /// The highlighter toggles: a passage that is already highlighted is removed, which is how one
+    /// made by mistake is undone. A passage running across a page break is one highlight per page,
+    /// because each page carries its own rectangles.
     private func saveHighlight() {
         let captures = controller.captureSelection()
         guard !captures.isEmpty else { return }
         for capture in captures {
-            store.addHighlight(text: capture.text, page: capture.page, rects: capture.rects, to: live)
+            store.toggleHighlight(text: capture.text, page: capture.page, rects: capture.rects,
+                                  to: live)
         }
         controller.clearSelection()
         controller.refreshHighlights(store.book(id: book.id)?.highlights ?? [])
@@ -256,229 +247,4 @@ struct PageVaultReaderView: View {
             .accessibilityIdentifier("reader-page-indicator")
     }
 
-}
-
-/// Wraps PDFKit's own view in single-page horizontal paging, so one page fills the screen and a
-/// swipe moves exactly one page instead of scrolling two half pages into view.
-private struct PageVaultDocumentView: UIViewRepresentable {
-    let url: URL
-    let openingPage: Int
-    /// Per-page crop boxes from the book's measurement, or nil to show pages as published.
-    let crops: [PageVaultInkBox?]?
-    let highlights: [PageVaultHighlight]
-    let theme: PageVaultTheme
-    let zoom: Double
-    @ObservedObject var controller: PageVaultReaderController
-    let onZoomChanged: (Double) -> Void
-
-    func makeUIView(context: Context) -> UIView {
-        let container = UIView()
-        let view = PDFView()
-        view.displayMode = .singlePage
-        view.displayDirection = .horizontal
-        view.autoScales = true
-        view.pageShadowsEnabled = false
-        view.translatesAutoresizingMaskIntoConstraints = false
-        // One page per screen with real paging, rather than a continuous scroll of partial pages.
-        view.usePageViewController(true, withViewOptions: nil)
-        // PDFKit renders on demand; the document is never pre-rendered or fully buffered here.
-        let document = PDFDocument(url: url)
-        if let document {
-            // Crop every page to its measured text before first layout, so the text block rather
-            // than the paper fills the screen. Without a measurement the pages open as published.
-            if let crops { PageVaultPageLayout.apply(crops, to: document) }
-            view.displayBox = .cropBox
-            // Highlights are annotations on the in-memory document; the file is never written to.
-            PageVaultHighlightService.apply(highlights, to: document)
-        }
-        view.document = document
-
-        let tint = UIView()
-        tint.translatesAutoresizingMaskIntoConstraints = false
-        tint.isUserInteractionEnabled = false
-        // Multiply keeps black text black while warming the white of the page, which a plain
-        // translucent overlay cannot do without washing the text out.
-        tint.layer.compositingFilter = "multiplyBlendMode"
-
-        container.addSubview(view)
-        container.addSubview(tint)
-        for child in [view, tint] {
-            NSLayoutConstraint.activate([
-                child.topAnchor.constraint(equalTo: container.topAnchor),
-                child.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-                child.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-                child.trailingAnchor.constraint(equalTo: container.trailingAnchor)
-            ])
-        }
-
-        controller.attach(view)
-        context.coordinator.pdfView = view
-        context.coordinator.tint = tint
-        context.coordinator.pendingPage = openingPage
-        context.coordinator.onZoomChanged = onZoomChanged
-        context.coordinator.observe(view, controller: controller)
-        context.coordinator.apply(theme: theme)
-        context.coordinator.apply(zoom: zoom)
-        // The opening page cannot be applied until PDFKit has laid the document out, so it is
-        // retried after layout instead of being set once and silently ignored.
-        context.coordinator.scheduleRestore(controller: controller)
-        return container
-    }
-
-    func updateUIView(_ view: UIView, context: Context) {
-        context.coordinator.onZoomChanged = onZoomChanged
-        context.coordinator.apply(theme: theme)
-        context.coordinator.apply(zoom: zoom)
-        context.coordinator.scheduleRestore(controller: controller)
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    @MainActor final class Coordinator {
-        weak var pdfView: PDFView?
-        weak var tint: UIView?
-        var pendingPage: Int?
-        var onZoomChanged: ((Double) -> Void)?
-        private var token: NSObjectProtocol?
-        private var scaleToken: NSObjectProtocol?
-        private var selectionToken: NSObjectProtocol?
-        private var attempts = 0
-        private var requestedZoom = PageVaultStore.minimumZoom
-        private var applyingZoom = false
-
-        /// The surround is kept the same white as the page, so a page narrower than the screen
-        /// blends into it instead of sitting inside dark letterbox bands. The overlay then covers
-        /// page and surround together, giving one continuous sheet.
-        ///
-        /// Warm and sepia multiply a tint, which warms the paper while leaving black text black.
-        /// Night blends white with a difference filter, which inverts everything beneath it into
-        /// light text on a dark page — a plain translucent overlay could never do that.
-        func apply(theme: PageVaultTheme) {
-            pdfView?.backgroundColor = .white
-            guard let tint else { return }
-            switch theme {
-            case .paper:
-                tint.isHidden = true
-            case .warm, .sepia:
-                tint.layer.compositingFilter = "multiplyBlendMode"
-                tint.backgroundColor = theme == .warm
-                    ? UIColor(red: 0.99, green: 0.94, blue: 0.84, alpha: 1)
-                    : UIColor(red: 0.93, green: 0.86, blue: 0.72, alpha: 1)
-                tint.isHidden = false
-            case .night:
-                tint.layer.compositingFilter = "differenceBlendMode"
-                tint.backgroundColor = .white
-                tint.isHidden = false
-            }
-        }
-
-        /// Anchors zoom to the fit scale: the floor is the whole cropped page, so the text can
-        /// never be dialled smaller than "everything visible", and the ceiling stops a stray pinch
-        /// leaving the reader somewhere unusable.
-        func apply(zoom: Double) {
-            requestedZoom = PageVaultStore.clampZoom(zoom)
-            guard let view = pdfView, view.document != nil else { return }
-            let fit = view.scaleFactorForSizeToFit
-            guard fit > 0 else { return }
-            view.minScaleFactor = fit
-            view.maxScaleFactor = fit * CGFloat(PageVaultStore.maximumZoom)
-            let target = fit * CGFloat(requestedZoom)
-            guard abs(view.scaleFactor - target) > 0.001 else { return }
-            applyingZoom = true
-            view.scaleFactor = target
-            applyingZoom = false
-        }
-
-        func observeScale(_ view: PDFView) {
-            guard scaleToken == nil else { return }
-            scaleToken = NotificationCenter.default.addObserver(
-                forName: .PDFViewScaleChanged, object: view, queue: .main
-            ) { [weak self] note in
-                guard let self, !self.applyingZoom,
-                      let view = note.object as? PDFView, view.document != nil else { return }
-                let fit = view.scaleFactorForSizeToFit
-                guard fit > 0 else { return }
-                let ratio = Double(view.scaleFactor / fit)
-                Task { @MainActor in self.report(zoom: ratio) }
-            }
-        }
-
-        private func report(zoom: Double) {
-            let clamped = PageVaultStore.clampZoom(zoom)
-            guard abs(clamped - requestedZoom) > 0.01 else { return }
-            requestedZoom = clamped
-            onZoomChanged?(clamped)
-        }
-
-        func observeSelection(_ view: PDFView, controller: PageVaultReaderController) {
-            guard selectionToken == nil else { return }
-            selectionToken = NotificationCenter.default.addObserver(
-                forName: .PDFViewSelectionChanged, object: view, queue: .main
-            ) { note in
-                let selected = (note.object as? PDFView)?.currentSelection?.string?
-                    .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
-                Task { @MainActor in controller.report(selection: selected) }
-            }
-        }
-
-        func observe(_ view: PDFView, controller: PageVaultReaderController) {
-            observeScale(view)
-            observeSelection(view, controller: controller)
-            guard token == nil else { return }
-            token = NotificationCenter.default.addObserver(
-                forName: .PDFViewPageChanged, object: view, queue: .main
-            ) { note in
-                guard let view = note.object as? PDFView, let page = view.currentPage,
-                      let document = view.document else { return }
-                let index = document.index(for: page)
-                guard index != NSNotFound else { return }
-                Task { @MainActor in controller.report(page: index) }
-            }
-        }
-
-        /// Retries the opening page until PDFKit reports it, then hands control to the reader.
-        func scheduleRestore(controller: PageVaultReaderController) {
-            guard let target = pendingPage else { return }
-            guard let view = pdfView, let document = view.document, document.pageCount > 0 else {
-                retry(controller: controller)
-                return
-            }
-            let wanted = min(max(target, 0), document.pageCount - 1)
-            if wanted == 0 {
-                pendingPage = nil
-                apply(zoom: requestedZoom)
-                controller.finishRestoring(at: 0)
-                return
-            }
-            if let page = document.page(at: wanted) { view.go(to: page) }
-            if let landed = view.currentPage, document.index(for: landed) == wanted {
-                pendingPage = nil
-                apply(zoom: requestedZoom)
-                controller.finishRestoring(at: wanted)
-            } else {
-                retry(controller: controller)
-            }
-        }
-
-        private func retry(controller: PageVaultReaderController) {
-            attempts += 1
-            // Give up rather than spin forever; a failed restore means reading from page one,
-            // which is recoverable, whereas an endless retry loop is not.
-            guard attempts < 40 else {
-                pendingPage = nil
-                controller.finishRestoring(at: controller.currentPage)
-                return
-            }
-            Task { @MainActor [weak self] in
-                try? await Task.sleep(for: .milliseconds(50))
-                self?.scheduleRestore(controller: controller)
-            }
-        }
-
-        deinit {
-            if let token { NotificationCenter.default.removeObserver(token) }
-            if let scaleToken { NotificationCenter.default.removeObserver(scaleToken) }
-            if let selectionToken { NotificationCenter.default.removeObserver(selectionToken) }
-        }
-    }
 }

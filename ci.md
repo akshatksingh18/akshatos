@@ -42,7 +42,7 @@ migration, idle-start scheduling, Home pause/resume guards and backup exclusion,
 file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion;
 plus hub, dashboard and Settings UI coverage.
 
-PageVault suites: 146 domain assertions covering place clamping and the opening page, progress
+PageVault suites: 148 domain assertions covering place clamping and the opening page, progress
 labels, title derivation, fingerprint dedupe, recency ordering, the single-Reading-book invariant,
 the Started shelf split, older-payload decoding (including records carrying fields since removed,
 such as the daily page goal), export/restore (manifest round trip, Windows-safe file names,
@@ -50,10 +50,12 @@ whole-manifest validation and versions, content-matched planning, add-only versu
 collisions), page fitting (four-sided crop, outlier edges, short documents, facing pages, scans,
 blank and unmeasured pages, specks, off-white paper, a no-clipping property and cache versioning),
 highlights (rejoining selections broken at line ends and hyphens, duplicate and empty passages,
-reading order, page lookup, record round trip, records written before highlights existed), search
+reading order, page lookup, the page-and-text match behind the toggle, record round trip, records
+written before highlights existed), search
 (matching, case and accent insensitivity, result limits, one-letter queries, snippet context and
-ellipses, pages with no text) and page themes (stored raw values, default, inversion, fallback).
-35 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
+ellipses, pages with no text) and page themes (stored raw values, default, inversion, the retired warm theme mapping to sepia,
+fallback).
+36 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
 rejection, unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming
 the book and shelving the previous one under Started, finishing a book, cover generation, copy-only
 removal, clearing reading-day rows left by an older build, carrying a warm-paper choice over to
@@ -61,7 +63,8 @@ themes, a full export restored into a fresh library, reading data restored onto 
 tampered PDF restoring nothing, add-only versus replace against a live library, malformed or
 mis-picked exports, pages measured and cropped on all four sides, a wide figure never clipped, a
 full-page scan left untouched, the measurement reused after relaunch and removed with its book, crop
-boxes applied in points, a highlight saved and reloaded, highlights travelling with an export,
+boxes applied in points, a highlight saved and reloaded, highlighting the same passage again
+removing it, highlights travelling with an export,
 highlights rendered into their own PDF, and search over a real text layer including an image-only
 page that finds nothing. UI tests cover hub → library → back and the backup sheet.
 

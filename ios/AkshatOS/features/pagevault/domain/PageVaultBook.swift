@@ -96,6 +96,12 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         highlights.filter { $0.page == page }
     }
 
+    /// The highlight covering this exact passage, if there is one. This is what lets the highlighter
+    /// act as a toggle instead of stacking duplicates.
+    func highlight(onPage page: Int, matching text: String) -> PageVaultHighlight? {
+        highlights.first { $0.page == page && $0.text == text }
+    }
+
     /// Highlighting the same passage twice leaves one highlight, not two.
     mutating func addHighlight(_ highlight: PageVaultHighlight) {
         let duplicate = highlights.contains { $0.page == highlight.page && $0.text == highlight.text }
