@@ -91,9 +91,11 @@ PageVault's dark navy. Visible only in that empty state; to be fixed with a late
 
 ## Phone findings
 
-Fixtures for PageVault passes are generated at `C:\Users\aksha\Downloads\pagevault-test-pdfs` by
-`../book-reader/make-test-pdfs.py`. They are synthetic, so a real scanned book is still needed for a
-memory verdict. `../book-reader/CLAUDE.md` owns what these findings mean for PageVault's gates.
+Fixtures for PageVault passes come from `../book-reader/make-test-pdfs.py`, which writes them into a
+folder of your choosing. They are not kept on disk between passes: the set was 190 MB, almost all of
+it one synthetic scan, so it was cleared and is regenerated when a pass needs it. They are synthetic
+anyway, so a real scanned book is still needed for a memory verdict.
+`../book-reader/CLAUDE.md` owns what these findings mean for PageVault's gates.
 
 - **Build 12** (over Build 11, no uninstall): Done during both the ordinary cadence and a pending nudge
   starts a fresh full interval, the countdown survives background and force-close, buttons no longer
