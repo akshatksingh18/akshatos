@@ -77,6 +77,7 @@ import SwiftUI
         library.books(with: status)
     }
 
+    var booksWithHighlights: [PageVaultBook] { library.withHighlights }
     var startedBooks: [PageVaultBook] { library.started }
     var unstartedBooks: [PageVaultBook] { library.unstarted }
 

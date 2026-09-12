@@ -164,6 +164,14 @@ struct PageVaultLibrary: Codable, Equatable {
     /// book was bookmarked. A shelf rather than a fourth status, so nothing extra is persisted.
     var started: [PageVaultBook] { recent.filter { $0.status == .wantToRead && $0.hasPlace } }
 
+    /// Books carrying at least one kept passage, most recently marked first. This is Takeaways:
+    /// what a book gave you, rather than what you are part-way through.
+    var withHighlights: [PageVaultBook] {
+        books.filter { !$0.highlights.isEmpty }
+            .sorted { ($0.highlights.map(\.createdAt).max() ?? $0.addedAt)
+                      > ($1.highlights.map(\.createdAt).max() ?? $1.addedAt) }
+    }
+
     /// Want to Read books that have never been bookmarked.
     var unstarted: [PageVaultBook] { recent.filter { $0.status == .wantToRead && !$0.hasPlace } }
 

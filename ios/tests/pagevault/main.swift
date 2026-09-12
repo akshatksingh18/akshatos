@@ -442,10 +442,21 @@ assert(shelfWithMarks.addHighlight(passage(2, "a line"), for: markedID)?.highlig
        "The library stores a highlight on the book it belongs to")
 assert(shelfWithMarks.addHighlight(passage(2, "a line"), for: UUID()) == nil,
        "An unknown book cannot be highlighted")
+var keeping = PageVaultLibrary()
+try keeping.insert(book(fingerprint: "kept-early", title: "Kept Early"))
+try keeping.insert(book(fingerprint: "kept-late", title: "Kept Late"))
+try keeping.insert(book(fingerprint: "unmarked", title: "Unmarked"))
+keeping.addHighlight(passage(1, "an early line", at: 2), for: keeping.books[0].id)
+keeping.addHighlight(passage(2, "a later line", at: 6), for: keeping.books[1].id)
+assert(keeping.withHighlights.map(\.title) == ["Kept Late", "Kept Early"],
+       "Takeaways lists only books with kept passages, most recently marked first")
+assert(keeping.withHighlights.allSatisfy { !$0.highlights.isEmpty },
+       "A book nothing was kept from never appears in Takeaways")
+
 let storedHighlightID = shelfWithMarks.books[0].highlights[0].id
 assert(shelfWithMarks.removeHighlight(storedHighlightID, for: markedID)?.highlights.isEmpty == true,
        "The library removes a highlight by id")
-print("PASS: 17 highlight assertions (tidy, preview, dedupe, ordering, page lookup, toggle match, round trip, older records, library)")
+print("PASS: 19 highlight assertions (tidy, preview, dedupe, ordering, page lookup, toggle match, round trip, older records, library, takeaways)")
 
 // Searching a book's text. Matching and snippets are pure, so they are pinned without a document.
 let pageText = "Grit is passion and perseverance. Grit grows when you practise deliberately."

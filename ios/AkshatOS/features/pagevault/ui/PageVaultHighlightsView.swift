@@ -1,14 +1,14 @@
 import SwiftUI
 
-/// Every passage saved from one book, in reading order. Opened from the reader it can jump to a
-/// page; opened from book details it is a list to read. The whole set exports as its own PDF.
-struct PageVaultHighlightsView: View {
+/// The passages kept from one book, in reading order, each as its own block so a line reads without
+/// tapping into anything. Reached from the reader, where it can also jump to a page, or from
+/// Takeaways, where it is a list to read back. The whole set exports as its own PDF.
+struct PageVaultHighlightList: View {
     @ObservedObject var store: PageVaultStore
     let bookID: UUID
-    /// Supplied by the reader, which is the only place that can move to a page.
+    /// Supplied by the reader, the only place that can move to a page.
     var onJump: ((Int) -> Void)?
 
-    @Environment(\.dismiss) private var dismiss
     @State private var staged: URL?
     @State private var showMover = false
     @State private var notice: String?
@@ -16,34 +16,35 @@ struct PageVaultHighlightsView: View {
     private var book: PageVaultBook? { store.book(id: bookID) }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let book, !book.highlights.isEmpty {
-                    List {
+        Group {
+            if let book, !book.highlights.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
                         ForEach(book.highlightsInReadingOrder) { highlight in
-                            row(highlight, in: book)
+                            block(highlight, in: book)
                         }
                     }
-                } else {
-                    ContentUnavailableView(
-                        "No highlights yet", systemImage: "highlighter",
-                        description: Text("Select a line while reading, then tap the highlighter."))
+                    .padding(20)
                 }
+                .background(Palette.background.ignoresSafeArea())
+            } else {
+                ContentUnavailableView(
+                    "Nothing kept from this book", systemImage: "quote.opening",
+                    description: Text("Select a line while reading, then tap the highlighter."))
             }
-            .navigationTitle("Highlights")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Export") { exportPDF() }
-                        .disabled(book?.highlights.isEmpty ?? true)
-                        .accessibilityIdentifier("export-highlights")
-                }
-                ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } }
+        }
+        .navigationTitle(book?.title ?? "Takeaways")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Export") { exportPDF() }
+                    .disabled(book?.highlights.isEmpty ?? true)
+                    .accessibilityIdentifier("export-highlights")
             }
         }
         .fileMover(isPresented: $showMover, file: staged) { result in
             if case .failure(let error) = result, (error as? CocoaError)?.code != .userCancelled {
-                notice = "The highlights were not saved: \(error.localizedDescription)"
+                notice = "The takeaways were not saved: \(error.localizedDescription)"
             }
             store.finishExport()
             staged = nil
@@ -58,28 +59,33 @@ struct PageVaultHighlightsView: View {
         }
     }
 
-    private func row(_ highlight: PageVaultHighlight, in book: PageVaultBook) -> some View {
-        Button {
-            onJump?(highlight.page)
-        } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("PAGE \(highlight.page + 1)")
-                    .font(.caption2.weight(.bold)).tracking(1.5)
+    /// One passage, one block: the whole line is visible, with its page and the controls under it.
+    private func block(_ highlight: PageVaultHighlight, in book: PageVaultBook) -> some View {
+        Surface {
+            Text(highlight.text)
+                .font(.callout)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 16) {
+                Text("Page \(highlight.page + 1)")
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(Palette.muted)
-                Text(highlight.text)
-                    .font(.callout)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+                if let onJump {
+                    Button("Go to page") { onJump(highlight.page) }
+                        .font(.caption.weight(.semibold))
+                        .accessibilityIdentifier("jump-\(highlight.id.uuidString)")
+                }
+                Button(role: .destructive) {
+                    store.removeHighlight(highlight.id, from: book)
+                } label: {
+                    Image(systemName: "trash")
+                }
+                .font(.caption)
+                .accessibilityLabel("Remove this passage")
+                .accessibilityIdentifier("remove-\(highlight.id.uuidString)")
             }
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .disabled(onJump == nil)
         .accessibilityIdentifier("highlight-\(highlight.id.uuidString)")
-        .swipeActions {
-            Button("Delete", role: .destructive) {
-                store.removeHighlight(highlight.id, from: book)
-            }
-        }
     }
 
     private func exportPDF() {
@@ -91,6 +97,24 @@ struct PageVaultHighlightsView: View {
             } catch {
                 notice = error.localizedDescription
             }
+        }
+    }
+}
+
+/// The reader's sheet around the same list, with its own navigation and a way out.
+struct PageVaultHighlightsView: View {
+    @ObservedObject var store: PageVaultStore
+    let bookID: UUID
+    var onJump: ((Int) -> Void)?
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            PageVaultHighlightList(store: store, bookID: bookID, onJump: onJump)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } }
+                }
         }
     }
 }

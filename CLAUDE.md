@@ -71,7 +71,8 @@ not a claim that every feature is physically verified.
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
-  its fitting screen, book sheet, backup sheet, highlights list, search sheet). Product scope and
+  its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
+  search sheet). Product scope and
   gates are owned by `../book-reader/`. Its reading loop, the page curl and highlights are
   phone-confirmed; search and the page themes are not.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
