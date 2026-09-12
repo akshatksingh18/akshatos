@@ -76,9 +76,13 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       version/source/hash, and cache current plus previous known-good artifacts on Windows. Verified
       builds currently sit in per-build `Downloads` folders listed in `cloud-build.md`; durable
       current/previous release-cache promotion is still required before closing this gate.
-- [ ] **Prove refresh and recovery.** Install with Sideloadly/Local Anisette, verify same-bundle Wi-Fi
-      and USB refresh preserves state/reconciliation, exercise early alerts and expired-profile
-      recovery, and pass multiple cycles without uninstalling.
+- [ ] **Prove refresh and recovery.** The health check is installed and watching (`setup.md`); the
+      refreshing itself is still unproven. Sideloadly's daemon has never been observed to refresh
+      anything, so this gate needs: two unattended cycles each logged as `REFRESHED` with a new
+      expiry, one rehearsed USB recovery, one forced failure confirmed to alert rather than pass
+      quietly, and same-bundle Wi-Fi/USB refresh preserving state — none of it by uninstalling.
+      Also remove the stale, expired Squat Reminder registration from Sideloadly: it is dead, holds
+      one of three free app slots, and alerts on every run.
 
 ## Current Android fallback gaps
 
