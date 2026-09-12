@@ -16,6 +16,27 @@ from datetime import datetime, timedelta, timezone
 
 DEFAULT_DB = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Sideloadly", "installations.db")
 
+# Bundle IDs Sideloadly still has a row for but that are not on the phone any more. Sideloadly
+# never deletes an installation row on uninstall, so a retired app's registration sits in this
+# database forever, "expiring" every seven days like clockwork with nothing on the phone for it
+# to affect. Without this list the health check raises a real CRITICAL alert for an app that does
+# not exist, indefinitely — which is exactly what happened for the identity below.
+#
+# Matched as a prefix because Sideloadly appends the team suffix, e.g.
+# "com.akshatksingh18.squatreminder.5564K8D4SV".
+#
+# Source of truth for each entry: cloud-build.md documents when and why it was retired.
+RETIRED_BUNDLE_PREFIXES = [
+    # The standalone Squat Reminder smoke app. Superseded by the AkshatOS hub (whose own bundle,
+    # com.akshatksingh18.akshatos, carries the real Squats feature today) and removed from the
+    # phone by Akshat. See cloud-build.md: "launched once through Sideloadly and was then removed".
+    "com.akshatksingh18.squatreminder",
+]
+
+
+def is_retired(bundle_id):
+    return bool(bundle_id) and any(bundle_id.startswith(prefix) for prefix in RETIRED_BUNDLE_PREFIXES)
+
 
 def parse(stamp):
     """Sideloadly writes '2026-09-12 13:16:54.6299273-05:00', which fromisoformat rejects on
@@ -77,6 +98,7 @@ def main():
                 "refreshAtHours": row["refresh_at_hours"],
                 "lastError": (row["last_error"] or "").strip(),
                 "failures": row["failures_count"] or 0,
+                "retired": is_retired(row["final_bundle_id"]),
             }
             if signed:
                 if signed.tzinfo is None:

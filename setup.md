@@ -72,14 +72,23 @@ IPA again. **Never uninstall to fix signing** — that deletes the app's data.
 ## What this has already found
 
 At the time it was installed, all three registrations had `last_updated` still equal to their
-original install time: the daemon had never refreshed anything. The retired **Squat Reminder**
-registration had expired two days earlier with `failures_count: 0` and an empty `last_error` —
-it did not fail, it simply was never attempted.
+original install time: the daemon had never refreshed anything.
 
-That one is the historical smoke app Akshat removed from the phone, so the daemon may be correctly
-skipping something that no longer exists; it is suggestive, not proof. Remove that stale
-registration from Sideloadly anyway: it is dead, it occupies one of the three free app slots, and
-it will otherwise raise a critical alert every run forever.
+The **Squat Reminder** registration had expired two days earlier with `failures_count: 0` and an
+empty `last_error` — it did not fail, it was simply never attempted. This turned out to be correct
+behavior, not a gap: `cloud-build.md` already documents `com.akshatksingh18.squatreminder` as the
+standalone smoke app that "launched once through Sideloadly and was then removed by Akshat" — it is
+not on the phone, and the working Squats feature lives inside the AkshatOS hub's own bundle
+(`com.akshatksingh18.akshatos`), which was healthy throughout. Sideloadly never deletes an
+installation row on uninstall, so a retired app's registration keeps "expiring" every seven days
+with nothing on the phone for it to affect.
+
+The check now knows about this: `read-signing-state.py` carries a short, documented
+`RETIRED_BUNDLE_PREFIXES` list, and a matching registration is logged as `RETIRED` rather than
+raised as an error. Add a future retired identity there, with the reasoning, rather than leaving the
+check to cry wolf about it forever. Removing the row from Sideloadly's own database is optional
+tidiness at this point, not a fix — it does not free anything on the device, since the app limit
+Apple enforces is what is actually installed on the phone, not a row in a Windows-local database.
 
 **The real test is WHOOP**, whose 96-hour refresh point falls the day after this was installed. If
 its `last_updated` moves on its own, the daemon works and the loop is closed. If it does not, the
@@ -94,6 +103,4 @@ These stay open until exercised, per the operating model in `CLAUDE.md`:
 - [ ] One deliberate USB recovery rehearsed from an expired or near-expired state.
 - [ ] One forced failure — phone absent or offline at the refresh point — confirmed to raise the
       alert rather than pass quietly.
-- [ ] The stale Squat Reminder registration removed from Sideloadly.
-
-Until all four are done, do not describe weekly signing as dependable.
+Until all three are done, do not describe weekly signing as dependable.

@@ -143,6 +143,14 @@ foreach ($app in $report.apps) {
     $days = if ($null -ne $app.daysLeft) { [double]$app.daysLeft } else { [double]::NaN }
     $current[$name] = $app.lastSigned
 
+    # A retired app keeps a row in Sideloadly forever and "expires" every seven days with nothing
+    # on the phone for it to affect. Logged so the record is not silently dropped, never alarmed -
+    # read-signing-state.py documents which identities this covers and why.
+    if ($app.retired) {
+        Write-Line 'RETIRED' ("{0} ({1}) is retired; ignoring its expiry" -f $name, $app.bundleID)
+        continue
+    }
+
     # A refresh actually happening is the only thing reported as success, and it is reported
     # with the identity and the new expiry rather than as a bare "ok".
     if ($previous.ContainsKey($name) -and $previous[$name] -ne $app.lastSigned) {

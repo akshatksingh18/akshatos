@@ -64,7 +64,9 @@ not a claim that every feature is physically verified.
   moving forward as success, and escalates to a blocking dialog when an app is close to expiry,
   errored, or uncheckable. Refreshes nothing itself.
 - `scripts/read-signing-state.py` — reads a read-only copy of Sideloadly's `installations.db` and
-  emits per-app expiry as JSON; never touches the signing material stored beside it.
+  emits per-app expiry as JSON; never touches the signing material stored beside it. Carries the
+  documented `RETIRED_BUNDLE_PREFIXES` list so an app removed from the phone (Sideloadly keeps its
+  row forever) is reported, not raised as a false alarm.
 - `.github/workflows/ios-build.yml` — public-repository macOS-runner job that generates the Xcode
   project, runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
 - `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,

@@ -81,8 +81,6 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       anything, so this gate needs: two unattended cycles each logged as `REFRESHED` with a new
       expiry, one rehearsed USB recovery, one forced failure confirmed to alert rather than pass
       quietly, and same-bundle Wi-Fi/USB refresh preserving state — none of it by uninstalling.
-      Also remove the stale, expired Squat Reminder registration from Sideloadly: it is dead, holds
-      one of three free app slots, and alerts on every run.
 
 ## Current Android fallback gaps
 
