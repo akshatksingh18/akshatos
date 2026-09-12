@@ -50,24 +50,22 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 ## Retained artifacts
 
 Everything below sits under `C:\Users\aksha\Downloads` with its checksum, `build-info.txt` and
-screenshots beside the IPA, matched its published SHA-256 and is unsigned. All but the spike also
-passed `validate-ipa.py` or the equivalent identity/payload inspection. Earlier builds (2–4 and 9–12)
-and the smoke artifact are no longer there; their sources remain in Git history. Build 18
-(`akshatos-ios-79`, main run 34538261451, merge `9861f44`, adding the Started shelf) was produced but
-never downloaded, because Build 19 superseded it before any device pass.
+screenshots beside the IPA, matched its published SHA-256, passed `validate-ipa.py` and is unsigned.
+The kept set is deliberately small: the current build, its predecessor, the build whose reading loop
+was accepted, and the accepted Squats baseline.
+
+Everything else has been cleared out of Downloads: builds 2–4, 9–12, 14–17 and 19, the PageVault
+spike artifact, and the old smoke artifact. Builds 14–17 and 19 plus the spike went to the Recycle
+Bin during a cleanup and are recoverable until it is emptied; Build 18 was never downloaded at all.
+Every source is in Git history and what each build found on the phone is under Phone findings below,
+which is the part worth keeping. Recovering one means re-running its workflow, not restoring a file.
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
 | 22 | `akshatos-build-22\akshatos-ios-96` | `fdc69fc` (#33) | [34666050266](https://github.com/akshatksingh18/akshatos/actions/runs/34666050266) | `a2eb95bb0b7b17acae83e288c2ba29f694cbb2de5be377d76389a3430e376579` | Latest handed-over candidate; not device-tested |
 | 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Superseded by 22; the curl and highlights passed on the phone |
 | 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Installed; PageVault's reading loop accepted on the phone |
-| 19 | `akshatos-build-19\akshatos-ios-82` | `089cc15` (#27) | [34548930454](https://github.com/akshatksingh18/akshatos/actions/runs/34548930454) | `932432e0b8d52895b4837c071cfb6a8023033826c31fe1fb82c2206010ea84c8` | Superseded by 20; not device-tested |
-| 17 | `akshatos-build-17\akshatos-ios-76` | `52181f6` (#24) | [34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880) | `87c1adce1fb91ceab4925d1e89c3411d0a96217c10e1c03f28a394e61be7b96e` | Superseded by 19 |
-| 16 | `akshatos-build-16\akshatos-ios-72` | `c1f378f` (#22) | [34524075937](https://github.com/akshatksingh18/akshatos/actions/runs/34524075937) | `3205ae71f7bb93cbbd381daab23ab914fcafbaee521d8fdc361e4dec21899053` | Phone-tested |
-| 15 | `akshatos-build-15\akshatos-ios-69` | `e209269` (#20) | [34511400591](https://github.com/akshatksingh18/akshatos/actions/runs/34511400591) | `c90f5c83ceb22f5ed49d153902e01d2991c182316f98492b136aaa9c92266bed` | Phone-tested |
-| 14 | `akshatos-build-14\akshatos-ios-66` | `b3ff429` (#18) | [34487510067](https://github.com/akshatksingh18/akshatos/actions/runs/34487510067) | `64a8c7da2ada589fd02a04de46d38d43ca16c7d6a9d54feacd864b2ef8b35af8` | Phone-tested; large-PDF gate passed |
 | 13 | `akshatos-build-13\akshatos-ios-58` | `f484f66` (#15) | [34151147604](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604) | `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0` | Accepted Squats daily-use baseline |
-| — | `akshatos-pagevault-spike\akshatos-ios-62` | `e353c8d` (#17) | [34430943640](https://github.com/akshatksingh18/akshatos/actions/runs/34430943640) | `e0aa63edf3102a7707d39265b914711976686454956860ca5e3d2c555f372555` | Reports 0.2.0 (13) despite containing PageVault; never install |
 
 Build 22 notes: its packaged `Info.plist` reports build 22, version 0.2.0 and minimum iOS 17.0. The
 PageVault library and Takeaways screenshots were inspected; the hub, Squats dashboard and backup sheet
