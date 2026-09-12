@@ -96,21 +96,63 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
         highlights.filter { $0.page == page }
     }
 
-    /// The highlight covering this exact passage, if there is one. This is what lets the highlighter
-    /// act as a toggle instead of stacking duplicates.
-    func highlight(onPage page: Int, matching text: String) -> PageVaultHighlight? {
-        highlights.first { $0.page == page && $0.text == text }
+    /// Every mark the given page area touches.
+    ///
+    /// Marks are identified by the words they cover rather than by their captured text. Comparing
+    /// text is what let a selection one word wider than an existing mark count as a new one.
+    func highlights(onPage page: Int, covering rects: [PageVaultRect]) -> [PageVaultHighlight] {
+        let folded = PageVaultHighlight.fold(rects)
+        return highlights.filter { $0.page == page && $0.covers(folded) }
     }
 
-    /// Highlighting the same passage twice leaves one highlight, not two.
+    /// Marking words that already carry a mark extends that mark instead of stacking a second one
+    /// over it, so the same passage can never be highlighted twice.
+    ///
+    /// The surviving mark keeps the longest text of the marks it absorbs, because that is the one
+    /// describing the whole marked area — so widening a selection grows the stored passage while
+    /// re-marking part of one leaves it alone. It keeps the earliest identity and date so it holds
+    /// its position in the passage list instead of jumping to the end.
     mutating func addHighlight(_ highlight: PageVaultHighlight) {
-        let duplicate = highlights.contains { $0.page == highlight.page && $0.text == highlight.text }
-        guard !duplicate, !highlight.text.isEmpty else { return }
-        highlights.append(highlight)
+        guard !highlight.text.isEmpty else { return }
+        var incoming = highlight
+        incoming.rects = PageVaultHighlight.fold(highlight.rects)
+        // A selection with no measurable bands — an image-only page can produce one — has no
+        // geometry to compare, so it falls back to the passage text rather than storing a literal
+        // duplicate.
+        let touching = incoming.rects.isEmpty
+            ? highlights.filter { $0.page == incoming.page && $0.text == incoming.text }
+            : highlights.filter { $0.page == incoming.page && $0.covers(incoming.rects) }
+        guard !touching.isEmpty else {
+            highlights.append(incoming)
+            return
+        }
+        let absorbed = touching + [incoming]
+        let anchor = absorbed.min { ($0.createdAt, $0.id.uuidString) < ($1.createdAt, $1.id.uuidString) }
+        let merged = PageVaultHighlight(
+            id: anchor?.id ?? incoming.id,
+            page: incoming.page,
+            text: absorbed.map(\.text).max { $0.count < $1.count } ?? incoming.text,
+            createdAt: anchor?.createdAt ?? incoming.createdAt,
+            rects: PageVaultHighlight.fold(absorbed.flatMap(\.rects)))
+        highlights.removeAll { record in touching.contains { $0.id == record.id } }
+        highlights.append(merged)
     }
 
     mutating func removeHighlight(id: UUID) {
         highlights.removeAll { $0.id == id }
+    }
+
+    /// Clears every mark the given area touches.
+    ///
+    /// This is what "Remove highlight" does. It deliberately does not ask for the original
+    /// selection to be reproduced: PDFKit snaps a drag to word and line boundaries differently
+    /// depending on where it starts, so requiring an exact match is what made a mark effectively
+    /// impossible to remove by hand.
+    @discardableResult
+    mutating func removeHighlights(onPage page: Int, covering rects: [PageVaultRect]) -> Int {
+        let doomed = highlights(onPage: page, covering: rects)
+        highlights.removeAll { record in doomed.contains { $0.id == record.id } }
+        return doomed.count
     }
 
     /// Moves the bookmark to this page. Replaces any previous place rather than accumulating a
@@ -231,6 +273,15 @@ struct PageVaultLibrary: Codable, Equatable {
         guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
         books[index].removeHighlight(id: highlightID)
         return books[index]
+    }
+
+    /// Clears every mark on one page that the given selection covers.
+    @discardableResult
+    mutating func removeHighlights(onPage page: Int, covering rects: [PageVaultRect],
+                                   for id: UUID) -> (book: PageVaultBook, removed: Int)? {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return nil }
+        let removed = books[index].removeHighlights(onPage: page, covering: rects)
+        return (books[index], removed)
     }
 
     @discardableResult

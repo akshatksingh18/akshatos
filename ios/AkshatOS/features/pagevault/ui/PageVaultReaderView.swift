@@ -10,8 +10,12 @@ import SwiftUI
     @Published private(set) var restoring = true
     /// Drives the highlighter button: there is nothing to highlight without a selection.
     @Published private(set) var hasSelection = false
+    /// What the current selection covers, one entry per page it spans. Captured when the selection
+    /// changes rather than on every redraw, so the highlighter menu can tell whether there is a
+    /// mark to remove without reaching into the PDF view each time the toolbar is laid out.
+    @Published private(set) var selectionCaptures: [PageVaultHighlightService.Capture] = []
     private weak var view: PDFView?
-    private var jumper: ((Int) -> Void)?
+    private var jumper: ((Int, PageVaultFindMark?) -> Void)?
 
     func attach(_ view: PDFView) { self.view = view }
 
@@ -25,7 +29,10 @@ import SwiftUI
         currentPage = page
     }
 
-    func report(selection: Bool) { hasSelection = selection }
+    func report(selection: Bool) {
+        hasSelection = selection
+        selectionCaptures = selection ? captureSelection() : []
+    }
 
     /// The current text selection, split per page, ready to be stored as highlights.
     func captureSelection() -> [PageVaultHighlightService.Capture] {
@@ -37,6 +44,7 @@ import SwiftUI
     func clearSelection() {
         view?.clearSelection()
         hasSelection = false
+        selectionCaptures = []
     }
 
     /// Redraws the stored highlights on the open document, in memory only.
@@ -48,10 +56,12 @@ import SwiftUI
 
     /// Supplied by the pager, because each page is its own view: moving between them is not
     /// something the visible PDF view can do by itself.
-    func attachJump(_ jump: @escaping (Int) -> Void) { jumper = jump }
+    func attachJump(_ jump: @escaping (Int, PageVaultFindMark?) -> Void) { jumper = jump }
 
-    func go(to index: Int) {
-        jumper?(index)
+    /// Moves to a page. A `mark` tints the words that were searched for, so arriving from a result
+    /// does not mean hunting down the page for them.
+    func go(to index: Int, mark: PageVaultFindMark? = nil) {
+        jumper?(index, mark)
         currentPage = index
     }
 }
@@ -60,6 +70,9 @@ struct PageVaultReaderView: View {
     let book: PageVaultBook
     let url: URL
     @ObservedObject var store: PageVaultStore
+    /// Opens here instead of at the book's own place, for a reader reached from a Takeaways
+    /// passage. Reading on from it still leaves the place alone: only bookmarking moves that.
+    let openAt: Int?
     /// The app layer decides orientation; the reader only reports when it is on screen.
     let onReadingSessionChange: (Bool) -> Void
 
@@ -71,11 +84,12 @@ struct PageVaultReaderView: View {
     @State private var showHighlights = false
     @State private var showSearch = false
 
-    init(book: PageVaultBook, url: URL, store: PageVaultStore,
+    init(book: PageVaultBook, url: URL, store: PageVaultStore, openAt: Int? = nil,
          onReadingSessionChange: @escaping (Bool) -> Void = { _ in }) {
         self.book = book
         self.url = url
         _store = ObservedObject(wrappedValue: store)
+        self.openAt = openAt
         self.onReadingSessionChange = onReadingSessionChange
         // An already-measured book opens fitted on the first frame, with no fitting screen at all.
         let fitted = store.pageCrops(for: book)
@@ -109,9 +123,9 @@ struct PageVaultReaderView: View {
             }
         }
         .sheet(isPresented: $showSearch) {
-            PageVaultSearchView(store: store, book: live) { page in
+            PageVaultSearchView(store: store, book: live) { hit in
                 showSearch = false
-                controller.go(to: page)
+                controller.go(to: hit.page, mark: hit.findMark)
             }
         }
         .task { await openWhenFitted() }
@@ -123,7 +137,7 @@ struct PageVaultReaderView: View {
     }
 
     private var document: some View {
-        PageVaultCurlDocumentView(url: url, openingPage: book.openingPage, crops: crops,
+        PageVaultCurlDocumentView(url: url, openingPage: openAt ?? book.openingPage, crops: crops,
                                   highlights: live.highlights, theme: store.theme,
                                   zoom: store.readingZoom, controller: controller,
                                   onZoomChanged: { store.readingZoom = $0 })
@@ -179,15 +193,39 @@ struct PageVaultReaderView: View {
 
     /// Select text with the usual gestures, then tap this. Keeping it in the toolbar avoids
     /// rebuilding PDFKit's own selection menu, which the reader does not own.
+    ///
+    /// It says which of the two things it is doing rather than inferring it. A single toggling
+    /// button had to guess from the selection whether marking or unmarking was meant, and it
+    /// guessed by comparing text, so a selection a word wider than an existing mark stacked a
+    /// second mark instead of removing the first.
     @ViewBuilder private var highlightButton: some View {
         if controller.hasSelection {
-            Button {
-                saveHighlight()
+            Menu {
+                Button {
+                    mark()
+                } label: {
+                    Label("Highlight", systemImage: "highlighter")
+                }
+                .accessibilityIdentifier("save-highlight")
+                Button(role: .destructive) {
+                    unmark()
+                } label: {
+                    Label("Remove highlight", systemImage: "eraser")
+                }
+                .disabled(!selectionCarriesHighlight)
+                .accessibilityIdentifier("remove-highlight")
             } label: {
                 Image(systemName: "highlighter")
             }
-            .accessibilityIdentifier("save-highlight")
-            .accessibilityLabel("Highlight the selected text")
+            .accessibilityIdentifier("highlighter")
+            .accessibilityLabel("Highlight or remove the selected text")
+        }
+    }
+
+    /// Whether "Remove highlight" has anything to remove, so it is never offered as a no-op.
+    private var selectionCarriesHighlight: Bool {
+        controller.selectionCaptures.contains {
+            store.hasHighlights(page: $0.page, rects: $0.rects, in: live)
         }
     }
 
@@ -222,16 +260,27 @@ struct PageVaultReaderView: View {
         .accessibilityLabel("Reader options")
     }
 
-    /// The highlighter toggles: a passage that is already highlighted is removed, which is how one
-    /// made by mistake is undone. A passage running across a page break is one highlight per page,
-    /// because each page carries its own rectangles.
-    private func saveHighlight() {
-        let captures = controller.captureSelection()
-        guard !captures.isEmpty else { return }
-        for capture in captures {
-            store.toggleHighlight(text: capture.text, page: capture.page, rects: capture.rects,
-                                  to: live)
+    /// Marks the selection. Words that already carry a mark extend it rather than gaining a second
+    /// one. A passage running across a page break is one mark per page, because each page carries
+    /// its own rectangles.
+    private func mark() {
+        apply { capture in
+            store.addHighlight(text: capture.text, page: capture.page, rects: capture.rects,
+                               to: live)
         }
+    }
+
+    /// Clears every mark the selection covers, which is how one made by mistake is undone.
+    private func unmark() {
+        apply { capture in
+            _ = store.clearHighlights(page: capture.page, rects: capture.rects, in: live)
+        }
+    }
+
+    private func apply(_ change: (PageVaultHighlightService.Capture) -> Void) {
+        let captures = controller.selectionCaptures
+        guard !captures.isEmpty else { return }
+        for capture in captures { change(capture) }
         controller.clearSelection()
         controller.refreshHighlights(store.book(id: book.id)?.highlights ?? [])
     }

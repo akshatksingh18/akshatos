@@ -86,7 +86,8 @@ struct PageVaultLibraryView: View {
             .accessibilityIdentifier("import-pdf")
             // Reachable with an empty library too, which is exactly the state after a clean install.
             NavigationLink {
-                PageVaultTakeawaysView(store: store)
+                PageVaultTakeawaysView(store: store,
+                                       onReadingSessionChange: onReadingSessionChange)
             } label: {
                 Label("Takeaways", systemImage: "quote.opening")
             }
@@ -186,6 +187,7 @@ struct PageVaultLibraryView: View {
         } else {
             ContentUnavailableView("Copy unavailable", systemImage: "exclamationmark.triangle",
                                    description: Text("PageVault's copy of this book is missing."))
+                .background(Palette.background.ignoresSafeArea())
         }
     }
 }

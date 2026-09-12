@@ -16,6 +16,8 @@ final class PageVaultCurlPage: UIViewController {
     private let document: PDFDocument
     private let zoom: Double
     private var theme: PageVaultTheme
+    /// Set only when this page was opened from a search result, and only for that one arrival.
+    private let findMark: PageVaultFindMark?
     private let onVisible: (Int, PDFView) -> Void
     private let onSelection: (Bool) -> Void
     private let onZoom: (Double) -> Void
@@ -27,12 +29,14 @@ final class PageVaultCurlPage: UIViewController {
     private var applyingZoom = false
 
     init(document: PDFDocument, index: Int, theme: PageVaultTheme, zoom: Double,
+         findMark: PageVaultFindMark? = nil,
          onVisible: @escaping (Int, PDFView) -> Void, onSelection: @escaping (Bool) -> Void,
          onZoom: @escaping (Double) -> Void) {
         self.document = document
         self.index = index
         self.theme = theme
         self.zoom = zoom
+        self.findMark = findMark
         self.onVisible = onVisible
         self.onSelection = onSelection
         self.onZoom = onZoom
@@ -51,6 +55,13 @@ final class PageVaultCurlPage: UIViewController {
         pdfView.displayBox = .cropBox
         pdfView.document = document
         if let page = document.page(at: index) { pdfView.go(to: page) }
+        // Tinting the searched words is a property of this one arrival, so it lives on the page
+        // view rather than the document: swiping away and back builds a fresh page without it.
+        if let findMark,
+           let found = PageVaultHighlightService.selection(for: findMark, in: document) {
+            found.color = PageVaultHighlightService.finder
+            pdfView.highlightedSelections = [found]
+        }
 
         tint.isUserInteractionEnabled = false
         for child in [pdfView, tint] {
@@ -152,8 +163,8 @@ struct PageVaultCurlDocumentView: UIViewControllerRepresentable {
         context.coordinator.attach(pager: pager)
         // Each page is its own view, so a search result or a highlight is only reachable by the
         // pager swapping that page in.
-        controller.attachJump { [weak coordinator = context.coordinator] index in
-            coordinator?.jump(to: index)
+        controller.attachJump { [weak coordinator = context.coordinator] index, mark in
+            coordinator?.jump(to: index, mark: mark)
         }
         // Only the data source is set: supplying pages is all this needs, and a delegate would
         // break the project's rule that the app layer owns them.
@@ -198,17 +209,24 @@ struct PageVaultCurlDocumentView: UIViewControllerRepresentable {
 
         func attach(pager: UIPageViewController) { self.pager = pager }
 
+        /// Set just before the page carrying a search match is built, and consumed by it. The mark
+        /// belongs to one arrival, so nothing keeps it once that page exists.
+        private var pendingMark: PageVaultFindMark?
+
         /// Moves to a page without animating: this is a jump from a search result or the highlights
         /// list, not a page turn.
-        func jump(to index: Int) {
+        func jump(to index: Int, mark: PageVaultFindMark? = nil) {
+            pendingMark = mark
+            defer { pendingMark = nil }
             guard let pager, let target = page(at: index) else { return }
             pager.setViewControllers([target], direction: .forward, animated: false)
         }
 
         func page(at index: Int) -> PageVaultCurlPage? {
             guard let document, index >= 0, index < document.pageCount else { return nil }
+            let mark = pendingMark?.page == index ? pendingMark : nil
             let page = PageVaultCurlPage(
-                document: document, index: index, theme: theme, zoom: zoom,
+                document: document, index: index, theme: theme, zoom: zoom, findMark: mark,
                 onVisible: { [weak self] shown, view in
                     guard let controller = self?.controller else { return }
                     Task { @MainActor in

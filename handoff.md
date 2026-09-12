@@ -78,10 +78,12 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   caveats, VoiceOver, Dynamic Type, Reduce Motion and Increased Contrast behavior.
 - Foreground reconciliation of preferences, notification settings, pending requests, the action
   inbox, day data and the actual monitored Home region.
-- PageVault: copy-on-import library with covers and a Started shelf, a paged reader that crops each
-  page to its measured text, warm paper, the bookmark as your place, one Reading book at a time, and
+- PageVault: copy-on-import library with covers and a Started shelf, the page-curl reader cropping
+  each page to its measured text, tinted paper (sepia by default), the bookmark as your place, one
+  Reading book at a time, highlights with Takeaways and a PDF export, full-text search, and
   folder/JSON export with validated, conflict-aware restore. Its reading loop is phone-confirmed as
-  of Build 20; reading streaks were removed in Build 21.
+  of Build 20; reading streaks were removed in Build 21. Build 22's pass reworked the highlighter
+  after it was found stacking marks; `cloud-build.md` owns that finding.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` and `features/pagevault/` own their domain, data,

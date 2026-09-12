@@ -405,6 +405,25 @@ assert(passage(3, String(repeating: "a", count: 200)).preview.count == 140,
        "A long passage previews as one truncated line")
 assert(passage(3, "short").preview == "short", "A short passage previews whole")
 
+func band(_ x: Double, _ y: Double, _ width: Double, _ height: Double = 10) -> PageVaultRect {
+    PageVaultRect(x: x, y: y, width: width, height: height)
+}
+func kept(_ page: Int, _ text: String, _ rects: [PageVaultRect],
+            at number: Int = 1) -> PageVaultHighlight {
+    PageVaultHighlight(page: page, text: text, createdAt: day(number), rects: rects)
+}
+assert(band(0, 0, 10).sameBand(as: band(5, 0, 10)),
+       "Bands on the same line covering some of the same words are one band")
+assert(!band(0, 0, 10).sameBand(as: band(40, 0, 10)),
+       "Bands on the same line covering no shared words stay separate")
+assert(!band(0, 0, 10).sameBand(as: band(0, 9, 10)),
+       "Bands that merely touch vertically belong to different lines of text")
+assert(band(0, 0, 10).union(band(5, 0, 10)) == band(0, 0, 15),
+       "The union of two bands covers both of them")
+assert(PageVaultHighlight.fold([band(0, 0, 10), band(5, 0, 10), band(0, 40, 10)]).count == 2,
+       "Folding merges bands over one line and leaves the other lines as their own")
+assert(PageVaultHighlight.fold([band(0, 0, 0)]).isEmpty, "A band with no area folds away")
+
 var marked = book(pages: 300)
 marked.addHighlight(passage(12, "the first line", at: 2))
 marked.addHighlight(passage(4, "an earlier line", at: 3))
@@ -416,10 +435,49 @@ assert(marked.highlightsInReadingOrder.map(\.page) == [4, 12],
        "Highlights are listed in the order they appear in the book")
 assert(marked.highlights(onPage: 12).count == 1 && marked.highlights(onPage: 7).isEmpty,
        "Highlights can be found by page, which is how the reader redraws them")
-assert(marked.highlight(onPage: 12, matching: "the first line") != nil
-       && marked.highlight(onPage: 12, matching: "a different line") == nil
-       && marked.highlight(onPage: 4, matching: "the first line") == nil,
-       "A passage is matched by page and text together, which is what makes the highlighter a toggle")
+// Marks are identified by the words they cover, not by the text captured. Comparing text is what
+// let a selection one word wider than an existing mark count as a new one, so the same passage
+// ended up carrying two or three marks and the overlap composited darker than the rest.
+var overlapping = book(pages: 300)
+overlapping.addHighlight(kept(7, "brown fox", [band(100, 500, 60)], at: 1))
+overlapping.addHighlight(kept(7, "brown fox jumps", [band(100, 500, 90)], at: 2))
+assert(overlapping.highlights.count == 1,
+       "Widening a selection over an existing mark extends it instead of stacking a second")
+assert(overlapping.highlights[0].text == "brown fox jumps",
+       "The surviving mark keeps the longest text, which describes the whole marked area")
+assert(overlapping.highlights[0].createdAt == day(1),
+       "The merged mark keeps the earliest date, so it holds its position in the passage list")
+assert(overlapping.highlights[0].rects == [band(100, 500, 90)],
+       "Bands over the same line fold into one, so shared words are never drawn twice")
+overlapping.addHighlight(kept(7, "fox", [band(130, 500, 20)], at: 3))
+assert(overlapping.highlights.count == 1 && overlapping.highlights[0].text == "brown fox jumps",
+       "Re-marking part of a mark leaves the wider passage it already stored")
+
+// A band on the next line down can touch the one above by a fraction of a point. Absorbing it
+// would turn a paragraph into a single block covering its indents.
+var neighbouring = book(pages: 300)
+neighbouring.addHighlight(kept(7, "first line", [band(100, 500, 80)], at: 1))
+neighbouring.addHighlight(kept(7, "second line", [band(100, 491, 80)], at: 2))
+assert(neighbouring.highlights.count == 2,
+       "A mark on the line below is its own mark, not an extension of the one above")
+
+// Removing by area is what makes a mark undoable by hand. PDFKit snaps a drag to word and line
+// boundaries differently depending on where it starts, so reproducing the original selection
+// exactly almost never happens — which is why an exact-text match could not undo anything.
+var clearing = book(pages: 300)
+clearing.addHighlight(kept(2, "keep this", [band(100, 400, 70)], at: 1))
+clearing.addHighlight(kept(2, "and this", [band(100, 300, 70)], at: 2))
+assert(clearing.removeHighlights(onPage: 2, covering: [band(110, 400, 10)]) == 1,
+       "Removing clears the mark a selection covers without reproducing the original drag")
+assert(clearing.highlights.map(\.text) == ["and this"],
+       "Removing by area leaves the marks the selection never touched")
+assert(clearing.removeHighlights(onPage: 2, covering: [band(100, 900, 70)]) == 0,
+       "A selection covering no mark removes nothing")
+assert(clearing.highlights(onPage: 2, covering: [band(100, 300, 10)]).count == 1,
+       "A selection reports the mark it covers, which is what offers Remove highlight truthfully")
+assert(clearing.highlights(onPage: 9, covering: [band(100, 300, 10)]).isEmpty,
+       "Marks are only found on their own page")
+
 let doomed = marked.highlightsInReadingOrder[0].id
 marked.removeHighlight(id: doomed)
 assert(marked.highlights.map(\.page) == [12], "Removing one highlight leaves the others alone")
@@ -456,7 +514,18 @@ assert(keeping.withHighlights.allSatisfy { !$0.highlights.isEmpty },
 let storedHighlightID = shelfWithMarks.books[0].highlights[0].id
 assert(shelfWithMarks.removeHighlight(storedHighlightID, for: markedID)?.highlights.isEmpty == true,
        "The library removes a highlight by id")
-print("PASS: 19 highlight assertions (tidy, preview, dedupe, ordering, page lookup, toggle match, round trip, older records, library, takeaways)")
+
+var shelfByArea = PageVaultLibrary()
+try shelfByArea.insert(book(fingerprint: "by-area", title: "By Area"))
+let byAreaID = shelfByArea.books[0].id
+shelfByArea.addHighlight(kept(3, "a marked line", [band(100, 200, 80)]), for: byAreaID)
+assert(shelfByArea.removeHighlights(onPage: 3, covering: [band(120, 200, 10)],
+                                    for: byAreaID)?.removed == 1,
+       "The library clears a mark by the area a selection covers")
+assert(shelfByArea.books[0].highlights.isEmpty, "That mark is gone from the book's own record")
+assert(shelfByArea.removeHighlights(onPage: 3, covering: [band(120, 200, 10)], for: UUID()) == nil,
+       "An unknown book has nothing to clear")
+print("PASS: 38 highlight assertions (tidy, preview, band geometry, folding, overlap merge, neighbouring lines, removal by area, ordering, page lookup, round trip, older records, library, takeaways)")
 
 // Searching a book's text. Matching and snippets are pure, so they are pinned without a document.
 let pageText = "Grit is passion and perseverance. Grit grows when you practise deliberately."

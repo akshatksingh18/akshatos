@@ -65,7 +65,8 @@ not a claim that every feature is physically verified.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
-  reading status, the place marker, highlights, search matching and snippets, page themes,
+  reading status, the place marker, highlights with their band geometry, folding and area-based
+  identity, search matching, snippets and find marks, page themes,
   page-fitting geometry and ink scanning, and the export manifest with restore planning),
   `data/` (versioned SwiftData store,
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
@@ -73,8 +74,11 @@ not a claim that every feature is physically verified.
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
   its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
   search sheet). Product scope and
-  gates are owned by `../book-reader/`. Its reading loop, the page curl and highlights are
-  phone-confirmed; search and the page themes are not.
+  gates are owned by `../book-reader/`. Its reading loop, the page curl, drawing highlights and
+  jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
+  reworked highlighter are not. Build 22 found the highlighter stacking marks over each other
+  because identity compared captured text rather than the page area covered; it now offers Highlight
+  and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving

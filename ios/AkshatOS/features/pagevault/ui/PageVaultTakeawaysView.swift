@@ -7,6 +7,9 @@ import SwiftUI
 /// what to read, this is for going back to what a book gave you.
 struct PageVaultTakeawaysView: View {
     @ObservedObject var store: PageVaultStore
+    /// Passed down because a passage here can open its book, and an open reader is a reading
+    /// session the app layer needs to know about for orientation.
+    var onReadingSessionChange: (Bool) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -19,7 +22,9 @@ struct PageVaultTakeawaysView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         ForEach(store.booksWithHighlights) { book in
                             NavigationLink {
-                                PageVaultHighlightList(store: store, bookID: book.id)
+                                PageVaultHighlightList(
+                                    store: store, bookID: book.id, opensBook: true,
+                                    onReadingSessionChange: onReadingSessionChange)
                             } label: {
                                 card(book)
                             }
@@ -29,9 +34,9 @@ struct PageVaultTakeawaysView: View {
                     }
                     .padding(20)
                 }
-                .background(Palette.background.ignoresSafeArea())
             }
         }
+        .background(Palette.background.ignoresSafeArea())
         .navigationTitle("Takeaways")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("pagevault-takeaways")

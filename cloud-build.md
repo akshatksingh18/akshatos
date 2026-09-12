@@ -4,26 +4,32 @@
 handover. Build 13 is the accepted Squats daily-use baseline, and **Build 20 is installed and accepted
 for PageVault's reading loop**: page fitting, bookmark restore, warm paper, paged swiping and a
 full-library export all passed on the phone. Build 21 added highlights, search, page themes and the
-page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 is
-downloaded, verified and handed over: it turns the highlighter into a toggle, makes the curl the only
-reader, retires warm in favour of sepia, and adds Takeaways. This file owns build and device evidence.
+page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 made the
+curl the only reader, retired warm in favour of sepia and added Takeaways; its device pass confirmed
+search page-jumps but found the highlighter stacking marks it could not then remove. Source is at
+build 23, which reworks the highlight feature around an explicit Highlight / Remove highlight choice
+and geometric identity; no artifact for it exists yet. This file owns build and device evidence.
 
 ## Current identity and artifact
 
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (21)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (23)**; minimum iOS 17.
+  Build 22 is the last artifact actually produced, so 23 exists in source only until a run packages it.
   Every installable artifact gets its own build number, so a build never shares a number while
-  carrying different code.
+  carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
+  change after a build is handed over, not at build time — that is what keeps this invariant true.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core, plus PageVault's library, page-curl reader, page
   themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
   full-text search; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
-  were removed in Build 21. Build 22 makes the curl the only reader, turns the highlighter into a
-  toggle so a mistaken highlight can be undone, and retires the warm theme in favour of sepia.
+  were removed in Build 21. Build 22 makes the curl the only reader and retires the warm theme in
+  favour of sepia. Build 23 reworks highlighting around an explicit Highlight / Remove highlight
+  choice, tints a searched phrase on arrival, reaches a page from a Takeaways passage, and confirms
+  before removing one.
 - Credentials, profiles, keys, device IDs, Anisette data, and IPAs never enter Git.
 
 The hub is a fresh identity, not an upgrade of the standalone Squat Reminder smoke app (`0.1.0 (1)`,
@@ -71,23 +77,22 @@ Build 22 notes: its packaged `Info.plist` reports build 22, version 0.2.0 and mi
 PageVault library and Takeaways screenshots were inspected; the hub, Squats dashboard and backup sheet
 are unchanged by this batch. Install it over Build 21 without uninstalling.
 
-What to check on the phone, most valuable first:
+Build 22's findings are recorded under Phone findings below. The highlight defects it exposed are
+fixed in source for Build 23, along with the Takeaways empty-screen background.
 
-- **Undoing a highlight.** Select a passage you already highlighted and tap the highlighter: the mark
-  should disappear. The same words on another page stay their own highlight.
-- **Takeaways.** The library's second button lists every book you have kept lines from, newest first;
-  opening one shows its passages as blocks, and Export writes them to a PDF in Files.
-- **Jumping.** Tap a search result, and a passage's "Go to page" in the reader's highlights sheet.
-  Both must land on the right page — the pager took this over when the old reader was deleted, so it
-  is the likeliest thing to be wrong.
-- **Remembered zoom.** Pinch, turn a few pages, and confirm the zoom held. Same reason as above.
-- **Sepia and night.** Sepia is now the default and warm is gone; a stored warm choice should land on
-  sepia rather than resetting. Night should invert the page, not merely dim it.
-- **Still unexercised on the phone:** search itself, restoring an export into a library missing those
-  books, and the reading-data-only export.
+What to check on the phone once Build 23 exists, most valuable first:
 
-Known cosmetic defect: with nothing kept, the Takeaways empty screen sits on pure black rather than
-PageVault's dark navy. Visible only in that empty state; to be fixed with a later code change.
+- **The highlighter's two choices.** With text selected it offers Highlight and Remove highlight,
+  and Remove is greyed out unless the selection actually covers a mark.
+- **A passage can only be marked once.** Mark a line, then select it plus one more word and mark
+  again: the mark should grow, not double up or darken. Then remove it by selecting any part of it.
+- **The searched phrase is tinted.** Jump from a search result and the matched words should be
+  tinted in a colour that is not the marker's, gone once the page is turned.
+- **Go to page from a Takeaways passage.** It should open that book at that page. The reader's own
+  passage list keeps moving the book already open.
+- **The bin asks first**, in both the reader's passage list and Takeaways.
+- **Still unexercised on the phone:** search itself, the highlights PDF export, and the page themes.
+  Export and restore stay deliberately untested until the features are finished — Akshat's call.
 
 ## Phone findings
 
@@ -126,6 +131,24 @@ anyway, so a real scanned book is still needed for a memory verdict.
   highlight by tapping the highlighter again, make the curl permanent with no setting, and drop warm
   for sepia — all of which are in Build 22. Search, the themes and the highlights export were not
   tested in this pass.
+- **Build 22** (installed over Build 21). What worked: jumping to a page from a search result, and
+  **Go to page** in the reader's per-book passage list. A zoomed page refusing to turn until the
+  zoom is released is **wanted**, not a defect — Akshat asked for it to stay that way.
+  What was broken, and is fixed in source for Build 23:
+  - The highlighter stacked marks. Selecting a line that already carried a mark plus a little more
+    text produced a second and third mark over the same words, visibly darker where they overlapped,
+    and the mark could not be removed by re-tapping the highlighter. Root cause: highlight identity
+    compared the captured text instead of the page area covered, so any selection that was not
+    character-identical read as a new mark. A mark made on Build 21 therefore could not be removed
+    on Build 22 at all, and deleting that passage in Takeaways left its siblings still drawn — which
+    is why a highlight appeared to survive its own deletion.
+  - Takeaways passages had no way to reach their page; tapping one did nothing.
+  - The passage bin deleted with no confirmation, next to Go to page, so a mistap lost a passage.
+  Akshat chose the fix: the highlighter now offers Highlight and Remove highlight explicitly rather
+  than inferring which is meant, and identity is geometric. `../book-reader/features.md` owns the
+  scope and `../book-reader/architecture.md` the mechanism. Search itself, the themes and the
+  highlights PDF export were still not tested. Export and restore are deliberately deferred until
+  the features are finished.
 
 ## Signing and physical acceptance flow
 

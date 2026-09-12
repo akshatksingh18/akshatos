@@ -5,7 +5,9 @@ import SwiftUI
 struct PageVaultSearchView: View {
     @ObservedObject var store: PageVaultStore
     let book: PageVaultBook
-    var onJump: (Int) -> Void
+    /// The whole hit, not just its page: the reader tints the words that matched on arrival, which
+    /// needs where on the page they sit.
+    var onJump: (PageVaultSearchHit) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
@@ -52,7 +54,7 @@ struct PageVaultSearchView: View {
         } else {
             List(hits) { hit in
                 Button {
-                    onJump(hit.page)
+                    onJump(hit)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("PAGE \(hit.page + 1)")
