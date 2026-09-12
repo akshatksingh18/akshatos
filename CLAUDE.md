@@ -66,7 +66,8 @@ not a claim that every feature is physically verified.
   for a refresh that never happened; an uncorroborated difference is logged as `RECORD-CHANGED`. A
   `-DatabasePath` test run is redirected to its own sidecar log/state so a fixture cannot write into
   the real record. Escalates to a blocking dialog when an app is close to expiry, errored, or
-  uncheckable. Refreshes nothing itself.
+  uncheckable. Refreshes nothing itself. Never judge what it has recorded from an agent shell — those
+  are sandboxed and read a redirected copy of the log; `setup.md` explains how to read the real one.
 - `scripts/read-signing-state.py` — reads a read-only copy of Sideloadly's `installations.db` and
   emits per-app expiry as JSON; never touches the signing material stored beside it. Carries the
   documented `RETIRED_BUNDLE_PREFIXES` list so an app removed from the phone (Sideloadly keeps its
@@ -334,9 +335,9 @@ not a claim that every feature is physically verified.
   logon and twice daily, reads Sideloadly's own install record, and treats only a corroborated
   completed install moving forward as success — a quiet daemon, a clean process exit, or a merely
   changed install record is explicitly not proof. It
-  escalates to a blocking dialog at two days or on any recorded error. `setup.md` owns the detail
-  and the gates still open, including which of the log's existing `REFRESHED` lines are test
-  artifacts that must not be counted toward them. It deliberately refreshes nothing: Sideloadly's daemon does that, and a
+  escalates to a blocking dialog at two days or on any recorded error. Its scheduled execution is
+  confirmed; the daemon's refreshing is not. `setup.md` owns the detail and the gates still open,
+  including why an agent shell's sandboxed view of the log cannot be used to judge them. It deliberately refreshes nothing: Sideloadly's daemon does that, and a
   second signer racing it would be worse than none.
 - After the first install and after the first several refresh cycles, open the app and confirm its
   running/interval state and pending notification request survived. Once the process is trusted,

@@ -4,9 +4,10 @@ How the sideloaded apps on Akshat's iPhone are kept signed, and how that is prov
 assumed. `cloud-build.md` owns producing and installing a build; this file owns keeping an already
 installed one alive.
 
-**Status:** The health check is installed and running. The refreshing half is Sideloadly's daemon,
-which is installed and autostarts but **has never been observed to refresh anything**. Until it is,
-treat weekly signing as unproven and expect to refresh by hand.
+**Status:** The health check is installed, and its scheduled execution is **confirmed** — the log
+carries a run from every trigger fired so far, on time and with the expected verdict. The refreshing
+half is Sideloadly's daemon, which is installed and autostarts but **has never been observed to
+refresh anything**. Until it is, treat weekly signing as unproven and expect to refresh by hand.
 
 ## The two halves, and why they are separate
 
@@ -54,8 +55,9 @@ occasionally is what covers that gap — keep doing it.
 
 A run that passes `-DatabasePath` is a test, not an observation of the phone, so it is redirected to
 those sidecars automatically and cannot write into the real log or state. Pass `-LogPath`/`-StatePath`
-explicitly to override that. This matters because a fixture run *did* once write into the real state,
-and the next real run read the difference back as a refresh that had never happened.
+explicitly to override that. This matters because a fixture run that writes into the real state makes
+the next real run read the difference back as a refresh that never happened — reproduced in a
+sandboxed agent session, and the reason the redirect exists.
 
 The database is copied before reading so a health check can never lock or alter the daemon's own
 store. The signing material beside it (`key.pem`, `cert-*.pem`, `sessions.json`) is never read,
@@ -69,6 +71,28 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "D:\AI Important Files\perso
 
 Add `-Quiet` to suppress the pop-ups and just read the log lines. Exit code is `0` healthy,
 `1` warning, `2` act now.
+
+## Reading the log from an agent session
+
+**A coding agent's shell cannot be trusted to read this log.** Agent shells here run sandboxed, and
+writes outside the workspace — `%LOCALAPPDATA%` included — are redirected into a per-workspace
+overlay. The agent then reads its own overlay copy back, so it sees a log that mixes real history with
+whatever previous agent sessions wrote, and misses everything the real scheduled task has recorded.
+
+This is not hypothetical: it produced a confident, wrong diagnosis that the scheduled task was
+launching and silently doing nothing, on the evidence of runs "missing" from a log that had never
+received them. The two views disagreed on both line count and modification time.
+
+So when the question is what the real check has actually recorded:
+
+- Read the log **outside** an agent shell — a terminal you opened yourself, or Explorer.
+- If an agent must read it, have a scheduled task copy `health.log` into the workspace first and read
+  the copy; a scheduled task runs unsandboxed. Delete the copy afterwards.
+- Treat an agent-session run of the check as a logic exercise only, never as an observation of the
+  phone's real signing state.
+
+The same applies to `state.json`, and it is why fixture runs are redirected to sidecars: an agent's
+testing must not be able to reach either file, whichever side of the sandbox it lands on.
 
 ## What it does when something is wrong
 
@@ -145,20 +169,21 @@ check to cry wolf about it forever. Removing the row from Sideloadly's own datab
 tidiness at this point, not a fix — it does not free anything on the device, since the app limit
 Apple enforces is what is actually installed on the phone, not a row in a Windows-local database.
 
-It also found a fault in itself. The log carries two `REFRESHED` lines dated `2026-09-12 14:55`
-that are **test artifacts, not refresh cycles**, and a `NOTE` line in the log now says so:
+A later pass found a fault in the check itself, by exercising it rather than by it firing. Two
+separate defects, both now fixed:
 
-- The first ran against a fixture database, so it reported the fixture's bundle
-  (`com.example.testapp.TEAM1`) under WHOOP's name and gave a "new expiry" four days in the *past* —
-  a nonsense success.
-- The second looks real, naming the true bundle and a plausible expiry, but it fired only because
-  that fixture run had overwritten the shared `state.json`; the very next line of the same run said
-  WHOOP had *never* been refreshed since first install. Nothing had been signed.
+- **Success was uncorroborated.** A `REFRESHED` line was written on nothing more than a difference
+  between the saved state and Sideloadly's database. Against fixtures the old logic cheerfully
+  reported a re-signing whose "new expiry" was already four days in the past, and another on the
+  line immediately before stating the app had never been refreshed since first install.
+- **A fixture run wrote into the real record.** Passing `-DatabasePath` still used the production log
+  and `state.json`, so a test left its own install date behind and the next real run read that back
+  as a change — manufacturing exactly the false `REFRESHED` above.
 
-Both causes are now fixed: success is corroborated before it is claimed, and a fixture run writes to
-its own sidecars. The reason this mattered more than an untidy log is that `REFRESHED` is the only
-evidence the gates below are ever closed on — two false ones sitting in the log is exactly how the
-refresh loop gets recorded as proven without a single refresh having happened.
+The real log has never carried a false line; both were reproduced in a sandboxed agent session's own
+copy. The hazard was in the design regardless, and it mattered more than an untidy log because
+`REFRESHED` is the only evidence the gates below are ever closed on — a false one is how the refresh
+loop gets recorded as proven without a single refresh having happened.
 
 **The real test is WHOOP**, whose 96-hour refresh point falls the evening of the day this was
 installed. If its `last_updated` moves on its own, the daemon works and the loop is closed. If it
@@ -170,10 +195,8 @@ registrations still have `last_updated` equal to their first install.
 
 These stay open until exercised, per the operating model in `CLAUDE.md`:
 
-- [ ] Two unattended refresh cycles observed, each logged as `REFRESHED` with a new expiry.
-      Count only lines dated after 2026-09-12 14:55 — the two before that are the test artifacts
-      described above, and the `NOTE` line in the log marks them. A `RECORD-CHANGED` line never
-      counts.
+- [ ] Two unattended refresh cycles observed, each logged as `REFRESHED` with a new expiry. A
+      `RECORD-CHANGED` line never counts, and neither does a line produced by a fixture run.
 - [ ] One deliberate USB recovery rehearsed from an expired or near-expired state.
 - [ ] One forced failure — phone absent or offline at the refresh point — confirmed to raise the
       alert rather than pass quietly.

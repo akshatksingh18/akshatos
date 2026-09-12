@@ -35,9 +35,11 @@ Set-StrictMode -Version Latest
 
 # A run against a substituted database is a test, not an observation of the real phone. Give it
 # its own state and log unless the caller deliberately chose paths, because the real record is the
-# only evidence the refresh gate is ever closed on and a fixture must not be able to write into
-# it. One already did: a fixture run overwrote the saved state, and the next real run read that
-# back as a change and logged a refresh that had never happened.
+# only evidence the refresh gate is ever closed on and a fixture must not be able to write into it.
+# Without this, a fixture run leaves its own install date in state.json, and the next real run reads
+# that back as a change - reporting a refresh that never happened. That sequence has been reproduced
+# (in an agent session's sandboxed copy of the log, not on the real machine, which has never carried
+# a false line); the hazard is in the design either way.
 if ($DatabasePath) {
     if ($StatePath -eq (Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\state.json')) {
         $StatePath = Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\state.test.json'
@@ -177,9 +179,9 @@ foreach ($app in $report.apps) {
     # against the two things that must also be true of a real re-signing - the install date has
     # moved past the first install, and the new expiry is in the future - and name the mismatch
     # instead of reporting success. REFRESHED is the sole evidence the refresh gate is ever closed
-    # on, which makes a false one the worst thing this check can do, and it has already written
-    # two: one the same run then contradicted with "never refreshed since first install", and one
-    # whose "new expiry" was four days in the past.
+    # on, which makes a false one the worst thing this check can do. Uncorroborated, it will happily
+    # report a re-signing whose "new expiry" is already in the past, on the line before saying the
+    # app has never been refreshed since first install - both reproduced against fixtures.
     if ($previous.ContainsKey($name) -and $previous[$name] -ne $app.lastSigned) {
         $doubts = @()
         if ($ever -eq $false) { $doubts += 'its install date still matches its first install' }
