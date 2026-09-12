@@ -69,6 +69,27 @@ The recovery it tells you to do, in order: open Sideloadly and use **Refresh All
 with the iPhone unlocked and on the same Wi-Fi; if that fails, connect USB and install the cached
 IPA again. **Never uninstall to fix signing** — that deletes the app's data.
 
+## Wireless-only refresh: what it does and does not promise
+
+The goal is one USB connection ever, then Sideloadly's daemon refreshes wirelessly over Wi-Fi from
+then on. Two things from Sideloadly's own FAQ (<https://sideloadly.io/faq.html>, re-checked
+2026-09-12) keep that from being a guarantee rather than a design intent:
+
+- **"You also need to have your iDevice screen on for it to be detected."** The FAQ does not say
+  whether that applies only to the one-time Wi-Fi pairing or to every refresh attempt going
+  forward. Leaving the phone on the same Wi-Fi, ideally charging, removes the biggest variable
+  either way.
+- **Refresh is driven by nearness to each app's own expiry, not a shared calendar day.** AkshatOS
+  and WHOOP were last signed on different days, so they will not naturally refresh together; a
+  missed cycle also pushes every later cycle for that app back by the same amount. A one-time
+  manual **Refresh All Apps** in Sideloadly resets every app's clock to the same day if a shared
+  schedule is wanted.
+
+`installations.db`'s `one_off: 0` and `refresh_at_hours: 96` on both AkshatOS and WHOOP look like
+automatic-refresh enrollment already being active for both — confirm visually in Sideloadly's own
+window rather than trusting that inference alone. The health check above is what actually tells you
+whether a wireless cycle happened; silence from the phone is not evidence either way.
+
 ## What this has already found
 
 At the time it was installed, all three registrations had `last_updated` still equal to their
