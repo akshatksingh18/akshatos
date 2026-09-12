@@ -9,9 +9,9 @@ curl the only reader, retired warm in favour of sepia and added Takeaways; its d
 search page-jumps but found the highlighter stacking marks it could not then remove. **Build 23's
 reworked highlighting is accepted on the phone** — the explicit Highlight / Remove highlight choice,
 the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
-the one mark that would not clear: it was inside the PDF file, not PageVault's. Source is at build
-24, which hides the book's own markup, adds a direct page jump, and opens the feature that sent a
-notification. This file owns
+the one mark that would not clear: it was inside the PDF file, not PageVault's. **Build 24 is
+downloaded, verified and handed over**: it hides the book's own markup, adds a direct page jump, and
+opens the feature that sent a notification. It is not device-tested. This file owns
 build and device evidence.
 
 ## Current identity and artifact
@@ -20,7 +20,8 @@ build and device evidence.
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (24)**; minimum iOS 17.
-  Build 23 is the last artifact produced; source is at 24 and is built from next.
+  Build 24 is both the working source version and the last artifact produced, so the **next** code
+  change bumps to 25 before anything is built from it.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
   change after a build is handed over, not at build time — that is what keeps this invariant true.
@@ -70,14 +71,17 @@ installed and run is that. Build 22 was discarded under this rule while Build 21
 never installed, and the device pass it did get found its headline feature broken, so it was worth
 less as a fallback than the build before it.
 
-Everything else has been cleared out of Downloads: builds 2–4, 9–12, 14–17, 19 and 22, the PageVault
-spike artifact, and the old smoke artifact. Builds 14–17, 19 and 22 plus the spike went to the
-Recycle Bin during a cleanup and are recoverable until it is emptied; Build 18 was never downloaded.
+Everything else has been cleared out of Downloads: builds 2–4, 9–12, 14–17, 19, 21 and 22, the
+PageVault spike artifact, and the old smoke artifact. Builds 14–17, 19, 21 and 22 plus the spike
+went to the Recycle Bin during a cleanup and are recoverable until it is emptied; Build 18 was never
+downloaded. Build 21 was dropped once Build 23 was accepted on the phone and took over as the
+build to fall back to.
 Every source is in Git history and what each build found on the phone is under Phone findings below,
 which is the part worth keeping. Recovering one means re-running its workflow, not restoring a file.
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
+| 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | Latest handed-over candidate; not device-tested |
 | 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target |
 | 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Last build confirmed on the phone — the curl and highlights passed; the rollback target |
 | 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Installed; PageVault's reading loop accepted on the phone |
@@ -87,9 +91,10 @@ Build 22 notes: its packaged `Info.plist` reports build 22, version 0.2.0 and mi
 PageVault library and Takeaways screenshots were inspected; the hub, Squats dashboard and backup sheet
 are unchanged by this batch. Install it over Build 21 without uninstalling.
 
-Build 24 adds a direct page jump from the reader's page indicator, hides text markup the PDF itself
-carried, and routes a tapped notification to the feature that sent it. **Install over Build 23
-without uninstalling.**
+Build 24 notes: its packaged `Info.plist` reports build 24, version 0.2.0 and minimum iOS 17.0, from
+merge commit `b53af3e`. Checksum matched and `validate-ipa.py` passed. It adds a direct page jump
+from the reader's page indicator, hides text markup the PDF itself carried, and routes a tapped
+notification to the feature that sent it. **Install over Build 23 without uninstalling.**
 
 What to check on Build 24, most valuable first:
 
