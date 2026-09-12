@@ -26,13 +26,13 @@ struct PageVaultHighlightList: View {
                     }
                     .padding(20)
                 }
-                .background(Palette.background.ignoresSafeArea())
             } else {
                 ContentUnavailableView(
                     "Nothing kept from this book", systemImage: "quote.opening",
                     description: Text("Select a line while reading, then tap the highlighter."))
             }
         }
+        .background(Palette.background.ignoresSafeArea())
         .navigationTitle(book?.title ?? "Takeaways")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

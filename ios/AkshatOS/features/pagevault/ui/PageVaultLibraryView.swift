@@ -186,6 +186,7 @@ struct PageVaultLibraryView: View {
         } else {
             ContentUnavailableView("Copy unavailable", systemImage: "exclamationmark.triangle",
                                    description: Text("PageVault's copy of this book is missing."))
+                .background(Palette.background.ignoresSafeArea())
         }
     }
 }

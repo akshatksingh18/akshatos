@@ -29,9 +29,9 @@ struct PageVaultTakeawaysView: View {
                     }
                     .padding(20)
                 }
-                .background(Palette.background.ignoresSafeArea())
             }
         }
+        .background(Palette.background.ignoresSafeArea())
         .navigationTitle("Takeaways")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("pagevault-takeaways")

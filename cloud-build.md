@@ -86,8 +86,11 @@ What to check on the phone, most valuable first:
 - **Still unexercised on the phone:** search itself, restoring an export into a library missing those
   books, and the reading-data-only export.
 
-Known cosmetic defect: with nothing kept, the Takeaways empty screen sits on pure black rather than
-PageVault's dark navy. Visible only in that empty state; to be fixed with a later code change.
+Known cosmetic defect in Build 22: with nothing kept, the Takeaways empty screen sits on pure black
+rather than PageVault's dark navy. Visible only in that empty state. Fixed in source afterwards —
+PageVault's dark background was attached to the populated branch of each screen, so every empty state
+fell through to black, and it now covers both branches of Takeaways and of a book's passage list plus
+the missing-copy reader state. Build 22 as handed over still shows it; the next build carries the fix.
 
 ## Phone findings
 
