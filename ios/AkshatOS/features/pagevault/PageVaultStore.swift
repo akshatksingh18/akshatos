@@ -190,20 +190,25 @@ import SwiftUI
         persist(updated)
     }
 
-    /// The highlighter is a toggle: selecting a passage that is already highlighted and tapping it
-    /// again removes it, which is how a highlight made by mistake is undone.
+    /// Clears every mark the selection covers. This is the explicit "Remove highlight" action.
+    ///
+    /// The highlighter used to guess between marking and unmarking by comparing the selection's
+    /// text against the stored passage. Any difference — one extra word — read as a new mark, so
+    /// unmarking by hand rarely worked and marking twice stacked instead. The reader now states
+    /// which it means, and both sides match on the words covered rather than on the text captured.
     @discardableResult
-    func toggleHighlight(text: String, page: Int, rects: [PageVaultRect],
-                         to book: PageVaultBook) -> Bool {
-        let tidied = PageVaultHighlight.tidy(text)
-        guard !tidied.isEmpty else { return false }
-        if let existing = library.books.first(where: { $0.id == book.id })?
-            .highlight(onPage: page, matching: tidied) {
-            removeHighlight(existing.id, from: book)
-            return false
-        }
-        addHighlight(text: text, page: page, rects: rects, to: book)
-        return true
+    func clearHighlights(page: Int, rects: [PageVaultRect], in book: PageVaultBook) -> Int {
+        guard let result = library.removeHighlights(onPage: page, covering: rects, for: book.id),
+              result.removed > 0 else { return 0 }
+        persist(result.book)
+        return result.removed
+    }
+
+    /// Whether the selection touches anything, so "Remove highlight" is only offered when it has
+    /// something to remove.
+    func hasHighlights(page: Int, rects: [PageVaultRect], in book: PageVaultBook) -> Bool {
+        guard let stored = library.books.first(where: { $0.id == book.id }) else { return false }
+        return !stored.highlights(onPage: page, covering: rects).isEmpty
     }
 
     func removeHighlight(_ id: UUID, from book: PageVaultBook) {

@@ -42,7 +42,7 @@ migration, idle-start scheduling, Home pause/resume guards and backup exclusion,
 file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion;
 plus hub, dashboard and Settings UI coverage.
 
-PageVault suites: 150 domain assertions covering place clamping and the opening page, progress
+PageVault suites: 169 domain assertions covering place clamping and the opening page, progress
 labels, title derivation, fingerprint dedupe, recency ordering, the single-Reading-book invariant,
 the Started shelf split, older-payload decoding (including records carrying fields since removed,
 such as the daily page goal), export/restore (manifest round trip, Windows-safe file names,
@@ -50,8 +50,9 @@ whole-manifest validation and versions, content-matched planning, add-only versu
 collisions), page fitting (four-sided crop, outlier edges, short documents, facing pages, scans,
 blank and unmeasured pages, specks, off-white paper, a no-clipping property and cache versioning),
 highlights (rejoining selections broken at line ends and hyphens, duplicate and empty passages,
-reading order, page lookup, the page-and-text match behind the toggle, the books Takeaways lists
-and their order, record round trip, records written before highlights existed), search
+reading order, page lookup, band geometry and folding, a wider selection extending a mark rather
+than stacking one, a mark on the line below staying its own, removal by the area covered, the books
+Takeaways lists and their order, record round trip, records written before highlights existed), search
 (matching, case and accent insensitivity, result limits, one-letter queries, snippet context and
 ellipses, pages with no text) and page themes (stored raw values, default, inversion, the retired warm theme mapping to sepia,
 fallback).
@@ -70,8 +71,9 @@ page that finds nothing. UI tests cover hub → library → back, the backup she
 kept yet.
 
 Simulator coverage cannot exercise the system document picker, the file mover that saves an export,
-real large-file memory pressure, rotation, paged swipe feel, how warm paper looks, or whether fitted
-pages read comfortably. Each reader change needs its own device pass, owned by
+real large-file memory pressure, rotation, paged swipe feel, how the sepia and night pages look, how
+a text selection actually snaps to words and lines, or whether fitted pages read comfortably. Each
+reader change needs its own device pass, owned by
 `../book-reader/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
 acceptance gates.
 

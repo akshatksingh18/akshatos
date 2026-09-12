@@ -12,6 +12,26 @@ enum PageVaultHighlightService {
     /// The marker colour, used both on the page and on the exported sheet.
     static let marker = UIColor.systemYellow
 
+    /// The colour a search match is tinted on arrival. Deliberately not the marker colour: a
+    /// signpost that vanishes on the next page turn must not look like a passage you kept.
+    static let finder = UIColor.systemTeal
+
+    /// The selection covering a search match on one page, ready to be tinted.
+    ///
+    /// The offset arrives counted in characters, as `PageVaultSearch` counts them, while `NSRange`
+    /// counts UTF-16 units. Re-slicing the page's own text converts between the two exactly, which
+    /// matters wherever a book is not plain Latin script.
+    static func selection(for mark: PageVaultFindMark, in document: PDFDocument) -> PDFSelection? {
+        guard mark.length > 0, mark.page >= 0, mark.page < document.pageCount,
+              let page = document.page(at: mark.page), let text = page.string else { return nil }
+        let characters = Array(text)
+        guard mark.offset >= 0, mark.offset + mark.length <= characters.count else { return nil }
+        let location = String(characters[0..<mark.offset]).utf16.count
+        let length = String(characters[mark.offset..<(mark.offset + mark.length)]).utf16.count
+        guard length > 0 else { return nil }
+        return page.selection(for: NSRange(location: location, length: length))
+    }
+
     /// One capture per page the selection covers, because a passage running across a page break is
     /// two highlights: each needs its own page and its own rectangles.
     struct Capture {

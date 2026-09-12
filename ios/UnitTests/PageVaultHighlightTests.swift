@@ -73,23 +73,38 @@ import XCTest
                       "Removal is persisted, not just shown")
     }
 
-    func testHighlightingTheSamePassageAgainRemovesIt() async throws {
+    func testMarkingExtendsAndRemovingClearsTheAreaCovered() async throws {
         let store = try makeStore(root: "Phone", container: try makeContainer("A"))
         await store.load()
         await store.importBook(from: try makePDF(pages: 6))
         let book = try XCTUnwrap(store.books.first)
+        let line = PageVaultRect(x: 100, y: 500, width: 60, height: 10)
+        let wider = PageVaultRect(x: 100, y: 500, width: 90, height: 10)
 
-        store.toggleHighlight(text: "a line to keep", page: 1, rects: [], to: book)
+        store.addHighlight(text: "brown fox", page: 1, rects: [line], to: book)
         XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).highlights.count, 1)
 
-        // The same selection again. This is how a highlight made by mistake is undone.
-        store.toggleHighlight(text: "a line to keep", page: 1, rects: [],
-                              to: try XCTUnwrap(store.book(id: book.id)))
-        XCTAssertTrue(try XCTUnwrap(store.book(id: book.id)).highlights.isEmpty,
-                      "Highlighting an already-highlighted passage removes it")
+        // A selection one word wider over the same line. This used to store a second mark on top
+        // of the first, which is what made a passage look highlighted two or three times.
+        store.addHighlight(text: "brown fox jumps", page: 1, rects: [wider],
+                           to: try XCTUnwrap(store.book(id: book.id)))
+        let extended = try XCTUnwrap(store.book(id: book.id))
+        XCTAssertEqual(extended.highlights.count, 1, "The wider selection extends the mark it covers")
+        XCTAssertEqual(extended.highlights.first?.text, "brown fox jumps")
 
-        store.toggleHighlight(text: "a line to keep", page: 2, rects: [],
-                              to: try XCTUnwrap(store.book(id: book.id)))
+        XCTAssertTrue(store.hasHighlights(page: 1, rects: [line], in: extended),
+                      "A selection over a mark reports that there is something to remove")
+        XCTAssertEqual(store.clearHighlights(page: 1, rects: [line], in: extended), 1,
+                       "Removing clears the mark the selection covers, not an exact text match")
+        XCTAssertTrue(try XCTUnwrap(store.book(id: book.id)).highlights.isEmpty,
+                      "The removal is persisted, not just shown")
+
+        let cleared = try XCTUnwrap(store.book(id: book.id))
+        XCTAssertFalse(store.hasHighlights(page: 1, rects: [line], in: cleared))
+        XCTAssertEqual(store.clearHighlights(page: 1, rects: [line], in: cleared), 0,
+                       "Removing where there is no mark changes nothing")
+
+        store.addHighlight(text: "brown fox", page: 2, rects: [line], to: cleared)
         XCTAssertEqual(try XCTUnwrap(store.book(id: book.id)).highlights.first?.page, 2,
                        "The same words on another page are a different passage")
     }
