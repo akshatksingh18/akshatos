@@ -79,7 +79,8 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
 - [ ] **Prove refresh and recovery.** The health check is installed and watching (`setup.md`); the
       refreshing itself is still unproven. Sideloadly's daemon has never been observed to refresh
       anything, so this gate needs: two unattended cycles each logged as `REFRESHED` with a new
-      expiry, one rehearsed USB recovery, one forced failure confirmed to alert rather than pass
+      expiry — `setup.md` says which of the log's existing `REFRESHED` lines are test artifacts and
+      must not be counted — one rehearsed USB recovery, one forced failure confirmed to alert rather than pass
       quietly, and same-bundle Wi-Fi/USB refresh preserving state — none of it by uninstalling.
 
 ## Current Android fallback gaps

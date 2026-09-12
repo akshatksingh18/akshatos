@@ -33,6 +33,20 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+# A run against a substituted database is a test, not an observation of the real phone. Give it
+# its own state and log unless the caller deliberately chose paths, because the real record is the
+# only evidence the refresh gate is ever closed on and a fixture must not be able to write into
+# it. One already did: a fixture run overwrote the saved state, and the next real run read that
+# back as a change and logged a refresh that had never happened.
+if ($DatabasePath) {
+    if ($StatePath -eq (Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\state.json')) {
+        $StatePath = Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\state.test.json'
+    }
+    if ($LogPath -eq (Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\health.log')) {
+        $LogPath = Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\health.test.log'
+    }
+}
+
 $stateDirectory = Split-Path -Parent $StatePath
 if (-not (Test-Path -LiteralPath $stateDirectory)) {
     New-Item -ItemType Directory -Path $stateDirectory -Force | Out-Null
@@ -151,11 +165,33 @@ foreach ($app in $report.apps) {
         continue
     }
 
+    $ever = if ($app.PSObject.Properties.Name -contains 'everRefreshed') { $app.everRefreshed } else { $null }
+    $note = if ($ever -eq $false) { ' (never refreshed since first install)' } else { '' }
+
     # A refresh actually happening is the only thing reported as success, and it is reported
     # with the identity and the new expiry rather than as a bare "ok".
+    #
+    # A changed record is not by itself that refresh. Anything that makes this script's saved
+    # state disagree with Sideloadly's database produces the same difference: a fixture run, a
+    # restored database, an install done by hand, or lost state. So corroborate the difference
+    # against the two things that must also be true of a real re-signing - the install date has
+    # moved past the first install, and the new expiry is in the future - and name the mismatch
+    # instead of reporting success. REFRESHED is the sole evidence the refresh gate is ever closed
+    # on, which makes a false one the worst thing this check can do, and it has already written
+    # two: one the same run then contradicted with "never refreshed since first install", and one
+    # whose "new expiry" was four days in the past.
     if ($previous.ContainsKey($name) -and $previous[$name] -ne $app.lastSigned) {
-        Write-Line 'REFRESHED' ("{0} ({1}) re-signed  -  now expires {2}" -f `
-            $name, $app.bundleID, $app.expires)
+        $doubts = @()
+        if ($ever -eq $false) { $doubts += 'its install date still matches its first install' }
+        if (-not [double]::IsNaN($days) -and $days -le 0) { $doubts += 'the new expiry is already in the past' }
+        if ($doubts.Count -eq 0) {
+            Write-Line 'REFRESHED' ("{0} ({1}) re-signed  -  now expires {2}" -f `
+                $name, $app.bundleID, $app.expires)
+        }
+        else {
+            Write-Line 'RECORD-CHANGED' ("{0} ({1}) install record changed, but this is not a refresh: {2}. Not evidence of a refresh cycle." -f `
+                $name, $app.bundleID, ($doubts -join '; '))
+        }
     }
 
     if ($app.failures -gt 0 -or $app.lastError) {
@@ -171,9 +207,6 @@ foreach ($app in $report.apps) {
         if ($worst -lt 1) { $worst = 1 }
         continue
     }
-
-    $ever = if ($app.PSObject.Properties.Name -contains 'everRefreshed') { $app.everRefreshed } else { $null }
-    $note = if ($ever -eq $false) { ' (never refreshed since first install)' } else { '' }
 
     if ($days -lt 0) {
         $worst = 2
