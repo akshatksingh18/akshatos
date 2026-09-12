@@ -3,9 +3,10 @@
 **State:** Builds come only from the GitHub Actions macOS workflow and are verified on Windows before
 handover. Build 13 is the accepted Squats daily-use baseline, and **Build 20 is installed and accepted
 for PageVault's reading loop**: page fitting, bookmark restore, warm paper, paged swiping and a
-full-library export all passed on the phone. Build 21 removes reading streaks and adds highlights,
-full-text search, page themes and an opt-in page curl; it is downloaded, verified and handed over,
-and not yet device-tested. This file owns build and device evidence.
+full-library export all passed on the phone. Build 21 added highlights, search, page themes and the
+page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 is
+downloaded, verified and handed over: it turns the highlighter into a toggle, makes the curl the only
+reader, retires warm in favour of sepia, and adds Takeaways. This file owns build and device evidence.
 
 ## Current identity and artifact
 
@@ -57,7 +58,8 @@ never downloaded, because Build 19 superseded it before any device pass.
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Latest handed-over candidate; not device-tested |
+| 22 | `akshatos-build-22\akshatos-ios-96` | `fdc69fc` (#33) | [34666050266](https://github.com/akshatksingh18/akshatos/actions/runs/34666050266) | `a2eb95bb0b7b17acae83e288c2ba29f694cbb2de5be377d76389a3430e376579` | Latest handed-over candidate; not device-tested |
+| 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Superseded by 22; the curl and highlights passed on the phone |
 | 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Installed; PageVault's reading loop accepted on the phone |
 | 19 | `akshatos-build-19\akshatos-ios-82` | `089cc15` (#27) | [34548930454](https://github.com/akshatksingh18/akshatos/actions/runs/34548930454) | `932432e0b8d52895b4837c071cfb6a8023033826c31fe1fb82c2206010ea84c8` | Superseded by 20; not device-tested |
 | 17 | `akshatos-build-17\akshatos-ios-76` | `52181f6` (#24) | [34530751880](https://github.com/akshatksingh18/akshatos/actions/runs/34530751880) | `87c1adce1fb91ceab4925d1e89c3411d0a96217c10e1c03f28a394e61be7b96e` | Superseded by 19 |
@@ -67,30 +69,27 @@ never downloaded, because Build 19 superseded it before any device pass.
 | 13 | `akshatos-build-13\akshatos-ios-58` | `f484f66` (#15) | [34151147604](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604) | `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0` | Accepted Squats daily-use baseline |
 | — | `akshatos-pagevault-spike\akshatos-ios-62` | `e353c8d` (#17) | [34430943640](https://github.com/akshatksingh18/akshatos/actions/runs/34430943640) | `e0aa63edf3102a7707d39265b914711976686454956860ca5e3d2c555f372555` | Reports 0.2.0 (13) despite containing PageVault; never install |
 
-Build 21 notes: its packaged `Info.plist` reports build 21, version 0.2.0 and minimum iOS 17.0, and
-all four screenshots (hub, Squats dashboard, empty PageVault library, backup sheet) were inspected —
-the empty-library "Zero KB" footer is gone. Install it over Build 20 without uninstalling: the
-library, bookmarks and page measurements all live in the app container. PageVault's streak card
-disappears in this build; that is the removal landing, not data loss. Squats keeps its own goal and
-streak, which are untouched.
+Build 22 notes: its packaged `Info.plist` reports build 22, version 0.2.0 and minimum iOS 17.0. The
+PageVault library and Takeaways screenshots were inspected; the hub, Squats dashboard and backup sheet
+are unchanged by this batch. Install it over Build 21 without uninstalling.
 
 What to check on the phone, most valuable first:
 
-- **Highlights.** Select a line, tap the highlighter, reopen the book, and confirm the mark is still
-  drawn in place. Check that the list (reader menu or book details) jumps to the right page, that
-  swiping deletes, and that Export produces a readable PDF of the passages in Files.
-- **Search.** From the reader menu, search a word that appears more than once and confirm the results
-  land on the right pages. The 188 MB scan should find nothing: it has no text layer, and there is
-  no OCR.
-- **Themes.** Paper, Sepia and Night from the reader menu. Night should invert the page into
-  light text on dark rather than merely dimming it.
-- **Page curl and highlights: confirmed on Build 21.** Both worked on the phone, including dragging
-  to select a line under the curl. Build 22 therefore makes the curl the only reader, removes its
-  setting, and turns the highlighter into a toggle so a mistaken highlight can be undone.
-- **Export/restore is still unexercised on the phone.** Use a disposable library first: add two
-  fixture PDFs, highlight and bookmark one, export both ways to Files, remove the books, then restore
-  and confirm places, statuses, the Started shelf and the highlights all come back. Never make a real
-  library the first restore.
+- **Undoing a highlight.** Select a passage you already highlighted and tap the highlighter: the mark
+  should disappear. The same words on another page stay their own highlight.
+- **Takeaways.** The library's second button lists every book you have kept lines from, newest first;
+  opening one shows its passages as blocks, and Export writes them to a PDF in Files.
+- **Jumping.** Tap a search result, and a passage's "Go to page" in the reader's highlights sheet.
+  Both must land on the right page — the pager took this over when the old reader was deleted, so it
+  is the likeliest thing to be wrong.
+- **Remembered zoom.** Pinch, turn a few pages, and confirm the zoom held. Same reason as above.
+- **Sepia and night.** Sepia is now the default and warm is gone; a stored warm choice should land on
+  sepia rather than resetting. Night should invert the page, not merely dim it.
+- **Still unexercised on the phone:** search itself, restoring an export into a library missing those
+  books, and the reading-data-only export.
+
+Known cosmetic defect: with nothing kept, the Takeaways empty screen sits on pure black rather than
+PageVault's dark navy. Visible only in that empty state; to be fixed with a later code change.
 
 ## Phone findings
 
