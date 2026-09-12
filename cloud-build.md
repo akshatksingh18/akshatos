@@ -98,9 +98,9 @@ notification to the feature that sent it. **Install over Build 23 without uninst
 
 What to check on Build 24, most valuable first:
 
-- **The stuck mark is gone.** Open the book that had it. Marks the PDF itself carried are now hidden,
-  so it should simply not be there. Nothing was written to the file, so it is still in the PDF — if
-  you want that passage back, highlight it in PageVault and it becomes one you can list and remove.
+- **The stuck marks in Grit will still be there, and that is expected.** They are drawn into the
+  pages, not annotations, so nothing PageVault does can hide them — import the cleaned copy of the
+  book instead. Build 24's hiding still needs a test, on a PDF annotated in Books or Preview.
 - **Opening a Squats notification lands on Squats.** Test it from the worst case: have a book open in
   PageVault, then tap a Squats reminder. It should leave the book and show the Squats dashboard.
   Then check the opposite — tapping **Done** on the notification must *not* move you off the page.
@@ -152,9 +152,11 @@ anyway, so a real scanned book is still needed for a memory verdict.
   a Takeaways passage and the delete confirmation all work — Akshat called the set "perfect". One
   mark remained stuck on a page, absent from the passage list and impossible to clear. It was not
   PageVault's: PageVault writes nothing into the PDF and rebuilds marks from its records on every
-  open, so a mark with no record cannot be one of its own. It was inside the PDF file, from wherever
-  the book was annotated before import, and re-importing would have brought it back. Build 24 hides
-  the book's own text markup instead. The pinch-blocks-paging behaviour was confirmed wanted again.
+  open, so a mark with no record cannot be one of its own. Inspecting the book settled what it is:
+  not an annotation at all, but 65 yellow shapes drawn into 48 of its pages — a highlighter's output
+  flattened into the page content. Build 24's annotation fix cannot reach those, and no re-import
+  would have helped; the file itself has to be cleaned before import.
+  The pinch-blocks-paging behaviour was confirmed wanted again.
   Akshat also asked for a direct page jump for long books, and for a tapped Squats notification to
   open Squats rather than leaving PageVault on screen; both are in Build 24.
 - **Build 22** (installed over Build 21). What worked: jumping to a page from a search result, and
