@@ -13,9 +13,11 @@ reader, retires warm in favour of sepia, and adds Takeaways. This file owns buil
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (21)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (23)**; minimum iOS 17.
+  Build 22 is the last artifact actually produced, so 23 exists in source only until a run packages it.
   Every installable artifact gets its own build number, so a build never shares a number while
-  carrying different code.
+  carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
+  change after a build is handed over, not at build time — that is what keeps this invariant true.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
 - Content: hub picker → Squats dashboard/core, plus PageVault's library, page-curl reader, page
