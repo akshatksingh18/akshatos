@@ -8,6 +8,7 @@ struct AkshatOSApp: App {
         WindowGroup {
             HubRootView(squats: delegate.services.squats,
                         pageVault: delegate.services.pageVault,
+                        navigator: delegate.services.navigator,
                         orientation: delegate.services.orientation)
                 .preferredColorScheme(.dark)
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataDidBecomeAvailableNotification)) { _ in
@@ -22,13 +23,16 @@ struct AkshatOSApp: App {
     let squats: SquatStore
     let pageVault: PageVaultStore
     let notifications: AppNotificationCoordinator
+    /// App-lifetime, like the stores: a notification can be tapped before any hub screen exists,
+    /// and the request has to survive until one does.
+    let navigator = HubNavigator()
     let orientation = OrientationGate()
 
     init() {
         let home = HomeRegionService()
         squats = SquatStore(homeMonitor: home)
         pageVault = PageVaultStore()
-        notifications = AppNotificationCoordinator(squats: squats)
+        notifications = AppNotificationCoordinator(squats: squats, navigator: navigator)
     }
 }
 

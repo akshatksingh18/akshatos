@@ -64,6 +64,10 @@ not a claim that every feature is physically verified.
   display-only picker with metadata and injected destinations; read for host integration changes.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
+- `ios/AkshatOS/app/hub/HubNavigation.swift` — the one pending hub route, so a tapped notification
+  opens the feature that sent it instead of leaving the last screen up. Plain hub state with no
+  feature types or services; the namespace→route map lives in `AppNotificationCoordinator.swift`
+  and the contract in `hub-plan.md`.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
   reading status, the place marker, highlights with their band geometry, folding and area-based
   identity, search matching, snippets and find marks, page themes,
@@ -73,7 +77,7 @@ not a claim that every feature is physically verified.
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
   its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
-  search sheet). Product scope and
+  search sheet, the page-jump picker). Product scope and
   gates are owned by `../book-reader/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
   reworked highlighter are not. Build 22 found the highlighter stacking marks over each other
@@ -168,7 +172,14 @@ not a claim that every feature is physically verified.
 - When notification access has already been granted and no active day exists, keep exactly one
   repeating calendar notification for 9:00 AM local time. It invites the user to open AkshatOS and
   start; tapping it must not silently create a session. Starting a day cancels it, and returning to
-  idle schedules it again.
+  idle schedules it again. Tapping it opens the Squats screen, by the routing rule below — that is
+  also why routing keys on the request identifier: this request carries no category.
+- **Opening any notification opens the feature that sent it.** The app layer maps each feature's
+  notification-identifier namespace to its hub route and asks the hub to go there; a background
+  action such as Done or Pause deliberately does not move the screen. `hub-plan.md` owns this
+  contract for every present and future module, including the rule that a new module registers its
+  namespace alongside its category. Do not special-case a feature in the hub or let a feature learn
+  what a hub route is.
 - If permission is denied or notifications are disabled, Start must not display a healthy
   “Running” state. Show a clear blocked state and a route to the app's iOS notification settings.
   Do not repeatedly prompt after denial because iOS will not show the authorization sheet again.

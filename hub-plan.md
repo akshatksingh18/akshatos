@@ -33,6 +33,23 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - Register a central notification delegate/action router early. Namespace request/category/action
   identifiers; Pause/End cancel only Squats-owned notifications. Make foreground reminder behavior
   explicit while reading/watching and keep Done/Pause/Snooze idempotent across locked callbacks.
+- **Opening a notification opens the feature that sent it**, not whatever screen was last on
+  display. This is a shared hub contract, so it is designed once for every present and future
+  module rather than special-cased per feature:
+  - Each feature namespaces its notification request identifiers (Squats: `akshatos.squats.`) and
+    exposes that namespace. The app layer maps namespace → hub route in
+    `app/AppNotificationCoordinator.swift`; the feature never learns what a hub route is.
+  - Route on the **request identifier**, not the category. Not every notification declares a
+    category — Squats' 9:00 AM invitation does not, and that is the one whose entire purpose is to
+    open its feature.
+  - Only opening the notification itself navigates. A background action such as Done or Pause must
+    not move the screen, or logging a set would pull the reader off the page being read.
+  - The request is plain hub state (`app/hub/HubNavigation.swift`), so `app/hub/` still owns no
+    services. It holds one pending route, not a queue: two notifications tapped in a row land on
+    the second.
+  - **A new module adds its namespace to that map in the same change that registers its category.**
+    Forgetting is not a breakage — an unclaimed notification routes nowhere and the hub stays put,
+    which is the old behaviour.
 - One hub means one system notification identity and permission settings. Explain that location
   permission serves Squats, selected video access serves Reels, and Files import serves libraries.
   Request permissions when their feature is used; do not require location to read a PDF.

@@ -73,6 +73,72 @@ import XCTest
                       "Removal is persisted, not just shown")
     }
 
+    /// A PDF that already carries marks, as one annotated in Books or Acrobat does, plus a link to
+    /// prove navigation survives.
+    private func makeAnnotatedPDF() throws -> PDFDocument {
+        let document = try XCTUnwrap(PDFDocument(url: try makePDF(pages: 2, name: "annotated")))
+        let page = try XCTUnwrap(document.page(at: 0))
+        let theirs = PDFAnnotation(bounds: CGRect(x: 20, y: 40, width: 120, height: 12),
+                                   forType: .highlight, withProperties: nil)
+        // An annotation from another app usually carries its author, which is exactly what
+        // PageVault used to mistake for one of its own and delete.
+        theirs.userName = "Some Other Reader"
+        page.addAnnotation(theirs)
+        let anonymous = PDFAnnotation(bounds: CGRect(x: 20, y: 80, width: 120, height: 12),
+                                      forType: .underline, withProperties: nil)
+        page.addAnnotation(anonymous)
+        let link = PDFAnnotation(bounds: CGRect(x: 20, y: 120, width: 60, height: 12),
+                                 forType: .link, withProperties: nil)
+        page.addAnnotation(link)
+        return document
+    }
+
+    func testTheBooksOwnMarksAreHiddenAndNeverDeleted() throws {
+        let document = try makeAnnotatedPDF()
+        let page = try XCTUnwrap(document.page(at: 0))
+        let before = page.annotations.count
+
+        PageVaultHighlightService.apply([], to: document)
+
+        XCTAssertEqual(page.annotations.count, before,
+                       "The PDF's own annotations are kept — PageVault never modifies the file")
+        let markup = page.annotations.filter { PageVaultHighlightService.isTextMarkup($0) }
+        XCTAssertEqual(markup.count, 2, "Both of the book's marks are still present")
+        XCTAssertTrue(markup.allSatisfy { !$0.shouldDisplay },
+                      "They are hidden, so a mark PageVault cannot list never appears on the page")
+        let links = page.annotations.filter { $0.type?.contains("Link") == true }
+        XCTAssertEqual(links.count, 1)
+        XCTAssertTrue(try XCTUnwrap(links.first).shouldDisplay,
+                      "A link is not text markup and stays usable")
+        XCTAssertFalse(markup.contains { PageVaultHighlightService.isOurs($0) },
+                       "None of the book's own marks is claimed by PageVault")
+    }
+
+    func testPageVaultsOwnMarksAreTaggedAndReplacedNotAccumulated() throws {
+        let document = try makeAnnotatedPDF()
+        let page = try XCTUnwrap(document.page(at: 0))
+        let theirs = page.annotations.count
+        let mark = PageVaultHighlight(page: 0, text: "kept", createdAt: Date(),
+                                      rects: [PageVaultRect(x: 30, y: 200, width: 90, height: 11)])
+
+        PageVaultHighlightService.apply([mark], to: document)
+        let ours = page.annotations.filter { PageVaultHighlightService.isOurs($0) }
+        XCTAssertEqual(ours.count, 1)
+        XCTAssertEqual(try XCTUnwrap(ours.first).userName,
+                       PageVaultHighlightService.ownershipPrefix + mark.id.uuidString,
+                       "The tag is namespaced, so ownership is never inferred from a bare name")
+
+        // Redrawing must replace PageVault's marks rather than stack them, and must still leave the
+        // book's own annotations alone.
+        PageVaultHighlightService.apply([mark], to: document)
+        XCTAssertEqual(page.annotations.filter { PageVaultHighlightService.isOurs($0) }.count, 1)
+        PageVaultHighlightService.apply([], to: document)
+        XCTAssertTrue(page.annotations.filter { PageVaultHighlightService.isOurs($0) }.isEmpty,
+                      "Removing the record removes the mark")
+        XCTAssertEqual(page.annotations.count, theirs,
+                       "What is left is exactly what the book arrived with")
+    }
+
     func testMarkingExtendsAndRemovingClearsTheAreaCovered() async throws {
         let store = try makeStore(root: "Phone", container: try makeContainer("A"))
         await store.load()

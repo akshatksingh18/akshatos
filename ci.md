@@ -39,8 +39,15 @@ repeated deliveries, duplicate receipts after Undo or restart, save/schedule/inb
 protected-store retry, permission tracking and Settings routing, remembered grants across store
 recreation, lifecycle idempotency, cadence persistence and the Done reset, bounded nudge refill and
 migration, idle-start scheduling, Home pause/resume guards and backup exclusion, foreground repair,
-file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion;
-plus hub, dashboard and Settings UI coverage.
+file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion,
+and opening a notification routing to its own feature — every Squats identifier carrying the
+namespace routing resolves to Squats, an unclaimed namespace routing nowhere, only the default
+action navigating, and one pending route surviving two taps; plus hub, dashboard and Settings UI
+coverage.
+
+What that routing coverage cannot prove is the navigation itself: whether replacing the path really
+does leave an open book behind and land on Squats. The mapping is pure logic and tested; the tap has
+to be tried on the phone.
 
 PageVault suites: 169 domain assertions covering place clamping and the opening page, progress
 labels, title derivation, fingerprint dedupe, recency ordering, the single-Reading-book invariant,
@@ -56,7 +63,7 @@ Takeaways lists and their order, record round trip, records written before highl
 (matching, case and accent insensitivity, result limits, one-letter queries, snippet context and
 ellipses, pages with no text) and page themes (stored raw values, default, inversion, the retired warm theme mapping to sepia,
 fallback).
-36 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
+38 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
 rejection, unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming
 the book and shelving the previous one under Started, finishing a book, cover generation, copy-only
 removal, clearing reading-day rows left by an older build, carrying a warm-paper choice over to
@@ -64,11 +71,12 @@ themes, a full export restored into a fresh library, reading data restored onto 
 tampered PDF restoring nothing, add-only versus replace against a live library, malformed or
 mis-picked exports, pages measured and cropped on all four sides, a wide figure never clipped, a
 full-page scan left untouched, the measurement reused after relaunch and removed with its book, crop
-boxes applied in points, a highlight saved and reloaded, highlighting the same passage again
-removing it, highlights travelling with an export,
-highlights rendered into their own PDF, and search over a real text layer including an image-only
-page that finds nothing. UI tests cover hub → library → back, the backup sheet, and Takeaways reporting that nothing is
-kept yet.
+boxes applied in points, a highlight saved and reloaded, a wider selection extending a mark and
+removal clearing the area covered, highlights travelling with an export,
+highlights rendered into their own PDF, the book's own annotations hidden rather than deleted while
+PageVault's namespaced marks are replaced not accumulated, and search over a real text layer
+including an image-only page that finds nothing. UI tests cover hub → library → back, the backup
+sheet, and Takeaways reporting that nothing is kept yet.
 
 Simulator coverage cannot exercise the system document picker, the file mover that saves an export,
 real large-file memory pressure, rotation, paged swipe feel, how the sepia and night pages look, how

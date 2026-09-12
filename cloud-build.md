@@ -6,10 +6,12 @@ for PageVault's reading loop**: page fitting, bookmark restore, warm paper, page
 full-library export all passed on the phone. Build 21 added highlights, search, page themes and the
 page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 made the
 curl the only reader, retired warm in favour of sepia and added Takeaways; its device pass confirmed
-search page-jumps but found the highlighter stacking marks it could not then remove. **Build 23 is
-downloaded, verified and handed over**: it reworks highlighting around an explicit Highlight /
-Remove highlight choice with geometric identity, tints a searched phrase on arrival, reaches a page
-from a Takeaways passage, and confirms before removing one. It is not device-tested. This file owns
+search page-jumps but found the highlighter stacking marks it could not then remove. **Build 23's
+reworked highlighting is accepted on the phone** — the explicit Highlight / Remove highlight choice,
+the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
+the one mark that would not clear: it was inside the PDF file, not PageVault's. Source is at build
+24, which hides the book's own markup, adds a direct page jump, and opens the feature that sent a
+notification. This file owns
 build and device evidence.
 
 ## Current identity and artifact
@@ -17,9 +19,8 @@ build and device evidence.
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (23)**; minimum iOS 17.
-  Build 23 is both the working source version and the last artifact produced, so the **next** code
-  change bumps to 24 before anything is built from it.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (24)**; minimum iOS 17.
+  Build 23 is the last artifact produced; source is at 24 and is built from next.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
   change after a build is handed over, not at build time — that is what keeps this invariant true.
@@ -77,7 +78,7 @@ which is the part worth keeping. Recovering one means re-running its workflow, n
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Latest handed-over candidate; not device-tested |
+| 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target |
 | 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Last build confirmed on the phone — the curl and highlights passed; the rollback target |
 | 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Installed; PageVault's reading loop accepted on the phone |
 | 13 | `akshatos-build-13\akshatos-ios-58` | `f484f66` (#15) | [34151147604](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604) | `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0` | Accepted Squats daily-use baseline |
@@ -86,23 +87,22 @@ Build 22 notes: its packaged `Info.plist` reports build 22, version 0.2.0 and mi
 PageVault library and Takeaways screenshots were inspected; the hub, Squats dashboard and backup sheet
 are unchanged by this batch. Install it over Build 21 without uninstalling.
 
-Build 23 notes: its packaged `Info.plist` reports build 23, version 0.2.0 and minimum iOS 17.0, from
-merge commit `98b95cf`. Checksum matched, `validate-ipa.py` passed, and the Takeaways screenshot
-confirms the empty state now sits on PageVault's dark navy instead of pure black. Build 22's
-findings are under Phone findings below; its highlight defects are fixed here. **Install over Build
-21 without uninstalling** — Build 22 was never installed, so 21 is what is on the phone.
+Build 24 adds a direct page jump from the reader's page indicator, hides text markup the PDF itself
+carried, and routes a tapped notification to the feature that sent it. **Install over Build 23
+without uninstalling.**
 
-What to check on the phone, most valuable first:
+What to check on Build 24, most valuable first:
 
-- **The highlighter's two choices.** With text selected it offers Highlight and Remove highlight,
-  and Remove is greyed out unless the selection actually covers a mark.
-- **A passage can only be marked once.** Mark a line, then select it plus one more word and mark
-  again: the mark should grow, not double up or darken. Then remove it by selecting any part of it.
-- **The searched phrase is tinted.** Jump from a search result and the matched words should be
-  tinted in a colour that is not the marker's, gone once the page is turned.
-- **Go to page from a Takeaways passage.** It should open that book at that page. The reader's own
-  passage list keeps moving the book already open.
-- **The bin asks first**, in both the reader's passage list and Takeaways.
+- **The stuck mark is gone.** Open the book that had it. Marks the PDF itself carried are now hidden,
+  so it should simply not be there. Nothing was written to the file, so it is still in the PDF — if
+  you want that passage back, highlight it in PageVault and it becomes one you can list and remove.
+- **Opening a Squats notification lands on Squats.** Test it from the worst case: have a book open in
+  PageVault, then tap a Squats reminder. It should leave the book and show the Squats dashboard.
+  Then check the opposite — tapping **Done** on the notification must *not* move you off the page.
+  The 9:00 AM invitation should also land on Squats, and still not start a day by itself.
+- **Jump to a page.** Tap the "12 / 293" indicator at the bottom of the reader. Drag the slider,
+  then type an exact page. Both should agree, out-of-range numbers should be refused, and jumping
+  must not move your bookmark.
 - **Still unexercised on the phone:** search itself, the highlights PDF export, and the page themes.
   Export and restore stay deliberately untested until the features are finished — Akshat's call.
 
@@ -143,6 +143,15 @@ anyway, so a real scanned book is still needed for a memory verdict.
   highlight by tapping the highlighter again, make the curl permanent with no setting, and drop warm
   for sepia — all of which are in Build 22. Search, the themes and the highlights export were not
   tested in this pass.
+- **Build 23** (installed over Build 21): the reworked highlighter, the search tint, Go to page from
+  a Takeaways passage and the delete confirmation all work — Akshat called the set "perfect". One
+  mark remained stuck on a page, absent from the passage list and impossible to clear. It was not
+  PageVault's: PageVault writes nothing into the PDF and rebuilds marks from its records on every
+  open, so a mark with no record cannot be one of its own. It was inside the PDF file, from wherever
+  the book was annotated before import, and re-importing would have brought it back. Build 24 hides
+  the book's own text markup instead. The pinch-blocks-paging behaviour was confirmed wanted again.
+  Akshat also asked for a direct page jump for long books, and for a tapped Squats notification to
+  open Squats rather than leaving PageVault on screen; both are in Build 24.
 - **Build 22** (installed over Build 21). What worked: jumping to a page from a search result, and
   **Go to page** in the reader's per-book passage list. A zoomed page refusing to turn until the
   zoom is released is **wanted**, not a defect — Akshat asked for it to stay that way.

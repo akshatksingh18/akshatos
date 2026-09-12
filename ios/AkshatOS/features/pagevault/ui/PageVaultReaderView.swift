@@ -83,6 +83,7 @@ struct PageVaultReaderView: View {
     @State private var crops: [PageVaultInkBox?]?
     @State private var showHighlights = false
     @State private var showSearch = false
+    @State private var showJump = false
 
     init(book: PageVaultBook, url: URL, store: PageVaultStore, openAt: Int? = nil,
          onReadingSessionChange: @escaping (Bool) -> Void = { _ in }) {
@@ -126,6 +127,12 @@ struct PageVaultReaderView: View {
             PageVaultSearchView(store: store, book: live) { hit in
                 showSearch = false
                 controller.go(to: hit.page, mark: hit.findMark)
+            }
+        }
+        .sheet(isPresented: $showJump) {
+            PageVaultPageJumpView(pageCount: book.pageCount,
+                                  currentPage: controller.currentPage) { page in
+                controller.go(to: page)
             }
         }
         .task { await openWhenFitted() }
@@ -285,15 +292,24 @@ struct PageVaultReaderView: View {
         controller.refreshHighlights(store.book(id: book.id)?.highlights ?? [])
     }
 
+    /// Tapping the indicator opens the page picker. Swiping is fine for the next page and useless
+    /// for page 210 of 293, and the indicator is where you already look to know where you are.
     private var pageIndicator: some View {
         let placeNote = live.isPlace(page: controller.currentPage) ? " · your place" : ""
-        return Text("\(controller.currentPage + 1) / \(book.pageCount)\(placeNote)")
-            .font(.caption.weight(.semibold).monospacedDigit())
-            .foregroundStyle(.white.opacity(0.9))
-            .padding(.horizontal, 14).padding(.vertical, 8)
-            .background(.black.opacity(0.4), in: Capsule())
-            .padding(.bottom, 14)
-            .accessibilityIdentifier("reader-page-indicator")
+        return Button {
+            showJump = true
+        } label: {
+            Text("\(controller.currentPage + 1) / \(book.pageCount)\(placeNote)")
+                .font(.caption.weight(.semibold).monospacedDigit())
+                .foregroundStyle(.white.opacity(0.9))
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(.black.opacity(0.4), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(controller.restoring || book.pageCount <= 1)
+        .padding(.bottom, 14)
+        .accessibilityIdentifier("reader-page-indicator")
+        .accessibilityLabel("Page \(controller.currentPage + 1) of \(book.pageCount). Jump to a page.")
     }
 
 }
