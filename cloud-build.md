@@ -10,9 +10,8 @@ search page-jumps but found the highlighter stacking marks it could not then rem
 reworked highlighting is accepted on the phone** — the explicit Highlight / Remove highlight choice,
 the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
 the one mark that would not clear: it was inside the PDF file, not PageVault's. **Build 24 is
-installed, and its notification routing is confirmed on the phone**: it hides the book's own markup,
-adds a direct page jump, and opens the feature that sent a notification. The markup hiding and the
-page jump are still untested. This file owns build and device evidence.
+installed and fully confirmed on the phone**: it hides the book's own markup, adds a direct page
+jump, and opens the feature that sent a notification. This file owns build and device evidence.
 
 ## Current identity and artifact
 
@@ -96,20 +95,12 @@ merge commit `b53af3e`. Checksum matched and `validate-ipa.py` passed. It adds a
 from the reader's page indicator, hides text markup the PDF itself carried, and routes a tapped
 notification to the feature that sent it. **Install over Build 23 without uninstalling.**
 
-What to check on Build 24, most valuable first:
+**Build 24 is fully checked and accepted** — its own three changes plus everything PageVault had
+left outstanding. The Build 24 entry under Phone findings records what passed; nothing is waiting.
 
-- **The stuck marks in Grit will still be there, and that is expected.** They are drawn into the
-  pages, not annotations, so nothing PageVault does can hide them — import the cleaned copy of the
-  book instead. Build 24's hiding still needs a test, on a PDF annotated in Books or Preview.
-- **Opening a Squats notification lands on Squats — confirmed.** Three parts of it remain: do it from
-  the worst case, with a book *open* in PageVault, and it should leave the book for the Squats
-  dashboard; tapping **Done** on the notification must *not* move you off the page; and the 9:00 AM
-  invitation should also land on Squats without starting a day by itself.
-- **Jump to a page.** Tap the "12 / 293" indicator at the bottom of the reader. Drag the slider,
-  then type an exact page. Both should agree, out-of-range numbers should be refused, and jumping
-  must not move your bookmark.
-- **Still unexercised on the phone:** search itself, the highlights PDF export, and the page themes.
-  Export and restore stay deliberately untested until the features are finished — Akshat's call.
+One durable point from that pass, because it will come up again with a real book: **marks drawn into
+a page are not annotations and will not be hidden.** Grit is the example — import the cleaned copy
+rather than expecting PageVault to clear it. `../book-reader/features.md` owns the boundary.
 
 ## Phone findings
 
@@ -148,13 +139,21 @@ anyway, so a real scanned book is still needed for a memory verdict.
   highlight by tapping the highlighter again, make the curl permanent with no setting, and drop warm
   for sepia — all of which are in Build 22. Search, the themes and the highlights export were not
   tested in this pass.
-- **Build 24** (installed over Build 23): tapping a Squats reminder opens Squats rather than leaving
-  the last screen up — the routing contract in `hub-plan.md` holds on the device. The rest of Build 24
-  is still unexercised: the stuck-mark hiding needs a PDF annotated in Books or Preview (Grit cannot
-  test it — its marks are drawn into the pages), and the page jump has not been tried. Three parts of
-  the routing test are also still open: whether it leaves a book that is *open* in PageVault, whether
-  tapping **Done** correctly does *not* move the screen, and whether the 9:00 AM invitation lands on
-  Squats without starting a day.
+- **Build 24** (installed over Build 23): notification routing and the page jump both work. A tapped
+  Squats reminder opens Squats, including from a book left open in PageVault; **Done** on the
+  notification does not move the screen; and the 9:00 AM invitation lands on Squats without starting
+  a day — the routing contract in `hub-plan.md` holds on the device. The slider and the typed page
+  agree, out-of-range numbers are refused, and jumping leaves the bookmark alone.
+  The annotation hiding is confirmed too, against `07-highlight-boundary.pdf` from
+  `../book-reader/make-test-pdfs.py`, which carries both kinds of mark and renders them identically:
+  the annotated pages (2, 3, 5) came up clean and the flattened page (4) kept its marks — the fix
+  working and the boundary holding, in one import. Build 24 is fully accepted, and the stuck-mark
+  defect from Build 22 is closed. The same pass then cleared everything PageVault had left: full-text
+  search, the page themes with night inverting legibly, the highlights PDF export, Takeaways' own
+  list, and — the gate held back to the end — **export and restore**, where a book removed from the
+  library came back from a full export with its reading place and highlights intact.
+  `../book-reader/CLAUDE.md` owns what that leaves open; the short version is a clean-install restore
+  (Akshat's call, since it means uninstalling), reading-data-only restore, and the Started shelf.
 - **Build 23** (installed over Build 21): the reworked highlighter, the search tint, Go to page from
   a Takeaways passage and the delete confirmation all work — Akshat called the set "perfect". One
   mark remained stuck on a page, absent from the passage list and impossible to clear. It was not

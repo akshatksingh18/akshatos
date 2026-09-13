@@ -560,11 +560,15 @@ data, device state, or durable release IPAs.
   `README.md`, `features.md`, `architecture.md`, `todo.md`, `cloud-build.md`, and affected workflows/
   setup guides. Update current-state wording in the same change, commit and push repository-backed
   updates when publishing the project work, and state which documents changed or why none needed to.
-- **Sync documentation locally as work happens, but do not push a PR for every small finding.**
-  Akshat's correction: a PR-plus-CI round trip per minor doc note or script tweak is redundant
-  ceremony. Batch related small changes and push them together once there is a meaningful chunk of
-  work, or the change is large enough to stand alone. Still push immediately when Akshat needs the
-  result right away — a build he is about to install, or a fix he is waiting on to test.
+- **Sync documentation locally as work happens; do not commit or push it on its own.** Akshat's
+  correction, sharpened after it was applied too loosely: a PR-plus-CI round trip per doc note or
+  script tweak is redundant ceremony, and a batch of documentation is still just documentation. The
+  threshold to push is **a real implementation change**, not an accumulation of notes — recorded
+  device results, status edits, check-list updates and test fixtures all wait and ride along with the
+  next one. Keep the files current locally the whole time; leaving work undocumented is not the
+  alternative. The only reason to push earlier is something Akshat needs in hand right away — a build
+  he is about to install, or a fix he is waiting on to test. When in doubt, hold and say what is
+  waiting.
 - Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
