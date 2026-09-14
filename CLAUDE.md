@@ -56,6 +56,12 @@ not a claim that every feature is physically verified.
   update items in place as their real state changes.
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
+- `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
+  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass.
+  `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
+  every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
+  and not tracked in Git; recover a build by
+  re-running its workflow, not by restoring this folder.
 - `setup.md` — keeping an installed build signed: the split between Sideloadly's refreshing daemon
   and the health check that proves it happened, what counts as success, the installed task and its
   paths, and the refresh/recovery gates still open. Read before changing anything about weekly
@@ -71,7 +77,9 @@ not a claim that every feature is physically verified.
 - `scripts/read-signing-state.py` — reads a read-only copy of Sideloadly's `installations.db` and
   emits per-app expiry as JSON; never touches the signing material stored beside it. Carries the
   documented `RETIRED_BUNDLE_PREFIXES` list so an app removed from the phone (Sideloadly keeps its
-  row forever) is reported, not raised as a false alarm.
+  row forever) is reported, not raised as a false alarm. Dedupes multiple rows per bundle ID down to
+  one — Sideloadly writes a fresh row per install attempt and never deletes one that stalled or was
+  cancelled — folding the rest into `staleAttempts` instead of reporting the same app twice.
 - `.github/workflows/ios-build.yml` — public-repository macOS-runner job that generates the Xcode
   project, runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
 - `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,
@@ -299,11 +307,12 @@ not a claim that every feature is physically verified.
 - Keep Apple credentials, two-factor codes, certificates, provisioning profiles, device IDs, and
   Sideloadly state out of GitHub Actions. Download the unsigned artifact to trusted Windows storage,
   verify its SHA-256, and let Sideloadly perform personal signing/install locally.
-- GitHub workflow artifacts are temporary delivery files, not the release cache. After a physical
-  build is verified, copy the IPA to the stable portfolio cache with its version/build number and
-  checksum. The
-  weekly signing process should repeatedly re-sign that exact cached IPA; rebuilding is necessary
-  only when the app changes or a new iOS/Xcode compatibility fix is required.
+- GitHub workflow artifacts are temporary delivery files, not the release cache. **The stable
+  portfolio cache is `../final-ipas/akshatos/backup/`** — one accepted build's checksummed IPA,
+  living outside Downloads and excluded from the OneDrive backup archive the same way every
+  `personal-project/` subfolder is; `../final-ipas/README.md` owns the backup/testing model. The
+  weekly signing process repeatedly re-signs that exact cached IPA; rebuilding is necessary only when
+  the app changes or a new iOS/Xcode compatibility fix is required.
 - Preserve a recovery path through a borrowed/rented Mac or another compatible macOS builder. The
   human-readable XcodeGen spec and standard unsigned IPA packaging must not depend on GitHub-specific
   runtime code, and a green cloud job never substitutes for physical-iPhone verification.
@@ -336,9 +345,11 @@ not a claim that every feature is physically verified.
   completed install moving forward as success — a quiet daemon, a clean process exit, or a merely
   changed install record is explicitly not proof. It
   escalates to a blocking dialog at two days or on any recorded error. Its scheduled execution is
-  confirmed; the daemon's refreshing is not. `setup.md` owns the detail and the gates still open,
-  including why an agent shell's sandboxed view of the log cannot be used to judge them. It deliberately refreshes nothing: Sideloadly's daemon does that, and a
-  second signer racing it would be worse than none.
+  confirmed, and so — once, unattended, corroborated — is the daemon's wireless refreshing; one more
+  such cycle closes that gate. `setup.md` owns the detail, what fixed wireless detection, and the
+  gates still open, including why an agent shell's sandboxed view of the log cannot be used to judge
+  them. It deliberately refreshes nothing itself: Sideloadly's daemon does that, and a second signer
+  racing it would be worse than none.
 - After the first install and after the first several refresh cycles, open the app and confirm its
   running/interval state and pending notification request survived. Once the process is trusted,
   keep periodic manual launch checks in addition to automated signing verification.

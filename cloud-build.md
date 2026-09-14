@@ -59,30 +59,31 @@ Sideloadly locally signs the downloaded unsigned binary; weekly refresh does not
 
 ## Retained artifacts
 
-Everything below sits under `C:\Users\aksha\Downloads` with its checksum, `build-info.txt` and
-screenshots beside the IPA, matched its published SHA-256, passed `validate-ipa.py` and is unsigned.
-The kept set is deliberately small: the current build, the last build **confirmed on the phone**, the
-build whose reading loop was accepted, and the accepted Squats baseline.
+**The current accepted build's artifact lives at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\`**, not in
+Downloads — that folder is the one place Sideloadly, refresh and USB recovery all point to, and it
+holds exactly one build at a time. `D:\AI Important Files\personal-project\final-ipas\README.md` owns the backup/testing model and the
+promotion rule; the short version is: a new build downloads into `..\testing\` for its device pass,
+and once accepted, the old `backup\` contents are discarded and the proven build takes their place.
 
-"Last confirmed on the phone" is deliberately not "the previous build number". The point of keeping
-one is somewhere to fall back to when a new build misbehaves, and only a build that has actually
-installed and run is that. Build 22 was discarded under this rule while Build 21 was kept: 22 was
-never installed, and the device pass it did get found its headline feature broken, so it was worth
-less as a fallback than the build before it.
+This file stays the permanent record regardless of what currently sits in that folder — build
+numbers, checksums, PRs and phone findings below are never deleted or recycled, only superseded.
+Recovering an older build means re-running its workflow from Git history, not restoring a file.
 
-Everything else has been cleared out of Downloads: builds 2–4, 9–12, 14–17, 19, 21 and 22, the
-PageVault spike artifact, and the old smoke artifact. Builds 14–17, 19, 21 and 22 plus the spike
-went to the Recycle Bin during a cleanup and are recoverable until it is emptied; Build 18 was never
-downloaded. Build 21 was dropped once Build 23 was accepted on the phone and took over as the
-build to fall back to.
-Every source is in Git history and what each build found on the phone is under Phone findings below,
-which is the part worth keeping. Recovering one means re-running its workflow, not restoring a file.
+A few older builds still sit in `C:\Users\aksha\Downloads` as extra historical fallbacks beyond the
+new one-slot model: Builds 23, 21, 20 and 13. They predate the `Final IPAs` folder and were not moved
+automatically; treat them as optional to keep, not as part of the current recovery path. Everything
+else has already been cleared: builds 2–4, 9–12, 14–17, 19, 21 and 22, the PageVault spike artifact,
+and the old smoke artifact — Builds 14–17, 19, 21 and 22 plus the spike went to the Recycle Bin during
+a cleanup and are recoverable until it is emptied; Build 18 was never downloaded.
+
+"Folder" is each build's historical Actions-run identifier, not a live path — only the current
+accepted build's files are guaranteed to still exist, at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\<folder>`.
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | Latest handed-over candidate; not device-tested |
-| 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target |
-| 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Last build confirmed on the phone — the curl and highlights passed; the rollback target |
+| 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | **Accepted, installed, current** — files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-24` |
+| 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target; files still in `Downloads` |
+| 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Superseded once Build 23 was accepted; recycled from `Downloads` — recoverable until the Recycle Bin is emptied |
 | 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Installed; PageVault's reading loop accepted on the phone |
 | 13 | `akshatos-build-13\akshatos-ios-58` | `f484f66` (#15) | [34151147604](https://github.com/akshatksingh18/akshatos/actions/runs/34151147604) | `41522db6f8195519e87a8b93064eee60bd344288609db31f2ab64161c73fb1e0` | Accepted Squats daily-use baseline |
 

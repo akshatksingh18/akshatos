@@ -86,8 +86,20 @@ def main():
         conn.close()
 
         now = datetime.now(timezone.utc)
+        raw_entries = []
         for row in rows:
-            signed = parse(row["last_updated"]) or parse(row["created_at"])
+            last_updated = parse(row["last_updated"])
+            # Sideloadly writes its underlying zero-value timestamp (year 1) for a row whose
+            # install never actually completed - confirmed 2026-09-13 from a cancelled WHOOP
+            # reinstall that stalled mid-transfer: Sideloadly created a fresh row for the attempt
+            # and never wrote a real last_updated into it, and cancelling in its own UI did not
+            # delete the row. Read literally, that date computes an expiry hundreds of thousands
+            # of days in the past. Treat it as "never completed", not as a real signing date.
+            incomplete = last_updated is not None and last_updated.year <= 1
+            signed = None if incomplete else last_updated
+            created = parse(row["created_at"])
+            if signed is None:
+                signed = created
             ttl = row["known_ttl"] or 7
             entry = {
                 "name": row["name"],
@@ -99,20 +111,46 @@ def main():
                 "lastError": (row["last_error"] or "").strip(),
                 "failures": row["failures_count"] or 0,
                 "retired": is_retired(row["final_bundle_id"]),
+                "incompleteAttempt": incomplete,
             }
-            if signed:
+            if signed and not incomplete:
                 if signed.tzinfo is None:
                     signed = signed.replace(tzinfo=timezone.utc)
                 expires = signed + timedelta(days=ttl)
                 entry["expires"] = expires.isoformat()
                 entry["daysLeft"] = round((expires - now).total_seconds() / 86400, 2)
                 # Never refreshed: Sideloadly has not touched it since the original install.
-                created = parse(row["created_at"])
                 if created is not None:
                     if created.tzinfo is None:
                         created = created.replace(tzinfo=timezone.utc)
                     entry["everRefreshed"] = (signed - created).total_seconds() > 120
-            apps.append(entry)
+            raw_entries.append(entry)
+
+        # Sideloadly writes a fresh row per install attempt rather than updating one in place,
+        # and does not clean up a row whose attempt never completed - so the same bundle ID can
+        # have several rows at once, only one of which is the app's real current state. Keep one
+        # entry per bundle ID: the most recently completed row if any exists in the group, else
+        # (every row for that bundle is an incomplete attempt) the most recently created one, with
+        # its own expiry/daysLeft left absent so the health check reports "no usable install date"
+        # rather than a fabricated one. Every other row in the group is folded into that entry's
+        # staleAttempts instead of being reported as a second app.
+        by_bundle = {}
+        for entry in raw_entries:
+            by_bundle.setdefault(entry["bundleID"], []).append(entry)
+
+        for bundle_id, group in by_bundle.items():
+            if len(group) == 1:
+                apps.append(group[0])
+                continue
+            completed = [e for e in group if not e["incompleteAttempt"]]
+            pool = completed if completed else group
+            primary = max(pool, key=lambda e: e["lastSigned"] or "")
+            stale = [e for e in group if e is not primary]
+            primary["staleAttempts"] = [
+                {"lastSigned": e["lastSigned"], "incompleteAttempt": e["incompleteAttempt"]}
+                for e in stale
+            ]
+            apps.append(primary)
     except Exception as exc:  # reported, never swallowed — a silent check is the failure mode
         error = f"{type(exc).__name__}: {exc}"
     finally:
