@@ -72,16 +72,20 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       End only after the core works; prove Leave/Arrive or Focus automations, pause-source guards,
       duplicate native-plus-Shortcut callbacks, and disabled/failure behavior as backup/alternate
       triggers.
-- [ ] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
-      version/source/hash, and cache current plus previous known-good artifacts on Windows. Verified
-      builds currently sit in per-build `Downloads` folders listed in `cloud-build.md`; durable
-      current/previous release-cache promotion is still required before closing this gate.
-- [ ] **Prove refresh and recovery.** The health check is installed and watching (`setup.md`); the
-      refreshing itself is still unproven. Sideloadly's daemon has never been observed to refresh
-      anything, so this gate needs: two unattended cycles each logged as `REFRESHED` with a new
-      expiry — `setup.md` says which of the log's existing `REFRESHED` lines are test artifacts and
-      must not be counted — one rehearsed USB recovery, one forced failure confirmed to alert rather than pass
-      quietly, and same-bundle Wi-Fi/USB refresh preserving state — none of it by uninstalling.
+- [x] **Produce a portable release IPA.** Build on Mac/Xcode, inspect minimal capabilities, record
+      version/source/hash — all in place via `cloud-build.md`'s workflow and `validate-ipa.py`.
+      **Durable release-cache promotion is now in place too**: `../final-ipas/akshatos/backup/`
+      holds the current accepted build outside Downloads, with `../testing/` for a new candidate
+      awaiting its device pass; see `../final-ipas/README.md`. This is a single-current-build cache,
+      not current-plus-previous — a few older builds remain as extra fallbacks in `Downloads` per
+      `cloud-build.md`, kept manually rather than by this mechanism.
+- [ ] **Prove refresh and recovery.** The health check is installed and watching (`setup.md`), and
+      wireless refresh is now proven working once — WHOOP, 2026-09-13, unattended and corroborated,
+      after fixing Bonjour and the iPhone's Private Wi-Fi Address setting; `setup.md` has the fix and
+      the finding. Remaining before this gate closes: one more unattended `REFRESHED` cycle (a
+      `RECORD-CHANGED` line or a fixture-run line never counts — `setup.md` explains why), one
+      rehearsed USB recovery, one forced failure confirmed to alert rather than pass quietly, and
+      same-bundle Wi-Fi/USB refresh preserving state — none of it by uninstalling.
 
 ## Current Android fallback gaps
 

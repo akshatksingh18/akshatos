@@ -167,6 +167,16 @@ foreach ($app in $report.apps) {
         continue
     }
 
+    # Sideloadly writes a fresh row per install attempt and never cleans up one that stalled or
+    # was cancelled - confirmed 2026-09-13 from a cancelled WHOOP reinstall. read-signing-state.py
+    # already folds those into the real row rather than reporting the same app twice; this just
+    # surfaces that it happened, since debris silently sitting in Sideloadly's own database is
+    # worth knowing about even though it changes nothing about this app's actual health.
+    if ($app.PSObject.Properties.Name -contains 'staleAttempts' -and $app.staleAttempts.Count -gt 0) {
+        Write-Line 'STALE-ATTEMPT' ("{0} ({1}) has {2} incomplete install attempt(s) sitting in Sideloadly's database, folded out of this report - not evidence of anything wrong with the app itself." -f `
+            $name, $app.bundleID, $app.staleAttempts.Count)
+    }
+
     $ever = if ($app.PSObject.Properties.Name -contains 'everRefreshed') { $app.everRefreshed } else { $null }
     $note = if ($ever -eq $false) { ' (never refreshed since first install)' } else { '' }
 
@@ -205,7 +215,12 @@ foreach ($app in $report.apps) {
     }
 
     if ([double]::IsNaN($days)) {
-        Write-Line 'WARN' "$name has no usable install date; cannot judge its expiry."
+        if ($app.PSObject.Properties.Name -contains 'incompleteAttempt' -and $app.incompleteAttempt) {
+            Write-Line 'WARN' "$name has no completed install in Sideloadly's database yet - every attempt on record stalled or was cancelled before finishing."
+        }
+        else {
+            Write-Line 'WARN' "$name has no usable install date; cannot judge its expiry."
+        }
         if ($worst -lt 1) { $worst = 1 }
         continue
     }

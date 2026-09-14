@@ -5,9 +5,10 @@ assumed. `cloud-build.md` owns producing and installing a build; this file owns 
 installed one alive.
 
 **Status:** The health check is installed, and its scheduled execution is **confirmed** — the log
-carries a run from every trigger fired so far, on time and with the expected verdict. The refreshing
-half is Sideloadly's daemon, which is installed and autostarts but **has never been observed to
-refresh anything**. Until it is, treat weekly signing as unproven and expect to refresh by hand.
+carries a run from every trigger fired so far, on time and with the expected verdict. **A genuine
+unattended wireless refresh has now happened once** — WHOOP, 2026-09-13 08:22:48, corroborated
+(`everRefreshed: true`, expiry moved forward to Sep 20, no error). One more unattended cycle, on
+either app, closes that gate. The fix that got here is below.
 
 ## The two halves, and why they are separate
 
@@ -104,8 +105,19 @@ testing must not be able to reach either file, whichever side of the sandbox it 
 | Python missing, database unreadable | Blocking dialog — a check that cannot run must shout, not pass |
 
 The recovery it tells you to do, in order: open Sideloadly and use **Refresh All Apps Manually**
-with the iPhone unlocked and on the same Wi-Fi; if that fails, connect USB and install the cached
-IPA again. **Never uninstall to fix signing** — that deletes the app's data.
+with the iPhone unlocked and on the same Wi-Fi; if that fails, connect USB and install the IPA at
+`D:\AI Important Files\personal-project\final-ipas\<project>\backup\` again — that folder is always the current accepted build, so it is
+what any manual reinstall or recovery should point Sideloadly at; `D:\AI Important Files\personal-project\final-ipas\README.md` owns the
+model. **Never uninstall to fix signing** — that deletes the app's data.
+
+**A known second failure mode, found once on WHOOP:** Sideloadly's own internal cache of a
+previously-installed app's IPA can go missing on its end — nothing to do with the file above — and a
+refresh then fails with `Install failed: Guru Meditation … __init__() missing 1 required positional
+argument: 'orig'` instead of a clean "file not found". This happened on the very first wireless
+refresh attempt after wireless detection started working: the connection succeeded, Sideloadly tried
+to re-sign from its own cached copy, and that copy was gone. The fix is the same USB reinstall above,
+using the file at `D:\AI Important Files\personal-project\final-ipas\<project>\backup\`; it repopulates Sideloadly's cache with a real
+file and should clear the error for future refreshes, wired or wireless.
 
 ## Checking the check
 
@@ -148,7 +160,68 @@ automatic-refresh enrollment already being active for both — confirm visually 
 window rather than trusting that inference alone. The health check above is what actually tells you
 whether a wireless cycle happened; silence from the phone is not evidence either way.
 
+**Fixed, and confirmed working — Bonjour was never the fix.** Two changes were made together, and
+the original write-up here credited both on reasoning, not evidence. Tested afterward, in two steps:
+
+1. ~~Bonjour was not installed~~ **— tested, ruled out, then removed.** Bonjour Print Services was
+   installed at the time, reasoning that Sideloadly's Windows discovery runs on Bonjour/mDNS
+   (`mDNSResponder.exe`). Three tests settled it:
+   - **Holding:** with the phone already connected, Bonjour was stopped. The connection kept
+     working, still holding half an hour later.
+   - **Cold start:** Sideloadly was fully quit from the tray — not just the window — and relaunched
+     from scratch, Bonjour still stopped the whole time (confirmed by process start time, 3:46:36 PM,
+     after the stop). It found the phone over Wi-Fi immediately.
+   - **Fully uninstalled** (both `Bonjour Print Services` and `Bonjour` registry entries, the service,
+     and both install folders — confirmed gone). Sideloadly still showed `@Wi-Fi` afterward.
+   Bonjour has no role here, discovery or otherwise — Apple Mobile Device Service does this on its
+   own. **Not installed on this machine at all**, as of the same session; nothing depends on it.
+2. **The iPhone's Private Wi-Fi Address was set to rotating**, on this specific network — this is now
+   the entire explanation, not one of two contributing changes. A rotating MAC address is a moving
+   target for device discovery. Fix: iPhone Settings → Wi-Fi → (this network) → **Private Wi-Fi
+   Address → Off**. `Limit IP Address Tracking` is unrelated (an IP-tracking privacy setting, not
+   device discovery) and can stay on or off independent of this fix.
+
+After the Private Wi-Fi Address change, Sideloadly showed the phone as `@Wi-Fi` and began installing
+without USB. The
+first attempt hit a second, unrelated bug — see below — but the very next attempt, **fully
+unattended** (Akshat did nothing; Sideloadly launches at Windows startup on its own), completed a
+real corroborated refresh: WHOOP, 2026-09-13 08:22:48, expiry moved to Sep 20. That is the first of
+the two unattended cycles the gate below asks for.
+
+**A known second failure mode, seen once so far:** the very first wireless refresh attempt failed
+with `Install failed: Guru Meditation 556260@79:6edd68 __init__() missing 1 required positional
+argument: 'orig'` — Sideloadly's own cached copy of WHOOP's IPA had gone missing from its internal
+store, unrelated to anything in `D:\AI Important Files\personal-project\final-ipas`. It cleared on its own on the next attempt roughly 22
+minutes later, without a manual reinstall. Whether that was the daemon self-healing or coincidence is
+not established from one occurrence. If it recurs and does not clear on its own, the fix is a manual
+reinstall from `D:\AI Important Files\personal-project\final-ipas\<project>\backup\` — see "What it does when something is wrong" above.
+
 ## What this has already found
+
+**A stalled or cancelled install leaves debris in Sideloadly's own database, and the reader now
+handles it.** Found while trying to align AkshatOS and WHOOP onto the same refresh clock — after
+AkshatOS's manual reinstall completed cleanly, a same-day manual WHOOP reinstall was attempted for
+the same reason and stalled mid wireless transfer instead. It was cancelled here rather than
+retried, so the two apps are not on a shared clock: AkshatOS last signed 2026-09-13 16:31 from that
+reinstall, WHOOP last signed 2026-09-13 08:18 from its own earlier unattended refresh — about 8
+hours apart, not identical, but both close enough that they will not drift back to the original
+nine-day gap. Retrying the WHOOP reinstall for full alignment is optional, not a gap to close.
+Sideloadly signed and uploaded the IPA successfully but never
+got a completion signal back, and cancelling in its own UI did not delete the row — it left a second
+`WHOOP` row behind with its `last_updated` at Sideloadly's zero-value date (year `0001`), which read
+literally computed an expiry hundreds of thousands of days in the past. Confirmed this is Sideloadly
+housekeeping debris, not a real problem: the app's original row was untouched (no error, no
+failures), and the cached IPA file the earlier "orig" bug worried about was intact and correctly
+referenced.
+
+`read-signing-state.py` now groups rows by bundle ID and reports one entry per app — the most
+recently *completed* row if any exists in the group, with every other row (a stalled attempt, or any
+future duplicate) folded into that entry's `staleAttempts` rather than reported as a second app.
+`check-signing-health.ps1` logs a `STALE-ATTEMPT` line when this happens, informational only, and
+gives incomplete-attempt-only bundles their own clearer message instead of the generic "no usable
+install date" WARN. Verified against the real database with the real duplicate WHOOP row still
+present — one clean `WHOOP` entry, correct expiry, the debris surfaced as `STALE-ATTEMPT` rather than
+silently dropped or double-counted.
 
 At the time it was installed, all three registrations had `last_updated` still equal to their
 original install time: the daemon had never refreshed anything.
@@ -195,8 +268,10 @@ registrations still have `last_updated` equal to their first install.
 
 These stay open until exercised, per the operating model in `CLAUDE.md`:
 
-- [ ] Two unattended refresh cycles observed, each logged as `REFRESHED` with a new expiry. A
-      `RECORD-CHANGED` line never counts, and neither does a line produced by a fixture run.
+- [x] ~~Two unattended refresh cycles observed~~ **One of two.** WHOOP, 2026-09-13 08:22:48,
+      corroborated and unattended — Akshat did nothing; Sideloadly launches at Windows startup on
+      its own. A `RECORD-CHANGED` line never counts, and neither does a line produced by a fixture
+      run. One more, on either app, closes this.
 - [ ] One deliberate USB recovery rehearsed from an expired or near-expired state.
 - [ ] One forced failure — phone absent or offline at the refresh point — confirmed to raise the
       alert rather than pass quietly.
