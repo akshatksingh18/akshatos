@@ -13,8 +13,8 @@ the one mark that would not clear: it was inside the PDF file, not PageVault's. 
 installed and fully confirmed on the phone**: it hides the book's own markup, adds a direct page
 jump, and opens the feature that sent a notification. **0.3.0 (25) is now the local source candidate**:
 it presents the movement feature as Pushup Reminder and introduces the playful Homebase/quest visual
-system across the hub and PageVault. Implementation commit `6789c395` passed PR #52's complete macOS
-`CI Gate` in run `35676872853`: domain tests, simulator compile, persistence/navigation UI tests,
+system across the hub and PageVault. Implementation commit `0f3cd90` passed PR #52's complete macOS
+`CI Gate` in run `35677827395`: domain tests, simulator compile, persistence/navigation UI tests,
 unsigned device compile and package inspection all passed. PR policy skipped artifact upload, so it
 still has no downloadable cloud artifact or device evidence. This file owns build and device evidence.
 
