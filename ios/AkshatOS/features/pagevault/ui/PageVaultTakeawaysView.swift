@@ -14,9 +14,20 @@ struct PageVaultTakeawaysView: View {
     var body: some View {
         Group {
             if store.booksWithHighlights.isEmpty {
-                ContentUnavailableView(
-                    "Nothing kept yet", systemImage: "quote.opening",
-                    description: Text("Highlight a line while reading and its book appears here."))
+                ScrollView {
+                    AccentSurface(accent: Palette.gold) {
+                        QuestBadge(text: "Treasure shelf", icon: "sparkles", accent: Palette.gold)
+                        Image(systemName: "quote.bubble.fill")
+                            .font(.system(size: 44, weight: .bold))
+                            .foregroundStyle(Palette.gold)
+                            .accessibilityHidden(true)
+                        Text("Nothing kept yet")
+                            .font(.system(.title, design: .rounded, weight: .black))
+                        Text("Highlight a line while reading. Every passage you keep becomes treasure you can revisit here.")
+                            .font(.subheadline).foregroundStyle(Palette.muted)
+                    }
+                    .padding(20)
+                }
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {

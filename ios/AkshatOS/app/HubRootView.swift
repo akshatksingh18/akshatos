@@ -12,7 +12,7 @@ struct HubRootView: View {
     var body: some View {
         HubView(entries: [
             HubEntry(id: .squats, title: "Pushup Reminder", subtitle: "Drop, press, and power up your day.",
-                     icon: "figure.strengthtraining.functional", isAvailable: true,
+                     icon: "bolt.fill", isAvailable: true,
                      status: squats.operational, detail: "\(squats.todayCount) pushup sets",
                      statusIcon: squats.active == nil ? "sun.max" : "circle.fill"),
             HubEntry(id: .pageVault, title: "PageVault", subtitle: "Open a portal. Keep what you find.",
