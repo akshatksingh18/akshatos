@@ -1,7 +1,7 @@
 # AkshatOS cloud build and iPhone installation
 
 **State:** Builds come only from the GitHub Actions macOS workflow and are verified on Windows before
-handover. Build 13 is the accepted Squats daily-use baseline, and **Build 20 is installed and accepted
+handover. Build 13 is the accepted legacy Squats daily-use baseline, and **Build 20 is installed and accepted
 for PageVault's reading loop**: page fitting, bookmark restore, warm paper, paged swiping and a
 full-library export all passed on the phone. Build 21 added highlights, search, page themes and the
 page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 made the
@@ -11,22 +11,26 @@ reworked highlighting is accepted on the phone** — the explicit Highlight / Re
 the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
 the one mark that would not clear: it was inside the PDF file, not PageVault's. **Build 24 is
 installed and fully confirmed on the phone**: it hides the book's own markup, adds a direct page
-jump, and opens the feature that sent a notification. This file owns build and device evidence.
+jump, and opens the feature that sent a notification. **0.3.0 (25) is now the local source candidate**:
+it presents the movement feature as Pushup Reminder and introduces the playful Homebase/quest visual
+system across the hub and PageVault. It has no cloud artifact or device evidence yet. This file owns
+build and device evidence.
 
 ## Current identity and artifact
 
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (24)**; minimum iOS 17.
-  Build 24 is both the working source version and the last artifact produced, so the **next** code
-  change bumps to 25 before anything is built from it.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.3.0 (25)**; minimum iOS 17.
+  Build 24 remains the last artifact produced and accepted; Build 25 is source-only until its exact
+  commit passes CI, package inspection, install-over-install and the focused device pass.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
   change after a build is handed over, not at build time — that is what keeps this invariant true.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core, plus PageVault's library, page-curl reader, page
+- Content: hub picker → Pushup Reminder dashboard/core (with legacy `squats.*` persistence and
+  notification identity retained for upgrade safety), plus PageVault's library, page-curl reader, page
   themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
   full-text search; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
@@ -199,7 +203,7 @@ anyway, so a real scanned book is still needed for a memory verdict.
    Account, and preserve `com.akshatksingh18.akshatos` across signing attempts. Enter secrets only
    in Sideloadly. Verify actual signed identity before relying on retained data.
 5. Complete Apple verification, Developer Mode, and developer trust prompts as required.
-6. Open **AkshatOS**: the first screen must be the app picker. Select **Squat Reminder**; test back
+6. Open **AkshatOS**: the first screen must be the Homebase picker. Select **Pushup Reminder**; test back
    navigation to the hub. ReelVault must clearly say it is not available.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
    lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;

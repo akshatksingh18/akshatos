@@ -1,9 +1,11 @@
-# AkshatOS and Squats architecture
+# AkshatOS and Pushups architecture
 
-**State:** The native hub and Squats v1 — lifecycle with bounded automatic nudges and the idle
+**State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented, and Build 13 is accepted in ongoing daily phone use; the broader
-edge-case, refresh/recovery and soak matrix remains open. The remaining full-product contract below
+chosen defaults — are implemented. Source candidate 0.3.0 (25) repurposes its presentation from
+Squats to Pushup Reminder and adds the Homebase/quest design system; no Build-25 artifact or device
+evidence exists yet. Build 13 remains accepted evidence for the unchanged lifecycle engine, not for
+the new copy or presentation. The broader edge-case, refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
@@ -12,19 +14,20 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
-  build accepted for Squats daily use, Build 12 its retained predecessor, and later builds add PageVault.
+  build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
+  predecessor, and Build 25 is the unverified Pushup/visual candidate.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation.
   `HubRootView` adapts observed feature state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
-  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Squats and
+  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups and
   `PageVaultLibraryView.swift` only after choosing PageVault. ReelVault stays a noninteractive
   planned card. WHOOP remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting
-  orientation itself. The Squats dashboard therefore keeps its verified portrait layout.
+  orientation itself. The Pushups dashboard therefore keeps its verified portrait layout.
 - `SquatSession.swift` is a pure Codable event/session model and calendar-day streak calculation.
   `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema. The feature's
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
@@ -94,7 +97,7 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   database access, permissions or lifecycle commands.
 - `ios/AkshatOS/shared/design-system/`: UI tokens/components, without app or feature dependencies.
 - `ios/AkshatOS/features/squats/`: store plus `domain/` (Foundation-only), `data/` (SwiftData schema),
-  `services/` (Squats scheduling) and `ui/` (dashboard/settings/summary). Features may use shared
+  `services/` (Pushups scheduling) and `ui/` (dashboard/settings/summary). Features may use shared
   components, never the host or another feature's concrete types.
 - `ios/tests/squats/`: feature domain assertions; `ios/UITests/`: app navigation tests.
 - `ios/UnitTests/`: hosted SwiftData integration tests. The test inventory, CI gate, diagnostics,
@@ -118,11 +121,15 @@ source boundaries, not independently compiled packages or OS security isolation.
 presentation/service separation and sole delegate ownership; six negative fixtures test the guard.
 It is a lightweight source scan, not a full Swift parser; compiler and review still matter.
 
-Existing schema/model names, the `Squats` store configuration, preference keys, notification request
-IDs and Swift compilation module are unchanged. Optional payload fields add receipts and action
-sources without a SwiftData schema migration or reset.
+The user-facing product is **Pushup Reminder**, but existing `Squat*` Swift types, the `Squats`
+SwiftData configuration, `squats.*` UserDefaults keys, Application Support paths, backup payloads,
+notification request/category IDs, Home region ID and `.squats` hub route remain deliberately
+unchanged. They are compatibility identifiers, not visible product language. Renaming them would
+orphan pending requests or risk losing installed data for no user benefit; a future internal rename
+requires an explicit migration and same-ID upgrade test. Optional payload fields add receipts and
+action sources without a SwiftData schema migration or reset.
 Same-ID physical upgrade remains an acceptance gate. The central coordinator owns foreground
-presentation and action routing into Squats commands; never register competing delegates from feature constructors. Retain
+presentation and action routing into the compatibility-named movement commands; never register competing delegates from feature constructors. Retain
 background-capable services at app lifetime; load future media views/resources only on demand.
 
 ### Stack and source boundary
@@ -168,7 +175,7 @@ background-capable services at app lifetime; load future media views/resources o
   were pending. Pause calls the same idempotent command as the UI. Legacy snooze callbacks decode
   safely and are acknowledged without changing cadence.
 - While idle and authorized, keep one repeating 9:00 AM local calendar notification. Start cancels
-  it; returning to idle restores it. Its default tap opens the app on the Squats screen and never
+  it; returning to idle restores it. Its default tap opens the app on the Pushups screen and never
   starts a session.
 - `UNUserNotificationCenterDelegate` routes responses by category/action identifier and always calls
   its completion handler after durable/idempotent processing. The normal app, notification handler,
@@ -315,9 +322,9 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 
 ### Build/deployment boundary
 
-The workflow now builds AkshatOS from this repository. Its IPA contains the hub, the Squats slice,
+The workflow now builds AkshatOS from this repository. Its IPA contains the hub, the Pushups slice,
 and PageVault's v1 reading loop, but no ReelVault implementation. Keep
-Squats handlers at host scope, namespace requests, and test notifications while other modules are
+Pushups handlers at host scope, namespace requests, and test notifications while other modules are
 foregrounded. One hub refresh must preserve all three modules' state.
 
 

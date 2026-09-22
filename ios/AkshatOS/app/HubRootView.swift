@@ -11,16 +11,16 @@ struct HubRootView: View {
 
     var body: some View {
         HubView(entries: [
-            HubEntry(id: .squats, title: "Squat Reminder", subtitle: "Make room for a little movement.",
-                     icon: "figure.strengthtraining.traditional", isAvailable: true,
-                     status: squats.operational, detail: "\(squats.todayCount) sets today",
+            HubEntry(id: .squats, title: "Pushup Reminder", subtitle: "Drop, press, and power up your day.",
+                     icon: "figure.strengthtraining.functional", isAvailable: true,
+                     status: squats.operational, detail: "\(squats.todayCount) pushup sets",
                      statusIcon: squats.active == nil ? "sun.max" : "circle.fill"),
-            HubEntry(id: .pageVault, title: "PageVault", subtitle: "Your reading corner",
+            HubEntry(id: .pageVault, title: "PageVault", subtitle: "Open a portal. Keep what you find.",
                      icon: "book.closed", isAvailable: true,
-                     status: pageVault.books.isEmpty ? "No books yet" : "Reading",
-                     detail: pageVault.books.isEmpty ? "" : "\(pageVault.books.count) in library",
+                     status: pageVault.books.isEmpty ? "Vault is waiting" : "Vault online",
+                     detail: pageVault.books.isEmpty ? "Add your first PDF" : "\(pageVault.books.count) books",
                      statusIcon: "book"),
-            HubEntry(id: .reelVault, title: "ReelVault", subtitle: "Your personal reel collection",
+            HubEntry(id: .reelVault, title: "ReelVault", subtitle: "A future portal for the good stuff.",
                      icon: "play.rectangle", isAvailable: false)
         ], path: $path) { route in
             switch route {

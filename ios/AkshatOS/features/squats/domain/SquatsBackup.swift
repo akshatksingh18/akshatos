@@ -80,9 +80,9 @@ enum SquatsBackupError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .unsupportedVersion(let version): return "This backup uses unsupported version \(version)."
-        case .invalidSettings: return "The backup contains invalid Squats settings."
-        case .invalidSessions: return "The backup contains inconsistent Squats history."
-        case .invalidFile: return "This is not a valid Squats backup."
+        case .invalidSettings: return "The backup contains invalid Pushup Reminder settings."
+        case .invalidSessions: return "The backup contains inconsistent Pushup Reminder history."
+        case .invalidFile: return "This is not a valid Pushup Reminder backup."
         case .tooLarge: return "This backup is too large to import."
         }
     }

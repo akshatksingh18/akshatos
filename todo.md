@@ -2,15 +2,23 @@
 
 This is current-state work, not a claim that either platform is already usable. The iPhone path is
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
-`../book-reader/CLAUDE.md`; this file owns Squats and hub-wide gates.
+`../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Build 13 is accepted in ongoing daily phone use for Squats. The unchecked physical,
-release-cache and refresh items below stay open regardless of PageVault progress. Akshat deferred
-PageVault's physical testing to one end-of-implementation pass. Build evidence lives in `cloud-build.md`.
+**Current focus:** Source candidate 0.3.0 (25) presents the legacy movement engine as Pushup Reminder
+and refreshes the hub/PageVault into the playful Homebase/quest system. Build 13 remains accepted
+evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
+new Build-25 copy, visuals, generated icon or pushup notifications. The unchecked physical,
+release-cache and refresh items below stay open. Build evidence lives in `cloud-build.md`.
 
 ## iPhone-primary work
 
 ### Done
+
+- [x] **Pushup product shift and playful presentation in source.** Visible Squats copy is now Pushup
+      Reminder across the hub, dashboard, notifications, settings, Home permission text and backups.
+      The hub is a Homebase, Pushups uses truthful power-up/quest feedback, PageVault uses story-quest
+      and treasure-shelf framing, and the generated icon carries the same module-orbit language.
+      Legacy `Squat*` code/storage and `squats.*` identifiers stay unchanged to preserve upgrades.
 
 - [x] **Cloud pipeline and repository controls.** Source, inventory and workflow checks, registered
       domain suites, hosted persistence tests, UI navigation, device build, IPA inspection and
@@ -21,7 +29,7 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       same-ID upgrades or automatic refresh.
 - [x] **Hub identity and first hub build.** `akshatksingh18/akshatos` with the permanent
       `com.akshatksingh18.akshatos`, history and Android preserved. Build 13 installs under that
-      identity, and its picker → Squats → back navigation is in daily use.
+      identity, and its picker → Pushups → back navigation is in daily use.
 - [x] **Module boundaries and host.** App composition owns the sole notification delegate, the hub is
       display-only, and the shared design system and feature folders are isolated and enforced by
       `check-boundaries.py`. Notifications and geofences stay at host scope with namespaced requests.
@@ -60,6 +68,11 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       its own migration tests. Simulator tests do not replace hardware tests.
 
 ### Open
+
+- [ ] **Build and device-check 0.3.0 (25).** Require the exact commit's complete CI Gate, inspect the
+      hub/Pushup/PageVault screenshots and generated icon, install over Build 24 without uninstalling,
+      confirm existing movement history and PageVault data remain, verify old pending requests route
+      into Pushup Reminder, and exercise a real regular/automatic/9:00 AM pushup notification.
 
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,

@@ -20,6 +20,13 @@ struct PageVaultTakeawaysView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
+                        AccentSurface(accent: Palette.gold) {
+                            QuestBadge(text: "Treasure shelf", icon: "sparkles", accent: Palette.gold)
+                            Text("Ideas worth carrying.")
+                                .font(.system(.title2, design: .rounded, weight: .black))
+                            Text("Every passage here is something you chose to bring back from a story quest.")
+                                .font(.subheadline).foregroundStyle(Palette.muted)
+                        }
                         ForEach(store.booksWithHighlights) { book in
                             NavigationLink {
                                 PageVaultHighlightList(
@@ -36,14 +43,16 @@ struct PageVaultTakeawaysView: View {
                 }
             }
         }
-        .background(Palette.background.ignoresSafeArea())
+        .background(AppBackdrop())
         .navigationTitle("Takeaways")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("pagevault-takeaways")
     }
 
     private func card(_ book: PageVaultBook) -> some View {
-        Surface {
+        AccentSurface(accent: Palette.gold) {
+            QuestBadge(text: book.highlights.count == 1 ? "1 find" : "\(book.highlights.count) finds",
+                       icon: "quote.opening", accent: Palette.gold)
             HStack(alignment: .top, spacing: 14) {
                 PageVaultCoverView(url: store.coverURL(for: book), revision: store.coverRevision)
                     .frame(width: 54, height: 72)

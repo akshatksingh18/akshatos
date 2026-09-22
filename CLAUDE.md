@@ -1,18 +1,20 @@
 # AkshatOS
 
-Personal native iPhone hub: the home screen selects a feature, starting with Squat Reminder.
+Personal native iPhone hub: the home screen selects a feature, starting with Pushup Reminder.
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. ReelVault is reserved for
-later; WHOOP stays standalone. This repository evolved
-from Squat Reminder with history preserved. Android Squats remains an untouched, unverified fallback.
+later; WHOOP stays standalone. This repository evolved from Squat Reminder and now presents that
+feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
+Squats fallback.
 
-**Status:** Building. Squats' native v1 — lifecycle, notification actions, dashboard/Settings UI,
-daily history and recovery, Home auto-pause and foreground reconciliation — is implemented, and
-Build 13 is accepted in ongoing daily phone use; its edge-case, refresh/recovery and multi-cycle soak
-matrix remains open. PageVault is implemented in source through export/restore and page fitting and
-awaits one end-of-implementation device pass (`../book-reader/CLAUDE.md`). `cloud-build.md` owns build
-evidence and the working source version; `todo.md` owns open gates. The full target contract below is
-not a claim that every feature is physically verified.
+**Status:** Building. Source candidate 0.3.0 (25) repurposes the accepted movement engine as Pushup
+Reminder and introduces the playful Homebase/quest visual system across the hub, Pushups and
+PageVault. It is not cloud-built or phone-verified. Build 13 remains accepted evidence for the
+unchanged movement lifecycle; its edge-case, refresh/recovery and multi-cycle soak matrix remains
+open. PageVault v1 is phone-accepted through Build 24 (`../book-reader/CLAUDE.md`), while its new
+presentation awaits the Build-25 device pass. `cloud-build.md` owns build evidence and the working
+source version; `todo.md` owns open gates. The full target contract below is not a claim that every
+feature is physically verified.
 
 ## Files
 
@@ -127,7 +129,7 @@ not a claim that every feature is physically verified.
 - `ios/AkshatOS/Resources/` — app assets; existing icon generation path is unchanged.
 - `ios/scripts/check-boundaries.py` — source dependency/delegate guard and negative fixtures;
   run locally and in CI. Logical boundaries, not compiler-enforced Swift packages.
-- `ios/tests/squats/main.swift` — executable Squats domain assertions run by the cloud workflow.
+- `ios/tests/squats/main.swift` — executable Pushups domain assertions run by the cloud workflow.
 - `ios/UITests/` — simulator hub/dashboard/PageVault navigation tests and screenshot attachments;
   test runner is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
 - `build.gradle.kts` — root Android build configuration and plugin versions.
@@ -141,24 +143,27 @@ not a claim that every feature is physically verified.
 ### Product and target decision
 
 - Canonical source/build owner: this `akshatos/` repository, temporarily public GitHub
-  `akshatksingh18/akshatos`, evolved from Squat Reminder without a second source copy.
+  `akshatksingh18/akshatos`, evolved from Squat Reminder and now presented as Pushup Reminder
+  without a second source copy.
   The native target is **AkshatOS**, bundle ID `com.akshatksingh18.akshatos`, with the working
   source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
-  accepted for Squats daily use, including automatic overdue nudges and the idle 9:00 AM start
-  invitation, and Build 12 is its retained accepted predecessor. Later builds add PageVault. The broader physical edge-case and repeated-refresh matrix remains open.
+  accepted for the movement loop under its legacy Squats presentation, including automatic overdue
+  nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
+  Build 25 is the unverified Pushup Reminder/presentation candidate. The broader physical edge-case
+  and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Squat Reminder to open its dashboard. Returning to the
+- Launch into the hub picker, then select Pushup Reminder to open its dashboard. Returning to the
   picker must not stop reminders. PageVault/ReelVault cards are visibly unavailable, not fake apps.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
 
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), use
   the configurable eight-set daily goal, tap
-  **Start my day**, receive ordinary squat reminders, log completed sets, Pause/Resume around
+  **Start my day**, receive ordinary pushup reminders, log completed sets, Pause/Resume around
   interruptions, protect a daily-goal streak, optionally auto-pause outside Home, and tap **End my
   day** for a local daily overview. `features.md` owns the exact dashboard, lifecycle,
   notification-action, counting/streak, geofence, history, and automation scope.
-- Count explicit completed squat **sets/breaks** in v1. Do not infer individual repetitions or
+- Count explicit completed pushup **sets/breaks** in v1. Do not infer individual repetitions or
   notification-delivery counts. Keep timestamped current-day events and lightweight local daily
   summaries, but do not add accounts, cloud sync, social features, remote analytics, or a server.
 - The iOS app must use local UserNotifications scheduled by iOS. It must not depend on the app
@@ -196,7 +201,7 @@ not a claim that every feature is physically verified.
 - When notification access has already been granted and no active day exists, keep exactly one
   repeating calendar notification for 9:00 AM local time. It invites the user to open AkshatOS and
   start; tapping it must not silently create a session. Starting a day cancels it, and returning to
-  idle schedules it again. Tapping it opens the Squats screen, by the routing rule below — that is
+  idle schedules it again. Tapping it opens the Pushups screen, by the routing rule below — that is
   also why routing keys on the request identifier: this request carries no category.
 - **Opening any notification opens the feature that sent it.** The app layer maps each feature's
   notification-identifier namespace to its hub route and asks the hub to go there; a background
@@ -207,7 +212,7 @@ not a claim that every feature is physically verified.
 - If permission is denied or notifications are disabled, Start must not display a healthy
   “Running” state. Show a clear blocked state and a route to the app's iOS notification settings.
   Do not repeatedly prompt after denial because iOS will not show the authorization sheet again.
-- Pause and End remove already-delivered Squat Reminder notifications if that proves least
+- Pause and End remove already-delivered Pushup Reminder notifications if that proves least
   surprising in physical testing. A notification already visible or being delivered at the exact
   moment of either action may still be seen; document the final observed behavior rather than
   promising an impossible atomic recall.
@@ -363,13 +368,13 @@ not a claim that every feature is physically verified.
 
 ### Accepted free-account app-slot portfolio
 
-- Install one native hub for Squats, PageVault, and ReelVault, plus standalone WHOOP: two free slots.
+- Install one native hub for Pushups, PageVault, and ReelVault, plus standalone WHOOP: two free slots.
   One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
   installation identity per module is required. Packaging is accepted; implementation is pending.
-- The hub's notification/geofence handlers belong to the application lifecycle, not the Squats
+- The hub's notification/geofence handlers belong to the application lifecycle, not the Pushups
   screen. Reading PDFs or playing reels must not stop scheduling or action processing. Show
   foreground notifications appropriately; namespace requests/categories/actions and cancel only
-  Squats-owned requests. Never let navigation disable Home monitoring.
+  Pushups-owned requests. Never let navigation disable Home monitoring.
 - OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
   apply to the hub as a whole. Keep module stores/export logically separate and test cross-section
   behavior. Deleting the hub removes all three modules' local data, so full recovery is mandatory.
@@ -467,7 +472,7 @@ current observed behavior in the applicable project document rather than relying
 
 ### Phased implementation plan
 
-Execution order: finish the agreed native Squats v1 implementation and automated/cloud checks
+Execution order: finish the agreed native Pushups v1 implementation and automated/cloud checks
 before asking Akshat for physical-phone testing. Sideloading is reported working; do not make
 another installation exercise a prerequisite for continued coding. Physical acceptance remains
 required after implementation, with defects found there fixed before calling the feature dependable.
@@ -475,7 +480,7 @@ required after implementation, with defects found there fixed before calling the
 remain a follow-on; this sequencing change does not expand native v1 or activate media modules.
 
 1. **Hub transition and cloud activation:** source/repository and bundle ID are selected and the
-   target/workflow is adapted. Pass cloud tests/build and physical hub-picker → Squats navigation
+   target/workflow is adapted. Pass cloud tests/build and physical hub-picker → Pushups navigation
    before calling this new identity phone-verified; see `cloud-build.md`.
 2. **Product and visual foundation:** replace the smoke screen with reusable dashboard tokens/
    components while preserving the permanent bundle ID, add the explicit lifecycle state model,
@@ -541,7 +546,7 @@ The iPhone path can be described as working only when all of the following are t
   USB recovery has been rehearsed;
 - the common hub IPA can be signed by a fallback path without source changes, coexists with
   standalone WHOOP in two free slots, and preserves all three modules across refresh/upgrade;
-- Squats actions and Home events work without opening its section, including while PageVault/Reels
+- Pushups actions and Home events work without opening its section, including while PageVault/Reels
   is visible, and their module transitions cannot cancel requests or delay durable action handling;
 - Android remains buildable as a fallback or is still explicitly documented as unverified—do not
   silently imply parity between the platforms.
@@ -583,7 +588,7 @@ data, device state, or durable release IPAs.
 - Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
-- Preserve the local-only, single-user Squats feature scope within the accepted three-module hub;
+- Preserve the local-only, single-user Pushups feature scope within the accepted three-module hub;
   packaging consolidation does not add new product features or activate WHOOP.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
   Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily
@@ -600,6 +605,11 @@ data, device state, or durable release IPAs.
 - Preserve the permanent iOS bundle ID, ordinary/actionable-notification design, standard portable
   IPA, local-only Home boundary, deterministic streak rules, and early verified refresh buffer
   unless Akshat explicitly changes the deployment strategy.
+- Preserve the installed-data bridge behind Pushup Reminder: `Squat*` Swift types, `features/squats/`,
+  the `Squats` store name, `squats.*` preferences/Application Support paths, backup payloads,
+  notification/category identifiers, Home region ID and `.squats` route are legacy compatibility
+  identifiers. Keep them out of visible copy, but do not rename them without a versioned migration,
+  pending-request cleanup/bridge and same-ID upgrade proof.
 - Read `cloud-build.md` before changing the iOS project generator, workflow, artifact packaging,
   bundle identity, checksum process, or Sideloadly smoke-install steps. Never add Apple credentials,
   signing files, device identifiers, or release IPAs to Git/GitHub.

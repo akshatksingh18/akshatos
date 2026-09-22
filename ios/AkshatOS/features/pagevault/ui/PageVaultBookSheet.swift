@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Reading status, the daily page goal, and bookmarks for one book. Reads live store state so a
+/// Reading status, kept passages, place, and file details for one book. Reads live store state so a
 /// status change made here is reflected immediately, including the single-Reading-book demotion.
 struct PageVaultBookSheet: View {
     @ObservedObject var store: PageVaultStore

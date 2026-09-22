@@ -1,19 +1,21 @@
 # AkshatOS
 
-A native personal iPhone hub. Open AkshatOS and select **Squat Reminder** for its movement dashboard
+A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard
 or **PageVault** for its PDF library. ReelVault is reserved for later and WHOOP stays a separate app.
 
-**Current state:** Squats v1 — notification actions, daily history, local recovery, Home auto-pause
-and goal/streak handling — is implemented, and Build 13 is accepted in ongoing daily phone use; its
-edge-case, refresh/recovery and soak matrix remains open. PageVault's library, paged reader with page
-fitting, bookmarks and export/restore are implemented, and its reading loop is confirmed on the phone
-as of Build 20; reading streaks were built and then removed at Akshat's request. Bundle ID
+**Current state:** The proven movement engine has been repurposed from squats to **Pushup Reminder**
+without changing its stored sessions, preference keys, backup schema or pending-notification identity.
+Source candidate 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
+Pushup Reminder and PageVault; it is not cloud-built or phone-verified yet. Build 13 remains the
+accepted legacy Squats daily-use baseline for lifecycle behavior. Its edge-case, refresh/recovery and
+soak matrix remains open. PageVault's v1 reading and recovery loop is accepted on the phone through
+Build 24; reading streaks were built and then removed at Akshat's request. Bundle ID
 `com.akshatksingh18.akshatos`.
 The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
 open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.
 
-This repository evolved from Squat Reminder, retaining Git history and the unverified Android
-fallback. Source is temporarily public at
+This repository evolved from Squat Reminder and now presents that feature as Pushup Reminder,
+retaining Git history and the unverified legacy Android Squats fallback. Source is temporarily public at
 [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos) for hosted macOS CI capacity.
 
 ## First slice
@@ -22,10 +24,11 @@ GitHub Actions checks feature boundaries, registered domain tests, simulator per
 device compilation and IPA integrity. [CI contract](ci.md) defines coverage, documentation-only PR
 build skipping, and the server-enforced `main` protection. Green CI is not physical acceptance.
 
-App composition, display-only hub, shared styling and Squats feature are separated;
+App composition, display-only hub, shared styling and the Pushup Reminder feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- Hub app picker, Squats dashboard and PageVault library; ReelVault is a visibly planned entry.
+- Playful Homebase hub, Pushup Reminder power-up dashboard and PageVault story-quest library;
+  ReelVault is a visibly locked future portal.
 - Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
 - Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
   minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,
@@ -49,7 +52,7 @@ disposable test activity only.
 - Set a whole-minute reminder interval while stopped (default currently planned as 45 minutes).
 - Tap **Start my day**; the first reminder is one interval later.
 - Receive ordinary local notifications until pausing or tapping **End my day**.
-- Tap **Done +1** in the dashboard or notification after a squat break; v1 counts completed sets,
+- Tap **Set crushed +1** in the dashboard or **Done** in the notification after a pushup break; v1 counts completed sets,
   not unrecorded individual repetitions. Done dismisses any unresolved nudge and restarts the full
   regular interval from that completed set, including when the ordinary 45-minute countdown was
   active.
@@ -74,7 +77,7 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 
 ## Primary iPhone plan
 
-The `ios/` source opens the hub picker, a separate Squats dashboard and the PageVault library. The build path is
+The `ios/` source opens the Homebase hub, a separate Pushup Reminder dashboard and the PageVault library. The build path is
 Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses a bounded batch
 of one-off `UNTimeIntervalNotificationTrigger` requests for the normal reminder and automatic nudges,
 plus one repeating 9:00 AM calendar request while idle. iOS schedules delivery, so the app does not
@@ -86,7 +89,7 @@ An old preview's schedule may show Repair reminders after update; re-arm it once
 current buttons. Actions are queued before processing and receipts survive Undo. If protected
 session data is unavailable, logging waits for unlock and merge; a matching Pause can still cancel
 the schedule. Before first unlock after reboot or on inbox-write failure, saving an action cannot be
-guaranteed; check the visible error and your count after opening Squats. These conditions still need
+guaranteed; check the visible error and your count after opening Pushups. These conditions still need
 physical-phone acceptance.
 
 Interval/goal settings live in `UserDefaults`; the current session also persists the regular cadence
@@ -98,14 +101,14 @@ query actual notification permission and pending requests, merge any locked-devi
 reconcile them with stored intent, and show Running only when system state supports that claim.
 An unended earlier local date is closed at its next local calendar boundary during that reconciliation;
 the boundary uses calendar arithmetic for DST and does not require a background timer. Settings can
-export a versioned JSON backup, validate and restore it before replacing current Squats data, or
+export a versioned JSON backup, validate and restore it before replacing current Pushups data, or
 delete completed history while retaining the active day and preferences.
 
 The implemented forgotten-away convenience is an opt-in native Home geofence. Setup uses one foreground
 location to choose/confirm a circular Home boundary with a configurable 150-meter initial radius,
 then requests the authorization needed for iOS
 to deliver region entry/exit events while the app is not open. Only the coordinate/radius and health
-state stay in protected local storage excluded from both device backups and Squats backup exports;
+state stay in protected local storage excluded from both device backups and Pushups backup exports;
 the app never continuously tracks location or saves a route. Physical geofence behavior remains
 unverified.
 Leaving pauses only a Running day, and returning resumes only a still-active day whose pause reason
@@ -142,7 +145,7 @@ safe.
 
 The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Squats, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
+Pushups, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates

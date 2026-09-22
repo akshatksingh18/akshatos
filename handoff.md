@@ -1,9 +1,10 @@
 # AkshatOS session handoff
 
-**Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Squats
-v1 is accepted in daily phone use on Build 13, with its physical edge-case and deployment matrix still
-open; PageVault is under active implementation with one end-of-implementation device pass pending.
-Update this file in place when resume guidance changes; the linked owning documents control detail.
+**Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Local
+source candidate 0.3.0 (25) presents the compatibility-preserved movement engine as Pushup Reminder
+and adds the Homebase/quest visual refresh across the hub and PageVault; it has no artifact/device
+evidence yet. Build 13 remains the accepted lifecycle baseline and Build 24 the accepted PageVault v1
+baseline. Update this file in place when resume guidance changes; the linked owning documents control detail.
 
 ## Start here
 
@@ -42,16 +43,17 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 ## Identity and accepted scope
 
 - Repository: temporarily public `https://github.com/akshatksingh18/akshatos`, evolved from Squat Reminder
-  with history retained, not a second implementation. Local path:
+  and now presented as Pushup Reminder with history retained, not a second implementation. Local path:
   `D:\AI Important Files\personal-project\akshatos`.
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
-- Launch into an app picker; select Squat Reminder to open its own dashboard, or PageVault for its own
+- Launch into an app picker; select Pushup Reminder to open its own dashboard, or PageVault for its own
   PDF library. This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
-- Squats' daily loop is accepted in ongoing phone use, so PageVault is the activated next module; its
-  scope, phases and progress are owned by `../book-reader/CLAUDE.md`. ReelVault stays deferred.
-  Squats' remaining physical/refresh items stay open and are not superseded by PageVault work.
+- The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
+  PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
+  visuals and notifications plus PageVault's refreshed presentation await Build 25. ReelVault stays deferred.
+  The movement feature's remaining physical/refresh items stay open and are not superseded by PageVault work.
   Native source for both media modules goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
   feature folders are not separately installed apps.
@@ -60,13 +62,14 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 
 ## Implemented in source
 
-- Hub picker, Squats dashboard, shared visual components, and app-lifetime services across navigation.
-- Squats lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
+- Homebase hub, Pushup power-up dashboard, PageVault story-quest library, shared atmospheric visual
+  components, refreshed generated icon, and app-lifetime services across navigation.
+- Pushups lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
   normal-plus-59-nudge schedule with foreground replenishment, and one idle 9:00 AM start invitation
   that never auto-starts a day.
 - Durable actions: atomic after-first-unlock command inbox, receipts that survive Undo, shared
   commands, protected-store retry and queued-action UI.
-- Squats data: versioned SwiftData sessions, same-date daily history with active/paused durations,
+- Pushups data: versioned SwiftData sessions, same-date daily history with active/paused durations,
   next-calendar-boundary rollover on foreground, configurable goal (eight sets initially; zero turns
   tracking off), deterministic current/best streak, versioned JSON export with validated restore, and
   completed-history deletion.
@@ -98,8 +101,10 @@ launch or foreground entry; the app does not claim a background midnight executi
 ## Build and device evidence
 
 `cloud-build.md` owns every build record: source commits, runs, checksums, retained local artifacts
-and phone findings. Two facts matter when resuming: Build 13 is the last build accepted for Squats
-daily use, and one same-ID update without uninstalling has preserved app data (Build 12 over Build 11).
+and phone findings. Three facts matter when resuming: Build 13 is the last build accepted for the
+movement loop under the legacy Squats presentation, Build 24 is the accepted PageVault v1 baseline,
+and local Build-25 source is unbuilt. One same-ID update without uninstalling has preserved app data
+(Build 12 over Build 11).
 Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
 Back up important history before risky deployment/recovery tests, and do not uninstall data-bearing builds.
@@ -109,7 +114,7 @@ Back up important history before risky deployment/recovery tests, and do not uni
 1. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
    and record what the phone shows there and in `../book-reader/CLAUDE.md`. Fix defects before
    calling any reader behavior working.
-2. **Complete the remaining Squats physical edge-case matrix:** locked/force-quit/reboot, permission,
+2. **Complete the remaining Pushups physical edge-case matrix:** locked/force-quit/reboot, permission,
    Focus/Scheduled Summary, picker/back, Undo/replay, summaries/recovery and Home-automation checks.
    Record actual results and fix defects; `architecture.md` owns durability limits.
 3. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,

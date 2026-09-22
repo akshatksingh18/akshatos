@@ -41,6 +41,10 @@ struct ReminderSnapshot {
     static let automaticNudgeInterval: TimeInterval = 600
     static let automaticNudgeCount = 59
     static let scheduleVersion = 2
+    static let featureDisplayName = "Pushup Reminder"
+    static let dailyStartTitle = "Your Pushup quest is ready"
+    static let regularTitle = "Pushup time — floor is yours"
+    static let automaticTitle = "Your Pushup quest is still waiting"
     let center = UNUserNotificationCenter.current()
 
     static var activeIdentifiers: [String] {
@@ -147,8 +151,8 @@ struct ReminderSnapshot {
         let requests = await center.pendingNotificationRequests()
         guard !requests.contains(where: { $0.identifier == Self.dailyStart }) else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Start your Squats day"
-        content.body = "Open AkshatOS to start today's movement reminders."
+        content.title = Self.dailyStartTitle
+        content.body = "Open AkshatOS, start the quest, and charge today's power bar."
         content.sound = .default
         let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: 9, minute: 0), repeats: true)
         try await center.add(UNNotificationRequest(identifier: Self.dailyStart, content: content, trigger: trigger))
@@ -167,10 +171,10 @@ struct ReminderSnapshot {
     private func reminderContent(session: SquatSession, interval: TimeInterval,
                                  automatic: Bool) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
-        content.title = automatic ? "Still time for a squat break" : "Time for a squat break"
+        content.title = automatic ? Self.automaticTitle : Self.regularTitle
         content.body = automatic
-            ? "When you finish a set, tap Done to return to your normal interval."
-            : "Take a movement break, then tap Done to log your set."
+            ? "Finish a set, then tap Done to bank it and return to your normal interval."
+            : "Crush a pushup set, then tap Done to bank the point."
         content.sound = .default
         content.categoryIdentifier = Self.categoryID
         content.userInfo = [
