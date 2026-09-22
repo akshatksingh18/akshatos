@@ -8,8 +8,8 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 and refreshes the hub/PageVault into the playful Homebase/quest system. Build 13 remains accepted
 evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
 new Build-25 copy, visuals, generated icon or pushup notifications on a phone. Build 25's
-implementation passed PR #52's complete macOS CI Gate and package inspection; the unchecked
-artifact, physical, release-cache and refresh items below stay open. Build evidence lives in
+retained candidate passed complete macOS CI, package inspection, checksum and local IPA validation;
+the unchecked signing, physical, release-cache and refresh items below stay open. Build evidence lives in
 `cloud-build.md`.
 
 ## iPhone-primary work
@@ -71,10 +71,10 @@ artifact, physical, release-cache and refresh items below stay open. Build evide
 
 ### Open
 
-- [ ] **Retain and device-check 0.3.0 (25).** The implementation commit passed the complete macOS CI
-      Gate, including simulator screenshots, device compilation and package inspection. Retain and
-      Windows-verify the final artifact, inspect the hub/Pushup/PageVault evidence and generated icon,
-      install over Build 24 without uninstalling, confirm existing movement history and PageVault
+- [ ] **Sign and device-check 0.3.0 (25).** The retained candidate passed complete macOS CI,
+      simulator screenshot inspection, device compilation, package inspection, checksum and local
+      IPA validation. Sign/install it over Build 24 without uninstalling, require the current-version
+      automatic-refresh enrollment, confirm existing movement history and PageVault
       data remain, verify old pending requests route into Pushup Reminder, and exercise a real
       regular/automatic/9:00 AM pushup notification.
 

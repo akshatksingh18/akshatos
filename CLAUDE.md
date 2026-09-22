@@ -9,9 +9,10 @@ Squats fallback.
 
 **Status:** Building. Source candidate 0.3.0 (25) repurposes the accepted movement engine as Pushup
 Reminder and introduces the playful Homebase/quest visual system across the hub, Pushups and
-PageVault. Its implementation commit `0f3cd90` passed PR #52's complete macOS `CI Gate` (run
-`35677827395`), including domain/UI tests, simulator and device compilation, and IPA inspection; PR
-policy did not upload an artifact, and it is not phone-verified. Build 13 remains accepted evidence
+PageVault. Retained-candidate commit `4253311` passed workflow-dispatch run `35678793533`, including
+domain/UI tests, simulator and device compilation, and IPA inspection; artifact `akshatos-ios-123`
+was downloaded into the local testing slot and passed checksum/IPA validation. It is not signed or
+phone-verified. Build 13 remains accepted evidence
 for the unchanged movement lifecycle; its edge-case, refresh/recovery and multi-cycle soak matrix
 remains open. PageVault v1 is phone-accepted through Build 24 (`../book-reader/CLAUDE.md`), while its
 new presentation awaits the Build-25 device pass. `cloud-build.md` owns build evidence and the

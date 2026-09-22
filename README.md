@@ -6,9 +6,9 @@ or **PageVault** for its PDF library. ReelVault is reserved for later and WHOOP 
 **Current state:** The proven movement engine has been repurposed from squats to **Pushup Reminder**
 without changing its stored sessions, preference keys, backup schema or pending-notification identity.
 Source candidate 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
-Pushup Reminder and PageVault. Its implementation passed PR #52's complete macOS CI Gate, including
-tests, simulator/device compilation and IPA inspection, but PR policy did not upload an artifact and
-it is not phone-verified yet. Build 13 remains the accepted legacy Squats daily-use baseline for
+Pushup Reminder and PageVault. Retained-candidate commit `4253311` passed complete macOS CI, including
+tests, simulator/device compilation and IPA inspection; artifact `akshatos-ios-123` also passed local
+checksum/IPA validation. It is not signed or phone-verified yet. Build 13 remains the accepted legacy Squats daily-use baseline for
 lifecycle behavior. Its edge-case, refresh/recovery and soak matrix remains open. PageVault's v1
 reading and recovery loop is accepted on the phone through Build 24; reading streaks were built and
 then removed at Akshat's request. Bundle ID

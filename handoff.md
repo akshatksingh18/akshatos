@@ -2,8 +2,9 @@
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Local
 source candidate 0.3.0 (25) presents the compatibility-preserved movement engine as Pushup Reminder
-and adds the Homebase/quest visual refresh across the hub and PageVault. Its implementation passed PR
-#52's complete macOS CI Gate, but PR policy uploaded no artifact and it has no device evidence yet.
+and adds the Homebase/quest visual refresh across the hub and PageVault. Retained-candidate commit
+`4253311` passed workflow-dispatch run `35678793533`; artifact `akshatos-ios-123` is in the local
+testing slot with matching checksum and IPA validation, but it has no signing or device evidence yet.
 Build 13 remains the accepted lifecycle baseline and Build 24 the accepted PageVault v1 baseline.
 Update this file in place when resume guidance changes; the linked owning documents control detail.
 
