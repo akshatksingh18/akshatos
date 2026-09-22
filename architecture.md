@@ -3,9 +3,11 @@
 **State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
 chosen defaults — are implemented. Source candidate 0.3.0 (25) repurposes its presentation from
-Squats to Pushup Reminder and adds the Homebase/quest design system; no Build-25 artifact or device
-evidence exists yet. Build 13 remains accepted evidence for the unchanged lifecycle engine, not for
-the new copy or presentation. The broader edge-case, refresh/recovery and soak matrix remains open. The remaining full-product contract below
+Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
+complete macOS CI Gate, including simulator/device compilation and IPA inspection; no uploaded
+Build-25 artifact or device evidence exists yet. Build 13 remains accepted evidence for the
+unchanged lifecycle engine, not for the new copy or presentation. The broader edge-case,
+refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
@@ -15,7 +17,7 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
   build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
-  predecessor, and Build 25 is the unverified Pushup/visual candidate.
+  predecessor, and Build 25 is the CI-verified but device-unverified Pushup/visual candidate.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the

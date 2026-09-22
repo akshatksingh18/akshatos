@@ -7,8 +7,10 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 **Current focus:** Source candidate 0.3.0 (25) presents the legacy movement engine as Pushup Reminder
 and refreshes the hub/PageVault into the playful Homebase/quest system. Build 13 remains accepted
 evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
-new Build-25 copy, visuals, generated icon or pushup notifications. The unchecked physical,
-release-cache and refresh items below stay open. Build evidence lives in `cloud-build.md`.
+new Build-25 copy, visuals, generated icon or pushup notifications on a phone. Build 25's
+implementation passed PR #52's complete macOS CI Gate and package inspection; the unchecked
+artifact, physical, release-cache and refresh items below stay open. Build evidence lives in
+`cloud-build.md`.
 
 ## iPhone-primary work
 
@@ -69,10 +71,12 @@ release-cache and refresh items below stay open. Build evidence lives in `cloud-
 
 ### Open
 
-- [ ] **Build and device-check 0.3.0 (25).** Require the exact commit's complete CI Gate, inspect the
-      hub/Pushup/PageVault screenshots and generated icon, install over Build 24 without uninstalling,
-      confirm existing movement history and PageVault data remain, verify old pending requests route
-      into Pushup Reminder, and exercise a real regular/automatic/9:00 AM pushup notification.
+- [ ] **Retain and device-check 0.3.0 (25).** The implementation commit passed the complete macOS CI
+      Gate, including simulator screenshots, device compilation and package inspection. Retain and
+      Windows-verify the final artifact, inspect the hub/Pushup/PageVault evidence and generated icon,
+      install over Build 24 without uninstalling, confirm existing movement history and PageVault
+      data remain, verify old pending requests route into Pushup Reminder, and exercise a real
+      regular/automatic/9:00 AM pushup notification.
 
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,

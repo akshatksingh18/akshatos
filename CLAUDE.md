@@ -9,12 +9,14 @@ Squats fallback.
 
 **Status:** Building. Source candidate 0.3.0 (25) repurposes the accepted movement engine as Pushup
 Reminder and introduces the playful Homebase/quest visual system across the hub, Pushups and
-PageVault. It is not cloud-built or phone-verified. Build 13 remains accepted evidence for the
-unchanged movement lifecycle; its edge-case, refresh/recovery and multi-cycle soak matrix remains
-open. PageVault v1 is phone-accepted through Build 24 (`../book-reader/CLAUDE.md`), while its new
-presentation awaits the Build-25 device pass. `cloud-build.md` owns build evidence and the working
-source version; `todo.md` owns open gates. The full target contract below is not a claim that every
-feature is physically verified.
+PageVault. Its implementation commit `6789c395` passed PR #52's complete macOS `CI Gate` (run
+`35676872853`), including domain/UI tests, simulator and device compilation, and IPA inspection; PR
+policy did not upload an artifact, and it is not phone-verified. Build 13 remains accepted evidence
+for the unchanged movement lifecycle; its edge-case, refresh/recovery and multi-cycle soak matrix
+remains open. PageVault v1 is phone-accepted through Build 24 (`../book-reader/CLAUDE.md`), while its
+new presentation awaits the Build-25 device pass. `cloud-build.md` owns build evidence and the
+working source version; `todo.md` owns open gates. The full target contract below is not a claim that
+every feature is physically verified.
 
 ## Files
 
@@ -149,8 +151,8 @@ feature is physically verified.
   source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
-  Build 25 is the unverified Pushup Reminder/presentation candidate. The broader physical edge-case
-  and repeated-refresh matrix remains open.
+  Build 25 is the CI-verified but device-unverified Pushup Reminder/presentation candidate. The
+  broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
 - Launch into the hub picker, then select Pushup Reminder to open its dashboard. Returning to the

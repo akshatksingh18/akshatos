@@ -6,10 +6,12 @@ or **PageVault** for its PDF library. ReelVault is reserved for later and WHOOP 
 **Current state:** The proven movement engine has been repurposed from squats to **Pushup Reminder**
 without changing its stored sessions, preference keys, backup schema or pending-notification identity.
 Source candidate 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
-Pushup Reminder and PageVault; it is not cloud-built or phone-verified yet. Build 13 remains the
-accepted legacy Squats daily-use baseline for lifecycle behavior. Its edge-case, refresh/recovery and
-soak matrix remains open. PageVault's v1 reading and recovery loop is accepted on the phone through
-Build 24; reading streaks were built and then removed at Akshat's request. Bundle ID
+Pushup Reminder and PageVault. Its implementation passed PR #52's complete macOS CI Gate, including
+tests, simulator/device compilation and IPA inspection, but PR policy did not upload an artifact and
+it is not phone-verified yet. Build 13 remains the accepted legacy Squats daily-use baseline for
+lifecycle behavior. Its edge-case, refresh/recovery and soak matrix remains open. PageVault's v1
+reading and recovery loop is accepted on the phone through Build 24; reading streaks were built and
+then removed at Akshat's request. Bundle ID
 `com.akshatksingh18.akshatos`.
 The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
 open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.

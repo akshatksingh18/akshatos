@@ -2,9 +2,10 @@
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Local
 source candidate 0.3.0 (25) presents the compatibility-preserved movement engine as Pushup Reminder
-and adds the Homebase/quest visual refresh across the hub and PageVault; it has no artifact/device
-evidence yet. Build 13 remains the accepted lifecycle baseline and Build 24 the accepted PageVault v1
-baseline. Update this file in place when resume guidance changes; the linked owning documents control detail.
+and adds the Homebase/quest visual refresh across the hub and PageVault. Its implementation passed PR
+#52's complete macOS CI Gate, but PR policy uploaded no artifact and it has no device evidence yet.
+Build 13 remains the accepted lifecycle baseline and Build 24 the accepted PageVault v1 baseline.
+Update this file in place when resume guidance changes; the linked owning documents control detail.
 
 ## Start here
 
@@ -52,7 +53,8 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   PDF library. This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
-  visuals and notifications plus PageVault's refreshed presentation await Build 25. ReelVault stays deferred.
+  visuals and notifications plus PageVault's refreshed presentation are CI-verified and await the
+  Build-25 artifact/install/device pass. ReelVault stays deferred.
   The movement feature's remaining physical/refresh items stay open and are not superseded by PageVault work.
   Native source for both media modules goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
