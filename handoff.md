@@ -4,7 +4,9 @@
 source candidate 0.3.0 (25) presents the compatibility-preserved movement engine as Pushup Reminder
 and adds the Homebase/quest visual refresh across the hub and PageVault. Retained-candidate commit
 `4253311` passed workflow-dispatch run `35678793533`; artifact `akshatos-ios-123` is in the local
-testing slot with matching checksum and IPA validation, but it has no signing or device evidence yet.
+testing slot with matching checksum and IPA validation. Its Wi-Fi install reached 100%, and
+Sideloadly corroborates version 0.3.0, the expected signed identity and current-version enrollment;
+launch, retained data and focused phone behavior are still unverified.
 Build 13 remains the accepted lifecycle baseline and Build 24 the accepted PageVault v1 baseline.
 Update this file in place when resume guidance changes; the linked owning documents control detail.
 

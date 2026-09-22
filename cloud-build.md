@@ -17,7 +17,11 @@ system across the hub and PageVault. Retained-candidate commit `4253311` passed 
 `35678793533`: domain tests, simulator compile, persistence/navigation UI tests, unsigned device
 compile, package inspection and artifact upload all passed. Artifact `akshatos-ios-123` was downloaded
 to `..\final-ipas\akshatos\testing\akshatos-build-25-4253311`; its checksum and the local IPA validator
-passed. It has not been signed or phone-verified. This file owns build and device evidence.
+passed. Akshat reported the Wi-Fi install reached 100% at 21:39 local on 2026-09-21; Sideloadly's
+database corroborates version 0.3.0, signed ID `com.akshatksingh18.akshatos.5564K8D4SV`, automatic
+bundle-ID mode, completed current-version automatic-refresh enrollment, no error and expiry at
+2026-09-28 21:39 local. Launch, retained data and focused phone behavior remain unverified. This file
+owns build and device evidence.
 
 ## Current identity and artifact
 
@@ -26,8 +30,8 @@ passed. It has not been signed or phone-verified. This file owns build and devic
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.3.0 (25)**; minimum iOS 17.
   Build 24 remains the last accepted artifact. Build 25 is retained in the local testing slot and has
-  passed CI, package inspection, checksum and local IPA validation; it remains a candidate until it is
-  signed over Build 24, enrolled for automatic refresh and given the focused device pass.
+  passed CI, package inspection, checksum, local IPA validation, same-ID Wi-Fi installation and
+  current-version automatic-refresh enrollment. It remains a candidate until the focused device pass.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
   change after a build is handed over, not at build time — that is what keeps this invariant true.
@@ -89,7 +93,7 @@ accepted build's files are guaranteed to still exist, at `D:\AI Important Files\
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52, open) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | **Retained candidate** — cloud checks, artifact upload, checksum and local IPA validation passed; unsigned/uninstalled; files in `D:\AI Important Files\personal-project\final-ipas\akshatos\testing\akshatos-build-25-4253311` |
+| 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52, open) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | **Installed candidate** — cloud/local verification passed; Wi-Fi install reached 100% and Sideloadly corroborates version 0.3.0, correct signed identity and current-version enrollment; launch/data/device pass pending; files in `D:\AI Important Files\personal-project\final-ipas\akshatos\testing\akshatos-build-25-4253311` |
 | 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | **Accepted, installed, current** — files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-24` |
 | 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target; files still in `Downloads` |
 | 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Superseded once Build 23 was accepted; recycled from `Downloads` — recoverable until the Recycle Bin is emptied |
@@ -175,6 +179,10 @@ anyway, so a real scanned book is still needed for a memory verdict.
   The pinch-blocks-paging behaviour was confirmed wanted again.
   Akshat also asked for a direct page jump for long books, and for a tapped Squats notification to
   open Squats rather than leaving PageVault on screen; both are in Build 24.
+- **Build 25** (installed over Build 24 by Wi-Fi, no uninstall): Sideloadly reached 100% and then
+  recorded version 0.3.0 at `com.akshatksingh18.akshatos.5564K8D4SV`, automatic bundle-ID mode,
+  completed current-version enrollment, no error and a seven-day expiry. This corroborates signing
+  and installation, not launch or data preservation; the focused phone pass remains open.
 - **Build 22** (installed over Build 21). What worked: jumping to a page from a search result, and
   **Go to page** in the reader's per-book passage list. A zoomed page refusing to turn until the
   zoom is released is **wanted**, not a defect — Akshat asked for it to stay that way.

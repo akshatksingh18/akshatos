@@ -6,8 +6,9 @@ chosen defaults — are implemented. Source candidate 0.3.0 (25) repurposes its 
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
 complete macOS CI Gate, including simulator/device compilation and IPA inspection; no uploaded
 artifact was retained by that PR. Workflow-dispatch run `35678793533` subsequently produced the
-Build-25 candidate and its checksum/IPA validation passed locally; no signing or device evidence
-exists yet. Build 13 remains accepted evidence for the
+Build-25 candidate and its checksum/IPA validation passed locally. Its same-ID Wi-Fi install and
+automatic-refresh enrollment are corroborated by Sideloadly; launch, data preservation and focused
+device behavior remain unverified. Build 13 remains accepted evidence for the
 unchanged lifecycle engine, not for the new copy or presentation. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. PageVault's technical

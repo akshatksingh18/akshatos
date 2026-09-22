@@ -8,7 +8,9 @@ without changing its stored sessions, preference keys, backup schema or pending-
 Source candidate 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
 Pushup Reminder and PageVault. Retained-candidate commit `4253311` passed complete macOS CI, including
 tests, simulator/device compilation and IPA inspection; artifact `akshatos-ios-123` also passed local
-checksum/IPA validation. It is not signed or phone-verified yet. Build 13 remains the accepted legacy Squats daily-use baseline for
+checksum/IPA validation. Its Wi-Fi install reached 100%, and Sideloadly records version 0.3.0 with
+the expected signed identity and automatic-refresh enrollment; launch, retained data and focused
+phone behavior are not verified yet. Build 13 remains the accepted legacy Squats daily-use baseline for
 lifecycle behavior. Its edge-case, refresh/recovery and soak matrix remains open. PageVault's v1
 reading and recovery loop is accepted on the phone through Build 24; reading streaks were built and
 then removed at Akshat's request. Bundle ID
