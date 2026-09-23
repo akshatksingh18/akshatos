@@ -18,7 +18,7 @@ final class LiftLogUITests: XCTestCase {
         let start = app.buttons["start-lift-workout"]
         XCTAssertTrue(start.exists)
         start.tap()
-        let upper = app.buttons["Upper day"]
+        let upper = app.buttons["start-upper-workout"].firstMatch
         XCTAssertTrue(upper.waitForExistence(timeout: 5))
         upper.tap()
         XCTAssertTrue(app.staticTexts["Weighted pull-ups"].waitForExistence(timeout: 5))
