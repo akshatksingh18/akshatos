@@ -8,9 +8,12 @@ WHOOP stays standalone. This repository evolved from Squat Reminder and now pres
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-**Status:** Building. Working source 0.4.0 (26) adds the local-only Lift Log with per-side plate
-measurement, durable sessions, history, JSON recovery and CSV export; its boundary and test-
-inventory checks pass locally, but it is not Swift-compiled, cloud-verified or phone-verified.
+**Status:** Building. Candidate 0.4.0 (26) adds the local-only Lift Log with per-side plate
+measurement, durable sessions, history, JSON recovery and CSV export. PR #52 is merged at
+`7a4f639`; main run `35870794873` passed the complete CI Gate, including registered domain and
+hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129`
+passed local checksum and IPA validation and is retained in the testing slot, but it is not yet
+installed or phone-accepted.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
 `4253311` passed workflow-dispatch run `35678793533`, including
@@ -72,7 +75,7 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
-  is the accepted copy and Build 26 has no retained artifact yet.
+  is the accepted copy and Build 26 is the locally validated candidate.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by

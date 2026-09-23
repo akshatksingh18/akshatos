@@ -4,8 +4,9 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Working source 0.4.0 (26) adds Lift Log; its Windows boundary and test-inventory
-checks pass, while Swift compilation, complete CI, IPA and phone acceptance remain open. Accepted
+**Current focus:** Candidate 0.4.0 (26) adds Lift Log. PR #52 is merged at `7a4f639`; main run
+`35870794873` passed the complete CI Gate and artifact `akshatos-ios-129` passed local checksum/IPA
+validation. Installation, same-ID data preservation and phone acceptance remain open. Accepted
 0.3.0 (25) presents the legacy movement engine as Pushup Reminder and refreshes the hub/PageVault
 into the playful Homebase/quest system. Build 13 remains accepted
 evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
@@ -89,8 +90,8 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
-- [ ] **Compile and phone-check Lift Log 0.4.0 (26).** Run the complete `CI Gate`, inspect the exact
-      Build-26 IPA, install it over the same bundle without uninstalling, verify Pushups/PageVault
+- [ ] **Phone-check Lift Log 0.4.0 (26).** The complete `CI Gate`, exact Build-26 IPA inspection,
+      checksum and local validation pass. Install it over the same bundle without uninstalling, verify Pushups/PageVault
       data preservation, then exercise per-side/per-hand/stack logging, active-session relaunch,
       undo/finish/history, JSON export-delete-restore and CSV semantics on the physical phone. Do
       not move private workout rows into the repository or call Lift Log ready before this passes.
