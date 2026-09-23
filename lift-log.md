@@ -4,9 +4,11 @@ Local-only strength-session logging inside AkshatOS. This module replaces the ne
 machine's invented total or ask an agent to transcribe each session: Akshat records exercises and
 working sets directly on the phone, using the measurement convention that matches the equipment.
 
-**Status:** Implemented in local source as working version 0.4.0 (26). Boundary and test-inventory
-checks pass on Windows; Swift compilation, registered tests, cloud CI, IPA inspection, same-ID
-installation, data preservation, backup/restore and physical-phone usability remain unverified. No
+**Status:** Implemented as candidate version 0.4.0 (26). PR #52 is merged at `7a4f639`; main run
+`35870794873` passed boundary checks, registered domain/hosted tests, simulator UI coverage,
+simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129` passed local checksum
+and IPA validation. Same-ID installation, data preservation, backup/restore and physical-phone
+usability remain unverified. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
 
@@ -50,7 +52,7 @@ remote.
 
 ## Acceptance gates
 
-- The exact Build-26 source must pass its complete `CI Gate`, including domain tests, hosted
+- The exact Build-26 source passed its complete `CI Gate`, including domain tests, hosted
   SwiftData tests, simulator UI navigation, device compilation and IPA inspection.
 - On the physical phone, start a disposable workout, create exercises in every relevant load mode,
   log/undo sets, force-close and recover an active workout, finish it, reopen history, and confirm

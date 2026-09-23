@@ -2,10 +2,11 @@
 
 **State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented. Working source 0.4.0 (26) adds Lift Log as a separate local-only
-feature with versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Its
-source-boundary and test-inventory checks pass locally, but it has not been Swift-compiled, run in
-cloud CI or verified on a phone. Accepted 0.3.0 (25) repurposes its presentation from
+chosen defaults — are implemented. Candidate 0.4.0 (26) adds Lift Log as a separate local-only
+feature with versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. PR
+#52 is merged at `7a4f639`; main run `35870794873` passed its complete CI Gate and artifact
+`akshatos-ios-129` passed local checksum/IPA validation. It has not been installed or verified on a
+phone. Accepted 0.3.0 (25) repurposes its presentation from
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
 complete macOS CI Gate, including simulator/device compilation and IPA inspection; no uploaded
 artifact was retained by that PR. Workflow-dispatch run `35678793533` subsequently produced the
