@@ -6,6 +6,11 @@ final class LiftLogUITests: XCTestCase {
         app.launch()
         let entry = app.buttons["open-liftLog"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        for _ in 0..<4 {
+            if entry.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(entry.isHittable)
         entry.tap()
         XCTAssertTrue(app.descendants(matching: .any)["lift-log-header"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.navigationBars["Lift Log"].exists)
