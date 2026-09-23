@@ -28,6 +28,36 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
         case .total: return "lb total"
         }
     }
+
+    var guidance: String {
+        switch self {
+        case .platesPerSide:
+            return "Enter the plates loaded on one side; the bar, sled, or machine base stays excluded."
+        case .perHand:
+            return "Enter the weight held in one hand; do not add both dumbbells or handles together."
+        case .stack:
+            return "Enter the number selected on the machine's weight stack; do not guess pulley-adjusted resistance."
+        case .addedWeight:
+            return "Enter only the external weight added to a bodyweight exercise; your bodyweight stays excluded."
+        case .total:
+            return "Enter the complete known load, including the bar or machine base only when you actually know it."
+        }
+    }
+
+    var example: String {
+        switch self {
+        case .platesPerSide:
+            return "Example: 25 lb on each side of a Smith squat → enter 25."
+        case .perHand:
+            return "Example: dumbbell bench with 50 lb dumbbells → enter 50."
+        case .stack:
+            return "Example: seated cable row with the pin at 70 lb → enter 70."
+        case .addedWeight:
+            return "Example: weighted pull-ups with a 25 lb plate → enter 25."
+        case .total:
+            return "Example: a 45 lb bar plus 25 lb per side is 95 lb total → enter 95."
+        }
+    }
 }
 
 struct LiftSetRecord: Identifiable, Codable, Equatable {

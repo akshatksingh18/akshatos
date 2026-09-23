@@ -2,8 +2,10 @@
 
 **State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented. Candidate 0.4.0 (26) adds Lift Log as a separate local-only
-feature with versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. PR
+chosen defaults — are implemented. Working source 0.4.0 (27) adds mode-specific definitions and
+examples to Lift Log's exercise and set-entry forms; it is not yet compiled or cloud-verified.
+Build 26 added Lift Log as a separate local-only feature with versioned SwiftData sessions,
+explicit load modes, JSON recovery and CSV export. PR
 #52 is merged at `7a4f639`; main run `35870794873` passed its complete CI Gate and artifact
 `akshatos-ios-129` passed local checksum/IPA validation. It has not been installed or verified on a
 phone. Accepted 0.3.0 (25) repurposes its presentation from

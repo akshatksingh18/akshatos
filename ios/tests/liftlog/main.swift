@@ -45,4 +45,12 @@ do {
 
 assert(LiftLoadMode.platesPerSide.shortUnit == "lb/side")
 assert(LiftLoadMode.perHand.shortUnit == "lb/hand")
+assert(LiftLoadMode.platesPerSide.guidance.contains("one side"))
+assert(LiftLoadMode.perHand.example.contains("dumbbell bench"))
+assert(LiftLoadMode.stack.guidance.contains("weight stack"))
+assert(LiftLoadMode.stack.example.contains("seated cable row"))
+assert(LiftLoadMode.addedWeight.guidance.contains("bodyweight"))
+assert(LiftLoadMode.addedWeight.example.contains("weighted pull-ups"))
+assert(LiftLoadMode.total.guidance.contains("complete known load"))
+assert(LiftLoadMode.total.example.contains("95 lb total"))
 print("PASS: Lift Log domain assertions (per-side load, sets, finish, validation, backup)")

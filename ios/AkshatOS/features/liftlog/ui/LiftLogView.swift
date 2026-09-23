@@ -271,9 +271,9 @@ private struct AddLiftExerciseView: View {
                     Picker("Measurement", selection: $mode) {
                         ForEach(LiftLoadMode.allCases) { Text($0.title).tag($0) }
                     }
-                    Text(mode == .platesPerSide
-                         ? "Enter the load on one side. The app shows twice that amount as added plates but never guesses the bar or machine base."
-                         : "The recorded number keeps this meaning every time you use the exercise.")
+                    Text("Meaning: \(mode.guidance)")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text(mode.example)
                         .font(.caption).foregroundStyle(.secondary)
                     TextField("Equipment note (optional)", text: $equipmentNote)
                 }
@@ -318,6 +318,10 @@ private struct AddLiftSetView: View {
                         .accessibilityIdentifier("lift-set-load")
                     Stepper("Reps: \(reps)", value: $reps, in: 1...100)
                     Text("Saved as \(exercise.loadMode.shortUnit).")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text("Meaning: \(exercise.loadMode.guidance)")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text(exercise.loadMode.example)
                         .font(.caption).foregroundStyle(.secondary)
                     if exercise.loadMode == .platesPerSide,
                        let value = Double(loadText.replacingOccurrences(of: ",", with: ".")) {
