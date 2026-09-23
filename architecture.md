@@ -5,8 +5,9 @@
 chosen defaults — are implemented. Version 0.4.0 (27) adds mode-specific definitions/examples,
 priority-ordered Upper/Lower template creation, same-name/mode last-performance lookup and persisted
 active-set editing to Lift Log. PR #54 merged at `ebb44d3`; main run `35925770220` passed its complete
-CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. It has not been
-installed or verified on a phone. Build 26 added Lift Log as a separate local-only feature with
+CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. Akshat installed it and
+reports that Build 27 works well end-to-end on the phone; current-version automatic-refresh
+enrollment remains unconfirmed. Build 26 added Lift Log as a separate local-only feature with
 versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Accepted 0.3.0 (25)
 repurposes its presentation from
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the

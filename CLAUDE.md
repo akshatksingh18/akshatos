@@ -12,9 +12,10 @@ Squats fallback.
 hard-coded priority-ordered Upper/Lower templates, last-performance references and active-set
 editing. PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including
 registered domain and hosted simulator tests, simulator/device compilation and IPA inspection.
-Artifact `akshatos-ios-133` passed local checksum and IPA validation and is retained in the testing
-slot, but it is not yet installed or phone-accepted. Build 26 introduced the local-only Lift Log
-core and is now a reproducible superseded artifact rather than a retained local candidate.
+Artifact `akshatos-ios-133` passed local checksum and IPA validation. Akshat installed Build 27 and
+reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. It remains
+in the testing slot until current-version automatic-refresh enrollment is separately confirmed.
+Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
 `4253311` passed workflow-dispatch run `35678793533`, including
@@ -76,7 +77,8 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
-  is the accepted copy and Build 27 is the locally validated candidate.
+  is the accepted copy and Build 27 is the installed, phone-accepted candidate awaiting refresh
+  enrollment before promotion.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
