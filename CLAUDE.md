@@ -8,8 +8,9 @@ WHOOP stays standalone. This repository evolved from Squat Reminder and now pres
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-**Status:** Building. Working source 0.4.0 (27) adds a definition and concrete example for every
-Lift Log measurement mode; it has not yet been pushed, Swift-compiled or cloud-verified. Build 26
+**Status:** Building. Working source 0.4.0 (27) adds definitions/examples for every Lift Log mode,
+hard-coded priority-ordered Upper/Lower templates, last-performance references and active-set
+editing; it has not yet been pushed, Swift-compiled or cloud-verified. Build 26
 introduced the local-only Lift Log with per-side plate measurement, durable sessions, history, JSON
 recovery and CSV export. PR #52 is merged at
 `7a4f639`; main run `35870794873` passed the complete CI Gate, including registered domain and
@@ -139,10 +140,12 @@ every feature is physically verified.
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
-  store, history/entry UI, JSON recovery and CSV export.
+  hard-coded Upper/Lower templates, store, history/entry/edit UI, last-performance lookup, JSON
+  recovery and CSV export.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
-  coverage; not yet run through macOS CI.
+  coverage. Build 26 passed macOS CI; Build 27's expanded scenarios have only passed Windows
+  boundary/inventory checks until its branch runs.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
   removal, the single-Reading-book invariant and cover generation.

@@ -3,8 +3,8 @@ import UniformTypeIdentifiers
 
 struct LiftLogView: View {
     @ObservedObject var store: LiftLogStore
-    @State private var showingExercise = false
-    @State private var setExercise: ExerciseSelection?
+    @State private var showingTemplatePicker = false
+    @State private var setEditor: LiftSetEditorSelection?
     @State private var confirmingFinish = false
     @State private var confirmingDiscard = false
     @State private var confirmingRestore = false
@@ -31,17 +31,31 @@ struct LiftLogView: View {
         }
         .navigationTitle("Lift Log")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingExercise) {
-            AddLiftExerciseView(suggestions: store.recentExercises) { name, mode, note in
-                store.addExercise(name: name, loadMode: mode, equipmentNote: note)
-            }
-        }
-        .sheet(item: $setExercise) { selection in
-            if let exercise = store.exercise(selection.id) {
-                AddLiftSetView(exercise: exercise) { reps, load in
-                    store.addSet(exerciseID: selection.id, reps: reps, load: load)
+        .sheet(item: $setEditor) { selection in
+            if let exercise = store.exercise(selection.exerciseID) {
+                let existingSet = selection.setID.flatMap { setID in
+                    exercise.sets.first { $0.id == setID }
+                }
+                LiftSetEntryView(exercise: exercise, existingSet: existingSet,
+                                 reference: store.lastPerformance(for: exercise)) { reps, load in
+                    if let setID = selection.setID {
+                        store.updateSet(exerciseID: selection.exerciseID, setID: setID,
+                                        reps: reps, load: load)
+                    } else {
+                        store.addSet(exerciseID: selection.exerciseID, reps: reps, load: load)
+                    }
                 }
             }
+        }
+        .confirmationDialog("Choose workout", isPresented: $showingTemplatePicker,
+                            titleVisibility: .visible) {
+            ForEach(LiftWorkoutTemplate.allCases) { template in
+                Button(template.title) { store.startWorkout(template: template) }
+                    .accessibilityIdentifier("start-\(template.rawValue)-workout")
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Every exercise loads in priority order. Leave the lower-priority ones empty when time is short.")
         }
         .alert("Finish this workout?", isPresented: $confirmingFinish) {
             Button("Finish workout") { store.finishWorkout() }
@@ -103,9 +117,9 @@ struct LiftLogView: View {
         AccentSurface(accent: Palette.gold) {
             Label("Ready for the next session", systemImage: "figure.strengthtraining.traditional")
                 .font(.title3.bold())
-            Text("Start once, add each exercise, then record every set using that exercise's measurement style.")
+            Text("Choose Upper or Lower. Your exercises load in priority order, ready for set entry.")
                 .foregroundStyle(Palette.muted)
-            Button("Start workout") { store.startWorkout() }
+            Button("Start workout") { showingTemplatePicker = true }
                 .buttonStyle(ActionStyle(primary: true))
                 .accessibilityIdentifier("start-lift-workout")
                 .disabled(!store.storageAvailable)
@@ -125,9 +139,8 @@ struct LiftLogView: View {
                     Text("\(workout.setCount) sets")
                         .font(.headline.monospacedDigit()).foregroundStyle(Palette.gold)
                 }
-                Button("Add exercise") { showingExercise = true }
-                    .buttonStyle(ActionStyle(primary: true))
-                    .accessibilityIdentifier("add-lift-exercise")
+                Text("Exercises are ordered from highest to lowest priority. Skip from the bottom when time is short.")
+                    .font(.caption).foregroundStyle(Palette.muted)
             }
 
             ForEach(workout.exercises) { exercise in exerciseCard(exercise) }
@@ -156,6 +169,13 @@ struct LiftLogView: View {
                     .foregroundStyle(Palette.muted)
             }
 
+            if let reference = store.lastPerformance(for: exercise) {
+                LastPerformanceView(reference: reference, compact: true)
+            } else {
+                Text("Last performance: none yet for this exercise and measurement mode.")
+                    .font(.caption).foregroundStyle(Palette.muted)
+            }
+
             if exercise.sets.isEmpty {
                 Text("No sets yet").foregroundStyle(Palette.muted)
             } else {
@@ -163,14 +183,27 @@ struct LiftLogView: View {
                     AdaptiveRow {
                         Text("Set \(index + 1)").font(.subheadline.weight(.semibold))
                     } trailing: {
-                        Text("\(LiftLogStore.weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)")
-                            .font(.subheadline.monospacedDigit()).foregroundStyle(Palette.muted)
+                        HStack(spacing: 10) {
+                            Text("\(LiftLogStore.weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)")
+                                .font(.subheadline.monospacedDigit()).foregroundStyle(Palette.muted)
+                            Button {
+                                setEditor = LiftSetEditorSelection(exerciseID: exercise.id,
+                                                                   setID: set.id)
+                            } label: {
+                                Image(systemName: "pencil")
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Edit set \(index + 1) for \(exercise.name)")
+                            .accessibilityIdentifier("edit-lift-set-\(set.id.uuidString)")
+                        }
                     }
                 }
             }
 
             HStack {
-                Button("Log set") { setExercise = ExerciseSelection(id: exercise.id) }
+                Button("Log set") {
+                    setEditor = LiftSetEditorSelection(exerciseID: exercise.id, setID: nil)
+                }
                     .buttonStyle(ActionStyle(primary: true))
                     .accessibilityIdentifier("log-lift-set-\(exercise.id.uuidString)")
                 if !exercise.sets.isEmpty {
@@ -238,75 +271,25 @@ struct LiftLogView: View {
     }
 }
 
-private struct AddLiftExerciseView: View {
-    let suggestions: [LiftExerciseSuggestion]
-    let onSave: (String, LiftLoadMode, String) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var mode: LiftLoadMode = .platesPerSide
-    @State private var equipmentNote = ""
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Exercise") {
-                    TextField("Exercise name", text: $name)
-                        .textInputAutocapitalization(.words)
-                        .accessibilityIdentifier("lift-exercise-name")
-                    if !suggestions.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                ForEach(suggestions.prefix(8)) { suggestion in
-                                    Button(suggestion.name) {
-                                        name = suggestion.name
-                                        mode = suggestion.loadMode
-                                        equipmentNote = suggestion.equipmentNote
-                                    }.buttonStyle(.bordered)
-                                }
-                            }
-                        }
-                    }
-                }
-                Section("How this exercise is measured") {
-                    Picker("Measurement", selection: $mode) {
-                        ForEach(LiftLoadMode.allCases) { Text($0.title).tag($0) }
-                    }
-                    Text("Meaning: \(mode.guidance)")
-                        .font(.caption).foregroundStyle(.secondary)
-                    Text(mode.example)
-                        .font(.caption).foregroundStyle(.secondary)
-                    TextField("Equipment note (optional)", text: $equipmentNote)
-                }
-            }
-            .navigationTitle("Add exercise")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Add") {
-                        onSave(name, mode, equipmentNote)
-                        dismiss()
-                    }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .accessibilityIdentifier("save-lift-exercise")
-                }
-            }
-        }
-    }
-}
-
-private struct AddLiftSetView: View {
+private struct LiftSetEntryView: View {
     let exercise: LiftExerciseRecord
+    let existingSet: LiftSetRecord?
+    let reference: LiftPerformanceReference?
     let onSave: (Int, Double) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var reps: Int
     @State private var loadText: String
     @State private var validation: String?
 
-    init(exercise: LiftExerciseRecord, onSave: @escaping (Int, Double) -> Void) {
+    init(exercise: LiftExerciseRecord, existingSet: LiftSetRecord?,
+         reference: LiftPerformanceReference?, onSave: @escaping (Int, Double) -> Void) {
         self.exercise = exercise
+        self.existingSet = existingSet
+        self.reference = reference
         self.onSave = onSave
-        _reps = State(initialValue: exercise.latestSet?.reps ?? 8)
-        _loadText = State(initialValue: exercise.latestSet.map { LiftLogStore.weightText($0.load) } ?? "")
+        _reps = State(initialValue: existingSet?.reps ?? exercise.latestSet?.reps ?? 8)
+        let startingLoad = existingSet?.load ?? exercise.latestSet?.load
+        _loadText = State(initialValue: startingLoad.map(LiftLogStore.weightText) ?? "")
     }
 
     var body: some View {
@@ -330,8 +313,16 @@ private struct AddLiftSetView: View {
                     }
                     if let validation { Text(validation).foregroundStyle(.red) }
                 }
+                Section("Last performance") {
+                    if let reference {
+                        LastPerformanceView(reference: reference, compact: false)
+                    } else {
+                        Text("No previous finished workout contains this exercise with the same measurement mode.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
             }
-            .navigationTitle("Log set")
+            .navigationTitle(existingSet == nil ? "Log set" : "Edit set")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
@@ -348,6 +339,35 @@ private struct AddLiftSetView: View {
                 }
             }
         }
+    }
+}
+
+private struct LastPerformanceView: View {
+    let reference: LiftPerformanceReference
+    let compact: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Last performance · \(reference.workoutDate.formatted(date: .abbreviated, time: .omitted))")
+                .font(.caption.weight(.semibold)).foregroundStyle(Palette.gold)
+            Text(setSummary)
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(Palette.muted)
+            if !reference.exercise.equipmentNote.isEmpty {
+                Text(reference.exercise.equipmentNote)
+                    .font(.caption2).foregroundStyle(Palette.muted)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var setSummary: String {
+        let displayedSets = compact ? Array(reference.exercise.sets.prefix(3)) : reference.exercise.sets
+        let summary = displayedSets.enumerated().map { index, set in
+            "S\(index + 1) \(LiftLogStore.weightText(set.load)) \(reference.exercise.loadMode.shortUnit) × \(set.reps)"
+        }.joined(separator: " · ")
+        let hiddenCount = reference.exercise.sets.count - displayedSets.count
+        return hiddenCount > 0 ? "\(summary) · +\(hiddenCount) more" : summary
     }
 }
 
@@ -387,4 +407,8 @@ private struct LiftWorkoutDetailView: View {
     }
 }
 
-private struct ExerciseSelection: Identifiable { let id: UUID }
+private struct LiftSetEditorSelection: Identifiable {
+    let exerciseID: UUID
+    let setID: UUID?
+    var id: String { "\(exerciseID.uuidString)-\(setID?.uuidString ?? "new")" }
+}

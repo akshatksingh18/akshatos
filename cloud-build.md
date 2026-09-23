@@ -11,9 +11,9 @@ reworked highlighting is accepted on the phone** — the explicit Highlight / Re
 the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
 the one mark that would not clear: it was inside the PDF file, not PageVault's. **Build 24 is
 installed and fully confirmed on the phone**: it hides the book's own markup, adds a direct page
-jump, and opens the feature that sent a notification. **Working source 0.4.0 (27)** adds a concise
-definition and concrete example for every Lift Log measurement mode; it is not yet pushed, compiled,
-run through CI or packaged. **Build 26** added the local-only Lift Log with per-side plate
+jump, and opens the feature that sent a notification. **Working source 0.4.0 (27)** adds mode
+guidance, priority-ordered Upper/Lower templates, same-mode last-performance references and active-set
+editing; it is not yet pushed, compiled, run through CI or packaged. **Build 26** added the local-only Lift Log with per-side plate
 measurement, durable sessions, history, JSON recovery and CSV export.
 PR #52 merged at `7a4f639`; main run `35870794873` passed the complete CI Gate and published
 `akshatos-ios-129`. Its SHA-256 matched locally and `validate-ipa.py` passed; the candidate is retained
@@ -54,8 +54,8 @@ owns build and device evidence.
   notification identity retained for upgrade safety), plus PageVault's library, page-curl reader, page
   themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
-  full-text search. Working Build-26 source additionally includes Lift Log, but no verified IPA does
-  yet; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
+  full-text search. Build 26 is the first verified IPA that includes Lift Log; working Build 27
+  extends it but is not yet verified. ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
   were removed in Build 21. Build 22 makes the curl the only reader and retires the warm theme in
   favour of sepia. Build 23 reworks highlighting around an explicit Highlight / Remove highlight
   choice, tints a searched phrase on arrival, reaches a page from a Takeaways passage, and confirms

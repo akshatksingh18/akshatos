@@ -1,8 +1,9 @@
 # AkshatOS session handoff
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log.
-Working source 0.4.0 (27) adds a definition and example for every Lift Log load mode; it is not yet
-pushed, compiled or cloud-verified. Build 26 added the local-only Lift Log. PR #52 is merged at `7a4f639`; main run
+Working source 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+last-performance references and active-set editing; it is not yet pushed, compiled or cloud-verified.
+Build 26 added the local-only Lift Log. PR #52 is merged at `7a4f639`; main run
 `35870794873` passed the complete CI Gate and artifact `akshatos-ios-129` passed local checksum/IPA
 validation. It is retained in the testing slot; installation and phone acceptance remain open.
 Accepted 0.3.0 (25) presents the
@@ -73,9 +74,10 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 
 ## Implemented in source
 
-- Lift Log: feature-owned workout domain and SwiftData store, plates-per-side default plus explicit
-  alternative load meanings, save-after-every-set active-session recovery, finished history,
-  undo/discard/delete controls, validated JSON recovery and CSV export. `lift-log.md` owns its
+- Lift Log: feature-owned workout domain and SwiftData store, hard-coded priority Upper/Lower
+  templates, explicit load meanings and guidance, same-mode last-performance lookup,
+  save-after-every-mutation active-session recovery, set edit/undo/discard/delete controls,
+  finished history, validated JSON recovery and CSV export. `lift-log.md` owns its
   product/privacy/acceptance contract; none of it is cloud- or phone-verified yet.
 - Homebase hub, Pushup power-up dashboard, PageVault story-quest library, shared atmospheric visual
   components, refreshed generated icon, and app-lifetime services across navigation.

@@ -60,6 +60,60 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+struct LiftTemplateExercise: Equatable {
+    let name: String
+    let loadMode: LiftLoadMode
+    let equipmentNote: String
+
+    init(_ name: String, _ loadMode: LiftLoadMode, equipmentNote: String = "") {
+        self.name = name
+        self.loadMode = loadMode
+        self.equipmentNote = equipmentNote
+    }
+}
+
+enum LiftWorkoutTemplate: String, CaseIterable, Identifiable {
+    case upper
+    case lower
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .upper: return "Upper day"
+        case .lower: return "Lower day"
+        }
+    }
+
+    /// Ordered from highest to lowest priority. Lower entries may be skipped when time is short.
+    var exercises: [LiftTemplateExercise] {
+        switch self {
+        case .upper:
+            return [
+                LiftTemplateExercise("Weighted pull-ups", .addedWeight),
+                LiftTemplateExercise("Dumbbell bench press", .perHand),
+                LiftTemplateExercise("Seated cable row", .stack),
+                LiftTemplateExercise("Shoulder press", .perHand,
+                                     equipmentNote: "Default: dumbbells"),
+                LiftTemplateExercise("Pec-deck fly", .stack),
+                LiftTemplateExercise("Triceps pushdown", .stack)
+            ]
+        case .lower:
+            return [
+                LiftTemplateExercise("Smith-machine squat", .platesPerSide,
+                                     equipmentNote: "Smith bar resistance excluded"),
+                LiftTemplateExercise("Barbell Romanian deadlift", .platesPerSide,
+                                     equipmentNote: "Bar weight excluded"),
+                LiftTemplateExercise("Leg press", .platesPerSide,
+                                     equipmentNote: "Sled/base resistance excluded"),
+                LiftTemplateExercise("Seated machine leg curl", .stack),
+                LiftTemplateExercise("Seated calf raise", .platesPerSide,
+                                     equipmentNote: "Machine base resistance excluded")
+            ]
+        }
+    }
+}
+
 struct LiftSetRecord: Identifiable, Codable, Equatable {
     var id: UUID
     var reps: Int
@@ -137,6 +191,20 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
                                                     completedAt: completedAt))
     }
 
+    mutating func updateSet(exerciseID: UUID, setID: UUID, reps: Int, load: Double) throws {
+        guard isActive else { throw LiftLogError.finishedWorkout }
+        guard reps > 0 else { throw LiftLogError.invalidReps }
+        guard load.isFinite, load >= 0 else { throw LiftLogError.invalidLoad }
+        guard let exerciseIndex = exercises.firstIndex(where: { $0.id == exerciseID }) else {
+            throw LiftLogError.exerciseNotFound
+        }
+        guard let setIndex = exercises[exerciseIndex].sets.firstIndex(where: { $0.id == setID }) else {
+            throw LiftLogError.setNotFound
+        }
+        exercises[exerciseIndex].sets[setIndex].reps = reps
+        exercises[exerciseIndex].sets[setIndex].load = load
+    }
+
     @discardableResult
     mutating func removeLastSet(exerciseID: UUID) throws -> LiftSetRecord {
         guard isActive else { throw LiftLogError.finishedWorkout }
@@ -150,6 +218,7 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     mutating func finish(at date: Date = Date()) throws {
         guard isActive else { throw LiftLogError.finishedWorkout }
         guard setCount > 0 else { throw LiftLogError.emptyWorkout }
+        exercises.removeAll { $0.sets.isEmpty }
         endedAt = max(date, startedAt)
     }
 

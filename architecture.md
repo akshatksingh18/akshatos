@@ -2,8 +2,9 @@
 
 **State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented. Working source 0.4.0 (27) adds mode-specific definitions and
-examples to Lift Log's exercise and set-entry forms; it is not yet compiled or cloud-verified.
+chosen defaults — are implemented. Working source 0.4.0 (27) adds mode-specific definitions/examples,
+priority-ordered Upper/Lower template creation, same-name/mode last-performance lookup and persisted
+active-set editing to Lift Log; it is not yet compiled or cloud-verified.
 Build 26 added Lift Log as a separate local-only feature with versioned SwiftData sessions,
 explicit load modes, JSON recovery and CSV export. PR
 #52 is merged at `7a4f639`; main run `35870794873` passed its complete CI Gate and artifact
@@ -37,7 +38,8 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
   `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
-  choosing Lift Log. ReelVault stays a noninteractive
+  choosing Lift Log. Lift Log asks Upper/Lower before atomically creating the active workout and
+  preloading its ordered exercises; finishing removes unperformed template entries. ReelVault stays a noninteractive
   planned card. WHOOP remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting
@@ -342,8 +344,8 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 ### Build/deployment boundary
 
 The workflow builds AkshatOS from this repository. Build 25 contains the hub, Pushups and PageVault,
-but no Lift Log or ReelVault. Working Build-26 source adds Lift Log; only its future verified IPA may
-be described as containing it. Keep
+but no Lift Log or ReelVault. Build 26 is the first verified IPA containing Lift Log; working Build
+27 extends it but must pass its own CI/package gate before being described as a verified artifact. Keep
 Pushups handlers at host scope, namespace requests, and test notifications while other modules are
 foregrounded. One hub refresh must preserve all four modules' state.
 
