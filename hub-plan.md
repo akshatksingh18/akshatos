@@ -2,8 +2,8 @@
 
 **Status:** Integration implementation activated — AkshatOS owns the native hub and Pushup-first
 build. PageVault is active and phone-accepted through Build 24; Akshat explicitly added Lift Log as
-a local-only strength utility. Build 26 is cloud/package verified and working Build 27 adds its
-fixed Upper/Lower workflow, but Lift Log is not phone-verified. `lift-log.md` owns it. ReelVault
+a local-only strength utility. Build 27 is cloud/package and locally verified with its fixed
+Upper/Lower workflow, but Lift Log is not phone-verified. `lift-log.md` owns it. ReelVault
 remains a later module and WHOOP stays standalone.
 Build/phone progress belongs in `cloud-build.md`, not this integration contract.
 

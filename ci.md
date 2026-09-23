@@ -94,7 +94,7 @@ repository round trips and upsert behavior, save-after-every-mutation active-ses
 template preloading, persisted editing, same-mode last-performance lookup, validated backup
 replacement and load-mode-preserving/CSV-escaped export. Its UI test covers the Homebase entry,
 Lift Log destination and Upper-template start. Build 26 passed the complete macOS suite; Build 27's
-expanded scenarios have only passed Windows registration and source-boundary checks until its PR runs.
+expanded scenarios passed the complete PR and clean-main macOS suites, including IPA inspection.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone

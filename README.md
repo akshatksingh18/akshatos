@@ -4,14 +4,13 @@ A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for i
 **PageVault** for its PDF library, or **Lift Log** to record strength sessions. ReelVault is reserved
 for later and WHOOP stays a separate app.
 
-**Current state:** Working source 0.4.0 (27) adds concise measurement guidance, priority-ordered
-Upper/Lower templates, same-mode last-performance references and active-set editing to Lift Log; it
-is not yet pushed, compiled or cloud-verified. Build 26 added Lift Log with per-side plate measurement, durable active sessions,
-finished history, JSON backup/restore and CSV export. PR #52 is merged at
-`7a4f639`; main run `35870794873` passed the complete CI Gate, including registered domain and
-hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129`
-also passed local checksum/IPA validation and remains retained until Build 27 produces its replacement;
-installation, data preservation and phone behavior are not yet verified. The proven movement engine has
+**Current state:** Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
+templates, same-mode last-performance references and active-set editing to Lift Log. PR #54 merged
+at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including registered domain and
+hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133`
+also passed local checksum/IPA validation and is the retained testing candidate; installation,
+same-ID data preservation and phone behavior are not yet verified. Build 26 added the Lift Log core
+and is now superseded. The proven movement engine has
 been repurposed from squats to **Pushup Reminder**
 without changing its stored sessions, preference keys, backup schema or pending-notification identity.
 Accepted 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,

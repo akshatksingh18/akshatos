@@ -4,11 +4,11 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Working source 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower
-templates, same-mode last-performance references and active-set editing to Lift Log; it is not yet
-pushed, compiled or cloud-verified. Build 26 added Lift Log. PR #52 is merged at `7a4f639`; main run
-`35870794873` passed the complete CI Gate and artifact `akshatos-ios-129` passed local checksum/IPA
-validation. Installation, same-ID data preservation and phone acceptance remain open. Accepted
+**Current focus:** Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
+main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
+checksum/IPA validation. Installation, same-ID data preservation, current-version automatic-refresh
+enrollment and phone acceptance remain open. Accepted
 0.3.0 (25) presents the legacy movement engine as Pushup Reminder and refreshes the hub/PageVault
 into the playful Homebase/quest system. Build 13 remains accepted
 evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
@@ -27,10 +27,9 @@ promotion are complete; the broader physical and refresh items below stay open. 
       with one durable active session, hard-coded Upper/Lower templates in priority order,
       plates-per-side/per-hand/stack/added/total meanings and examples, same-mode last-performance
       references, active-set edit/undo, finished history, destructive confirmations, validated JSON
-      backup/restore and load-mode-preserving CSV export. Its domain,
-      persistence and UI suites are registered; Windows boundary and inventory checks pass. This is
-      implementation state only, not evidence of Swift compilation or phone behavior; `lift-log.md`
-      owns the contract.
+      backup/restore and load-mode-preserving CSV export. Its domain, persistence and UI suites are
+      registered, and Build 27 passed complete PR and clean-main macOS CI plus local artifact
+      validation. This is not evidence of phone behavior; `lift-log.md` owns the contract.
 
 - [x] **Focused Build-25 phone acceptance.** Complete macOS CI, package inspection, checksum/local
       IPA validation, same-ID Wi-Fi installation and current-version automatic-refresh enrollment
@@ -93,9 +92,9 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
-- [ ] **Compile and phone-check Lift Log 0.4.0 (27).** Build 26's complete `CI Gate`, IPA inspection,
-      checksum and local validation pass, but Build 27 now owns the requested measurement help. Run
-      its complete gate, retain its exact IPA, then install over the same bundle without uninstalling and verify Pushups/PageVault
+- [ ] **Phone-check Lift Log 0.4.0 (27).** Build 27's complete PR and clean-main `CI Gate`, IPA
+      inspection, checksum and local validation pass; its exact artifact is retained. Install over
+      the same bundle without uninstalling and verify Pushups/PageVault
       data preservation, then exercise per-side/per-hand/stack logging, active-session relaunch,
       Upper/Lower selection and order, bottom-priority skipping, last-performance accuracy, set
       editing, undo/finish/history, JSON export-delete-restore and CSV semantics on the physical phone. Do

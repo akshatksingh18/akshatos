@@ -1,11 +1,11 @@
 # AkshatOS session handoff
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log.
-Working source 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
-last-performance references and active-set editing; it is not yet pushed, compiled or cloud-verified.
-Build 26 added the local-only Lift Log. PR #52 is merged at `7a4f639`; main run
-`35870794873` passed the complete CI Gate and artifact `akshatos-ios-129` passed local checksum/IPA
-validation. It is retained in the testing slot; installation and phone acceptance remain open.
+Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
+`35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
+validation. It is retained in the testing slot; installation, data preservation and phone acceptance
+remain open. Build 26 added the local-only Lift Log core and is now superseded.
 Accepted 0.3.0 (25) presents the
 compatibility-preserved movement engine as Pushup Reminder and adds the Homebase/quest visual refresh
 across the hub and PageVault. Retained-candidate commit
@@ -119,9 +119,9 @@ launch or foreground entry; the app does not claim a background midnight executi
 
 `cloud-build.md` owns every build record: source commits, runs, checksums, retained local artifacts
 and phone findings. Three facts matter when resuming: Build 13 is the detailed legacy movement-loop
-baseline, Build 24 is the accepted PageVault v1 feature baseline, and Build 25 is the accepted
-installed Pushup/presentation baseline, Build 26 is the retained cloud/local artifact, and working
-Build 27 supersedes it for the eventual phone pass once packaged. One same-ID update without uninstalling has preserved app data
+baseline, Build 24 is the accepted PageVault v1 feature baseline, Build 25 is the accepted
+installed Pushup/presentation baseline, and Build 27 is the retained cloud/local candidate for the
+next phone pass. One same-ID update without uninstalling has preserved app data
 (Build 12 over Build 11).
 Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
