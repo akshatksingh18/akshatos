@@ -33,7 +33,7 @@ struct HomeSetupView: View {
                     }
                 } header: { Text("Confirm the Home boundary") }
                 footer: {
-                    Text("After confirmation, iOS will ask for Always access so the single boundary can work while AkshatOS is closed. The coordinate and radius stay protected on this device and are excluded from Squats backups.")
+                    Text("After confirmation, iOS will ask for Always access so the single boundary can work while AkshatOS is closed. The coordinate and radius stay protected on this device and are excluded from Pushup Reminder backups.")
                 }
             }.navigationTitle("Home auto-pause")
                 .navigationBarTitleDisplayMode(.inline)

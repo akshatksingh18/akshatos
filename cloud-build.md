@@ -1,7 +1,7 @@
 # AkshatOS cloud build and iPhone installation
 
 **State:** Builds come only from the GitHub Actions macOS workflow and are verified on Windows before
-handover. Build 13 is the accepted Squats daily-use baseline, and **Build 20 is installed and accepted
+handover. Build 13 is the accepted legacy Squats daily-use baseline, and **Build 20 is installed and accepted
 for PageVault's reading loop**: page fitting, bookmark restore, warm paper, paged swiping and a
 full-library export all passed on the phone. Build 21 added highlights, search, page themes and the
 page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 made the
@@ -11,25 +11,45 @@ reworked highlighting is accepted on the phone** — the explicit Highlight / Re
 the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
 the one mark that would not clear: it was inside the PDF file, not PageVault's. **Build 24 is
 installed and fully confirmed on the phone**: it hides the book's own markup, adds a direct page
-jump, and opens the feature that sent a notification. This file owns build and device evidence.
+jump, and opens the feature that sent a notification. **Working source is now 0.4.0 (26)**: it adds
+the local-only Lift Log with per-side plate measurement, durable sessions, history, JSON recovery
+and CSV export. Windows boundary and test-inventory checks pass, but Build 26 has not been committed,
+pushed, Swift-compiled, run through CI, packaged or installed. **0.3.0 (25) is the accepted installed
+build**:
+it presents the movement feature as Pushup Reminder and introduces the playful Homebase/quest visual
+system across the hub and PageVault. Retained-candidate commit `4253311` passed workflow-dispatch run
+`35678793533`: domain tests, simulator compile, persistence/navigation UI tests, unsigned device
+compile, package inspection and artifact upload all passed. Artifact `akshatos-ios-123` was downloaded
+to `..\final-ipas\akshatos\testing\akshatos-build-25-4253311`; its checksum and the local IPA validator
+passed. Akshat reported the Wi-Fi install reached 100% at 21:39 local on 2026-09-21; Sideloadly's
+database corroborates version 0.3.0, signed ID `com.akshatksingh18.akshatos.5564K8D4SV`, automatic
+bundle-ID mode, completed current-version automatic-refresh enrollment, no error and expiry at
+2026-09-28 21:39 local. Akshat subsequently reported that Build 25 works perfectly, closing the
+focused launch/presentation pass; this does not claim the broader physical edge-case or refresh
+matrix. Its artifact is promoted to the accepted backup slot. This file
+owns build and device evidence.
 
 ## Current identity and artifact
 
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.2.0 (24)**; minimum iOS 17.
-  Build 24 is both the working source version and the last artifact produced, so the **next** code
-  change bumps to 25 before anything is built from it.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.4.0 (26)**; minimum iOS 17.
+  Build 26 is unbuilt local source. Build 25 is the accepted installed artifact and has
+  passed CI, package inspection, checksum, local IPA validation, same-ID Wi-Fi installation and
+  current-version automatic-refresh enrollment plus Akshat's focused acceptance report. Its files
+  are in the local backup slot; testing is empty until Build 26 produces a candidate.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
   change after a build is handed over, not at build time — that is what keeps this invariant true.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
 - Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
-- Content: hub picker → Squats dashboard/core, plus PageVault's library, page-curl reader, page
+- Content: hub picker → Pushup Reminder dashboard/core (with legacy `squats.*` persistence and
+  notification identity retained for upgrade safety), plus PageVault's library, page-curl reader, page
   themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
-  full-text search; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
+  full-text search. Working Build-26 source additionally includes Lift Log, but no verified IPA does
+  yet; ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
   were removed in Build 21. Build 22 makes the curl the only reader and retires the warm theme in
   favour of sepia. Build 23 reworks highlighting around an explicit Highlight / Remove highlight
   choice, tints a searched phrase on arrival, reaches a page from a Takeaways passage, and confirms
@@ -81,7 +101,8 @@ accepted build's files are guaranteed to still exist, at `D:\AI Important Files\
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | **Accepted, installed, current** — files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-24` |
+| 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52, open) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | **Accepted, installed, current** — cloud/local verification, same-ID Wi-Fi install and current-version enrollment passed; Akshat reports the focused Build-25 experience works perfectly; files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-25-4253311` |
+| 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | Superseded by accepted Build 25; reproduce from Git history if rollback is needed |
 | 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target; files still in `Downloads` |
 | 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Superseded once Build 23 was accepted; recycled from `Downloads` — recoverable until the Recycle Bin is emptied |
 | 20 | `akshatos-build-20\akshatos-ios-87` | `7415a25` (#29) | [34651471222](https://github.com/akshatksingh18/akshatos/actions/runs/34651471222) | `e4dee1146c552511e60040a13641bc6784c23d4c5c7194f260bed6b8b7273a4d` | Installed; PageVault's reading loop accepted on the phone |
@@ -166,6 +187,12 @@ anyway, so a real scanned book is still needed for a memory verdict.
   The pinch-blocks-paging behaviour was confirmed wanted again.
   Akshat also asked for a direct page jump for long books, and for a tapped Squats notification to
   open Squats rather than leaving PageVault on screen; both are in Build 24.
+- **Build 25** (installed over Build 24 by Wi-Fi, no uninstall): Sideloadly reached 100% and then
+  recorded version 0.3.0 at `com.akshatksingh18.akshatos.5564K8D4SV`, automatic bundle-ID mode,
+  completed current-version enrollment, no error and a seven-day expiry. This corroborates signing
+  and installation. Akshat subsequently reported that Build 25 works perfectly, accepting its focused
+  launch and Homebase/Pushup/PageVault presentation pass. This report does not replace the broader
+  locked/background/reboot/geofence/refresh matrix.
 - **Build 22** (installed over Build 21). What worked: jumping to a page from a search result, and
   **Go to page** in the reader's per-book passage list. A zoomed page refusing to turn until the
   zoom is released is **wanted**, not a defect — Akshat asked for it to stay that way.
@@ -191,16 +218,22 @@ anyway, so a real scanned book is still needed for a memory verdict.
    listed with their status. Keep explicit edge-case and deployment tests separate from accepted
    daily-use evidence.
 2. Before signing, recheck `Get-FileHash -Algorithm SHA256 .\AkshatOS-unsigned.ipa` against the
-   recorded checksum if the artifact was moved or copied.
+   recorded checksum if the artifact was moved or copied. Create current feature-owned exports for
+   any non-disposable data; never uninstall the accepted app to perform an upgrade.
 3. Start Sideloadly with Local Anisette. If the prior startup timeout recurs, the user-reported
    working sequence was phone disconnected → launch/initialize Sideloadly → reconnect phone.
    This is an observed workaround, not a confirmed root cause or universal fix.
 4. Select the connected/unlocked iPhone and `AkshatOS-unsigned.ipa`, use the same intended Apple
-   Account, and preserve `com.akshatksingh18.akshatos` across signing attempts. Enter secrets only
-   in Sideloadly. Verify actual signed identity before relying on retained data.
-5. Complete Apple verification, Developer Mode, and developer trust prompts as required.
-6. Open **AkshatOS**: the first screen must be the app picker. Select **Squat Reminder**; test back
-   navigation to the hub. ReelVault must clearly say it is not available.
+   Account, keep **Use automatic bundle ID** enabled with source ID
+   `com.akshatksingh18.akshatos`, and keep the separate automatic-refresh control enabled. The final
+   signed ID must remain `com.akshatksingh18.akshatos.5564K8D4SV`. Enter secrets only in Sideloadly.
+5. Complete Apple verification, Developer Mode, and developer trust prompts as required. Require the
+   signing-health check to print `ENROLLED` for the exact AkshatOS identity/current version and
+   `IDENTITY` with mode `automatic`; a 100% one-off install does not satisfy the release gate.
+6. Open **AkshatOS**: the first screen must be the Homebase picker. Select **Pushup Reminder**; test back
+   navigation to the hub. Build 26 must also expose Lift Log and preserve its separate local store;
+   follow `lift-log.md`'s disposable-session and JSON/CSV recovery pass. ReelVault must clearly say
+   it is not available.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
    lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
    ignore another normal alert and confirm the dashboard switches to one ten-minute automatic-nudge
@@ -213,6 +246,9 @@ anyway, so a real scanned book is still needed for a memory verdict.
    day must remove that idle reminder; ending must restore it.
 9. Test goal setup, same-day sessions, yesterday unfinished, history, and save-failure handling.
    Record outcomes before calling features phone-verified; full matrix remains in `CLAUDE.md`.
+10. Keep the new artifact in `final-ipas\akshatos\testing\` until the device, data-preservation and
+    enrollment gates all pass. Then promote it to `backup\`; `setup.md` owns the durable refresh
+    contract and monitoring behavior.
 
 Wi-Fi/automatic refresh, expiry recovery, repeated in-place upgrades and notification buttons still
 require physical verification. Home geofence physical verification, Shortcuts and physical recovery

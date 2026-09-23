@@ -192,7 +192,7 @@ import SwiftUI
             actionRevision += 1
             pendingActionCount = try inbox.pending().count
         } catch {
-            message = "The notification action could not be saved. Unlock and open Squats to check your count before trying again."
+            message = "The notification action could not be saved. Unlock and open Pushup Reminder to check your count before trying again."
             messageRoute = nil
             return
         }
@@ -205,7 +205,7 @@ import SwiftUI
             try homeInbox.enqueue(event)
             actionRevision += 1
         } catch {
-            message = "A Home boundary event could not be saved. Open Squats after unlocking to reconcile it."
+            message = "A Home boundary event could not be saved. Open Pushup Reminder after unlocking to reconcile it."
             messageRoute = nil
             if event.presence == .outside { reminders.cancel() }
             return
@@ -360,7 +360,7 @@ import SwiftUI
             session.ended = max(session.started, min(now(), boundary))
             do {
                 try save(session)
-                notice = "Your previous Squats day was closed at the local day boundary."
+                notice = "Your previous Pushup day was closed at the local day boundary."
             } catch {
                 actionFailure(error)
                 operational = "Storage unavailable"
@@ -686,7 +686,7 @@ import SwiftUI
             summary = nil
             for action in pending { try? inbox.remove(action.id) }
             pendingActionCount = (try? inbox.pending().count) ?? 0
-            notice = "Squats history and settings were restored. Resume any open day to re-arm reminders."
+            notice = "Pushup history and settings were restored. Resume any open day to re-arm reminders."
         }
     }
 
@@ -696,7 +696,7 @@ import SwiftUI
             try repository.delete(ids: ids)
             sessions.removeAll { ids.contains($0.id) }
             summary = nil
-            notice = ids.isEmpty ? "There is no completed history to delete." : "Completed Squats history was deleted."
+            notice = ids.isEmpty ? "There is no completed history to delete." : "Completed Pushup history was deleted."
         }
     }
 }

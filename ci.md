@@ -33,20 +33,21 @@ PageVault's phone verification.
 
 ## Coverage and limits
 
-Squats suites: domain assertions for event deduplication, Undo, streaks, dates, DST and time zones,
+Pushup Reminder suites (still registered under the compatibility key `squats`): domain assertions
+for event deduplication, Undo, streaks, dates, DST and time zones,
 Home decisions and backup validation; integration tests for notification routing and category order,
 repeated deliveries, duplicate receipts after Undo or restart, save/schedule/inbox faults,
 protected-store retry, permission tracking and Settings routing, remembered grants across store
 recreation, lifecycle idempotency, cadence persistence and the Done reset, bounded nudge refill and
 migration, idle-start scheduling, Home pause/resume guards and backup exclusion, foreground repair,
 file-backed SwiftData reopen, legacy payload decoding, daily aggregation and safe restore/deletion,
-and opening a notification routing to its own feature — every Squats identifier carrying the
-namespace routing resolves to Squats, an unclaimed namespace routing nowhere, only the default
+and opening a notification routing to its own feature — every Pushups identifier carrying the
+namespace routing resolves to Pushups, an unclaimed namespace routing nowhere, only the default
 action navigating, and one pending route surviving two taps; plus hub, dashboard and Settings UI
 coverage.
 
 What that routing coverage cannot prove is the navigation itself: whether replacing the path really
-does leave an open book behind and land on Squats. The mapping is pure logic and tested; the tap has
+does leave an open book behind and land on Pushups. The mapping is pure logic and tested; the tap has
 to be tried on the phone.
 
 PageVault suites: 169 domain assertions covering place clamping and the opening page, progress
@@ -84,6 +85,14 @@ a text selection actually snaps to words and lines, or whether fitted pages read
 reader change needs its own device pass, owned by
 `../book-reader/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
 acceptance gates.
+
+Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
+per-side load semantics, exercise/set mutation, undo, finish-state enforcement, round-trip
+validation and backup rejection of multiple active workouts. Hosted SwiftData tests cover
+repository round trips and upsert behavior, save-after-every-mutation active-session recovery,
+validated backup replacement and load-mode-preserving/CSV-escaped export. Its UI test covers the
+Homebase entry and Lift Log destination. Registration and source-boundary checks pass on Windows;
+the suite has not yet run on macOS CI, so no compile or test success is claimed.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone

@@ -1,6 +1,10 @@
-# Squat Reminder feature plan
+# Pushup Reminder feature plan
 
-**State:** Accepted full Squats feature contract inside AkshatOS. The first source implementation
+**State:** Accepted full Pushup Reminder feature contract inside AkshatOS. Source candidate 0.3.0
+(25) repurposes the physically proven Squats reminder engine for pushup sets and replaces visible
+Squats language with Pushup Reminder. Existing data/backup/notification identifiers remain stable,
+so this is not a reset or a new feature store. Its copy and presentation are not yet built or
+phone-verified. The first source implementation
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
 and device evidence. Notification actions and a durable inbox passed cloud regression tests. Daily
@@ -28,19 +32,23 @@ behavior and the app generally working well in ongoing phone use. The broader ph
 refresh/recovery and soak matrix remains open; legacy snooze data stays readable for upgrade compatibility.
 Android is an unverified fallback.
 
+This document owns Pushup Reminder only. Lift Log is a separate local feature whose load semantics,
+persistence, recovery and acceptance gates are owned by `lift-log.md`; it does not turn Pushups'
+completed-break counter into a general workout tracker.
+
 ## Hub entry
 
-AkshatOS opens to an app-selection screen. Choose **Squat Reminder** to open this dashboard;
-navigate back without changing its active session or reminders. PageVault/ReelVault are visibly
-planned entries until their features are implemented, and WHOOP is not embedded.
-The hub receives display metadata and injected destinations; it does not own Squats rules or data.
+AkshatOS opens to an app-selection screen. Choose **Pushup Reminder** to open this dashboard;
+navigate back without changing its active session or reminders. PageVault and Lift Log are separate
+available destinations, ReelVault remains visibly planned, and WHOOP is not embedded.
+The hub receives display metadata and injected destinations; it does not own Pushups rules or data.
 The source-boundary refactor changes no user-facing feature scope or reminder/streak behavior.
 
 ## Product promise
 
-Squat Reminder is a local-only daily movement companion. It should take one tap to begin a day,
+Pushup Reminder is a local-only daily movement companion. It should take one tap to begin a day,
 reliably remind Akshat at a default 45-minute cadence, make interruptions easy to handle, record
-completed squat breaks honestly, protect a motivating daily streak, and finish with a useful daily
+completed pushup breaks honestly, protect a motivating daily streak, and finish with a useful daily
 overview. It is not a fitness social network, coaching service, movement-history tracker, or
 health-data platform.
 
@@ -49,14 +57,14 @@ The core loop is:
 1. Tap **Start my day**.
 2. Receive an ordinary local reminder after 45 minutes by default; if ignored, receive automatic
    nudges every ten minutes until responding.
-3. Tap **Done** after completing a squat break, or use **Pause** when the moment is inconvenient.
+3. Tap **Done** after completing a pushup break, or use **Pause** when the moment is inconvenient.
 4. Optionally let the Home geofence pause the active day on departure and resume it on return.
 5. Reach the configured daily set goal to preserve the streak.
 6. Tap **End my day** and review the day's completed sets, goal/streak result, and timing.
 
 The interval remains configurable in whole minutes while no active day exists; 45 minutes is the
-default. The canonical v1 count is **completed squat sets/breaks**, not an inferred number of
-individual squat repetitions. Each explicit Done action records one set. A configurable reps-per-set
+default. The canonical v1 count is **completed pushup sets/breaks**, not an inferred number of
+individual pushup repetitions. Each explicit Done action records one set. A configurable reps-per-set
 or per-set rep editor is a later option; until then the app must not label a set count as total reps.
 
 ## Daily lifecycle and state
@@ -84,9 +92,13 @@ cannot create duplicate schedules, duplicate sessions, or duplicate completion e
 
 ## Dashboard and visual direction
 
-The main screen should feel calm, polished, and immediately readable rather than like a settings
-form. The first implementation should establish a small reusable visual system instead of hard-coded
-one-off styling.
+The main screen should feel playful, energetic and immediately readable rather than like a settings
+form. AkshatOS uses a shared dark “tiny universe” visual system: each module is a quest/portal with
+its own accent, while state is always conveyed with text and symbols as well as color. Gamification
+is presentation layered over truthful local data; it must never invent completions, points or
+streaks. Pushup Reminder uses coral/gold power-up language, PageVault uses aqua/violet story-quest
+language, and the hub is their Homebase. ReelVault remains visibly locked rather than pretending to
+be usable.
 
 - A large hero card shows the current state, a circular time-until-next-reminder treatment while
   running, and a clear paused/blocked/ended illustration in other states. The prominent countdown
@@ -94,7 +106,9 @@ one-off styling.
   deadlines as the single clock. The persisted cadence anchor keeps background/foreground,
   close/reopen and reconciliation from restarting it.
   Times are labelled as **scheduled**, because Focus and other iOS settings can delay presentation.
-- A prominent count card shows **sets completed today** with a one-tap **Done +1** control. An Undo
+- A prominent orbit-style power card shows **pushup sets completed today** with a one-tap
+  **Set crushed +1** control. It derives “Ready player one,” “Combo started,” “Powering up,” and
+  “Quest cleared” from the real count and goal; those labels add delight without adding data. An Undo
   affordance is available after an accidental tap and from the day's event list.
 - A motivating streak card shows progress toward the daily set goal, the current streak, and the
   personal-best streak. Before the goal is reached it says exactly how many sets remain; after the
@@ -133,9 +147,9 @@ The removed Build-12 snooze action remains decode-safe only so an already queued
 loop or corrupt state. It is absent from both dashboard and notification category. Physical-device
 testing must confirm Done/Pause presentation and repeated automatic delivery on the target iPhone.
 
-Opening a Squats notification opens the **Squats screen**, whatever was last on display — reading a
+Opening a Pushups notification opens the **Pushups screen**, whatever was last on display — reading a
 book included. Tapping **Done** or **Pause** does not move the screen, so logging a set never pulls
-the reader off the page. This applies to every hub module, not just Squats: `hub-plan.md` owns the
+the reader off the page. This applies to every hub module, not just Pushups: `hub-plan.md` owns the
 contract and the rule that a new module registers its notification namespace with its category.
 
 Notification actions run through the same domain commands as dashboard buttons. Action handling must
@@ -241,7 +255,7 @@ shows daily set counts, goal result, and streak status and can open an individua
 achievements beyond the streak, sharing, HealthKit, and detailed workout analytics remain later
 decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and export/
 restore are explicit and local. Restore validates the complete versioned backup before replacing
-current Squats sessions and settings; deletion of completed history keeps an active day and preferences.
+current Pushups sessions and settings; deletion of completed history keeps an active day and preferences.
 
 ### Daily goal and streak contract
 

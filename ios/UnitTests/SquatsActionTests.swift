@@ -1146,6 +1146,15 @@ import UserNotifications
         XCTAssertEqual(ReminderService.categoryID, "akshatos.squats.reminder")
     }
 
+    func testLegacyIdentifiersKeepWorkingWhileTheFeaturePresentsAsPushups() {
+        XCTAssertEqual(ReminderService.featureDisplayName, "Pushup Reminder")
+        XCTAssertTrue(ReminderService.dailyStartTitle.contains("Pushup"))
+        XCTAssertTrue(ReminderService.regularTitle.contains("Pushup"))
+        XCTAssertTrue(ReminderService.automaticTitle.contains("Pushup"))
+        XCTAssertEqual(ReminderService.namespace, "akshatos.squats.",
+                       "Renaming the visible quest must not orphan pending requests")
+    }
+
     func testAnUnclaimedNotificationRoutesNowhere() {
         XCTAssertNil(AppNotificationCoordinator.route(forNotification: "akshatos.reels.something"),
                      "A feature that has not registered its namespace leaves the hub where it was")

@@ -8,6 +8,7 @@ struct AkshatOSApp: App {
         WindowGroup {
             HubRootView(squats: delegate.services.squats,
                         pageVault: delegate.services.pageVault,
+                        liftLog: delegate.services.liftLog,
                         navigator: delegate.services.navigator,
                         orientation: delegate.services.orientation)
                 .preferredColorScheme(.dark)
@@ -22,6 +23,7 @@ struct AkshatOSApp: App {
 @MainActor final class AppServices: ObservableObject {
     let squats: SquatStore
     let pageVault: PageVaultStore
+    let liftLog: LiftLogStore
     let notifications: AppNotificationCoordinator
     /// App-lifetime, like the stores: a notification can be tapped before any hub screen exists,
     /// and the request has to survive until one does.
@@ -32,6 +34,7 @@ struct AkshatOSApp: App {
         let home = HomeRegionService()
         squats = SquatStore(homeMonitor: home)
         pageVault = PageVaultStore()
+        liftLog = LiftLogStore()
         notifications = AppNotificationCoordinator(squats: squats, navigator: navigator)
     }
 }

@@ -2,15 +2,43 @@
 
 This is current-state work, not a claim that either platform is already usable. The iPhone path is
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
-`../book-reader/CLAUDE.md`; this file owns Squats and hub-wide gates.
+`../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Build 13 is accepted in ongoing daily phone use for Squats. The unchecked physical,
-release-cache and refresh items below stay open regardless of PageVault progress. Akshat deferred
-PageVault's physical testing to one end-of-implementation pass. Build evidence lives in `cloud-build.md`.
+**Current focus:** Working source 0.4.0 (26) adds Lift Log; its Windows boundary and test-inventory
+checks pass, while Swift compilation, complete CI, IPA and phone acceptance remain open. Accepted
+0.3.0 (25) presents the legacy movement engine as Pushup Reminder and refreshes the hub/PageVault
+into the playful Homebase/quest system. Build 13 remains accepted
+evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
+Build-25 presentation beyond Akshat's focused acceptance report. Build 25's
+retained candidate passed complete macOS CI, package inspection, checksum and local IPA validation;
+its Wi-Fi install and current-version automatic-refresh enrollment are corroborated, and Akshat
+reported the installed build works perfectly. Its focused launch/presentation gate and release-cache
+promotion are complete; the broader physical and refresh items below stay open. Build evidence lives in
+`cloud-build.md`.
 
 ## iPhone-primary work
 
 ### Done
+
+- [x] **Lift Log MVP in local source.** The Homebase exposes a separate local-only strength logger
+      with one durable active session, plates-per-side as the default measurement, per-hand/stack/
+      added/total alternatives, equipment notes, set undo, finished history, destructive
+      confirmations, validated JSON backup/restore and load-mode-preserving CSV export. Its domain,
+      persistence and UI suites are registered; Windows boundary and inventory checks pass. This is
+      implementation state only, not evidence of Swift compilation or phone behavior; `lift-log.md`
+      owns the contract.
+
+- [x] **Focused Build-25 phone acceptance.** Complete macOS CI, package inspection, checksum/local
+      IPA validation, same-ID Wi-Fi installation and current-version automatic-refresh enrollment
+      passed. Akshat reports the installed Pushup/Homebase/PageVault presentation works perfectly;
+      Build 25 is promoted to the accepted recovery/refresh slot. The broader physical matrix below
+      remains separate and is not implied by this focused acceptance.
+
+- [x] **Pushup product shift and playful presentation in source.** Visible Squats copy is now Pushup
+      Reminder across the hub, dashboard, notifications, settings, Home permission text and backups.
+      The hub is a Homebase, Pushups uses truthful power-up/quest feedback, PageVault uses story-quest
+      and treasure-shelf framing, and the generated icon carries the same module-orbit language.
+      Legacy `Squat*` code/storage and `squats.*` identifiers stay unchanged to preserve upgrades.
 
 - [x] **Cloud pipeline and repository controls.** Source, inventory and workflow checks, registered
       domain suites, hosted persistence tests, UI navigation, device build, IPA inspection and
@@ -21,7 +49,7 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       same-ID upgrades or automatic refresh.
 - [x] **Hub identity and first hub build.** `akshatksingh18/akshatos` with the permanent
       `com.akshatksingh18.akshatos`, history and Android preserved. Build 13 installs under that
-      identity, and its picker → Squats → back navigation is in daily use.
+      identity, and its picker → Pushups → back navigation is in daily use.
 - [x] **Module boundaries and host.** App composition owns the sole notification delegate, the hub is
       display-only, and the shared design system and feature folders are isolated and enforced by
       `check-boundaries.py`. Notifications and geofences stay at host scope with namespaced requests.
@@ -60,6 +88,12 @@ PageVault's physical testing to one end-of-implementation pass. Build evidence l
       its own migration tests. Simulator tests do not replace hardware tests.
 
 ### Open
+
+- [ ] **Compile and phone-check Lift Log 0.4.0 (26).** Run the complete `CI Gate`, inspect the exact
+      Build-26 IPA, install it over the same bundle without uninstalling, verify Pushups/PageVault
+      data preservation, then exercise per-side/per-hand/stack logging, active-session relaunch,
+      undo/finish/history, JSON export-delete-restore and CSV semantics on the physical phone. Do
+      not move private workout rows into the repository or call Lift Log ready before this passes.
 
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,
