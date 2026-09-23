@@ -2,14 +2,13 @@
 
 **State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented. Working source 0.4.0 (27) adds mode-specific definitions/examples,
+chosen defaults — are implemented. Version 0.4.0 (27) adds mode-specific definitions/examples,
 priority-ordered Upper/Lower template creation, same-name/mode last-performance lookup and persisted
-active-set editing to Lift Log; it is not yet compiled or cloud-verified.
-Build 26 added Lift Log as a separate local-only feature with versioned SwiftData sessions,
-explicit load modes, JSON recovery and CSV export. PR
-#52 is merged at `7a4f639`; main run `35870794873` passed its complete CI Gate and artifact
-`akshatos-ios-129` passed local checksum/IPA validation. It has not been installed or verified on a
-phone. Accepted 0.3.0 (25) repurposes its presentation from
+active-set editing to Lift Log. PR #54 merged at `ebb44d3`; main run `35925770220` passed its complete
+CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. It has not been
+installed or verified on a phone. Build 26 added Lift Log as a separate local-only feature with
+versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Accepted 0.3.0 (25)
+repurposes its presentation from
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
 complete macOS CI Gate, including simulator/device compilation and IPA inspection; no uploaded
 artifact was retained by that PR. Workflow-dispatch run `35678793533` subsequently produced the
@@ -344,8 +343,8 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 ### Build/deployment boundary
 
 The workflow builds AkshatOS from this repository. Build 25 contains the hub, Pushups and PageVault,
-but no Lift Log or ReelVault. Build 26 is the first verified IPA containing Lift Log; working Build
-27 extends it but must pass its own CI/package gate before being described as a verified artifact. Keep
+but no Lift Log or ReelVault. Build 26 is the first verified IPA containing Lift Log; Build 27 extends
+it and passed its own complete CI/package and local-validation gates. Keep
 Pushups handlers at host scope, namespace requests, and test notifications while other modules are
 foregrounded. One hub refresh must preserve all four modules' state.
 

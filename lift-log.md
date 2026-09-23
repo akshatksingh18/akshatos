@@ -4,14 +4,13 @@ Local-only strength-session logging inside AkshatOS. This module replaces the ne
 machine's invented total or ask an agent to transcribe each session: Akshat records exercises and
 working sets directly on the phone, using the measurement convention that matches the equipment.
 
-**Status:** Working source version 0.4.0 (27) adds concise definitions/examples for every load mode,
+**Status:** Version 0.4.0 (27) adds concise definitions/examples for every load mode,
 hard-coded Upper/Lower templates in the confirmed priority order, same-mode last-performance
-references on exercise cards and set entry, and active-set editing. It is not yet pushed,
-Swift-compiled or cloud-verified.
-Build 26 implemented the core feature. PR #52 is merged at `7a4f639`; main run
-`35870794873` passed boundary checks, registered domain/hosted tests, simulator UI coverage,
-simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129` passed local checksum
-and IPA validation. Same-ID installation, data preservation, backup/restore and physical-phone
+references on exercise cards and set entry, and active-set editing. PR #54 merged at `ebb44d3`;
+main run `35925770220` passed boundary checks, registered domain/hosted tests, simulator UI coverage,
+simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133` passed local checksum
+and IPA validation. Build 26 implemented the core feature and is superseded. Same-ID installation,
+data preservation, backup/restore and physical-phone
 usability remain unverified. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
@@ -59,10 +58,9 @@ remote.
 
 ## Acceptance gates
 
-- The exact Build-26 source passed its complete `CI Gate`, including domain tests, hosted SwiftData
-  tests, simulator UI navigation, device compilation and IPA inspection. Build 27 must repeat that
-  gate for measurement guidance, template order/preloading, empty-exercise cleanup, last-performance
-  lookup and set editing before it replaces the retained candidate.
+- The exact Build-27 source passed its complete PR and clean-main `CI Gate`, including domain tests,
+  hosted SwiftData tests, simulator UI navigation, device compilation and IPA inspection. Its local
+  artifact also passed checksum and IPA validation.
 - On the physical phone, start a disposable workout, create exercises in every relevant load mode,
   log/undo sets, force-close and recover an active workout, finish it, reopen history, and confirm
   Dynamic Type plus keyboard behavior.

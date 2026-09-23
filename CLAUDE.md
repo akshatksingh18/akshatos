@@ -8,15 +8,13 @@ WHOOP stays standalone. This repository evolved from Squat Reminder and now pres
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-**Status:** Building. Working source 0.4.0 (27) adds definitions/examples for every Lift Log mode,
+**Status:** Building. Version 0.4.0 (27) adds definitions/examples for every Lift Log mode,
 hard-coded priority-ordered Upper/Lower templates, last-performance references and active-set
-editing; it has not yet been pushed, Swift-compiled or cloud-verified. Build 26
-introduced the local-only Lift Log with per-side plate measurement, durable sessions, history, JSON
-recovery and CSV export. PR #52 is merged at
-`7a4f639`; main run `35870794873` passed the complete CI Gate, including registered domain and
-hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129`
-passed local checksum and IPA validation and is retained in the testing slot, but it is not yet
-installed or phone-accepted.
+editing. PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including
+registered domain and hosted simulator tests, simulator/device compilation and IPA inspection.
+Artifact `akshatos-ios-133` passed local checksum and IPA validation and is retained in the testing
+slot, but it is not yet installed or phone-accepted. Build 26 introduced the local-only Lift Log
+core and is now a reproducible superseded artifact rather than a retained local candidate.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
 `4253311` passed workflow-dispatch run `35678793533`, including
@@ -78,8 +76,7 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
-  is the accepted copy and Build 26 is the locally validated retained candidate while Build 27 is
-  unbuilt working source.
+  is the accepted copy and Build 27 is the locally validated candidate.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -144,8 +141,7 @@ every feature is physically verified.
   recovery and CSV export.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
-  coverage. Build 26 passed macOS CI; Build 27's expanded scenarios have only passed Windows
-  boundary/inventory checks until its branch runs.
+  coverage. Build 27's expanded scenarios passed the complete PR and clean-main macOS CI gates.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
   removal, the single-Reading-book invariant and cover generation.
