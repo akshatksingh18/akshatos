@@ -4,18 +4,35 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Source candidate 0.3.0 (25) presents the legacy movement engine as Pushup Reminder
-and refreshes the hub/PageVault into the playful Homebase/quest system. Build 13 remains accepted
+**Current focus:** Working source 0.4.0 (26) adds Lift Log; its Windows boundary and test-inventory
+checks pass, while Swift compilation, complete CI, IPA and phone acceptance remain open. Accepted
+0.3.0 (25) presents the legacy movement engine as Pushup Reminder and refreshes the hub/PageVault
+into the playful Homebase/quest system. Build 13 remains accepted
 evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
-new Build-25 copy, visuals, generated icon or pushup notifications on a phone. Build 25's
+Build-25 presentation beyond Akshat's focused acceptance report. Build 25's
 retained candidate passed complete macOS CI, package inspection, checksum and local IPA validation;
-its Wi-Fi install and current-version automatic-refresh enrollment are corroborated. The unchecked
-launch/data, physical, release-cache and refresh items below stay open. Build evidence lives in
+its Wi-Fi install and current-version automatic-refresh enrollment are corroborated, and Akshat
+reported the installed build works perfectly. Its focused launch/presentation gate and release-cache
+promotion are complete; the broader physical and refresh items below stay open. Build evidence lives in
 `cloud-build.md`.
 
 ## iPhone-primary work
 
 ### Done
+
+- [x] **Lift Log MVP in local source.** The Homebase exposes a separate local-only strength logger
+      with one durable active session, plates-per-side as the default measurement, per-hand/stack/
+      added/total alternatives, equipment notes, set undo, finished history, destructive
+      confirmations, validated JSON backup/restore and load-mode-preserving CSV export. Its domain,
+      persistence and UI suites are registered; Windows boundary and inventory checks pass. This is
+      implementation state only, not evidence of Swift compilation or phone behavior; `lift-log.md`
+      owns the contract.
+
+- [x] **Focused Build-25 phone acceptance.** Complete macOS CI, package inspection, checksum/local
+      IPA validation, same-ID Wi-Fi installation and current-version automatic-refresh enrollment
+      passed. Akshat reports the installed Pushup/Homebase/PageVault presentation works perfectly;
+      Build 25 is promoted to the accepted recovery/refresh slot. The broader physical matrix below
+      remains separate and is not implied by this focused acceptance.
 
 - [x] **Pushup product shift and playful presentation in source.** Visible Squats copy is now Pushup
       Reminder across the hub, dashboard, notifications, settings, Home permission text and backups.
@@ -72,12 +89,11 @@ launch/data, physical, release-cache and refresh items below stay open. Build ev
 
 ### Open
 
-- [ ] **Phone-check 0.3.0 (25).** The retained candidate passed complete macOS CI, simulator
-      screenshot inspection, device compilation, package inspection, checksum, local IPA validation,
-      same-ID Wi-Fi installation and current-version automatic-refresh enrollment. Launch it, confirm
-      existing movement history and PageVault data remain, inspect the Homebase/Pushup/PageVault/icon
-      presentation, verify old pending requests route into Pushup Reminder, and exercise a real
-      regular/automatic/9:00 AM pushup notification before promoting it from testing.
+- [ ] **Compile and phone-check Lift Log 0.4.0 (26).** Run the complete `CI Gate`, inspect the exact
+      Build-26 IPA, install it over the same bundle without uninstalling, verify Pushups/PageVault
+      data preservation, then exercise per-side/per-hand/stack logging, active-session relaunch,
+      undo/finish/history, JSON export-delete-restore and CSV semantics on the physical phone. Do
+      not move private workout rows into the repository or call Lift Log ready before this passes.
 
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,

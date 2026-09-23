@@ -79,7 +79,7 @@ def main():
         conn = sqlite3.connect(f"file:{copy}?mode=ro", uri=True)
         conn.row_factory = sqlite3.Row
         rows = conn.execute(
-            "SELECT name, final_bundle_id, version, last_updated, created_at, known_ttl,"
+            "SELECT name, final_bundle_id, version, one_off, info_props, last_updated, created_at, known_ttl,"
             " refresh_at_hours, last_error, failures_count, last_failure_at"
             " FROM installations WHERE deleted_at IS NULL"
         ).fetchall()
@@ -88,6 +88,11 @@ def main():
         now = datetime.now(timezone.utc)
         raw_entries = []
         for row in rows:
+            try:
+                info_props = json.loads(row["info_props"] or "{}")
+            except (TypeError, ValueError):
+                info_props = {}
+            bundle_override = info_props.get("CFBundleIdentifier") or None
             last_updated = parse(row["last_updated"])
             # Sideloadly writes its underlying zero-value timestamp (year 1) for a row whose
             # install never actually completed - confirmed 2026-09-13 from a cancelled WHOOP
@@ -105,6 +110,10 @@ def main():
                 "name": row["name"],
                 "bundleID": row["final_bundle_id"],
                 "version": row["version"],
+                "oneOff": bool(row["one_off"]),
+                "automaticRefreshEnrolled": not bool(row["one_off"]) and not incomplete,
+                "bundleIDMode": "exact" if bundle_override else "automatic",
+                "bundleIDOverride": bundle_override,
                 "lastSigned": signed.isoformat() if signed else None,
                 "ttlDays": ttl,
                 "refreshAtHours": row["refresh_at_hours"],
@@ -146,8 +155,20 @@ def main():
             pool = completed if completed else group
             primary = max(pool, key=lambda e: e["lastSigned"] or "")
             stale = [e for e in group if e is not primary]
+            # A completed scheduled row only protects the version it was created for. A later
+            # one-off install of a new version must not inherit a healthy-looking enrollment from
+            # an older cached IPA; that could silently refresh/downgrade the wrong build. A one-off
+            # recovery of the same version may keep using its surviving scheduled row.
+            primary["automaticRefreshEnrolled"] = any(
+                e["automaticRefreshEnrolled"] and e["version"] == primary["version"]
+                for e in group
+            )
             primary["staleAttempts"] = [
-                {"lastSigned": e["lastSigned"], "incompleteAttempt": e["incompleteAttempt"]}
+                {
+                    "lastSigned": e["lastSigned"],
+                    "incompleteAttempt": e["incompleteAttempt"],
+                    "oneOff": e["oneOff"],
+                }
                 for e in stale
             ]
             apps.append(primary)

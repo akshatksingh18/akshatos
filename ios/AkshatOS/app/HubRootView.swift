@@ -4,6 +4,7 @@ import SwiftUI
 struct HubRootView: View {
     @ObservedObject var squats: SquatStore
     @ObservedObject var pageVault: PageVaultStore
+    @ObservedObject var liftLog: LiftLogStore
     @ObservedObject var navigator: HubNavigator
     let orientation: OrientationGate
     @Environment(\.scenePhase) private var scenePhase
@@ -20,6 +21,11 @@ struct HubRootView: View {
                      status: pageVault.books.isEmpty ? "Vault is waiting" : "Vault online",
                      detail: pageVault.books.isEmpty ? "Add your first PDF" : "\(pageVault.books.count) books",
                      statusIcon: "book"),
+            HubEntry(id: .liftLog, title: "Lift Log", subtitle: "Record every working set your way.",
+                     icon: "dumbbell.fill", isAvailable: true,
+                     status: liftLog.active == nil ? "Ready to train" : "Workout in progress",
+                     detail: "\(liftLog.finished.count) sessions · \(liftLog.totalSetCount) sets",
+                     statusIcon: "chart.line.uptrend.xyaxis"),
             HubEntry(id: .reelVault, title: "ReelVault", subtitle: "A future portal for the good stuff.",
                      icon: "play.rectangle", isAvailable: false)
         ], path: $path) { route in
@@ -30,12 +36,17 @@ struct HubRootView: View {
                 PageVaultLibraryView(store: pageVault) { reading in
                     orientation.setReadingSession(reading)
                 }
+            case .liftLog:
+                LiftLogView(store: liftLog)
             case .reelVault:
                 // Unavailable entries are never links. No reel implementation is activated.
                 EmptyView()
             }
         }
-        .task { await squats.refresh() }
+        .task {
+            await squats.refresh()
+            liftLog.load()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await squats.refresh() } }
         }

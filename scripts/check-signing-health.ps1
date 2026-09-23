@@ -21,6 +21,7 @@
 param(
     [string]$PythonPath,
     [string]$DatabasePath,
+    [string]$ExpectedAppsPath,
     [string]$StatePath = (Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\state.json'),
     [string]$LogPath = (Join-Path $env:LOCALAPPDATA 'AkshatOSSigningHealth\health.log'),
     # Sideloadly aims to refresh at 96 hours, leaving three days. Warn once that has clearly
@@ -32,6 +33,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+# Windows PowerShell 5 evaluates parameter defaults before $PSScriptRoot is populated. Resolve the
+# sibling contract after entering the script so the installed scheduled task and modern pwsh behave
+# identically.
+if (-not $ExpectedAppsPath) {
+    $ExpectedAppsPath = Join-Path $PSScriptRoot 'signing-apps.json'
+}
 
 # A run against a substituted database is a test, not an observation of the real phone. Give it
 # its own state and log unless the caller deliberately chose paths, because the real record is the
@@ -116,6 +124,34 @@ if (-not (Test-Path -LiteralPath $reader)) {
     exit 2
 }
 
+if (-not (Test-Path -LiteralPath $ExpectedAppsPath)) {
+    Write-Line 'CRITICAL' "Expected-app contract missing at $ExpectedAppsPath"
+    Show-Alert -Title 'AkshatOS signing health' -Blocking `
+        -Message "The signing health check cannot verify enrollment because signing-apps.json is missing."
+    exit 2
+}
+
+try {
+    $expectedConfig = Get-Content -LiteralPath $ExpectedAppsPath -Raw | ConvertFrom-Json
+    if ($expectedConfig.schemaVersion -ne 2 -or -not $expectedConfig.apps) {
+        throw 'Unsupported or empty expected-app contract.'
+    }
+    foreach ($expected in $expectedConfig.apps) {
+        if (-not $expected.name -or -not $expected.sourceBundleID -or -not $expected.finalBundleID) {
+            throw 'Every expected app must define name, sourceBundleID and finalBundleID.'
+        }
+        if ($expected.bundleIDMode -notin @('automatic', 'exact')) {
+            throw 'Every expected app must define bundleIDMode as automatic or exact.'
+        }
+    }
+}
+catch {
+    Write-Line 'CRITICAL' "Expected-app contract is unusable: $($_.Exception.Message)"
+    Show-Alert -Title 'AkshatOS signing health' -Blocking `
+        -Message "The signing health expected-app contract is unusable.`n`n$($_.Exception.Message)"
+    exit 2
+}
+
 # --- read Sideloadly's record --------------------------------------------------------------
 $arguments = @($reader)
 if ($DatabasePath) { $arguments += $DatabasePath }
@@ -154,9 +190,22 @@ $current = @{}
 $worst = 0            # 0 healthy, 1 warn, 2 critical
 $headlines = @()
 
+# A scheduled row cannot refresh anything while the daemon is absent. Skip this host-state check
+# for fixture databases so tests remain hermetic; production runs always enforce it.
+if (-not $DatabasePath -and -not (Get-Process sideloadlydaemon -ErrorAction SilentlyContinue)) {
+    $worst = 2
+    $headlines += 'Sideloadly daemon is not running'
+    Write-Line 'CRITICAL' 'Sideloadly daemon is not running; automatic refresh cannot occur.'
+}
+
 foreach ($app in $report.apps) {
     $name = $app.name
-    $days = if ($null -ne $app.daysLeft) { [double]$app.daysLeft } else { [double]::NaN }
+    $days = if ($app.PSObject.Properties.Name -contains 'daysLeft' -and $null -ne $app.daysLeft) {
+        [double]$app.daysLeft
+    }
+    else {
+        [double]::NaN
+    }
     $current[$name] = $app.lastSigned
 
     # A retired app keeps a row in Sideloadly forever and "expires" every seven days with nothing
@@ -249,6 +298,67 @@ foreach ($app in $report.apps) {
     }
 }
 
+# Existing rows are not the contract. A user can clear Sideloadly's scheduled-app list, or install
+# a new build with the circular-arrow toggle off, leaving an otherwise healthy app with no future
+# refresh. Verify every expected stable bundle explicitly and require a completed scheduled row.
+foreach ($expected in $expectedConfig.apps) {
+    $bundleID = [string]$expected.finalBundleID
+    $matches = @($report.apps | Where-Object {
+        $_.bundleID -and ([string]$_.bundleID).Equals(
+            $bundleID, [System.StringComparison]::OrdinalIgnoreCase)
+    })
+
+    if ($matches.Count -eq 0) {
+        $worst = 2
+        $headlines += "$($expected.name) is missing from Sideloadly"
+        Write-Line 'CRITICAL' ("{0} ({1}) has no Sideloadly installation record." -f `
+            $expected.name, $bundleID)
+        continue
+    }
+
+    if ($expected.automaticRefreshRequired) {
+        $enrolled = @($matches | Where-Object { $_.automaticRefreshEnrolled }).Count -gt 0
+        if (-not $enrolled) {
+            $worst = 2
+            $headlines += "$($expected.name) is not enrolled for automatic refresh"
+            Write-Line 'CRITICAL' ("{0} ({1}) is installed but its current version has no completed automatic-refresh registration." -f `
+                $expected.name, $bundleID)
+        }
+        else {
+            Write-Line 'ENROLLED' ("{0} ({1}) has a completed automatic-refresh registration for its current version." -f `
+                $expected.name, $bundleID)
+        }
+    }
+
+    # The final bundle ID alone did not distinguish WHOOP's broken and working registrations:
+    # Sideloadly's automatic rewrite produced the same final string but stalled on overwrite. Its
+    # info_props does distinguish them. Enforce the proven per-app path so a future upgrade cannot
+    # silently recreate the session's failure while still looking correctly enrolled.
+    $actual = $matches[0]
+    if ($actual.bundleIDMode -ne $expected.bundleIDMode) {
+        $worst = 2
+        $headlines += "$($expected.name) uses the wrong Sideloadly bundle-ID mode"
+        Write-Line 'CRITICAL' ("{0} must use bundle-ID mode '{1}', but the active registration uses '{2}'." -f `
+            $expected.name, $expected.bundleIDMode, $actual.bundleIDMode)
+    }
+    elseif ($expected.bundleIDMode -eq 'exact' -and $actual.bundleIDOverride -ne $expected.finalBundleID) {
+        $worst = 2
+        $headlines += "$($expected.name) exact bundle-ID override is wrong"
+        Write-Line 'CRITICAL' ("{0} must explicitly override to {1}, but the active registration stores '{2}'." -f `
+            $expected.name, $expected.finalBundleID, $actual.bundleIDOverride)
+    }
+    else {
+        $inputID = if ($expected.bundleIDMode -eq 'exact') {
+            $expected.finalBundleID
+        }
+        else {
+            $expected.sourceBundleID
+        }
+        Write-Line 'IDENTITY' ("{0} uses the proven '{1}' bundle-ID mode with input {2}." -f `
+            $expected.name, $expected.bundleIDMode, $inputID)
+    }
+}
+
 $current | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $StatePath -Encoding utf8
 
 if ($worst -eq 2) {
@@ -259,6 +369,10 @@ Sideloadly's daemon has not re-signed these in time.
 
 Open Sideloadly and use Refresh All Apps Manually, with the iPhone unlocked and on the same
 Wi-Fi. If that does not work, connect it over USB and install the cached IPA again.
+
+For an app reported as not enrolled or using the wrong identity mode, install its accepted IPA over
+the existing app with Sideloadly's automatic-refresh toggle enabled and the app-specific identity
+mode in signing-apps.json. Then rerun this check and require both ENROLLED and IDENTITY lines.
 
 Do NOT uninstall the app  -  that deletes its data.
 "@

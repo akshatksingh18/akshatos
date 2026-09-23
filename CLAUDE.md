@@ -2,27 +2,34 @@
 
 Personal native iPhone hub: the home screen selects a feature, starting with Pushup Reminder.
 PageVault is the activated next module — its scope, phases, and progress are owned by
-`../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. ReelVault is reserved for
-later; WHOOP stays standalone. This repository evolved from Squat Reminder and now presents that
+`../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
+the local-only strength-session module, owned by `lift-log.md`; ReelVault is reserved for later and
+WHOOP stays standalone. This repository evolved from Squat Reminder and now presents that
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-**Status:** Building. Source candidate 0.3.0 (25) repurposes the accepted movement engine as Pushup
-Reminder and introduces the playful Homebase/quest visual system across the hub, Pushups and
-PageVault. Retained-candidate commit `4253311` passed workflow-dispatch run `35678793533`, including
+**Status:** Building. Working source 0.4.0 (26) adds the local-only Lift Log with per-side plate
+measurement, durable sessions, history, JSON recovery and CSV export; its boundary and test-
+inventory checks pass locally, but it is not Swift-compiled, cloud-verified or phone-verified.
+Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
+playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
+`4253311` passed workflow-dispatch run `35678793533`, including
 domain/UI tests, simulator and device compilation, and IPA inspection; artifact `akshatos-ios-123`
 was downloaded into the local testing slot and passed checksum/IPA validation. Akshat then reported
 the Wi-Fi install reached 100%, and Sideloadly's database corroborates version 0.3.0 under the expected
 signed identity with current-version automatic-refresh enrollment, no error and seven days remaining.
-Launch, data preservation and focused phone behavior are not yet verified. Build 13 remains accepted evidence
-for the unchanged movement lifecycle; its edge-case, refresh/recovery and multi-cycle soak matrix
-remains open. PageVault v1 is phone-accepted through Build 24 (`../book-reader/CLAUDE.md`), while its
-new presentation awaits the Build-25 device pass. `cloud-build.md` owns build evidence and the
+Akshat subsequently reported that Build 25 works perfectly, closing its focused launch and presentation
+pass; its artifact is now the accepted recovery/refresh copy. This does not substitute for the broader
+edge-case, refresh/recovery and multi-cycle soak matrix, which remains open. Build 13 remains the detailed
+accepted evidence for the unchanged movement lifecycle. PageVault v1 is phone-accepted through Build 24
+(`../book-reader/CLAUDE.md`), and Build 25's refreshed presentation is now accepted too. `cloud-build.md` owns build evidence and the
 working source version; `todo.md` owns open gates. The full target contract below is not a claim that
 every feature is physically verified.
 
 ## Files
 
+- `lift-log.md` — Lift Log product, plate-per-side data contract, privacy boundary, source layout
+  and acceptance gates; read before changing the strength logger.
 - `handoff.md` — new-session entry point, current implementation/evidence boundaries and recommended
   continuation order; read to resume, then use its linked owning specifications and setup guides.
 - `ci.md` — pipeline stages, docs-only PR classification, feature test registration, failure
@@ -64,7 +71,8 @@ every feature is physically verified.
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
-  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass.
+  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
+  is the accepted copy and Build 26 has no retained artifact yet.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -78,15 +86,24 @@ every feature is physically verified.
   the new expiry in the future — because a changed record alone has already produced a refresh report
   for a refresh that never happened; an uncorroborated difference is logged as `RECORD-CHANGED`. A
   `-DatabasePath` test run is redirected to its own sidecar log/state so a fixture cannot write into
-  the real record. Escalates to a blocking dialog when an app is close to expiry, errored, or
+  the real record. It also requires every identity in `scripts/signing-apps.json` to have a completed
+  scheduled registration for its current version and requires the Sideloadly daemon in production.
+  Escalates to a blocking dialog when an app is missing, unenrolled, close to expiry, errored, or
   uncheckable. Refreshes nothing itself. Never judge what it has recorded from an agent shell — those
   are sandboxed and read a redirected copy of the log; `setup.md` explains how to read the real one.
 - `scripts/read-signing-state.py` — reads a read-only copy of Sideloadly's `installations.db` and
-  emits per-app expiry as JSON; never touches the signing material stored beside it. Carries the
+  emits per-app expiry and automatic-refresh enrollment as JSON; never touches the signing material
+  stored beside it. A surviving scheduled row only enrolls the same current app version, so an older
+  cached IPA cannot make a newer one-off install look protected. Carries the
   documented `RETIRED_BUNDLE_PREFIXES` list so an app removed from the phone (Sideloadly keeps its
   row forever) is reported, not raised as a false alarm. Dedupes multiple rows per bundle ID down to
   one — Sideloadly writes a fresh row per install attempt and never deletes one that stalled or was
   cancelled — folding the rest into `staleAttempts` instead of reporting the same app twice.
+- `scripts/signing-apps.json` — exact signed bundle identities that must remain enrolled for
+  automatic refresh plus each app's proven Sideloadly bundle-ID mode. The health check enforces the
+  mode (`automatic` for AkshatOS, `exact` for WHOOP), not just the final ID. Update only for a
+  deliberate Apple team/bundle migration; ordinary versions and source iterations must keep these
+  identities unchanged.
 - `.github/workflows/ios-build.yml` — public-repository macOS-runner job that generates the Xcode
   project, runs domain/UI tests, compiles simulator/device builds, and packages the unsigned IPA/metadata.
 - `ios/` — Windows-authored SwiftUI hub source, XcodeGen project specification, asset catalog,
@@ -115,6 +132,11 @@ every feature is physically verified.
   because identity compared captured text rather than the page area covered; it now offers Highlight
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
+- `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
+  store, history/entry UI, JSON recovery and CSV export.
+- `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
+  `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
+  coverage; not yet run through macOS CI.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
   removal, the single-Reading-book invariant and cover generation.
@@ -154,12 +176,13 @@ every feature is physically verified.
   source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
-  Build 25 is the CI-verified but device-unverified Pushup Reminder/presentation candidate. The
+  Build 25 is the accepted Pushup Reminder/presentation baseline. The
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder to open its dashboard. Returning to the
-  picker must not stop reminders. PageVault/ReelVault cards are visibly unavailable, not fake apps.
+- Launch into the hub picker, then select Pushup Reminder, PageVault, or Lift Log for its own
+  destination. Returning to the picker must not stop reminders. ReelVault remains visibly unavailable,
+  not a fake app.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
 
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), use
@@ -373,7 +396,7 @@ every feature is physically verified.
 
 ### Accepted free-account app-slot portfolio
 
-- Install one native hub for Pushups, PageVault, and ReelVault, plus standalone WHOOP: two free slots.
+- Install one native hub for Pushups, PageVault, Lift Log, and ReelVault, plus standalone WHOOP: two free slots.
   One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
   installation identity per module is required. Packaging is accepted; implementation is pending.
 - The hub's notification/geofence handlers belong to the application lifecycle, not the Pushups
@@ -382,7 +405,7 @@ every feature is physically verified.
   Pushups-owned requests. Never let navigation disable Home monitoring.
 - OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
   apply to the hub as a whole. Keep module stores/export logically separate and test cross-section
-  behavior. Deleting the hub removes all three modules' local data, so full recovery is mandatory.
+  behavior. Deleting the hub removes all four modules' local data, so full recovery is mandatory.
 - Use Windows Sideloadly, no phone-side host. Another signer is an explicit workflow choice; the
   spare slot is not automatic permission to add it. Free seven-day expiry/early refresh still apply.
 - `hub-plan.md` owns source/build ownership and identity reconciliation before coding.
@@ -550,7 +573,7 @@ The iPhone path can be described as working only when all of the following are t
   automation proves success rather than merely running, expiry risk raises a visible alert, and
   USB recovery has been rehearsed;
 - the common hub IPA can be signed by a fallback path without source changes, coexists with
-  standalone WHOOP in two free slots, and preserves all three modules across refresh/upgrade;
+  standalone WHOOP in two free slots, and preserves all four modules across refresh/upgrade;
 - Pushups actions and Home events work without opening its section, including while PageVault/Reels
   is visible, and their module transitions cannot cancel requests or delay durable action handling;
 - Android remains buildable as a fallback or is still explicitly documented as unverified—do not
@@ -593,7 +616,7 @@ data, device state, or durable release IPAs.
 - Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
-- Preserve the local-only, single-user Pushups feature scope within the accepted three-module hub;
+- Preserve the local-only, single-user Pushups feature scope within the accepted four-module hub;
   packaging consolidation does not add new product features or activate WHOOP.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
   Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily

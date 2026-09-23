@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "apps": [
+    {
+      "name": "AkshatOS",
+      "sourceBundleID": "com.akshatksingh18.akshatos",
+      "finalBundleID": "com.akshatksingh18.akshatos.5564K8D4SV",
+      "bundleIDMode": "automatic",
+      "automaticRefreshRequired": true
+    },
+    {
+      "name": "WHOOP",
+      "sourceBundleID": "com.akshat.personal.whoop",
+      "finalBundleID": "com.akshat.personal.whoop.5564K8D4SV",
+      "bundleIDMode": "exact",
+      "automaticRefreshRequired": true
+    }
+  ]
+}

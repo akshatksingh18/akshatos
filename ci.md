@@ -86,6 +86,14 @@ reader change needs its own device pass, owned by
 `../book-reader/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
 acceptance gates.
 
+Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
+per-side load semantics, exercise/set mutation, undo, finish-state enforcement, round-trip
+validation and backup rejection of multiple active workouts. Hosted SwiftData tests cover
+repository round trips and upsert behavior, save-after-every-mutation active-session recovery,
+validated backup replacement and load-mode-preserving/CSV-escaped export. Its UI test covers the
+Homebase entry and Lift Log destination. Registration and source-boundary checks pass on Windows;
+the suite has not yet run on macOS CI, so no compile or test success is claimed.
+
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone
 is not sufficient. Fixes must include a regression test where practical. Shared changes must run

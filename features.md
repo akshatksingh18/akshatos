@@ -32,11 +32,15 @@ behavior and the app generally working well in ongoing phone use. The broader ph
 refresh/recovery and soak matrix remains open; legacy snooze data stays readable for upgrade compatibility.
 Android is an unverified fallback.
 
+This document owns Pushup Reminder only. Lift Log is a separate local feature whose load semantics,
+persistence, recovery and acceptance gates are owned by `lift-log.md`; it does not turn Pushups'
+completed-break counter into a general workout tracker.
+
 ## Hub entry
 
 AkshatOS opens to an app-selection screen. Choose **Pushup Reminder** to open this dashboard;
-navigate back without changing its active session or reminders. PageVault/ReelVault are visibly
-planned entries until their features are implemented, and WHOOP is not embedded.
+navigate back without changing its active session or reminders. PageVault and Lift Log are separate
+available destinations, ReelVault remains visibly planned, and WHOOP is not embedded.
 The hub receives display metadata and injected destinations; it does not own Pushups rules or data.
 The source-boundary refactor changes no user-facing feature scope or reminder/streak behavior.
 

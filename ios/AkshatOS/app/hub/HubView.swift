@@ -107,6 +107,7 @@ struct HubView<Destination: View>: View {
         switch route {
         case .squats: return Palette.coral
         case .pageVault: return Palette.aqua
+        case .liftLog: return Palette.gold
         case .reelVault: return Palette.violet
         }
     }
@@ -115,6 +116,7 @@ struct HubView<Destination: View>: View {
         switch route {
         case .squats: return "Power-up"
         case .pageVault: return "Story quest"
+        case .liftLog: return "Strength log"
         case .reelVault: return "Watchlist warp"
         }
     }
@@ -123,6 +125,7 @@ struct HubView<Destination: View>: View {
         switch route {
         case .squats: return "bolt.fill"
         case .pageVault: return "bookmark.fill"
+        case .liftLog: return "dumbbell.fill"
         case .reelVault: return "play.fill"
         }
     }

@@ -37,5 +37,17 @@
     "ui_tests": [
       "UITests/PageVaultUITests.swift"
     ]
+  },
+  "liftlog": {
+    "domain_sources": [
+      "AkshatOS/features/liftlog/domain/LiftWorkout.swift"
+    ],
+    "domain_test": "tests/liftlog/main.swift",
+    "integration_tests": [
+      "UnitTests/LiftLogPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/LiftLogUITests.swift"
+    ]
   }
 }

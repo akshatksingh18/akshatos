@@ -4,11 +4,25 @@ How the sideloaded apps on Akshat's iPhone are kept signed, and how that is prov
 assumed. `cloud-build.md` owns producing and installing a build; this file owns keeping an already
 installed one alive.
 
-**Status:** The health check is installed, and its scheduled execution is **confirmed** — the log
-carries a run from every trigger fired so far, on time and with the expected verdict. **A genuine
-unattended wireless refresh has now happened once** — WHOOP, 2026-09-13 08:22:48, corroborated
-(`everRefreshed: true`, expiry moved forward to Sep 20, no error). One more unattended cycle, on
-either app, closes that gate. The fix that got here is below.
+**Status:** The health check is installed and its scheduled execution is confirmed. It now treats a
+missing expected app, a stopped Sideloadly daemon, or the current version lacking a completed
+automatic-refresh registration as a blocking failure. AkshatOS Build
+24 expired after Sideloadly's scheduled-app registrations were cleared during WHOOP recovery; the
+same accepted IPA was reinstalled over the existing bundle by Wi-Fi on 2026-09-20, reached 100%,
+and created a completed automatic-refresh record with no error. WHOOP build 65 was clean-installed
+with automatic refresh enabled after a verified backup/delete/restore cycle; it also has a completed
+scheduled registration and its data works. Its first manual refresh stalled because Sideloadly's
+**Use automatic bundle ID** rewriting was left enabled. Repeating the overwrite with that option off
+and the exact final ID `com.akshat.personal.whoop.5564K8D4SV` reached 100%, advanced the signing time,
+and preserved data and band pairing. Manual same-ID refresh is proven for both apps. A controlled
+forced-due test then let the daemon discover the USB-disconnected phone over Wi-Fi and refresh WHOOP
+without the GUI or a manual refresh command; the signing time advanced, expiry reset, data remained
+intact, Akshat confirmed the real app still had its data and band connection afterward, and the
+scheduled health task logged `REFRESHED`/`ENROLLED` with exit `0`.
+AkshatOS Build 25 was then installed over Build 24 by Wi-Fi on 2026-09-21 and reached 100%.
+Sideloadly's database corroborates version 0.3.0 at the same final signed identity, automatic bundle-ID
+mode, a completed current-version automatic-refresh registration, no error and a seven-day expiry.
+Launch/data preservation and a future actual refresh cycle remain separate gates.
 
 ## The two halves, and why they are separate
 
@@ -49,6 +63,7 @@ occasionally is what covers that gap — keep doing it.
 | Scheduled task | `AkshatOS Signing Health` — at logon, 09:00 and 21:00 daily |
 | Check | `personal-project/akshatos/scripts/check-signing-health.ps1` |
 | Reader | `personal-project/akshatos/scripts/read-signing-state.py` |
+| Required-app contract | `personal-project/akshatos/scripts/signing-apps.json` |
 | Log | `%LOCALAPPDATA%\AkshatOSSigningHealth\health.log` |
 | State | `%LOCALAPPDATA%\AkshatOSSigningHealth\state.json` |
 | Source read | `%LOCALAPPDATA%\Sideloadly\installations.db` (copied, opened read-only) |
@@ -102,6 +117,10 @@ testing must not be able to reach either file, whichever side of the sandbox it 
 | 3 days or less left | Balloon warning — the daemon should have acted at 4 days and did not |
 | 2 days or less, or expired | **Blocking dialog**, deliberately impossible to miss |
 | `failures_count` or `last_error` set | Blocking dialog naming the error |
+| Sideloadly daemon stopped | Blocking dialog — an enrolled row cannot refresh without the daemon |
+| AkshatOS or WHOOP missing from the exact-identity contract | Blocking dialog |
+| Current app version has no completed scheduled registration | Blocking dialog with enrollment recovery |
+| Registration uses the wrong app-specific bundle-ID mode | Blocking dialog with exact recovery mode |
 | Python missing, database unreadable | Blocking dialog — a check that cannot run must shout, not pass |
 
 The recovery it tells you to do, in order: open Sideloadly and use **Refresh All Apps Manually**
@@ -155,15 +174,58 @@ then on. Two things from Sideloadly's own FAQ (<https://sideloadly.io/faq.html>,
   manual **Refresh All Apps** in Sideloadly resets every app's clock to the same day if a shared
   schedule is wanted.
 
-`installations.db`'s `one_off: 0` and `refresh_at_hours: 96` on both AkshatOS and WHOOP look like
-automatic-refresh enrollment already being active for both — confirm visually in Sideloadly's own
-window rather than trusting that inference alone. The health check above is what actually tells you
-whether a wireless cycle happened; silence from the phone is not evidence either way.
+`installations.db` currently has completed `one_off: 0` automatic-refresh registrations for both
+AkshatOS and WHOOP. Manual same-ID overwrites advanced both apps' signing times and expiries. WHOOP
+requires automatic bundle-ID rewriting **off** and its exact final signed ID entered; the base ID
+plus Sideloadly's automatic transformation stalls at 0%. Confirm the database and Sideloadly UI
+after every recovery rather than equating enrollment with a successful cycle. The health check above
+is what tells you whether a recorded refresh happened; silence from the phone is not evidence.
 
-**Fixed, and confirmed working — Bonjour was never the fix.** Two changes were made together, and
-the original write-up here credited both on reasoning, not evidence. Tested afterward, in two steps:
+## Durable workflow for every new app version
 
-1. ~~Bonjour was not installed~~ **— tested, ruled out, then removed.** Bonjour Print Services was
+Source changes do not require a new Apple identity and weekly re-signing does not require a source
+rebuild. Merely copying a new IPA into `testing\` does not install it or change Sideloadly's cached
+refresh artifact; every new version needs one controlled install-over-install pass. After that pass,
+weekly re-signing uses the new cached version automatically. For every AkshatOS or WHOOP iteration:
+
+1. Build and validate the unsigned IPA, then place the candidate and its checksum/manifest in that
+   project's `final-ipas\<project>\testing\` folder. Leave the accepted `backup\` build untouched.
+2. Make a current app-owned backup before an upgrade that can affect stored data. Install **over**
+   the existing app — never uninstall — with the same Apple Account/team and the per-app identity
+   mode in `scripts/signing-apps.json`:
+   - **AkshatOS:** keep **Use automatic bundle ID** enabled; the IPA/source ID is
+     `com.akshatksingh18.akshatos`, and the expected final ID is
+     `com.akshatksingh18.akshatos.5564K8D4SV`.
+   - **WHOOP:** turn **Use automatic bundle ID** off and enter exact final ID
+     `com.akshat.personal.whoop.5564K8D4SV`.
+   Keep the separate automatic-refresh control enabled for both.
+3. Require all five device gates: installation reaches 100%, the app launches with its data intact,
+   its version is the intended version, the signing check prints `ENROLLED` for that exact signed
+   identity/current version, and it prints the expected `IDENTITY` mode. A successful one-off install
+   or a correctly spelled final ID under the wrong Sideloadly mode is not enough.
+4. Only after the project-specific phone checks also pass, promote the candidate from `testing\` to
+   `backup\`. Sideloadly's cached refresh artifact and the recovery folder must now represent that
+   same accepted version.
+5. Leave the daemon enabled at sign-in and let the existing scheduled health task watch both apps.
+   After installer, Apple-device-component, iOS, Apple Account/team, or bundle-identity changes,
+   prove one Wi-Fi refresh again instead of inheriting old evidence.
+
+The exact signed identities are pinned in `scripts/signing-apps.json`. A normal version/build change
+must not edit that file. If a deliberate team or bundle migration is ever necessary, treat it as a
+data-migration project and update the contract only after container preservation is proven.
+
+This workflow is ready for both apps. WHOOP passes installation, restore, enrollment, exact-ID
+same-app overwrite, data preservation, band reconnection, and a controlled forced-due unattended
+Wi-Fi daemon cycle. One naturally elapsed next cycle remains before calling the long-term schedule
+fully proven.
+
+**Current discovery state:** Apple Bonjour 2.0.2 is installed, automatic, and running; its signed
+installer added UDP 5353 firewall rules, and `_apple-mobdev2._tcp` browsing sees the iPhone. Earlier
+controlled tests also found Sideloadly could rediscover the phone after Bonjour was stopped and
+removed, so Bonjour alone must not be credited as the root fix. Apple Mobile Device Service, trusted
+Wi-Fi sync, the iPhone's stable network identity, and Sideloadly all remain part of the path.
+
+1. **Bonjour was tested as a variable.** Bonjour Print Services was
    installed at the time, reasoning that Sideloadly's Windows discovery runs on Bonjour/mDNS
    (`mDNSResponder.exe`). Three tests settled it:
    - **Holding:** with the phone already connected, Bonjour was stopped. The connection kept
@@ -173,20 +235,18 @@ the original write-up here credited both on reasoning, not evidence. Tested afte
      after the stop). It found the phone over Wi-Fi immediately.
    - **Fully uninstalled** (both `Bonjour Print Services` and `Bonjour` registry entries, the service,
      and both install folders — confirmed gone). Sideloadly still showed `@Wi-Fi` afterward.
-   Bonjour has no role here, discovery or otherwise — Apple Mobile Device Service does this on its
-   own. **Not installed on this machine at all**, as of the same session; nothing depends on it.
+   Those tests show it was not the sole cause. It was later reinstalled as a conservative discovery
+   dependency and is part of the current working configuration.
 2. **The iPhone's Private Wi-Fi Address was set to rotating**, on this specific network — this is now
    the entire explanation, not one of two contributing changes. A rotating MAC address is a moving
    target for device discovery. Fix: iPhone Settings → Wi-Fi → (this network) → **Private Wi-Fi
    Address → Off**. `Limit IP Address Tracking` is unrelated (an IP-tracking privacy setting, not
    device discovery) and can stay on or off independent of this fix.
 
-After the Private Wi-Fi Address change, Sideloadly showed the phone as `@Wi-Fi` and began installing
-without USB. The
-first attempt hit a second, unrelated bug — see below — but the very next attempt, **fully
-unattended** (Akshat did nothing; Sideloadly launches at Windows startup on its own), completed a
-real corroborated refresh: WHOOP, 2026-09-13 08:22:48, expiry moved to Sep 20. That is the first of
-the two unattended cycles the gate below asks for.
+With a stable Private Wi-Fi Address, trusted iTunes Wi-Fi sync, Apple Mobile Device Service, and the
+current Bonjour installation, Sideloadly detects the phone as `@Wi-Fi`. A temporary AkshatOS bundle,
+a clean WHOOP build-65 bundle, and the AkshatOS same-ID renewal all reached 100% over that path. A
+later USB-disconnected, forced-due daemon cycle also refreshed WHOOP automatically over this path.
 
 **A known second failure mode, seen once so far:** the very first wireless refresh attempt failed
 with `Install failed: Guru Meditation 556260@79:6edd68 __init__() missing 1 required positional
@@ -198,21 +258,13 @@ reinstall from `D:\AI Important Files\personal-project\final-ipas\<project>\back
 
 ## What this has already found
 
-**A stalled or cancelled install leaves debris in Sideloadly's own database, and the reader now
-handles it.** Found while trying to align AkshatOS and WHOOP onto the same refresh clock — after
-AkshatOS's manual reinstall completed cleanly, a same-day manual WHOOP reinstall was attempted for
-the same reason and stalled mid wireless transfer instead. It was cancelled here rather than
-retried, so the two apps are not on a shared clock: AkshatOS last signed 2026-09-13 16:31 from that
-reinstall, WHOOP last signed 2026-09-13 08:18 from its own earlier unattended refresh — about 8
-hours apart, not identical, but both close enough that they will not drift back to the original
-nine-day gap. Retrying the WHOOP reinstall for full alignment is optional, not a gap to close.
-Sideloadly signed and uploaded the IPA successfully but never
-got a completion signal back, and cancelling in its own UI did not delete the row — it left a second
-`WHOOP` row behind with its `last_updated` at Sideloadly's zero-value date (year `0001`), which read
-literally computed an expiry hundreds of thousands of days in the past. Confirmed this is Sideloadly
-housekeeping debris, not a real problem: the app's original row was untouched (no error, no
-failures), and the cached IPA file the earlier "orig" bug worried about was intact and correctly
-referenced.
+**A stalled or cancelled install leaves debris in Sideloadly's own database, and the reader handles
+it.** The scheduled-app list was later cleared during recovery, removing both apps' old registrations
+and debris. Both apps now have completed scheduled rows. WHOOP reached that state through a clean
+install after backup/delete. Automatic bundle-ID rewriting then caused its manual refresh to stall;
+using the exact final signed ID succeeded and preserved the working container. A scheduled row is
+still enrollment, not by itself proof that replacement works. The reader must continue
+folding zero-date attempts into `staleAttempts`; they are not completed refreshes.
 
 `read-signing-state.py` now groups rows by bundle ID and reports one entry per app — the most
 recently *completed* row if any exists in the group, with every other row (a stalled attempt, or any
@@ -258,20 +310,23 @@ copy. The hazard was in the design regardless, and it mattered more than an unti
 `REFRESHED` is the only evidence the gates below are ever closed on — a false one is how the refresh
 loop gets recorded as proven without a single refresh having happened.
 
-**The real test is WHOOP**, whose 96-hour refresh point falls the evening of the day this was
-installed. If its `last_updated` moves on its own, the daemon works and the loop is closed. If it
-does not, the daemon does not refresh on this machine and the fallback is a manual refresh every few
-days, with this check as the reminder. As of the last look, nothing had refreshed yet: all three
-registrations still have `last_updated` equal to their first install.
+Both apps have successful manual same-ID refresh evidence after their scheduled registrations were
+rebuilt. WHOOP required automatic bundle-ID rewriting off and its exact final ID; the successful
+overwrite advanced `last_updated` and preserved data/pairing. A controlled forced-due daemon run then
+advanced WHOOP again over Wi-Fi with USB disconnected and no GUI/manual refresh command. The health
+task initially exposed a Windows PowerShell 5 `$PSScriptRoot` parameter-default incompatibility; the
+path is now resolved after the parameter block, and the installed task returns `0`. Keep WHOOP's
+verified encrypted backup despite the successful container-preserving path.
 
 ## Still open
 
 These stay open until exercised, per the operating model in `CLAUDE.md`:
 
-- [x] ~~Two unattended refresh cycles observed~~ **One of two.** WHOOP, 2026-09-13 08:22:48,
-      corroborated and unattended — Akshat did nothing; Sideloadly launches at Windows startup on
-      its own. A `RECORD-CHANGED` line never counts, and neither does a line produced by a fixture
-      run. One more, on either app, closes this.
+- [ ] Two consecutive naturally due unattended refresh cycles. One earlier natural WHOOP cycle and
+      one later controlled forced-due WHOOP Wi-Fi cycle are corroborated; the latter used the real
+      daemon/sign/install path with USB disconnected and no GUI/manual refresh command, but does not
+      replace observing the next naturally elapsed cycle. A `RECORD-CHANGED` or fixture line never
+      counts.
 - [ ] One deliberate USB recovery rehearsed from an expired or near-expired state.
 - [ ] One forced failure — phone absent or offline at the refresh point — confirmed to raise the
       alert rather than pass quietly.

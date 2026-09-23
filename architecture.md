@@ -2,14 +2,18 @@
 
 **State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
 9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented. Source candidate 0.3.0 (25) repurposes its presentation from
+chosen defaults — are implemented. Working source 0.4.0 (26) adds Lift Log as a separate local-only
+feature with versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Its
+source-boundary and test-inventory checks pass locally, but it has not been Swift-compiled, run in
+cloud CI or verified on a phone. Accepted 0.3.0 (25) repurposes its presentation from
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
 complete macOS CI Gate, including simulator/device compilation and IPA inspection; no uploaded
 artifact was retained by that PR. Workflow-dispatch run `35678793533` subsequently produced the
 Build-25 candidate and its checksum/IPA validation passed locally. Its same-ID Wi-Fi install and
-automatic-refresh enrollment are corroborated by Sideloadly; launch, data preservation and focused
-device behavior remain unverified. Build 13 remains accepted evidence for the
-unchanged lifecycle engine, not for the new copy or presentation. The broader edge-case,
+automatic-refresh enrollment are corroborated by Sideloadly. Akshat subsequently reported that the
+installed build works perfectly, closing the focused launch/presentation pass and making Build 25
+the accepted recovery/refresh artifact. Build 13 remains the detailed accepted evidence for the
+unchanged lifecycle engine. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
@@ -20,15 +24,17 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
   build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
-  predecessor, and Build 25 is the CI-verified but device-unverified Pushup/visual candidate.
+  predecessor, and Build 25 is the accepted Pushup/visual baseline.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
-  completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, the sole
+  completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
+  `LiftLogStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation.
   `HubRootView` adapts observed feature state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
-  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups and
-  `PageVaultLibraryView.swift` only after choosing PageVault. ReelVault stays a noninteractive
+  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
+  `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
+  choosing Lift Log. ReelVault stays a noninteractive
   planned card. WHOOP remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting
@@ -117,6 +123,11 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   a goal is live, so an unbookmarked day is a real miss rather than an unrecorded gap. Page changes
   persist nothing at all: an explicit bookmark is what moves the place, claims the book as the one
   being read, and credits the pages covered since the previous bookmark.
+- `ios/AkshatOS/features/liftlog/`: Foundation-only workout/exercise/set/load-mode and backup
+  contracts, a separate versioned SwiftData store, save-before-publish feature store, and SwiftUI
+  entry/history/recovery views. Plates-per-side stores one side exactly and never converts unknown
+  bar, sled or machine resistance into a fabricated total. JSON is the restorable backup; CSV is a
+  review bridge that preserves the load mode. `lift-log.md` owns the full contract and acceptance.
 - Future ReelVault source belongs in a sibling `features/reelvault/` area with its own store/tests.
   It is not created or implemented yet.
 
@@ -327,10 +338,11 @@ Pause come before the expanded-only 10-minute action; verify this on the actual 
 
 ### Build/deployment boundary
 
-The workflow now builds AkshatOS from this repository. Its IPA contains the hub, the Pushups slice,
-and PageVault's v1 reading loop, but no ReelVault implementation. Keep
+The workflow builds AkshatOS from this repository. Build 25 contains the hub, Pushups and PageVault,
+but no Lift Log or ReelVault. Working Build-26 source adds Lift Log; only its future verified IPA may
+be described as containing it. Keep
 Pushups handlers at host scope, namespace requests, and test notifications while other modules are
-foregrounded. One hub refresh must preserve all three modules' state.
+foregrounded. One hub refresh must preserve all four modules' state.
 
 
 The primary compiler is the public repository's GitHub Actions macOS runner because no local Mac

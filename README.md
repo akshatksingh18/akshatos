@@ -1,19 +1,25 @@
 # AkshatOS
 
-A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard
-or **PageVault** for its PDF library. ReelVault is reserved for later and WHOOP stays a separate app.
+A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard,
+**PageVault** for its PDF library, or **Lift Log** to record strength sessions. ReelVault is reserved
+for later and WHOOP stays a separate app.
 
-**Current state:** The proven movement engine has been repurposed from squats to **Pushup Reminder**
+**Current state:** Working source 0.4.0 (26) adds Lift Log with per-side plate measurement, durable
+active sessions, finished history, JSON backup/restore and CSV export. Its Windows boundary and
+test-registration checks pass, but Swift compilation, CI, IPA inspection and phone behavior are not
+yet verified; it is not present in the installed Build-25 candidate. The proven movement engine has
+been repurposed from squats to **Pushup Reminder**
 without changing its stored sessions, preference keys, backup schema or pending-notification identity.
-Source candidate 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
+Accepted 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
 Pushup Reminder and PageVault. Retained-candidate commit `4253311` passed complete macOS CI, including
 tests, simulator/device compilation and IPA inspection; artifact `akshatos-ios-123` also passed local
 checksum/IPA validation. Its Wi-Fi install reached 100%, and Sideloadly records version 0.3.0 with
-the expected signed identity and automatic-refresh enrollment; launch, retained data and focused
-phone behavior are not verified yet. Build 13 remains the accepted legacy Squats daily-use baseline for
-lifecycle behavior. Its edge-case, refresh/recovery and soak matrix remains open. PageVault's v1
-reading and recovery loop is accepted on the phone through Build 24; reading streaks were built and
-then removed at Akshat's request. Bundle ID
+the expected signed identity and automatic-refresh enrollment. Akshat then reported that Build 25
+works perfectly, so its focused launch/presentation pass is accepted and its artifact is the current
+recovery/refresh copy. Build 13 remains the detailed legacy evidence for lifecycle behavior, while
+the broader edge-case, refresh/recovery and soak matrix remains open. PageVault's v1 reading and
+recovery loop is accepted on the phone through Build 24, and Build 25's refreshed presentation is
+accepted too; reading streaks were built and then removed at Akshat's request. Bundle ID
 `com.akshatksingh18.akshatos`.
 The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
 open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.
@@ -32,7 +38,11 @@ App composition, display-only hub, shared styling and the Pushup Reminder featur
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
 - Playful Homebase hub, Pushup Reminder power-up dashboard and PageVault story-quest library;
-  ReelVault is a visibly locked future portal.
+  Lift Log is an available gold-accent strength portal and ReelVault is a visibly locked future portal.
+- Lift Log records one active workout at a time, defaults each new exercise to plates per side,
+  preserves alternate per-hand/stack/added/total measurement modes, saves after every mutation,
+  recovers unfinished sessions, and exports a restorable JSON backup or reviewable CSV. It never
+  guesses bar, sled or machine resistance; [lift-log.md](lift-log.md) owns the contract and gates.
 - Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
 - Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
   minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,
@@ -81,7 +91,8 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 
 ## Primary iPhone plan
 
-The `ios/` source opens the Homebase hub, a separate Pushup Reminder dashboard and the PageVault library. The build path is
+The `ios/` source opens the Homebase hub, a separate Pushup Reminder dashboard, the PageVault library,
+and Lift Log. The build path is
 Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses a bounded batch
 of one-off `UNTimeIntervalNotificationTrigger` requests for the normal reminder and automatic nudges,
 plus one repeating 9:00 AM calendar request while idle. iOS schedules delivery, so the app does not
@@ -149,7 +160,7 @@ safe.
 
 The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Pushups, PageVault, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
+Pushups, PageVault, Lift Log, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates
@@ -159,7 +170,7 @@ The current target is AkshatOS; old downloaded standalone smoke files are not hu
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;
 - the permanent bundle ID, same Apple Account/team, early health checks, alerts, backup, and USB
   recovery rules must be preserved;
-- all three native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
+- all four native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
   keeps a separate identity/process. No paid membership or rotation is needed for two slots.
 
 The AkshatOS bundle ID is `com.akshatksingh18.akshatos`. Preserve it and the same Apple Account

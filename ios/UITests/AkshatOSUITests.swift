@@ -17,6 +17,7 @@ final class AkshatOSUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["open-pageVault"].exists, "PageVault is an available module")
+        XCTAssertTrue(app.buttons["open-liftLog"].exists, "Lift Log is an available module")
         XCTAssertFalse(app.buttons["open-reelVault"].exists, "ReelVault remains deferred")
         app.buttons["open-squats"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))

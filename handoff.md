@@ -1,13 +1,16 @@
 # AkshatOS session handoff
 
-**Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Local
-source candidate 0.3.0 (25) presents the compatibility-preserved movement engine as Pushup Reminder
-and adds the Homebase/quest visual refresh across the hub and PageVault. Retained-candidate commit
-`4253311` passed workflow-dispatch run `35678793533`; artifact `akshatos-ios-123` is in the local
-testing slot with matching checksum and IPA validation. Its Wi-Fi install reached 100%, and
+**Status:** Current-state entry point for resuming AkshatOS work, not a specification or log. Working
+source 0.4.0 (26) adds the local-only Lift Log; Windows boundary and test-inventory checks pass, but
+Swift compilation, CI, IPA and phone acceptance remain open. Accepted 0.3.0 (25) presents the
+compatibility-preserved movement engine as Pushup Reminder and adds the Homebase/quest visual refresh
+across the hub and PageVault. Retained-candidate commit
+`4253311` passed workflow-dispatch run `35678793533`; artifact `akshatos-ios-123` has matching
+checksum and IPA validation. Its Wi-Fi install reached 100%, and
 Sideloadly corroborates version 0.3.0, the expected signed identity and current-version enrollment;
-launch, retained data and focused phone behavior are still unverified.
-Build 13 remains the accepted lifecycle baseline and Build 24 the accepted PageVault v1 baseline.
+Akshat then reported Build 25 works perfectly, closing the focused launch/presentation pass. Its
+artifact is now the accepted backup copy. Build 13 remains the detailed lifecycle baseline and
+Build 24 the accepted PageVault v1 feature baseline.
 Update this file in place when resume guidance changes; the linked owning documents control detail.
 
 ## Start here
@@ -52,12 +55,12 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
-- Launch into an app picker; select Pushup Reminder to open its own dashboard, or PageVault for its own
-  PDF library. This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
+- Launch into an app picker; select Pushup Reminder, PageVault, or Lift Log for its own destination.
+  This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
-  visuals and notifications plus PageVault's refreshed presentation are CI-verified and await the
-  Build-25 artifact/install/device pass. ReelVault stays deferred.
+  visuals and notifications plus PageVault's refreshed presentation are accepted in Build 25.
+  ReelVault stays deferred.
   The movement feature's remaining physical/refresh items stay open and are not superseded by PageVault work.
   Native source for both media modules goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
@@ -67,6 +70,10 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 
 ## Implemented in source
 
+- Lift Log: feature-owned workout domain and SwiftData store, plates-per-side default plus explicit
+  alternative load meanings, save-after-every-set active-session recovery, finished history,
+  undo/discard/delete controls, validated JSON recovery and CSV export. `lift-log.md` owns its
+  product/privacy/acceptance contract; none of it is cloud- or phone-verified yet.
 - Homebase hub, Pushup power-up dashboard, PageVault story-quest library, shared atmospheric visual
   components, refreshed generated icon, and app-lifetime services across navigation.
 - Pushups lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
@@ -106,9 +113,9 @@ launch or foreground entry; the app does not claim a background midnight executi
 ## Build and device evidence
 
 `cloud-build.md` owns every build record: source commits, runs, checksums, retained local artifacts
-and phone findings. Three facts matter when resuming: Build 13 is the last build accepted for the
-movement loop under the legacy Squats presentation, Build 24 is the accepted PageVault v1 baseline,
-and local Build-25 source is unbuilt. One same-ID update without uninstalling has preserved app data
+and phone findings. Three facts matter when resuming: Build 13 is the detailed legacy movement-loop
+baseline, Build 24 is the accepted PageVault v1 feature baseline, and Build 25 is the accepted
+installed Pushup/presentation baseline while Build 26 remains unbuilt source. One same-ID update without uninstalling has preserved app data
 (Build 12 over Build 11).
 Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
@@ -116,17 +123,20 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
+1. **Lift Log compile and device pass:** run Build 26 through the exact `CI Gate`, inspect/package it,
+   then use disposable data to verify per-side semantics, active-session relaunch and JSON/CSV
+   recovery without disturbing existing Pushups or PageVault data. Do not publish private history.
+2. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
    and record what the phone shows there and in `../book-reader/CLAUDE.md`. Fix defects before
    calling any reader behavior working.
-2. **Complete the remaining Pushups physical edge-case matrix:** locked/force-quit/reboot, permission,
+3. **Complete the remaining Pushups physical edge-case matrix:** locked/force-quit/reboot, permission,
    Focus/Scheduled Summary, picker/back, Undo/replay, summaries/recovery and Home-automation checks.
    Record actual results and fix defects; `architecture.md` owns durability limits.
-3. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
+4. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
    current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
    recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
    current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-4. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
+5. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
    never the reminder engine; use the same pause-source and idempotency rules.
 
 V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
