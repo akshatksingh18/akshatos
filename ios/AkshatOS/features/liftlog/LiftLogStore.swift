@@ -38,7 +38,7 @@ import SwiftUI
         }
     }
 
-    func startWorkout() {
+    func startWorkout(template: LiftWorkoutTemplate) {
         guard storageAvailable else {
             message = "Lift Log storage is unavailable."
             return
@@ -47,8 +47,16 @@ import SwiftUI
             message = LiftLogError.activeWorkoutExists.localizedDescription
             return
         }
-        let workout = LiftWorkoutSession(startedAt: now())
-        commit(workout)
+        var workout = LiftWorkoutSession(startedAt: now())
+        do {
+            for exercise in template.exercises {
+                _ = try workout.addExercise(name: exercise.name, loadMode: exercise.loadMode,
+                                            equipmentNote: exercise.equipmentNote)
+            }
+            commit(workout)
+        } catch {
+            message = "The \(template.title.lowercased()) template could not be started: \(error.localizedDescription)"
+        }
     }
 
     func addExercise(name: String, loadMode: LiftLoadMode, equipmentNote: String) {
@@ -67,6 +75,16 @@ import SwiftUI
         do {
             try workout.addSet(exerciseID: exerciseID, reps: reps, load: load,
                                completedAt: now())
+            try persistAndReplace(workout)
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    func updateSet(exerciseID: UUID, setID: UUID, reps: Int, load: Double) {
+        guard var workout = active else { return }
+        do {
+            try workout.updateSet(exerciseID: exerciseID, setID: setID, reps: reps, load: load)
             try persistAndReplace(workout)
         } catch {
             message = error.localizedDescription
@@ -104,6 +122,18 @@ import SwiftUI
 
     func exercise(_ id: UUID) -> LiftExerciseRecord? {
         active?.exercises.first { $0.id == id }
+    }
+
+    func lastPerformance(for exercise: LiftExerciseRecord) -> LiftPerformanceReference? {
+        let name = Self.normalizedExerciseName(exercise.name)
+        for workout in finished.sorted(by: { $0.startedAt > $1.startedAt }) {
+            guard let match = workout.exercises.first(where: {
+                Self.normalizedExerciseName($0.name) == name &&
+                    $0.loadMode == exercise.loadMode && !$0.sets.isEmpty
+            }) else { continue }
+            return LiftPerformanceReference(workoutDate: workout.startedAt, exercise: match)
+        }
+        return nil
     }
 
     func backupData() throws -> Data {
@@ -171,6 +201,15 @@ import SwiftUI
     static func weightText(_ value: Double) -> String {
         value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
     }
+
+    private static func normalizedExerciseName(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+}
+
+struct LiftPerformanceReference: Equatable {
+    let workoutDate: Date
+    let exercise: LiftExerciseRecord
 }
 
 struct LiftExerciseSuggestion: Identifiable, Equatable {

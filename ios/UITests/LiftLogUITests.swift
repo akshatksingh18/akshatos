@@ -15,6 +15,13 @@ final class LiftLogUITests: XCTestCase {
         entry.tap()
         XCTAssertTrue(app.descendants(matching: .any)["lift-log-header"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.navigationBars["Lift Log"].exists)
-        XCTAssertTrue(app.buttons["start-lift-workout"].exists || app.buttons["add-lift-exercise"].exists)
+        let start = app.buttons["start-lift-workout"]
+        XCTAssertTrue(start.exists)
+        start.tap()
+        let upper = app.buttons["start-upper-workout"].firstMatch
+        XCTAssertTrue(upper.waitForExistence(timeout: 5))
+        upper.tap()
+        XCTAssertTrue(app.staticTexts["Weighted pull-ups"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Last performance: none yet for this exercise and measurement mode."].exists)
     }
 }

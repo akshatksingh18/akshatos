@@ -8,8 +8,11 @@ WHOOP stays standalone. This repository evolved from Squat Reminder and now pres
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-**Status:** Building. Candidate 0.4.0 (26) adds the local-only Lift Log with per-side plate
-measurement, durable sessions, history, JSON recovery and CSV export. PR #52 is merged at
+**Status:** Building. Working source 0.4.0 (27) adds definitions/examples for every Lift Log mode,
+hard-coded priority-ordered Upper/Lower templates, last-performance references and active-set
+editing; it has not yet been pushed, Swift-compiled or cloud-verified. Build 26
+introduced the local-only Lift Log with per-side plate measurement, durable sessions, history, JSON
+recovery and CSV export. PR #52 is merged at
 `7a4f639`; main run `35870794873` passed the complete CI Gate, including registered domain and
 hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129`
 passed local checksum and IPA validation and is retained in the testing slot, but it is not yet
@@ -75,7 +78,8 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
-  is the accepted copy and Build 26 is the locally validated candidate.
+  is the accepted copy and Build 26 is the locally validated retained candidate while Build 27 is
+  unbuilt working source.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -136,10 +140,12 @@ every feature is physically verified.
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
-  store, history/entry UI, JSON recovery and CSV export.
+  hard-coded Upper/Lower templates, store, history/entry/edit UI, last-performance lookup, JSON
+  recovery and CSV export.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
-  coverage; not yet run through macOS CI.
+  coverage. Build 26 passed macOS CI; Build 27's expanded scenarios have only passed Windows
+  boundary/inventory checks until its branch runs.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
   removal, the single-Reading-book invariant and cover generation.

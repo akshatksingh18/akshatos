@@ -4,12 +4,14 @@ A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for i
 **PageVault** for its PDF library, or **Lift Log** to record strength sessions. ReelVault is reserved
 for later and WHOOP stays a separate app.
 
-**Current state:** Candidate 0.4.0 (26) adds Lift Log with per-side plate measurement, durable
-active sessions, finished history, JSON backup/restore and CSV export. PR #52 is merged at
+**Current state:** Working source 0.4.0 (27) adds concise measurement guidance, priority-ordered
+Upper/Lower templates, same-mode last-performance references and active-set editing to Lift Log; it
+is not yet pushed, compiled or cloud-verified. Build 26 added Lift Log with per-side plate measurement, durable active sessions,
+finished history, JSON backup/restore and CSV export. PR #52 is merged at
 `7a4f639`; main run `35870794873` passed the complete CI Gate, including registered domain and
 hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-129`
-also passed local checksum/IPA validation and is retained for its physical-phone pass; installation,
-data preservation and phone behavior are not yet verified. The proven movement engine has
+also passed local checksum/IPA validation and remains retained until Build 27 produces its replacement;
+installation, data preservation and phone behavior are not yet verified. The proven movement engine has
 been repurposed from squats to **Pushup Reminder**
 without changing its stored sessions, preference keys, backup schema or pending-notification identity.
 Accepted 0.3.0 (25) also introduces a quirky Homebase/quest presentation across the hub,
@@ -41,10 +43,11 @@ App composition, display-only hub, shared styling and the Pushup Reminder featur
 
 - Playful Homebase hub, Pushup Reminder power-up dashboard and PageVault story-quest library;
   Lift Log is an available gold-accent strength portal and ReelVault is a visibly locked future portal.
-- Lift Log records one active workout at a time, defaults each new exercise to plates per side,
-  preserves alternate per-hand/stack/added/total measurement modes, saves after every mutation,
-  recovers unfinished sessions, and exports a restorable JSON backup or reviewable CSV. It never
-  guesses bar, sled or machine resistance; [lift-log.md](lift-log.md) owns the contract and gates.
+- Lift Log asks Upper or Lower at workout start, preloads the confirmed exercises in priority order,
+  shows the last finished performance for the same exercise/mode, and edits active sets. It
+  preserves per-side/per-hand/stack/added/total meanings, saves after every mutation, recovers
+  unfinished sessions, and exports restorable JSON or reviewable CSV. It never guesses bar, sled or
+  machine resistance; [lift-log.md](lift-log.md) owns the contract and gates.
 - Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
 - Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
   minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,

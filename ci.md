@@ -87,12 +87,14 @@ reader change needs its own device pass, owned by
 acceptance gates.
 
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
-per-side load semantics, exercise/set mutation, undo, finish-state enforcement, round-trip
-validation and backup rejection of multiple active workouts. Hosted SwiftData tests cover
+per-side load semantics, priority-ordered Upper/Lower definitions, exercise/set mutation and edit,
+undo, unperformed-template cleanup, finish-state enforcement, round-trip validation and backup
+rejection of multiple active workouts. Hosted SwiftData tests cover
 repository round trips and upsert behavior, save-after-every-mutation active-session recovery,
-validated backup replacement and load-mode-preserving/CSV-escaped export. Its UI test covers the
-Homebase entry and Lift Log destination. Registration and source-boundary checks pass on Windows;
-the suite has not yet run on macOS CI, so no compile or test success is claimed.
+template preloading, persisted editing, same-mode last-performance lookup, validated backup
+replacement and load-mode-preserving/CSV-escaped export. Its UI test covers the Homebase entry,
+Lift Log destination and Upper-template start. Build 26 passed the complete macOS suite; Build 27's
+expanded scenarios have only passed Windows registration and source-boundary checks until its PR runs.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future
 feature must add meaningful domain, integration and UI scenarios; a shared placeholder test alone

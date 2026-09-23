@@ -1,7 +1,9 @@
 # AkshatOS session handoff
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log.
-Candidate 0.4.0 (26) adds the local-only Lift Log. PR #52 is merged at `7a4f639`; main run
+Working source 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+last-performance references and active-set editing; it is not yet pushed, compiled or cloud-verified.
+Build 26 added the local-only Lift Log. PR #52 is merged at `7a4f639`; main run
 `35870794873` passed the complete CI Gate and artifact `akshatos-ios-129` passed local checksum/IPA
 validation. It is retained in the testing slot; installation and phone acceptance remain open.
 Accepted 0.3.0 (25) presents the
@@ -72,9 +74,10 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 
 ## Implemented in source
 
-- Lift Log: feature-owned workout domain and SwiftData store, plates-per-side default plus explicit
-  alternative load meanings, save-after-every-set active-session recovery, finished history,
-  undo/discard/delete controls, validated JSON recovery and CSV export. `lift-log.md` owns its
+- Lift Log: feature-owned workout domain and SwiftData store, hard-coded priority Upper/Lower
+  templates, explicit load meanings and guidance, same-mode last-performance lookup,
+  save-after-every-mutation active-session recovery, set edit/undo/discard/delete controls,
+  finished history, validated JSON recovery and CSV export. `lift-log.md` owns its
   product/privacy/acceptance contract; none of it is cloud- or phone-verified yet.
 - Homebase hub, Pushup power-up dashboard, PageVault story-quest library, shared atmospheric visual
   components, refreshed generated icon, and app-lifetime services across navigation.
@@ -117,8 +120,8 @@ launch or foreground entry; the app does not claim a background midnight executi
 `cloud-build.md` owns every build record: source commits, runs, checksums, retained local artifacts
 and phone findings. Three facts matter when resuming: Build 13 is the detailed legacy movement-loop
 baseline, Build 24 is the accepted PageVault v1 feature baseline, and Build 25 is the accepted
-installed Pushup/presentation baseline while Build 26 is the cloud- and locally-validated candidate
-awaiting installation. One same-ID update without uninstalling has preserved app data
+installed Pushup/presentation baseline, Build 26 is the retained cloud/local artifact, and working
+Build 27 supersedes it for the eventual phone pass once packaged. One same-ID update without uninstalling has preserved app data
 (Build 12 over Build 11).
 Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
@@ -126,8 +129,9 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Lift Log device pass:** install the retained Build-26 candidate over Build 25 without
-   uninstalling, then use disposable data to verify per-side semantics, active-session relaunch and JSON/CSV
+1. **Lift Log Build-27 compile and device pass:** run the complete CI Gate and replace the retained
+   Build-26 candidate, then install over Build 25 without uninstalling and use disposable data to
+   verify per-side semantics, active-session relaunch and JSON/CSV
    recovery without disturbing existing Pushups or PageVault data. Do not publish private history.
 2. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
    and record what the phone shows there and in `../book-reader/CLAUDE.md`. Fix defects before

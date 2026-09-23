@@ -28,6 +28,90 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
         case .total: return "lb total"
         }
     }
+
+    var guidance: String {
+        switch self {
+        case .platesPerSide:
+            return "Enter the plates loaded on one side; the bar, sled, or machine base stays excluded."
+        case .perHand:
+            return "Enter the weight held in one hand; do not add both dumbbells or handles together."
+        case .stack:
+            return "Enter the number selected on the machine's weight stack; do not guess pulley-adjusted resistance."
+        case .addedWeight:
+            return "Enter only the external weight added to a bodyweight exercise; your bodyweight stays excluded."
+        case .total:
+            return "Enter the complete known load, including the bar or machine base only when you actually know it."
+        }
+    }
+
+    var example: String {
+        switch self {
+        case .platesPerSide:
+            return "Example: 25 lb on each side of a Smith squat → enter 25."
+        case .perHand:
+            return "Example: dumbbell bench with 50 lb dumbbells → enter 50."
+        case .stack:
+            return "Example: seated cable row with the pin at 70 lb → enter 70."
+        case .addedWeight:
+            return "Example: weighted pull-ups with a 25 lb plate → enter 25."
+        case .total:
+            return "Example: a 45 lb bar plus 25 lb per side is 95 lb total → enter 95."
+        }
+    }
+}
+
+struct LiftTemplateExercise: Equatable {
+    let name: String
+    let loadMode: LiftLoadMode
+    let equipmentNote: String
+
+    init(_ name: String, _ loadMode: LiftLoadMode, equipmentNote: String = "") {
+        self.name = name
+        self.loadMode = loadMode
+        self.equipmentNote = equipmentNote
+    }
+}
+
+enum LiftWorkoutTemplate: String, CaseIterable, Identifiable {
+    case upper
+    case lower
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .upper: return "Upper day"
+        case .lower: return "Lower day"
+        }
+    }
+
+    /// Ordered from highest to lowest priority. Lower entries may be skipped when time is short.
+    var exercises: [LiftTemplateExercise] {
+        switch self {
+        case .upper:
+            return [
+                LiftTemplateExercise("Weighted pull-ups", .addedWeight),
+                LiftTemplateExercise("Dumbbell bench press", .perHand),
+                LiftTemplateExercise("Seated cable row", .stack),
+                LiftTemplateExercise("Shoulder press", .perHand,
+                                     equipmentNote: "Default: dumbbells"),
+                LiftTemplateExercise("Pec-deck fly", .stack),
+                LiftTemplateExercise("Triceps pushdown", .stack)
+            ]
+        case .lower:
+            return [
+                LiftTemplateExercise("Smith-machine squat", .platesPerSide,
+                                     equipmentNote: "Smith bar resistance excluded"),
+                LiftTemplateExercise("Barbell Romanian deadlift", .platesPerSide,
+                                     equipmentNote: "Bar weight excluded"),
+                LiftTemplateExercise("Leg press", .platesPerSide,
+                                     equipmentNote: "Sled/base resistance excluded"),
+                LiftTemplateExercise("Seated machine leg curl", .stack),
+                LiftTemplateExercise("Seated calf raise", .platesPerSide,
+                                     equipmentNote: "Machine base resistance excluded")
+            ]
+        }
+    }
 }
 
 struct LiftSetRecord: Identifiable, Codable, Equatable {
@@ -107,6 +191,20 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
                                                     completedAt: completedAt))
     }
 
+    mutating func updateSet(exerciseID: UUID, setID: UUID, reps: Int, load: Double) throws {
+        guard isActive else { throw LiftLogError.finishedWorkout }
+        guard reps > 0 else { throw LiftLogError.invalidReps }
+        guard load.isFinite, load >= 0 else { throw LiftLogError.invalidLoad }
+        guard let exerciseIndex = exercises.firstIndex(where: { $0.id == exerciseID }) else {
+            throw LiftLogError.exerciseNotFound
+        }
+        guard let setIndex = exercises[exerciseIndex].sets.firstIndex(where: { $0.id == setID }) else {
+            throw LiftLogError.setNotFound
+        }
+        exercises[exerciseIndex].sets[setIndex].reps = reps
+        exercises[exerciseIndex].sets[setIndex].load = load
+    }
+
     @discardableResult
     mutating func removeLastSet(exerciseID: UUID) throws -> LiftSetRecord {
         guard isActive else { throw LiftLogError.finishedWorkout }
@@ -120,6 +218,7 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     mutating func finish(at date: Date = Date()) throws {
         guard isActive else { throw LiftLogError.finishedWorkout }
         guard setCount > 0 else { throw LiftLogError.emptyWorkout }
+        exercises.removeAll { $0.sets.isEmpty }
         endedAt = max(date, startedAt)
     }
 

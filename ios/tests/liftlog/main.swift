@@ -6,6 +6,7 @@ let squat = try workout.addExercise(name: "  Plate-loaded row  ", loadMode: .pla
                                     equipmentNote: "  machine base unknown  ")
 try workout.addSet(exerciseID: squat, reps: 9, load: 42.5, completedAt: now.addingTimeInterval(60))
 try workout.addSet(exerciseID: squat, reps: 9, load: 42.5, completedAt: now.addingTimeInterval(120))
+let skipped = try workout.addExercise(name: "Optional movement", loadMode: .stack)
 
 assert(workout.exercises.first?.name == "Plate-loaded row", "Exercise names are trimmed")
 assert(workout.exercises.first?.equipmentNote == "machine base unknown", "Notes are trimmed")
@@ -13,10 +14,17 @@ assert(workout.exercises.first?.loadMode == .platesPerSide, "Per-side measuremen
 assert(workout.exercises.first?.latestSet?.load == 42.5, "The stored load is one side, not a fake total")
 assert(workout.setCount == 2, "Every working set is counted")
 
+let firstSet = workout.exercises[0].sets[0]
+try workout.updateSet(exerciseID: squat, setID: firstSet.id, reps: 10, load: 45)
+assert(workout.exercises[0].sets[0].reps == 10 && workout.exercises[0].sets[0].load == 45,
+       "Editing a set preserves identity and changes only its performance")
+
 let removed = try workout.removeLastSet(exerciseID: squat)
 assert(removed.reps == 9 && workout.setCount == 1, "Undo removes only the last set")
 try workout.finish(at: now.addingTimeInterval(600))
 assert(!workout.isActive && workout.endedAt == now.addingTimeInterval(600), "Finishing closes the session")
+assert(!workout.exercises.contains(where: { $0.id == skipped }),
+       "Finishing removes unperformed template exercises from history")
 
 do {
     try workout.addSet(exerciseID: squat, reps: 6, load: 57.5)
@@ -45,4 +53,22 @@ do {
 
 assert(LiftLoadMode.platesPerSide.shortUnit == "lb/side")
 assert(LiftLoadMode.perHand.shortUnit == "lb/hand")
-print("PASS: Lift Log domain assertions (per-side load, sets, finish, validation, backup)")
+assert(LiftLoadMode.platesPerSide.guidance.contains("one side"))
+assert(LiftLoadMode.perHand.example.contains("dumbbell bench"))
+assert(LiftLoadMode.stack.guidance.contains("weight stack"))
+assert(LiftLoadMode.stack.example.contains("seated cable row"))
+assert(LiftLoadMode.addedWeight.guidance.contains("bodyweight"))
+assert(LiftLoadMode.addedWeight.example.contains("weighted pull-ups"))
+assert(LiftLoadMode.total.guidance.contains("complete known load"))
+assert(LiftLoadMode.total.example.contains("95 lb total"))
+assert(LiftWorkoutTemplate.upper.exercises.map(\.name) == [
+    "Weighted pull-ups", "Dumbbell bench press", "Seated cable row", "Shoulder press",
+    "Pec-deck fly", "Triceps pushdown"
+])
+assert(LiftWorkoutTemplate.lower.exercises.map(\.name) == [
+    "Smith-machine squat", "Barbell Romanian deadlift", "Leg press",
+    "Seated machine leg curl", "Seated calf raise"
+])
+assert(LiftWorkoutTemplate.upper.exercises.first?.loadMode == .addedWeight)
+assert(LiftWorkoutTemplate.lower.exercises[3].loadMode == .stack)
+print("PASS: Lift Log domain assertions (templates, per-side load, edit, finish, validation, backup)")
