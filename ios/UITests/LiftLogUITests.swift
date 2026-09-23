@@ -4,11 +4,12 @@ final class LiftLogUITests: XCTestCase {
     func testHubOpensLiftLog() {
         let app = XCUIApplication()
         app.launch()
-        let entry = app.buttons["open-liftLog"]
+        XCTAssertTrue(app.buttons["open-liftLog"].waitForExistence(timeout: 10))
+        let entry = app.staticTexts["Lift Log"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         for _ in 0..<4 {
             if entry.isHittable { break }
-            app.swipeUp()
+            app.scrollViews.firstMatch.swipeUp()
         }
         XCTAssertTrue(entry.isHittable)
         entry.tap()
