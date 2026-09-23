@@ -13,8 +13,10 @@ hard-coded priority-ordered Upper/Lower templates, last-performance references a
 editing. PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including
 registered domain and hosted simulator tests, simulator/device compilation and IPA inspection.
 Artifact `akshatos-ios-133` passed local checksum and IPA validation. Akshat installed Build 27 and
-reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. It remains
-in the testing slot until current-version automatic-refresh enrollment is separately confirmed.
+reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. Sideloadly's
+database confirms version 0.4.0 at the expected final identity, automatic bundle-ID mode, completed
+current-version enrollment, no error and a seven-day expiry. Build 27 is therefore promoted to the
+accepted backup slot.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -76,9 +78,8 @@ every feature is physically verified.
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
-  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
-  is the accepted copy and Build 27 is the installed, phone-accepted candidate awaiting refresh
-  enrollment before promotion.
+  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
+  27 is the accepted copy and `testing\` is empty.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -183,7 +184,8 @@ every feature is physically verified.
   source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
-  Build 25 is the accepted Pushup Reminder/presentation baseline. The
+  Build 25 is the accepted Pushup Reminder/presentation baseline; Build 27 is the current accepted
+  recovery/refresh artifact. The
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.

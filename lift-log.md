@@ -10,8 +10,9 @@ references on exercise cards and set entry, and active-set editing. PR #54 merge
 main run `35925770220` passed boundary checks, registered domain/hosted tests, simulator UI coverage,
 simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133` passed local checksum
 and IPA validation. Akshat installed Build 27 and reports that it works well end-to-end, closing the
-focused physical-phone behavior pass. Current-version automatic-refresh enrollment remains
-unconfirmed, so the artifact is not promoted yet. Build 26 implemented the core feature and is
+focused physical-phone behavior pass. Sideloadly confirms current-version automatic-refresh
+enrollment at the expected final identity in automatic mode, with no error and a seven-day expiry;
+Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
 superseded. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
@@ -64,8 +65,8 @@ remote.
   artifact also passed checksum and IPA validation.
 - Akshat reports the installed Build 27 works well end-to-end on the physical phone. This closes the
   focused Lift Log behavior pass without inventing a more granular checklist than was reported.
-- Confirm current-version automatic-refresh enrollment for the installed signed identity before
-  promoting Build 27 from testing to backup.
+- Current-version automatic-refresh enrollment for the expected signed identity and automatic mode
+  is confirmed; Build 27 is the accepted backup artifact.
 - Until Akshat explicitly activates the source-of-truth switch, `health/fitness/data/lift-log.csv`
   remains the coaching source of truth.
   After activation, phone entries become primary for new sessions only when Akshat explicitly

@@ -7,9 +7,9 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 **Current focus:** Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
-checksum/IPA validation. Akshat reports that the installed Build 27 works well end-to-end, closing
-the focused Lift Log phone-behavior pass. Current-version automatic-refresh enrollment remains open
-before release-cache promotion. Accepted
+checksum/IPA validation. Akshat reports that the installed Build 27 works well end-to-end. Sideloadly
+confirms the expected final identity, automatic bundle-ID mode, completed current-version enrollment,
+no error and a seven-day expiry; Build 27 is promoted to the accepted backup slot. Accepted
 0.3.0 (25) presents the legacy movement engine as Pushup Reminder and refreshes the hub/PageVault
 into the playful Homebase/quest system. Build 13 remains accepted
 evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
@@ -34,8 +34,8 @@ promotion are complete; the broader physical and refresh items below stay open. 
       acceptance item below records Akshat's device result. `lift-log.md` owns the contract.
 
 - [x] **Focused Build-27 Lift Log phone acceptance.** Akshat installed Build 27 and reports that it
-      works well end-to-end. The exact artifact remains in testing until current-version
-      automatic-refresh enrollment is separately confirmed.
+      works well end-to-end. Sideloadly's database confirms its current-version enrollment at the
+      expected final identity in automatic mode, and the exact artifact is promoted to backup.
 
 - [x] **Focused Build-25 phone acceptance.** Complete macOS CI, package inspection, checksum/local
       IPA validation, same-ID Wi-Fi installation and current-version automatic-refresh enrollment
@@ -97,12 +97,6 @@ promotion are complete; the broader physical and refresh items below stay open. 
       its own migration tests. Simulator tests do not replace hardware tests.
 
 ### Open
-
-- [ ] **Confirm Build-27 automatic-refresh enrollment and promote it.** The cloud/local gates and
-      focused phone-behavior pass are complete. Confirm Sideloadly has a completed scheduled row for
-      Build 27's current signed identity/version in automatic bundle-ID mode; then move the exact
-      artifact from testing to backup and retire Build 25 from the one-slot cache. Do not uninstall
-      either data-bearing build to perform this check.
 
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,

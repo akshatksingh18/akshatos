@@ -5,8 +5,9 @@ Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
-Log phone-behavior pass. It remains in testing until current-version automatic-refresh enrollment is
-confirmed. Build 26 added the local-only Lift Log core and is now superseded.
+Log phone-behavior pass. Sideloadly confirms current-version automatic-refresh enrollment at the
+expected final identity in automatic mode, so Build 27 is promoted to the accepted backup slot.
+Build 26 added the local-only Lift Log core and is now superseded.
 Accepted 0.3.0 (25) presents the
 compatibility-preserved movement engine as Pushup Reminder and adds the Homebase/quest visual refresh
 across the hub and PageVault. Retained-candidate commit
@@ -121,8 +122,8 @@ launch or foreground entry; the app does not claim a background midnight executi
 `cloud-build.md` owns every build record: source commits, runs, checksums, retained local artifacts
 and phone findings. Three facts matter when resuming: Build 13 is the detailed legacy movement-loop
 baseline, Build 24 is the accepted PageVault v1 feature baseline, Build 25 is the accepted
-installed Pushup/presentation baseline, and Build 27 is the installed, phone-accepted candidate
-awaiting automatic-refresh evidence before promotion. One same-ID update without uninstalling has preserved app data
+installed Pushup/presentation baseline, and Build 27 is the current accepted recovery/refresh
+artifact. One same-ID update without uninstalling has preserved app data
 (Build 12 over Build 11).
 Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
@@ -130,10 +131,9 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Lift Log Build-27 compile and device pass:** run the complete CI Gate and replace the retained
-   Build-26 candidate, then install over Build 25 without uninstalling and use disposable data to
-   verify per-side semantics, active-session relaunch and JSON/CSV
-   recovery without disturbing existing Pushups or PageVault data. Do not publish private history.
+1. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
+   complete. Keep private history out of the public repository; consider the next scoped convenience
+   improvement only after Akshat chooses it.
 2. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
    and record what the phone shows there and in `../book-reader/CLAUDE.md`. Fix defects before
    calling any reader behavior working.

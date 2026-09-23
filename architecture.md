@@ -6,8 +6,9 @@ chosen defaults — are implemented. Version 0.4.0 (27) adds mode-specific defin
 priority-ordered Upper/Lower template creation, same-name/mode last-performance lookup and persisted
 active-set editing to Lift Log. PR #54 merged at `ebb44d3`; main run `35925770220` passed its complete
 CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. Akshat installed it and
-reports that Build 27 works well end-to-end on the phone; current-version automatic-refresh
-enrollment remains unconfirmed. Build 26 added Lift Log as a separate local-only feature with
+reports that Build 27 works well end-to-end on the phone. Sideloadly confirms current-version
+automatic-refresh enrollment under the expected final identity and mode, so Build 27 is the accepted
+recovery/refresh artifact. Build 26 added Lift Log as a separate local-only feature with
 versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Accepted 0.3.0 (25)
 repurposes its presentation from
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
@@ -28,7 +29,8 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
   build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
-  predecessor, and Build 25 is the accepted Pushup/visual baseline.
+  predecessor, Build 25 is the accepted Pushup/visual baseline, and Build 27 is the current accepted
+  recovery/refresh build.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
   `LiftLogStore`, the sole
