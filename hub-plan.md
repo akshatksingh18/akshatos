@@ -52,18 +52,10 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
     the second.
   - **A new module adds its namespace to that map in the same change that registers its category.**
     Forgetting is not a breakage — an unclaimed notification routes nowhere and the hub stays put,
-    which is the old behaviour.
-- **A file handed over by another app opens the feature that owns its type**, by the same rule.
-  The hub declares document types once for the whole app (`ios/Support/AkshatOS-Info.plist`; today
-  only PDF, for PageVault), and the app layer (`AppServices.openFile`) maps type → feature: it asks
-  the hub for that route and passes the file to the feature's import. Features never learn about hub
-  routes; a new type is declared and mapped in the same change. Types are declared not-in-place
-  with no `UIFileSharingEnabled`, so iOS delivers a copy and the app's Documents stay private. This is
-  a document type, not a share extension: no extra target or App ID.
-- One hub means one system notification identity and permission settings. Explain that location
-  permission serves Pushups, selected video access serves Reels, and Files import (including
-  PageVault's linked inbox folder and shared-in PDFs) serves libraries and explicit Lift Log
-  backup/restore; none of these prompts, and logging a workout itself requests no permission.
+    which is the old behaviour.- One hub means one system notification identity and permission settings. Explain that location
+  permission serves Pushups, selected video access serves Reels, and Files import serves libraries
+  and explicit Lift Log backup/restore; logging a workout itself requests no permission. The hub
+  declares no document types: Open in AkshatOS was tried in Build 28 and removed at Akshat's request.
   Request permissions when their feature is used; do not require location to read a PDF.
 - Version module metadata independently in logically separate stores/directories with namespaced
   settings. Separation is organizational, not an OS security sandbox between modules. No cloud

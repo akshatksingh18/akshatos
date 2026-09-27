@@ -17,10 +17,10 @@ reports that it works well end-to-end, closing the focused Lift Log phone-behavi
 database confirms version 0.4.0 at the expected final identity, automatic bundle-ID mode, completed
 current-version enrollment, no error and a seven-day expiry. Build 27 is therefore promoted to the
 accepted backup slot.
-Working source 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS for
-PDFs. PR #56 merged at `6c08c87`; main run `36328010157` passed the complete CI Gate and artifact
-`akshatos-ios-136` passed local checksum/IPA validation. Build 28 waits in `testing\` for installation
-and its phone pass.
+Build 28 (0.5.0) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS, passed CI and
+artifact validation, and is installed with current-version enrollment. On the phone, linking the
+inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.5.1 (29)
+removes them, keeping only the serialized import path; it awaits CI, a build and installation.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -48,11 +48,8 @@ every feature is physically verified.
   changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
-- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload and the declared PDF
-  document type before publication.
-- `ios/Support/AkshatOS-Info.plist` — the only hand-written Info.plist keys (the PDF document type
-  behind Open in AkshatOS), merged with the generated ones; read with `hub-plan.md`'s file-routing
-  rule before declaring another type.
+- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication,
+  including that no document types or file sharing are declared.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
@@ -87,7 +84,7 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  27 is the accepted copy and `testing\` holds the Build 28 candidate.
+  27 is the accepted copy and `testing\` holds Build 28, which is installed but will not be promoted.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -134,14 +131,13 @@ every feature is physically verified.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
   reading status, the place marker, highlights with their band geometry, folding and area-based
   identity, search matching, snippets and find marks, page themes,
-  page-fitting geometry and ink scanning, the export manifest with restore planning, and the laptop
-  inbox folder's rules), `data/` (versioned SwiftData store,
-  streamed copy-on-import storage, the inbox folder's bookmark/record, export staging, disposable
-  cover and page-measurement caches),
+  page-fitting geometry and ink scanning, and the export manifest with restore planning),
+  `data/` (versioned SwiftData store,
+  streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
-  its fitting screen, book sheet, backup sheet, laptop inbox sheet, the per-book takeaways list, the
-  Takeaways surface, search sheet, the page-jump picker). Product scope and
+  its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
+  search sheet, the page-jump picker). Product scope and
   gates are owned by `../book-reader/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
   reworked highlighter are not. Build 22 found the highlighter stacking marks over each other
@@ -156,7 +152,8 @@ every feature is physically verified.
   coverage. Build 27's expanded scenarios passed the complete PR and clean-main macOS CI gates.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
-  removal, the single-Reading-book invariant and cover generation.
+  removal, the single-Reading-book invariant, cover generation, and serialized imports (simultaneous
+  copies of one file, an import before the library has loaded).
 - `ios/UnitTests/PageVaultBackupTests.swift` — real-file export/restore: full export into a fresh
   library, reading data onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus
   replace against a live library, and malformed or mis-picked exports.
@@ -165,9 +162,6 @@ every feature is physically verified.
   measurement reused after relaunch and removed with its book, and crop boxes applied in points.
 - `ios/UnitTests/PageVaultHighlightTests.swift` — highlights saved through the store and reloaded,
   carried by a full export and restored, rendered into their own PDF, and refused when there are none.
-- `ios/UnitTests/PageVaultInboxTests.swift` — the laptop inbox against a real folder (first link,
-  later passes, settled duplicates/broken files, removed books, relaunch, unlink, a vanished folder)
-  plus Open in delivery clean-up and simultaneous imports of one file.
 - `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
   phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.

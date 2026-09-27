@@ -4,10 +4,9 @@ A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for i
 **PageVault** for its PDF library, or **Lift Log** to record strength sessions. ReelVault is reserved
 for later and WHOOP stays a separate app.
 
-**Current state:** Working source 0.5.0 (28) lets a PDF on the laptop reach PageVault without
-picking it on the phone — a linked OneDrive inbox folder read each time PageVault opens, and Open in
-AkshatOS from other apps' share sheets. Build 28 passed CI and artifact validation and is not yet
-phone-verified. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
+**Current state:** Build 28 (0.5.0) added a PageVault laptop inbox folder and Open in AkshatOS; the
+inbox failed to link on the phone and Akshat asked for both to be removed. Working source 0.5.1 (29)
+removes them and awaits CI and installation. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
 templates, same-mode last-performance references and active-set editing to Lift Log. PR #54 merged
 at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including registered domain and
 hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133`

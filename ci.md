@@ -62,10 +62,9 @@ reading order, page lookup, band geometry and folding, a wider selection extendi
 than stacking one, a mark on the line below staying its own, removal by the area covered, the books
 Takeaways lists and their order, record round trip, records written before highlights existed), search
 (matching, case and accent insensitivity, result limits, one-letter queries, snippet context and
-ellipses, pages with no text), page themes (stored raw values, default, inversion, the retired warm theme mapping to sepia,
-fallback) and the laptop inbox (which listed names count, iCloud placeholders, file identity,
-pending and remembered files, sorting import failures into settled and retried, the pass report).
-49 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
+ellipses, pages with no text) and page themes (stored raw values, default, inversion, the retired warm theme mapping to sepia,
+fallback).
+40 hosted integration tests generate real PDFs to exercise streamed copy-on-import, duplicate
 rejection, unreadable-file cleanup, the bookmarked place across store recreation, bookmarking claiming
 the book and shelving the previous one under Started, finishing a book, cover generation, copy-only
 removal, clearing reading-day rows left by an older build, carrying a warm-paper choice over to
@@ -77,14 +76,12 @@ boxes applied in points, a highlight saved and reloaded, a wider selection exten
 removal clearing the area covered, highlights travelling with an export,
 highlights rendered into their own PDF, the book's own annotations hidden rather than deleted while
 PageVault's namespaced marks are replaced not accumulated, and search over a real text layer
-including an image-only page that finds nothing, and the laptop inbox against a real folder (first
-link, later passes, settled duplicates and broken files, removed books staying removed, relaunch,
-unlink, a vanished folder) plus Open in delivery clean-up and simultaneous imports of one file. UI
-tests cover hub → library → back, the backup sheet, the laptop inbox sheet, and Takeaways reporting
-that nothing is kept yet. `validate-ipa.py` asserts the declared PDF document type on every IPA.
+including an image-only page that finds nothing, and serialized imports (simultaneous copies of one
+file, an import before the library has loaded). UI tests cover hub → library → back, the backup
+sheet, and Takeaways reporting that nothing is kept yet. `validate-ipa.py` asserts that no document
+types or file sharing are declared.
 
-Simulator coverage cannot exercise the system document and folder pickers, a share sheet, OneDrive's
-file provider, the file mover that saves an export,
+Simulator coverage cannot exercise the system document picker, the file mover that saves an export,
 real large-file memory pressure, rotation, paged swipe feel, how the sepia and night pages look, how
 a text selection actually snaps to words and lines, or whether fitted pages read comfortably. Each
 reader change needs its own device pass, owned by

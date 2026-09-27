@@ -4,9 +4,9 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Working source 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in
-AkshatOS. Build 28 passed PR/main CI and local artifact validation and waits in `testing\`; it needs
-installation and the phone pass owned by `../book-reader/CLAUDE.md` before it is described as working. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+**Current focus:** Working source 0.5.1 (29) removes Build 28's PageVault laptop inbox folder and Open
+in AkshatOS at Akshat's request, after linking the folder did nothing on the phone. It needs its PR CI
+Gate, a validated artifact and an install over Build 28 confirming the rest of the app is unchanged. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
 checksum/IPA validation. Akshat reports that the installed Build 27 works well end-to-end. Sideloadly

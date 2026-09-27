@@ -20,9 +20,9 @@ installed build works perfectly, closing the focused launch/presentation pass an
 the accepted recovery/refresh artifact. Build 13 remains the detailed accepted evidence for the
 unchanged lifecycle engine. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
-is not all implemented, and cloud checks cannot establish real device behavior. Working source
-0.5.0 (28) adds PageVault's laptop inbox folder and Open in AkshatOS; Build 28 passed the complete
-PR/main CI Gates and artifact validation but is not yet phone-verified. PageVault's technical
+is not all implemented, and cloud checks cannot establish real device behavior. Build 28 added
+PageVault's laptop inbox folder and Open in AkshatOS; after the inbox failed to link on the phone,
+Akshat asked for both to be removed, and working source 0.5.1 (29) removes them. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation
@@ -37,10 +37,8 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
   `LiftLogStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
-  `OrientationGate` across navigation. It also receives files other apps hand over (`onOpenURL`):
-  `AppServices.openFile` maps the declared type to its feature — PDF to PageVault — requests that
-  hub route and passes the file to the feature's import, per `hub-plan.md`. The document type lives
-  in `ios/Support/AkshatOS-Info.plist`, merged with the generated Info.plist keys.
+  `OrientationGate` across navigation. The app declares no document types and handles no opened
+  files.
   `HubRootView` adapts observed feature state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
@@ -134,10 +132,9 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   process-wide delegate ownership stays with the app coordinator. Reading days are written whenever
   a goal is live, so an unbookmarked day is a real miss rather than an unrecorded gap. Page changes
   persist nothing at all: an explicit bookmark is what moves the place, claims the book as the one
-  being read, and credits the pages covered since the previous bookmark. Every import door — the
-  picker, the linked laptop inbox folder read on each open, and a shared-in PDF — goes through one
-  serialized store path; the inbox's pure rules are `domain/PageVaultInbox.swift` and its folder
-  bookmark/record live in `data/PageVaultStorage.swift`.
+  being read, and credits the pages covered since the previous bookmark. Imports go through one
+  serialized store path that loads the library first, so two copies of a file cannot both pass the
+  duplicate check.
 - `ios/AkshatOS/features/liftlog/`: Foundation-only workout/exercise/set/load-mode and backup
   contracts, a separate versioned SwiftData store, save-before-publish feature store, and SwiftUI
   entry/history/recovery views. Plates-per-side stores one side exactly and never converts unknown

@@ -15,7 +15,6 @@ struct AkshatOSApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataDidBecomeAvailableNotification)) { _ in
                     Task { await delegate.services.squats.refresh() }
                 }
-                .onOpenURL { url in delegate.services.openFile(url) }
         }
     }
 }
@@ -37,15 +36,6 @@ struct AkshatOSApp: App {
         pageVault = PageVaultStore()
         liftLog = LiftLogStore()
         notifications = AppNotificationCoordinator(squats: squats, navigator: navigator)
-    }
-
-    /// A file another app handed over ("Open in AkshatOS"). The app declares PDFs as the only type
-    /// it opens, and PDFs belong to PageVault, so this is the one place that knows both: the file
-    /// goes to PageVault and the hub opens it, the way a tapped notification opens its feature.
-    func openFile(_ url: URL) {
-        guard url.isFileURL, url.pathExtension.lowercased() == "pdf" else { return }
-        navigator.request(.pageVault)
-        Task { await pageVault.importOpenedFile(url) }
     }
 }
 

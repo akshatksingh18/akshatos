@@ -12,12 +12,6 @@ import SwiftUI
     @Published private(set) var coverRevision = 0
     /// Page-measurement progress per book, shown while a book is being fitted. Absent once done.
     @Published private(set) var measuringProgress: [UUID: Double] = [:]
-    /// The linked inbox folder's name, or nil when none is linked.
-    @Published private(set) var inboxFolderName: String?
-    @Published private(set) var inboxReport: PageVaultInboxReport?
-    @Published private(set) var inboxChecking = false
-    /// The linked folder can no longer be reached — moved, deleted, or its access withdrawn.
-    @Published private(set) var inboxNeedsRelink = false
     @Published var message: String?
     /// How the page is tinted. Sepia is the default: this is meant to read like a book, not like a
     /// document viewer.
@@ -53,12 +47,10 @@ import SwiftUI
     private var surveyTasks: [UUID: Task<Void, Never>] = [:]
     private var surveyFailed: Set<UUID> = []
     private var loaded = false
-    private var inboxState: PageVaultInboxState?
-    /// Imports run one at a time, whichever door they came through — the picker, another app, or
-    /// the inbox folder — so two copies of one file can never both pass the duplicate check.
+    /// Imports run one at a time — several picked files, or a second pick while one is copying —
+    /// so two copies of one file can never both pass the duplicate check.
     private var importTail: Task<Void, Never>?
-    /// Overlapping work — an inbox pass while another app hands over a file — must not clear `busy`
-    /// when only the first of them finishes.
+    /// Overlapping work must not clear `busy` when only the first of it finishes.
     private var busyCount = 0 {
         didSet { busy = busyCount > 0 }
     }
@@ -123,8 +115,8 @@ import SwiftUI
             try? repository.purgeReadingDays()
             storageAvailable = true
             loaded = true
-            inboxState = storage.readInboxState()
-            inboxFolderName = inboxState?.folderName
+            // The laptop inbox folder was removed after Build 28; drop any record it left.
+            storage.clearRetiredInboxRecord()
             await ensureCovers()
             // Books imported before page fitting existed are measured in the background.
             Task { await ensureLayouts() }
@@ -134,8 +126,7 @@ import SwiftUI
         }
     }
 
-    /// Loads the library once if nothing has yet. A file handed over by another app can arrive
-    /// before PageVault's screen has ever appeared, and the duplicate check needs the library.
+    /// Loads the library once if nothing has yet, because the duplicate check needs it.
     private func ensureLoaded() async {
         if !loaded { await load() }
     }
@@ -146,21 +137,6 @@ import SwiftUI
         }
     }
 
-    /// "Open in AkshatOS" from another app. iOS delivers its own copy of the file, which is removed
-    /// once PageVault has made one, whether or not the import succeeded.
-    func importOpenedFile(_ url: URL) async {
-        let result = await addBook(from: url)
-        storage?.discardDelivered(url)
-        switch result {
-        case .success(let book):
-            message = "\"\(book.title)\" is in your library."
-        case .failure(let failure):
-            message = failure.message
-        }
-    }
-
-    /// Imports one PDF and reports what happened instead of announcing it, so a quiet caller such
-    /// as the inbox folder can decide what is worth saying.
     private func addBook(from source: URL) async -> Result<PageVaultBook, PageVaultImportFailure> {
         await ensureLoaded()
         guard let storage, storageAvailable else {
@@ -203,102 +179,6 @@ import SwiftUI
         }
         importTail = Task { _ = await task.value }
         return await task.value
-    }
-
-    // MARK: - Inbox folder
-
-    /// Links a folder the user picked — normally one in OneDrive that the laptop saves into — and
-    /// runs a first pass, which adds every PDF already there. Linking again starts a fresh record.
-    /// Returns why linking failed, for the sheet that asked, since the library's alert sits under it.
-    @discardableResult
-    func linkInbox(_ folder: URL) async -> String? {
-        guard let storage else { return PageVaultImportFailure.storage("the app container is unavailable").message }
-        let scoped = folder.startAccessingSecurityScopedResource()
-        defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
-        do {
-            let state = PageVaultInboxState(bookmark: try storage.bookmark(for: folder),
-                                            folderName: folder.lastPathComponent, linkedAt: now())
-            try storage.writeInboxState(state)
-            inboxState = state
-            inboxFolderName = state.folderName
-            inboxNeedsRelink = false
-            inboxReport = nil
-        } catch {
-            return "That folder could not be linked: \(error.localizedDescription)"
-        }
-        await syncInbox()
-        return nil
-    }
-
-    /// Forgets the folder. Nothing in it, and nothing already added from it, changes.
-    func unlinkInbox() {
-        try? storage?.writeInboxState(nil)
-        inboxState = nil
-        inboxFolderName = nil
-        inboxReport = nil
-        inboxNeedsRelink = false
-    }
-
-    /// Copies in every PDF that has appeared in the linked folder since the last pass. The folder is
-    /// only read: files stay where the laptop put them, and a file already dealt with is skipped
-    /// without being read again. Problems are reported in `inboxReport`, never as an alert, because
-    /// this runs every time PageVault opens.
-    func syncInbox() async {
-        await ensureLoaded()
-        guard let storage, storageAvailable, !inboxChecking, let started = inboxState else { return }
-        inboxChecking = true
-        defer { inboxChecking = false }
-
-        let resolved: (folder: URL, isStale: Bool)
-        do {
-            resolved = try storage.resolveInbox(started.bookmark)
-        } catch {
-            inboxNeedsRelink = true
-            return
-        }
-        let folder = resolved.folder
-        let scoped = folder.startAccessingSecurityScopedResource()
-        defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
-
-        var state = started
-        if resolved.isStale, let renewed = try? storage.bookmark(for: folder) {
-            state.bookmark = renewed
-        }
-        let listed: [PageVaultStorage.PageVaultInboxEntry]
-        do {
-            listed = try await Task.detached(priority: .utility) { try storage.listInbox(folder) }.value
-        } catch {
-            inboxNeedsRelink = true
-            return
-        }
-        inboxNeedsRelink = false
-
-        var report = PageVaultInboxReport(checkedAt: now())
-        var newlySettled: [PageVaultInboxFile] = []
-        let locations = Dictionary(listed.map { ($0.file.name, $0.url) },
-                                   uniquingKeysWith: { first, _ in first })
-        for file in PageVaultInbox.pending(listed.map(\.file), settled: state.settled) {
-            guard let url = locations[file.name] else { continue }
-            let outcome: PageVaultInboxOutcome
-            switch await addBook(from: url) {
-            case .success(let book): outcome = .added(title: book.title)
-            case .failure(let failure): outcome = PageVaultInbox.outcome(for: failure, name: file.name)
-            }
-            report.record(outcome)
-            if outcome.settles { newlySettled.append(file) }
-        }
-        state.settled = PageVaultInbox.settled(previous: state.settled, newlySettled: newlySettled,
-                                               listed: listed.map(\.file))
-
-        // Unlinked or relinked while this pass ran: the newer choice wins and this record is dropped.
-        guard inboxState?.bookmark == started.bookmark else { return }
-        do {
-            try storage.writeInboxState(state)
-            inboxState = state
-        } catch {
-            report.deferred.append("The record of added files could not be saved: \(error.localizedDescription)")
-        }
-        inboxReport = report
     }
 
     /// Opening a book only refreshes recency. Reading progress is counted from bookmark to

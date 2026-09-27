@@ -1,10 +1,10 @@
 # AkshatOS session handoff
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log.
-Build 28 / 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS. PR #56
-merged at `6c08c87`; main run `36328010157` passed the complete CI Gate and artifact
-`akshatos-ios-136` passed local checksum/IPA validation. It waits in `testing\` for installation and
-its phone pass. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+Build 28 / 0.5.0 (28) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS; it is
+installed and enrolled, but linking the folder did nothing on the phone and Akshat asked for both
+features to be removed. Working source 0.5.1 (29), on branch `feature/remove-inbox-open-in`, removes
+them and needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -108,9 +108,9 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   Reading book at a time, highlights with Takeaways and a PDF export, full-text search, and
   folder/JSON export with validated, conflict-aware restore. Its reading loop is phone-confirmed as
   of Build 20; reading streaks were removed in Build 21. Build 22's pass reworked the highlighter
-  after it was found stacking marks; `cloud-build.md` owns that finding. Source for 0.5.0 (28) adds a
-  linked OneDrive laptop inbox folder read on every open and Open in AkshatOS for PDFs, both through
-  one serialized import path; both pass CI but are not phone-verified yet.
+  after it was found stacking marks; `cloud-build.md` owns that finding. Imports run through one
+  serialized store path. The laptop inbox folder and Open in AkshatOS from Build 28 are removed in
+  0.5.1 (29) at Akshat's request; do not re-propose them.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` and `features/pagevault/` own their domain, data,
@@ -136,11 +136,10 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Laptop-to-PageVault import (Build 28):** the validated candidate is in
-   `..\final-ipas\akshatos\testing\akshatos-build-28-6c08c87`. Install it over Build 27 (same ID, no
-   uninstall), then run the inbox/Open in phone checks in `../book-reader/CLAUDE.md`'s acceptance
-   matrix and confirm current-version enrollment before promotion. On the phone he needs the OneDrive
-   app installed and enabled as a Files location before linking.
+1. **Build 29 removal:** after Akshat confirms the public push, pass the PR CI Gate, merge, validate
+   the main-run artifact into `testing\` (replacing Build 28), then install it over Build 28 without
+   uninstalling. Check that PageVault no longer shows the inbox button, the library, Pushups and Lift
+   Log are intact, and current-version enrollment holds before promoting Build 29 to `backup\`.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.
