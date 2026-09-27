@@ -21,8 +21,8 @@ the accepted recovery/refresh artifact. Build 13 remains the detailed accepted e
 unchanged lifecycle engine. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. Working source
-0.5.0 (28) adds PageVault's laptop inbox folder and Open in AkshatOS; it is not yet CI- or
-phone-verified. PageVault's technical
+0.5.0 (28) adds PageVault's laptop inbox folder and Open in AkshatOS; Build 28 passed the complete
+PR/main CI Gates and artifact validation but is not yet phone-verified. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation

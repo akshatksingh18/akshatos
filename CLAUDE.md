@@ -18,7 +18,9 @@ database confirms version 0.4.0 at the expected final identity, automatic bundle
 current-version enrollment, no error and a seven-day expiry. Build 27 is therefore promoted to the
 accepted backup slot.
 Working source 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS for
-PDFs; it is implemented and locally checked but awaits its PR CI Gate, a build and a phone pass.
+PDFs. PR #56 merged at `6c08c87`; main run `36328010157` passed the complete CI Gate and artifact
+`akshatos-ios-136` passed local checksum/IPA validation. Build 28 waits in `testing\` for installation
+and its phone pass.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -85,7 +87,7 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  27 is the accepted copy and `testing\` is empty.
+  27 is the accepted copy and `testing\` holds the Build 28 candidate.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by

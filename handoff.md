@@ -1,9 +1,10 @@
 # AkshatOS session handoff
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log.
-Working source 0.5.0 (28), on branch `feature/pagevault-inbox-open-in`, adds PageVault's OneDrive
-laptop inbox folder and Open in AkshatOS; it is locally checked only and needs its PR CI Gate, an
-artifact and a phone pass. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+Build 28 / 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS. PR #56
+merged at `6c08c87`; main run `36328010157` passed the complete CI Gate and artifact
+`akshatos-ios-136` passed local checksum/IPA validation. It waits in `testing\` for installation and
+its phone pass. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -109,7 +110,7 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   of Build 20; reading streaks were removed in Build 21. Build 22's pass reworked the highlighter
   after it was found stacking marks; `cloud-build.md` owns that finding. Source for 0.5.0 (28) adds a
   linked OneDrive laptop inbox folder read on every open and Open in AkshatOS for PDFs, both through
-  one serialized import path; neither is CI- or phone-verified yet.
+  one serialized import path; both pass CI but are not phone-verified yet.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` and `features/pagevault/` own their domain, data,
@@ -135,10 +136,11 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Laptop-to-PageVault import (0.5.0 (28)):** publish the branch after Akshat confirms the public
-   push, pass its PR CI Gate, merge, validate the main-run artifact into `testing\`, then hand it over
-   for the inbox/Open in phone checks listed in `../book-reader/CLAUDE.md`'s acceptance matrix. On the
-   phone he needs the OneDrive app installed and enabled as a Files location before linking.
+1. **Laptop-to-PageVault import (Build 28):** the validated candidate is in
+   `..\final-ipas\akshatos\testing\akshatos-build-28-6c08c87`. Install it over Build 27 (same ID, no
+   uninstall), then run the inbox/Open in phone checks in `../book-reader/CLAUDE.md`'s acceptance
+   matrix and confirm current-version enrollment before promotion. On the phone he needs the OneDrive
+   app installed and enabled as a Files location before linking.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.
