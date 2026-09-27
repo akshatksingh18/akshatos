@@ -40,7 +40,9 @@ owns build and device evidence.
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.4.0 (27)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.5.0 (28)**; minimum iOS 17.
+  0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS and has not been
+  built yet; the facts below describe the accepted Build 27.
   Build 27 passed the complete PR and main-branch CI Gates, package inspection, checksum and local IPA
   validation. Build 27 is installed, phone-accepted, enrolled for current-version automatic refresh
   at the expected identity/mode, and retained in the local backup slot; `testing\` is empty. Build

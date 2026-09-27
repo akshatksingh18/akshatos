@@ -12,6 +12,12 @@ import SwiftUI
     @Published private(set) var coverRevision = 0
     /// Page-measurement progress per book, shown while a book is being fitted. Absent once done.
     @Published private(set) var measuringProgress: [UUID: Double] = [:]
+    /// The linked inbox folder's name, or nil when none is linked.
+    @Published private(set) var inboxFolderName: String?
+    @Published private(set) var inboxReport: PageVaultInboxReport?
+    @Published private(set) var inboxChecking = false
+    /// The linked folder can no longer be reached — moved, deleted, or its access withdrawn.
+    @Published private(set) var inboxNeedsRelink = false
     @Published var message: String?
     /// How the page is tinted. Sepia is the default: this is meant to read like a book, not like a
     /// document viewer.
@@ -46,6 +52,16 @@ import SwiftUI
     private var cropCache: [UUID: [PageVaultInkBox?]] = [:]
     private var surveyTasks: [UUID: Task<Void, Never>] = [:]
     private var surveyFailed: Set<UUID> = []
+    private var loaded = false
+    private var inboxState: PageVaultInboxState?
+    /// Imports run one at a time, whichever door they came through — the picker, another app, or
+    /// the inbox folder — so two copies of one file can never both pass the duplicate check.
+    private var importTail: Task<Void, Never>?
+    /// Overlapping work — an inbox pass while another app hands over a file — must not clear `busy`
+    /// when only the first of them finishes.
+    private var busyCount = 0 {
+        didSet { busy = busyCount > 0 }
+    }
 
     init(repository: (any PageVaultRepository)? = nil,
          storage: PageVaultStorage? = nil,
@@ -96,13 +112,19 @@ import SwiftUI
             message = PageVaultImportFailure.storage("the app container is unavailable").message
             return
         }
-        storage.clearAbandonedStaging()
-        storage.clearOutgoing()
+        // Scratch space belongs to whatever is running. Only when nothing is may leftovers go.
+        if busyCount == 0 {
+            storage.clearAbandonedStaging()
+            storage.clearOutgoing()
+        }
         do {
             library = try repository.load()
             // Reading streaks are gone; clear any per-day rows an older build left behind.
             try? repository.purgeReadingDays()
             storageAvailable = true
+            loaded = true
+            inboxState = storage.readInboxState()
+            inboxFolderName = inboxState?.folderName
             await ensureCovers()
             // Books imported before page fitting existed are measured in the background.
             Task { await ensureLayouts() }
@@ -112,34 +134,171 @@ import SwiftUI
         }
     }
 
+    /// Loads the library once if nothing has yet. A file handed over by another app can arrive
+    /// before PageVault's screen has ever appeared, and the duplicate check needs the library.
+    private func ensureLoaded() async {
+        if !loaded { await load() }
+    }
+
     func importBook(from source: URL) async {
-        guard let storage else {
-            message = PageVaultImportFailure.storage("the app container is unavailable").message
+        if case .failure(let failure) = await addBook(from: source) {
+            message = failure.message
+        }
+    }
+
+    /// "Open in AkshatOS" from another app. iOS delivers its own copy of the file, which is removed
+    /// once PageVault has made one, whether or not the import succeeded.
+    func importOpenedFile(_ url: URL) async {
+        let result = await addBook(from: url)
+        storage?.discardDelivered(url)
+        switch result {
+        case .success(let book):
+            message = "\"\(book.title)\" is in your library."
+        case .failure(let failure):
+            message = failure.message
+        }
+    }
+
+    /// Imports one PDF and reports what happened instead of announcing it, so a quiet caller such
+    /// as the inbox folder can decide what is worth saying.
+    private func addBook(from source: URL) async -> Result<PageVaultBook, PageVaultImportFailure> {
+        await ensureLoaded()
+        guard let storage, storageAvailable else {
+            return .failure(.storage("the app container is unavailable"))
+        }
+        return await serially { [self] in
+            busyCount += 1
+            defer { busyCount -= 1 }
+            // Read inside the queue, so it includes whatever the import before this one added.
+            let known = Dictionary(library.books.map { ($0.fingerprint, $0.title) },
+                                   uniquingKeysWith: { first, _ in first })
+            let documents = self.documents
+            let importedAt = now()
+            do {
+                let outcome = try await Task.detached(priority: .userInitiated) {
+                    try Self.performImport(source: source, storage: storage, documents: documents,
+                                           known: known, importedAt: importedAt)
+                }.value
+                try library.insert(outcome.book)
+                try repository.save(outcome.book)
+                lastImportSummary = Self.summary(for: outcome)
+                await ensureCover(for: outcome.book)
+                // Measured right after import, so the book normally opens already fitted.
+                let imported = outcome.book
+                Task { await ensureLayout(for: imported) }
+                return .success(imported)
+            } catch let failure as PageVaultImportFailure {
+                return .failure(failure)
+            } catch {
+                return .failure(.storage(error.localizedDescription))
+            }
+        }
+    }
+
+    private func serially<T: Sendable>(_ work: @escaping @MainActor () async -> T) async -> T {
+        let previous = importTail
+        let task = Task { @MainActor () -> T in
+            await previous?.value
+            return await work()
+        }
+        importTail = Task { _ = await task.value }
+        return await task.value
+    }
+
+    // MARK: - Inbox folder
+
+    /// Links a folder the user picked — normally one in OneDrive that the laptop saves into — and
+    /// runs a first pass, which adds every PDF already there. Linking again starts a fresh record.
+    /// Returns why linking failed, for the sheet that asked, since the library's alert sits under it.
+    @discardableResult
+    func linkInbox(_ folder: URL) async -> String? {
+        guard let storage else { return PageVaultImportFailure.storage("the app container is unavailable").message }
+        let scoped = folder.startAccessingSecurityScopedResource()
+        defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
+        do {
+            let state = PageVaultInboxState(bookmark: try storage.bookmark(for: folder),
+                                            folderName: folder.lastPathComponent, linkedAt: now())
+            try storage.writeInboxState(state)
+            inboxState = state
+            inboxFolderName = state.folderName
+            inboxNeedsRelink = false
+            inboxReport = nil
+        } catch {
+            return "That folder could not be linked: \(error.localizedDescription)"
+        }
+        await syncInbox()
+        return nil
+    }
+
+    /// Forgets the folder. Nothing in it, and nothing already added from it, changes.
+    func unlinkInbox() {
+        try? storage?.writeInboxState(nil)
+        inboxState = nil
+        inboxFolderName = nil
+        inboxReport = nil
+        inboxNeedsRelink = false
+    }
+
+    /// Copies in every PDF that has appeared in the linked folder since the last pass. The folder is
+    /// only read: files stay where the laptop put them, and a file already dealt with is skipped
+    /// without being read again. Problems are reported in `inboxReport`, never as an alert, because
+    /// this runs every time PageVault opens.
+    func syncInbox() async {
+        await ensureLoaded()
+        guard let storage, storageAvailable, !inboxChecking, let started = inboxState else { return }
+        inboxChecking = true
+        defer { inboxChecking = false }
+
+        let resolved: (folder: URL, isStale: Bool)
+        do {
+            resolved = try storage.resolveInbox(started.bookmark)
+        } catch {
+            inboxNeedsRelink = true
             return
         }
-        busy = true
-        defer { busy = false }
-        let known = Dictionary(library.books.map { ($0.fingerprint, $0.title) },
-                               uniquingKeysWith: { first, _ in first })
-        let documents = self.documents
-        let importedAt = now()
-        do {
-            let outcome = try await Task.detached(priority: .userInitiated) {
-                try Self.performImport(source: source, storage: storage, documents: documents,
-                                       known: known, importedAt: importedAt)
-            }.value
-            try library.insert(outcome.book)
-            try repository.save(outcome.book)
-            lastImportSummary = Self.summary(for: outcome)
-            await ensureCover(for: outcome.book)
-            // Measured right after import, so the book normally opens already fitted.
-            let imported = outcome.book
-            Task { await ensureLayout(for: imported) }
-        } catch let failure as PageVaultImportFailure {
-            message = failure.message
-        } catch {
-            message = PageVaultImportFailure.storage(error.localizedDescription).message
+        let folder = resolved.folder
+        let scoped = folder.startAccessingSecurityScopedResource()
+        defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
+
+        var state = started
+        if resolved.isStale, let renewed = try? storage.bookmark(for: folder) {
+            state.bookmark = renewed
         }
+        let listed: [PageVaultStorage.PageVaultInboxEntry]
+        do {
+            listed = try await Task.detached(priority: .utility) { try storage.listInbox(folder) }.value
+        } catch {
+            inboxNeedsRelink = true
+            return
+        }
+        inboxNeedsRelink = false
+
+        var report = PageVaultInboxReport(checkedAt: now())
+        var newlySettled: [PageVaultInboxFile] = []
+        let locations = Dictionary(listed.map { ($0.file.name, $0.url) },
+                                   uniquingKeysWith: { first, _ in first })
+        for file in PageVaultInbox.pending(listed.map(\.file), settled: state.settled) {
+            guard let url = locations[file.name] else { continue }
+            let outcome: PageVaultInboxOutcome
+            switch await addBook(from: url) {
+            case .success(let book): outcome = .added(title: book.title)
+            case .failure(let failure): outcome = PageVaultInbox.outcome(for: failure, name: file.name)
+            }
+            report.record(outcome)
+            if outcome.settles { newlySettled.append(file) }
+        }
+        state.settled = PageVaultInbox.settled(previous: state.settled, newlySettled: newlySettled,
+                                               listed: listed.map(\.file))
+
+        // Unlinked or relinked while this pass ran: the newer choice wins and this record is dropped.
+        guard inboxState?.bookmark == started.bookmark else { return }
+        do {
+            try storage.writeInboxState(state)
+            inboxState = state
+        } catch {
+            report.deferred.append("The record of added files could not be saved: \(error.localizedDescription)")
+        }
+        inboxReport = report
     }
 
     /// Opening a book only refreshes recency. Reading progress is counted from bookmark to
@@ -263,8 +422,8 @@ import SwiftUI
             throw PageVaultBackupError.storage("the app container is unavailable")
         }
         guard !library.books.isEmpty else { throw PageVaultBackupError.emptyLibrary }
-        busy = true
-        defer { busy = false }
+        busyCount += 1
+        defer { busyCount -= 1 }
         let backup = PageVaultBackup(createdAt: now(), library: library,
                                      includesDocuments: includeDocuments)
         let manifest = try backup.encoded()
@@ -295,8 +454,8 @@ import SwiftUI
         }
         let live = library.books.first { $0.id == book.id } ?? book
         guard !live.highlights.isEmpty else { throw PageVaultBackupError.noHighlights }
-        busy = true
-        defer { busy = false }
+        busyCount += 1
+        defer { busyCount -= 1 }
         let data = PageVaultHighlightService.exportPDF(for: live, generatedAt: now())
         let name = "\(PageVaultBackup.safeName(live.title)) highlights"
         return try await Task.detached(priority: .userInitiated) {
@@ -340,8 +499,8 @@ import SwiftUI
         guard plan.hasWork else {
             throw PageVaultBackupError.nothingToRestore(missingDocuments: plan.missingDocuments.count)
         }
-        busy = true
-        defer { busy = false }
+        busyCount += 1
+        defer { busyCount -= 1 }
         let additions = plan.additions
         let source = prepared.source
         let documents = self.documents

@@ -7,8 +7,10 @@ struct PageVaultLibraryView: View {
 
     @State private var showImporter = false
     @State private var showBackup = false
+    @State private var showInbox = false
     @State private var pendingRemoval: PageVaultBook?
     @State private var detail: PageVaultBook?
+    @Environment(\.scenePhase) private var scenePhase
 
     private let columns = [GridItem(.adaptive(minimum: 104), spacing: 16)]
 
@@ -35,7 +37,14 @@ struct PageVaultLibraryView: View {
         }
         .background(AppBackdrop())
         .navigationTitle("PageVault")
-        .task { await store.load() }
+        .task {
+            await store.load()
+            await store.syncInbox()
+        }
+        // Coming back from the laptop's side of things is the moment a new PDF is most likely waiting.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await store.syncInbox() } }
+        }
         .sheet(item: $detail) { book in
             PageVaultBookSheet(store: store, bookID: book.id)
         }
@@ -105,15 +114,42 @@ struct PageVaultLibraryView: View {
             }
             .buttonStyle(ActionStyle())
             .accessibilityIdentifier("pagevault-backup")
+            Button {
+                showInbox = true
+            } label: {
+                Label(store.inboxFolderName == nil ? "Link a laptop inbox" : "Laptop inbox",
+                      systemImage: "tray.and.arrow.down")
+            }
+            .buttonStyle(ActionStyle())
+            .disabled(!store.storageAvailable)
+            .accessibilityIdentifier("pagevault-inbox")
+            inboxStatus
         }
         .sheet(isPresented: $showBackup) { PageVaultBackupSheet(store: store) }
+        .sheet(isPresented: $showInbox) { PageVaultInboxSheet(store: store) }
+    }
+
+    /// One quiet line about the inbox folder: while it is being read, and afterwards only when
+    /// something was added or needs attention.
+    @ViewBuilder private var inboxStatus: some View {
+        if store.inboxChecking {
+            Label("Checking \(store.inboxFolderName ?? "your inbox")…", systemImage: "tray.and.arrow.down")
+                .font(.caption).foregroundStyle(Palette.muted)
+        } else if store.inboxNeedsRelink {
+            Label("Your inbox folder needs linking again.", systemImage: "exclamationmark.triangle")
+                .font(.caption).foregroundStyle(Palette.coral)
+        } else if let report = store.inboxReport, report.isNews {
+            Label(report.summary, systemImage: "tray.and.arrow.down")
+                .font(.caption).foregroundStyle(Palette.muted)
+                .accessibilityIdentifier("pagevault-inbox-status")
+        }
     }
 
     private var emptyState: some View {
         AccentSurface(accent: Palette.violet) {
             QuestBadge(text: "Vault empty", icon: "moon.stars.fill", accent: Palette.violet)
             Text("No books yet").font(.headline)
-            Text("Drop in a PDF from Files or iCloud Drive. Your first story quest starts there.")
+            Text("Drop in a PDF from Files, share one from another app, or link a laptop inbox folder. Your first story quest starts there.")
                 .font(.subheadline).foregroundStyle(Palette.muted)
         }
         .accessibilityElement(children: .combine)

@@ -27,9 +27,11 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos
         PRODUCT_NAME: AkshatOS
-        MARKETING_VERSION: "0.4.0"
-        CURRENT_PROJECT_VERSION: "27"
+        MARKETING_VERSION: "0.5.0"
+        CURRENT_PROJECT_VERSION: "28"
         GENERATE_INFOPLIST_FILE: "YES"
+        # Merged with the generated keys: holds only the PDF document type ("Open in AkshatOS").
+        INFOPLIST_FILE: Support/AkshatOS-Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: AkshatOS
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
