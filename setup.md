@@ -23,6 +23,12 @@ AkshatOS Build 25 was then installed over Build 24 by Wi-Fi on 2026-09-21 and re
 Sideloadly's database corroborates version 0.3.0 at the same final signed identity, automatic bundle-ID
 mode, a completed current-version automatic-refresh registration, no error and a seven-day expiry.
 Launch/data preservation and a future actual refresh cycle remain separate gates.
+AkshatOS Build 27 was installed over the same identity on 2026-09-23. Akshat reports end-to-end app
+behavior is good, and the database corroborates version 0.4.0, final identity
+`com.akshatksingh18.akshatos.5564K8D4SV`, automatic bundle-ID mode, completed current-version
+enrollment, no error, and expiry on 2026-09-30 at 17:24 local. Build 27 is the accepted backup;
+`everRefreshed: false` is expected for this newly installed version and does not block enrollment or
+promotion, while a later daemon refresh remains separate ongoing-cycle evidence.
 
 ## The two halves, and why they are separate
 

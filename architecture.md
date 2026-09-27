@@ -5,8 +5,10 @@
 chosen defaults — are implemented. Version 0.4.0 (27) adds mode-specific definitions/examples,
 priority-ordered Upper/Lower template creation, same-name/mode last-performance lookup and persisted
 active-set editing to Lift Log. PR #54 merged at `ebb44d3`; main run `35925770220` passed its complete
-CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. It has not been
-installed or verified on a phone. Build 26 added Lift Log as a separate local-only feature with
+CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. Akshat installed it and
+reports that Build 27 works well end-to-end on the phone. Sideloadly confirms current-version
+automatic-refresh enrollment under the expected final identity and mode, so Build 27 is the accepted
+recovery/refresh artifact. Build 26 added Lift Log as a separate local-only feature with
 versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Accepted 0.3.0 (25)
 repurposes its presentation from
 Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
@@ -18,7 +20,9 @@ installed build works perfectly, closing the focused launch/presentation pass an
 the accepted recovery/refresh artifact. Build 13 remains the detailed accepted evidence for the
 unchanged lifecycle engine. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
-is not all implemented, and cloud checks cannot establish real device behavior. PageVault's technical
+is not all implemented, and cloud checks cannot establish real device behavior. Working source
+0.5.0 (28) adds PageVault's laptop inbox folder and Open in AkshatOS; it is not yet CI- or
+phone-verified. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation
@@ -27,12 +31,16 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
   build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
-  predecessor, and Build 25 is the accepted Pushup/visual baseline.
+  predecessor, Build 25 is the accepted Pushup/visual baseline, and Build 27 is the current accepted
+  recovery/refresh build.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
   `LiftLogStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
-  `OrientationGate` across navigation.
+  `OrientationGate` across navigation. It also receives files other apps hand over (`onOpenURL`):
+  `AppServices.openFile` maps the declared type to its feature — PDF to PageVault — requests that
+  hub route and passes the file to the feature's import, per `hub-plan.md`. The document type lives
+  in `ios/Support/AkshatOS-Info.plist`, merged with the generated Info.plist keys.
   `HubRootView` adapts observed feature state into
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
@@ -126,7 +134,10 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   process-wide delegate ownership stays with the app coordinator. Reading days are written whenever
   a goal is live, so an unbookmarked day is a real miss rather than an unrecorded gap. Page changes
   persist nothing at all: an explicit bookmark is what moves the place, claims the book as the one
-  being read, and credits the pages covered since the previous bookmark.
+  being read, and credits the pages covered since the previous bookmark. Every import door — the
+  picker, the linked laptop inbox folder read on each open, and a shared-in PDF — goes through one
+  serialized store path; the inbox's pure rules are `domain/PageVaultInbox.swift` and its folder
+  bookmark/record live in `data/PageVaultStorage.swift`.
 - `ios/AkshatOS/features/liftlog/`: Foundation-only workout/exercise/set/load-mode and backup
   contracts, a separate versioned SwiftData store, save-before-publish feature store, and SwiftUI
   entry/history/recovery views. Plates-per-side stores one side exactly and never converts unknown

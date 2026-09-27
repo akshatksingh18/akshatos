@@ -14,10 +14,14 @@ installed and fully confirmed on the phone**: it hides the book's own markup, ad
 jump, and opens the feature that sent a notification. **Build 27 / 0.4.0 (27)** adds mode guidance,
 priority-ordered Upper/Lower templates, same-mode last-performance references and active-set editing.
 PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate and published
-`akshatos-ios-133`. Its SHA-256 matched locally and `validate-ipa.py` passed; the candidate is retained
-under `..\final-ipas\akshatos\testing\akshatos-build-27-ebb44d3`. It has not been installed or
-phone-accepted. Build 26 added the local-only Lift Log core and is now superseded. **0.3.0 (25) is the accepted installed
-build**:
+`akshatos-ios-133`. Its SHA-256 matched locally and `validate-ipa.py` passed. Akshat installed Build
+27 and reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. The
+Sideloadly database confirms version 0.4.0 at `com.akshatksingh18.akshatos.5564K8D4SV`, automatic
+bundle-ID mode, completed current-version enrollment, no error and expiry on 2026-09-30 at 17:24
+local. Build 27 is promoted to `..\final-ipas\akshatos\backup\akshatos-build-27-ebb44d3`; Build 25's
+local backup copy was removed and remains reproducible from its recorded run. Build 26 added the
+local-only Lift Log core and is now superseded. **0.3.0 (25) is the accepted Pushup/presentation
+baseline**:
 it presents the movement feature as Pushup Reminder and introduces the playful Homebase/quest visual
 system across the hub and PageVault. Retained-candidate commit `4253311` passed workflow-dispatch run
 `35678793533`: domain tests, simulator compile, persistence/navigation UI tests, unsigned device
@@ -36,13 +40,15 @@ owns build and device evidence.
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.4.0 (27)**; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.5.0 (28)**; minimum iOS 17.
+  0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS and has not been
+  built yet; the facts below describe the accepted Build 27.
   Build 27 passed the complete PR and main-branch CI Gates, package inspection, checksum and local IPA
-  validation. Build 25 remains the accepted installed artifact and has
-  passed CI, package inspection, checksum, local IPA validation, same-ID Wi-Fi installation and
-  current-version automatic-refresh enrollment plus Akshat's focused acceptance report. Its files
-  are in the local backup slot; Build 27 is in testing and owns the next same-ID device and
-  enrollment pass. Build 26's local candidate was removed after Build 27 validation and remains
+  validation. Build 27 is installed, phone-accepted, enrolled for current-version automatic refresh
+  at the expected identity/mode, and retained in the local backup slot; `testing\` is empty. Build
+  25 remains the accepted Pushup/presentation baseline and is reproducible from its recorded run.
+  Build 26's local candidate was
+  removed after Build 27 validation and remains
   reproducible from its recorded main run.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
@@ -106,9 +112,9 @@ accepted build's files are guaranteed to still exist, at `D:\AI Important Files\
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 27 | `akshatos-build-27-ebb44d3\akshatos-ios-133` | `ebb44d3` (#54) | [35925770220](https://github.com/akshatksingh18/akshatos/actions/runs/35925770220) | `744b7ed57d76259773f35d71b30196544bc8b58f91341f6cd676c76b17f0bb9f` | **Verified retained candidate awaiting phone pass** — complete PR/main CI Gates, package inspection, checksum and local IPA validation passed; files at `D:\AI Important Files\personal-project\final-ipas\akshatos\testing\akshatos-build-27-ebb44d3` |
+| 27 | `akshatos-build-27-ebb44d3\akshatos-ios-133` | `ebb44d3` (#54) | [35925770220](https://github.com/akshatksingh18/akshatos/actions/runs/35925770220) | `744b7ed57d76259773f35d71b30196544bc8b58f91341f6cd676c76b17f0bb9f` | **Accepted, installed, current** — complete PR/main CI Gates, package inspection, checksum/local IPA validation, focused phone behavior and current-version automatic-refresh enrollment pass; files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-27-ebb44d3` |
 | 26 | `akshatos-build-26-7a4f639\akshatos-ios-129` | `7a4f639` (#52) | [35870794873](https://github.com/akshatksingh18/akshatos/actions/runs/35870794873) | `46904f57e6dba743e083b7813dc8aa788088aff841c046c264a39d04cc617b83` | Complete CI Gate, package inspection, checksum and local IPA validation passed; superseded by Build 27 and removed from the one-slot local testing cache; reproduce from Git/run if needed |
-| 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52 pre-merge candidate) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | **Accepted, installed, current** — cloud/local verification, same-ID Wi-Fi install and current-version enrollment passed; Akshat reports the focused Build-25 experience works perfectly; files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-25-4253311` |
+| 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52 pre-merge candidate) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | Accepted Pushup/presentation baseline; superseded by Build 27 and removed from the one-slot local backup cache; reproduce from Git/run if needed |
 | 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | Superseded by accepted Build 25; reproduce from Git history if rollback is needed |
 | 23 | `akshatos-build-23\akshatos-ios-105` | `98b95cf` (#40) | [34706468115](https://github.com/akshatksingh18/akshatos/actions/runs/34706468115) | `f3160082fb7fab929895d5b18d53e6e7537a499bbdf16a6b4fff8e2d8120a4b6` | Installed; the reworked highlighting accepted on the phone — the rollback target; files still in `Downloads` |
 | 21 | `akshatos-build-21\akshatos-ios-92` | `6df9b64` (#31) | [34657960237](https://github.com/akshatksingh18/akshatos/actions/runs/34657960237) | `d3ad9cad6b37706b69ed8b26f0bfd4c74584688e6a56ce221c39b8a549665a3b` | Superseded once Build 23 was accepted; recycled from `Downloads` — recoverable until the Recycle Bin is emptied |

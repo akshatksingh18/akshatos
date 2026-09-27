@@ -25,13 +25,23 @@ struct PageVaultStorage: Sendable {
         var folder: URL?
     }
 
+    /// A PDF found in the linked inbox folder, with where to read it from.
+    struct PageVaultInboxEntry: Sendable {
+        var file: PageVaultInboxFile
+        var url: URL
+    }
+
     let root: URL
+    /// Where iOS puts a copy of a file another app hands over ("Open in AkshatOS"), because the app
+    /// declares it does not open documents in place. That copy is only a delivery.
+    let deliveries: URL
     private var scratch: URL { root.appendingPathComponent("Incoming", isDirectory: true) }
     private var covers: URL { root.appendingPathComponent("Covers", isDirectory: true) }
     private var outgoing: URL { root.appendingPathComponent("Outgoing", isDirectory: true) }
     private var layouts: URL { root.appendingPathComponent("Layouts", isDirectory: true) }
+    private var inboxStateURL: URL { root.appendingPathComponent("inbox.json") }
 
-    init(root: URL? = nil) throws {
+    init(root: URL? = nil, deliveries: URL? = nil) throws {
         if let root {
             self.root = root
         } else {
@@ -39,6 +49,13 @@ struct PageVaultStorage: Sendable {
                                                       in: .userDomainMask,
                                                       appropriateFor: nil, create: true)
             self.root = support.appendingPathComponent("PageVault", isDirectory: true)
+        }
+        if let deliveries {
+            self.deliveries = deliveries
+        } else {
+            let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask,
+                                                        appropriateFor: nil, create: true)
+            self.deliveries = documents.appendingPathComponent("Inbox", isDirectory: true)
         }
         try FileManager.default.createDirectory(at: self.root, withIntermediateDirectories: true)
     }
@@ -257,6 +274,82 @@ struct PageVaultStorage: Sendable {
         let directory = documentURL(for: id).deletingLastPathComponent()
         guard FileManager.default.fileExists(atPath: directory.path) else { return }
         try FileManager.default.removeItem(at: directory)
+    }
+
+    /// Removes the copy iOS delivered for "Open in AkshatOS" once PageVault has its own. Anything
+    /// outside the delivery folder is someone else's file and is never touched.
+    func discardDelivered(_ url: URL) {
+        let delivered = url.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+        let folder = deliveries.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+        guard delivered.count > folder.count, Array(delivered.prefix(folder.count)) == folder else {
+            return
+        }
+        try? FileManager.default.removeItem(at: url)
+    }
+
+    // MARK: - Inbox folder
+
+    func readInboxState() -> PageVaultInboxState? {
+        guard let data = try? Data(contentsOf: inboxStateURL),
+              let state = try? JSONDecoder().decode(PageVaultInboxState.self, from: data),
+              state.version <= PageVaultInboxState.currentVersion else { return nil }
+        return state
+    }
+
+    /// Writing nil forgets the linked folder.
+    func writeInboxState(_ state: PageVaultInboxState?) throws {
+        guard let state else {
+            try? FileManager.default.removeItem(at: inboxStateURL)
+            return
+        }
+        try JSONEncoder().encode(state).write(to: inboxStateURL, options: .atomic)
+    }
+
+    /// A bookmark keeps access to a folder the user picked across launches. The caller must hold
+    /// the folder's security scope while making it.
+    func bookmark(for folder: URL) throws -> Data {
+        try folder.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil,
+                                relativeTo: nil)
+    }
+
+    func resolveInbox(_ bookmark: Data) throws -> (folder: URL, isStale: Bool) {
+        var stale = false
+        let folder = try URL(resolvingBookmarkData: bookmark, options: [], relativeTo: nil,
+                             bookmarkDataIsStale: &stale)
+        return (folder, stale)
+    }
+
+    /// Lists the PDFs at the top of the folder. The read is coordinated so a file provider such as
+    /// OneDrive presents its current listing; the files themselves are only fetched when imported.
+    func listInbox(_ folder: URL) throws -> [PageVaultInboxEntry] {
+        var entries: [PageVaultInboxEntry] = []
+        var failure: Error?
+        var coordinationFailure: NSError?
+        let keys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey]
+        NSFileCoordinator().coordinate(readingItemAt: folder, options: [],
+                                       error: &coordinationFailure) { readable in
+            do {
+                let listed = try FileManager.default.contentsOfDirectory(
+                    at: readable, includingPropertiesForKeys: keys)
+                for item in listed {
+                    guard let name = PageVaultInbox.pdfName(forListed: item.lastPathComponent) else {
+                        continue
+                    }
+                    let values = try? item.resourceValues(forKeys: Set(keys))
+                    if values?.isDirectory == true { continue }
+                    let file = PageVaultInboxFile(name: name,
+                                                  byteCount: Int64(values?.fileSize ?? 0),
+                                                  modifiedAt: values?.contentModificationDate)
+                    entries.append(PageVaultInboxEntry(file: file,
+                                                       url: folder.appendingPathComponent(name)))
+                }
+            } catch {
+                failure = error
+            }
+        }
+        if let coordinationFailure { throw coordinationFailure }
+        if let failure { throw failure }
+        return entries
     }
 
     /// Clears scratch files left behind by an import that was interrupted mid-copy.

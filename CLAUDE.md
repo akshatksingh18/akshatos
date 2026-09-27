@@ -12,9 +12,14 @@ Squats fallback.
 hard-coded priority-ordered Upper/Lower templates, last-performance references and active-set
 editing. PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including
 registered domain and hosted simulator tests, simulator/device compilation and IPA inspection.
-Artifact `akshatos-ios-133` passed local checksum and IPA validation and is retained in the testing
-slot, but it is not yet installed or phone-accepted. Build 26 introduced the local-only Lift Log
-core and is now a reproducible superseded artifact rather than a retained local candidate.
+Artifact `akshatos-ios-133` passed local checksum and IPA validation. Akshat installed Build 27 and
+reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. Sideloadly's
+database confirms version 0.4.0 at the expected final identity, automatic bundle-ID mode, completed
+current-version enrollment, no error and a seven-day expiry. Build 27 is therefore promoted to the
+accepted backup slot.
+Working source 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS for
+PDFs; it is implemented and locally checked but awaits its PR CI Gate, a build and a phone pass.
+Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
 `4253311` passed workflow-dispatch run `35678793533`, including
@@ -41,7 +46,11 @@ every feature is physically verified.
   changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
-- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication.
+- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload and the declared PDF
+  document type before publication.
+- `ios/Support/AkshatOS-Info.plist` — the only hand-written Info.plist keys (the PDF document type
+  behind Open in AkshatOS), merged with the generated ones; read with `hub-plan.md`'s file-routing
+  rule before declaring another type.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
@@ -75,8 +84,8 @@ every feature is physically verified.
 - `cloud-build.md` — exact GitHub Actions artifact, checksum, Windows download, Sideloadly smoke-
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
-  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build 25
-  is the accepted copy and Build 27 is the locally validated candidate.
+  `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
+  27 is the accepted copy and `testing\` is empty.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -123,13 +132,14 @@ every feature is physically verified.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
   reading status, the place marker, highlights with their band geometry, folding and area-based
   identity, search matching, snippets and find marks, page themes,
-  page-fitting geometry and ink scanning, and the export manifest with restore planning),
-  `data/` (versioned SwiftData store,
-  streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
+  page-fitting geometry and ink scanning, the export manifest with restore planning, and the laptop
+  inbox folder's rules), `data/` (versioned SwiftData store,
+  streamed copy-on-import storage, the inbox folder's bookmark/record, export staging, disposable
+  cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
-  its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
-  search sheet, the page-jump picker). Product scope and
+  its fitting screen, book sheet, backup sheet, laptop inbox sheet, the per-book takeaways list, the
+  Takeaways surface, search sheet, the page-jump picker). Product scope and
   gates are owned by `../book-reader/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
   reworked highlighter are not. Build 22 found the highlighter stacking marks over each other
@@ -153,6 +163,9 @@ every feature is physically verified.
   measurement reused after relaunch and removed with its book, and crop boxes applied in points.
 - `ios/UnitTests/PageVaultHighlightTests.swift` — highlights saved through the store and reloaded,
   carried by a full export and restored, rendered into their own PDF, and refused when there are none.
+- `ios/UnitTests/PageVaultInboxTests.swift` — the laptop inbox against a real folder (first link,
+  later passes, settled duplicates/broken files, removed books, relaunch, unlink, a vanished folder)
+  plus Open in delivery clean-up and simultaneous imports of one file.
 - `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
   phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
 - `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
@@ -181,7 +194,8 @@ every feature is physically verified.
   source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
-  Build 25 is the accepted Pushup Reminder/presentation baseline. The
+  Build 25 is the accepted Pushup Reminder/presentation baseline; Build 27 is the current accepted
+  recovery/refresh artifact. The
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
