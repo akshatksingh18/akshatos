@@ -9,13 +9,13 @@ struct AkshatOSApp: App {
             HubRootView(squats: delegate.services.squats,
                         pageVault: delegate.services.pageVault,
                         liftLog: delegate.services.liftLog,
+                        bodyLog: delegate.services.bodyLog,
                         navigator: delegate.services.navigator,
                         orientation: delegate.services.orientation)
                 .preferredColorScheme(.dark)
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.protectedDataDidBecomeAvailableNotification)) { _ in
                     Task { await delegate.services.squats.refresh() }
                 }
-                .onOpenURL { url in delegate.services.openFile(url) }
         }
     }
 }
@@ -25,6 +25,7 @@ struct AkshatOSApp: App {
     let squats: SquatStore
     let pageVault: PageVaultStore
     let liftLog: LiftLogStore
+    let bodyLog: BodyLogStore
     let notifications: AppNotificationCoordinator
     /// App-lifetime, like the stores: a notification can be tapped before any hub screen exists,
     /// and the request has to survive until one does.
@@ -36,16 +37,8 @@ struct AkshatOSApp: App {
         squats = SquatStore(homeMonitor: home)
         pageVault = PageVaultStore()
         liftLog = LiftLogStore()
+        bodyLog = BodyLogStore()
         notifications = AppNotificationCoordinator(squats: squats, navigator: navigator)
-    }
-
-    /// A file another app handed over ("Open in AkshatOS"). The app declares PDFs as the only type
-    /// it opens, and PDFs belong to PageVault, so this is the one place that knows both: the file
-    /// goes to PageVault and the hub opens it, the way a tapped notification opens its feature.
-    func openFile(_ url: URL) {
-        guard url.isFileURL, url.pathExtension.lowercased() == "pdf" else { return }
-        navigator.request(.pageVault)
-        Task { await pageVault.importOpenedFile(url) }
     }
 }
 

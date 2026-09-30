@@ -13,7 +13,9 @@ and IPA validation. Akshat installed Build 27 and reports that it works well end
 focused physical-phone behavior pass. Sideloadly confirms current-version automatic-refresh
 enrollment at the expected final identity in automatic mode, with no error and a seven-day expiry;
 Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
-superseded. No
+superseded. Working source 0.6.0 (29) moves history to its own screen holding every finished
+workout and shows every set of the last performance instead of "+N more"; it awaits CI and a
+phone pass. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
 
@@ -34,11 +36,18 @@ remote.
   the active session also supports undoing the most recent set per exercise, finishing after at
   least one set, or discarding the entire active workout with confirmation.
 - Finished history shows every exercise and set using its original measurement meaning. Deleting a
-  finished workout requires confirmation.
+  finished workout requires confirmation. The Lift Log screen carries one **History** row with the
+  session count; it opens its own screen listing **every** finished workout by month, newest first,
+  in a lazy list. (Until 0.6.0 (29) the main screen listed only the latest 12, which left older
+  workouts unreachable in the app.) History is kept indefinitely: a workout's record is estimated at a
+  few kilobytes from its shape (not measured), so years of sessions stay small, and nothing is pruned
+  automatically.
 - The Upper and Lower routine names, order and default measurement modes are deliberately bundled
   in source at Akshat's explicit request. No historical performance, body measurement or private
   workout row is bundled. The most recent finished occurrence with the same normalized exercise
   name and load mode supplies a read-only last-performance reference on the active card and set form.
+  It lists every set of that performance (`S1 50 lb/hand × 10 · … · S4 55 lb/hand × 6`), wrapping
+  as needed; the card no longer truncates to three sets with "+N more".
 - Data stays in a feature-owned, versioned SwiftData store. There is no account, HealthKit write,
   analytics, cloud sync or server.
 - JSON export is the restorable full backup. Restore validates the complete versioned payload and
@@ -53,8 +62,9 @@ remote.
 - `ios/AkshatOS/features/liftlog/data/` — feature-owned SwiftData schema and repository.
 - `ios/AkshatOS/features/liftlog/LiftLogStore.swift` — save-before-publish commands, active-session
   recovery, JSON backup/restore and CSV export.
-- `ios/AkshatOS/features/liftlog/ui/` — Homebase destination, active workout, set entry, history and
-  recovery controls.
+- `ios/AkshatOS/features/liftlog/ui/` — hub destination, active workout, set entry and
+  recovery controls (`LiftLogView.swift`), and the month-grouped history screen with workout detail
+  (`LiftLogHistoryView.swift`).
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered domain, persistence and hub-navigation coverage.
 

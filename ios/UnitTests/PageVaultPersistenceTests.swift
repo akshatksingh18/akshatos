@@ -116,6 +116,34 @@ import XCTest
         XCTAssertEqual(PDFDocument(url: copy)?.pageCount, 12, "The copy opens as the same document")
     }
 
+    func testSimultaneousImportsOfOneFileAddItOnce() async throws {
+        let store = try makeStore()
+        let source = try makePDF(pages: 3, name: "Twice")
+        await store.load()
+
+        async let first: Void = store.importBook(from: source)
+        async let second: Void = store.importBook(from: source)
+        _ = await (first, second)
+
+        XCTAssertEqual(store.books.count, 1, "Imports run one at a time, so the second sees the first")
+        XCTAssertEqual(store.message, PageVaultImportFailure.duplicate(title: store.books[0].title).message)
+        XCTAssertFalse(store.busy, "Busy clears only once every import has finished")
+    }
+
+    func testAnImportBeforeTheLibraryLoadedStillSeesItsBooks() async throws {
+        let container = try makeContainer()
+        let source = try makePDF(pages: 2, name: "Early")
+        let first = try makeStore(container: container)
+        await first.importBook(from: source)
+        XCTAssertEqual(first.books.count, 1)
+
+        // A relaunched store that has not loaded yet must not miss the duplicate.
+        let relaunched = try makeStore(container: container)
+        await relaunched.importBook(from: source)
+        XCTAssertEqual(relaunched.books.count, 1, "Importing loads the library first")
+        XCTAssertNotNil(relaunched.message, "The duplicate is refused")
+    }
+
     func testDuplicateContentIsRejectedByFingerprintNotFileName() async throws {
         let store = try makeStore()
         let source = try makePDF(pages: 4, title: "Twice")

@@ -164,9 +164,9 @@ struct PageVaultReaderView: View {
     private var fitting: some View {
         VStack(spacing: 18) {
             ProgressView(value: store.fittingProgress(for: book))
-                .tint(Palette.lime)
+                .tint(Palette.accent)
             Text("Fitting pages to your screen")
-                .font(.system(.headline, design: .rounded))
+                .font(.headline)
             Text("PageVault finds where the text sits on every page, once per book, so each page opens cropped to its text.")
                 .font(.caption).foregroundStyle(Palette.muted)
                 .multilineTextAlignment(.center)

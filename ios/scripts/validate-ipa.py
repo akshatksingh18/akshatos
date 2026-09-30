@@ -15,12 +15,8 @@ with zipfile.ZipFile(sys.argv[1]) as archive:
     assert metadata["CFBundleExecutable"] == "AkshatOS"
     assert archive.getinfo("Payload/AkshatOS.app/AkshatOS").file_size > 0
     assert metadata["CFBundleShortVersionString"] and metadata["CFBundleVersion"]
-    # "Open in AkshatOS" for PDFs: a viewer that never claims to be the default, receiving a copy
-    # rather than the sharing app's own file, and no Documents folder exposed to Files or iTunes.
-    document_types = metadata.get("CFBundleDocumentTypes", [])
-    assert [t.get("LSItemContentTypes") for t in document_types] == [["com.adobe.pdf"]], document_types
-    assert document_types[0].get("CFBundleTypeRole") == "Viewer"
-    assert document_types[0].get("LSHandlerRank") == "Alternate"
-    assert metadata.get("LSSupportsOpeningDocumentsInPlace") is False
+    # Open in AkshatOS was removed at Akshat's request after Build 28: the app opens no document
+    # types, and its Documents folder stays private.
+    assert "CFBundleDocumentTypes" not in metadata, "No document types are declared"
     assert not metadata.get("UIFileSharingEnabled"), "The app's Documents folder must stay private"
-    print("IPA structure, identity, metadata, document-type and payload checks passed.")
+    print("IPA structure, identity, metadata and payload checks passed.")

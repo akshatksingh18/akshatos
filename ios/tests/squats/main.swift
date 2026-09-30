@@ -181,3 +181,27 @@ let conflictingBackup = SquatsBackup(createdAt: date(5), sessions: [openPaused, 
                                      interval: 45, goal: 8)
 assert((try? conflictingBackup.validated()) == nil, "A backup cannot restore two active sessions")
 print("PASS: 10 history and recovery assertions (daily aggregation, durations, status, open pause, backup validation)")
+
+// Past quests: every day once, newest first, then grouped by month for its own screen.
+var laterSameDay = session(2, count: 2)
+laterSameDay.started = date(2).addingTimeInterval(3_600)
+let spread = [session(2, count: 1), session(0, count: 3), laterSameDay, session(1, count: 0)]
+let everyDay = SquatDaySummary.all(spread, now: date(10), calendar: calendar)
+assert(everyDay.map(\.day) == ["2026-09-02", "2026-09-01", "2026-08-31"],
+       "Every day appears once, newest first, across a month boundary")
+assert(everyDay[0].completedSets == 3 && everyDay[0].sessions.count == 2,
+       "Two sessions on one day still make one day")
+let filteredPerDay = Set(spread.map(\.day)).compactMap {
+    SquatDaySummary.make(day: $0, sessions: spread, now: date(10), calendar: calendar)
+}.sorted { $0.day > $1.day }
+assert(everyDay == filteredPerDay,
+       "Grouping sessions by day once gives exactly what filtering the whole history per day gave")
+let historyMonths = SquatDaySummary.byMonth(everyDay.reversed())
+assert(historyMonths.map(\.id) == ["2026-09", "2026-08"], "Months are newest first")
+assert(historyMonths[0].days.map(\.day) == ["2026-09-02", "2026-09-01"],
+       "Days inside a month are newest first whatever order they arrive in")
+assert(historyMonths[0].completedSets == 3 && historyMonths[1].completedSets == 3,
+       "A month totals its days' sets")
+assert(SquatDaySummary.byMonth([]).isEmpty && SquatDaySummary.all([]).isEmpty,
+       "An empty history has no days and no months")
+print("PASS: 7 past-quest assertions (one row per day, month boundary, same-day sessions, grouping equivalence, month order and totals)")

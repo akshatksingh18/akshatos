@@ -92,38 +92,41 @@ cannot create duplicate schedules, duplicate sessions, or duplicate completion e
 
 ## Dashboard and visual direction
 
-The main screen should feel playful, energetic and immediately readable rather than like a settings
-form. AkshatOS uses a shared dark “tiny universe” visual system: each module is a quest/portal with
-its own accent, while state is always conveyed with text and symbols as well as color. Gamification
-is presentation layered over truthful local data; it must never invent completions, points or
-streaks. Pushup Reminder uses coral/gold power-up language, PageVault uses aqua/violet story-quest
-language, and the hub is their Homebase. ReelVault remains visibly locked rather than pretending to
-be usable.
+**Clean and minimal, in plain words** (Akshat's standing direction, which replaced the Build-25
+"quest" theme in 0.6.0 (29)): a flat near-black background, flat cards with a hairline edge, the
+standard system font, and one calm accent colour used sparingly for the thing that matters on a
+screen. No game metaphors anywhere — no quests, portals, power-ups, combos, trophies or treasure —
+in the UI or in notifications; labels say plainly what things are ("Log a set", "Daily goal",
+"History", "Want to read"). State is always conveyed with text and symbols as well as colour, and
+nothing may invent completions, points or streaks. The hub is a plain list of modules; ReelVault
+stays a dimmed "Not available yet" row rather than pretending to be usable.
 
-- A large hero card shows the current state, a circular time-until-next-reminder treatment while
-  running, and a clear paused/blocked/ended illustration in other states. The prominent countdown
+- A state card shows the current state, the time until the next reminder while running, and a
+  plain paused/blocked/ended explanation in other states. The countdown
   shows the normal reminder until it is due, then advances through automatic ten-minute nudge
   deadlines as the single clock. The persisted cadence anchor keeps background/foreground,
   close/reopen and reconciliation from restarting it.
   Times are labelled as **scheduled**, because Focus and other iOS settings can delay presentation.
-- A prominent orbit-style power card shows **pushup sets completed today** with a one-tap
-  **Set crushed +1** control. It derives “Ready player one,” “Combo started,” “Powering up,” and
-  “Quest cleared” from the real count and goal; those labels add delight without adding data. An Undo
-  affordance is available after an accidental tap and from the day's event list.
-- A motivating streak card shows progress toward the daily set goal, the current streak, and the
-  personal-best streak. Before the goal is reached it says exactly how many sets remain; after the
-  threshold it changes to a clear protected/completed state without inflating the count again.
+- A thin progress ring shows **pushup sets completed today** beside a one-tap **Log a set**
+  button, with a short status ("No sets yet", "3 of 8 to go", "Goal reached") derived from the real
+  count and goal. An Undo affordance is available after an accidental tap.
+- A **Daily goal** card shows progress toward the daily set goal, the current streak, and the best
+  streak. Before the goal is reached it says exactly how many sets remain; after the threshold it
+  says "Reached" without inflating the count again.
 - The primary lifecycle control changes with state: Start my day, Pause, Resume, or View summary.
   **End my day** remains visually separate and requires confirmation so it is not hit accidentally.
-- The compact **Your day so far** list shows only completed sets and their completion times. Pause,
+- The compact **Logged today** list shows only completed sets and their completion times. Pause,
   resume, snooze and other reminder-maintenance events remain internal lifecycle/history data and
   must not clutter this dashboard list. Undo remains available for the most recent completed set.
 - Small quick controls expose Pause, Resume, and notification settings only
   when relevant. Disabled controls explain why they are unavailable.
-- Motion, gradients, haptics, and celebratory feedback may add warmth, but respect Reduce Motion,
-  Dynamic Type, VoiceOver, contrast, and one-handed use. Meaning must never depend on color alone.
-- The app uses a small number of locally bundled reminder-message variations to avoid feeling
-  robotic. Messages remain clear and never claim that a set was completed automatically.
+- Keep motion subtle and respect Reduce Motion, Dynamic Type, VoiceOver, contrast, and one-handed
+  use. Meaning must never depend on color alone.
+- Notifications are short and plain: "Pushup time — Do a set, then tap Done.", "Pushup set still
+  due" for automatic nudges, and "Pushup Reminder — Start your day when you're ready." for the 9:00 AM
+  invitation. They never claim that a set was completed automatically. Titles keep the word
+  "Pushup" (a regression test checks it). Already-scheduled notifications keep their old text until
+  the next Start, Resume, Done or End reschedules them.
 
 No widget, Live Activity, Watch target, or notification-content extension is required for this
 dashboard. Those would add signing/capability complexity without improving the core loop enough.
@@ -250,8 +253,14 @@ The summary must not claim how many notifications iOS actually showed or calcula
 from unobservable deliveries. Scheduled notifications can be delayed or suppressed by user/system
 settings, so only explicit user actions count as completions.
 
-Keep finalized daily summaries locally so the user can revisit recent days. A simple history screen
-shows daily set counts, goal result, and streak status and can open an individual day. Charts,
+Keep finalized daily summaries locally so the user can revisit past days. The dashboard carries
+only a **History** row with the number of days kept; it opens its own screen listing days by
+month, newest first, with each month's set total and a check mark on days whose goal was reached, in a
+lazy list, and each day opens its recap. The dashboard never lists history itself, so it does not
+grow or slow down as days accumulate (implemented in 0.6.0 (29) source, not yet phone-verified).
+History is kept indefinitely and never pruned automatically: a day's record is estimated at a few
+kilobytes from its shape (not measured), so years of daily use stay in the low megabytes, and deleting
+completed history remains an explicit Settings action. Charts,
 achievements beyond the streak, sharing, HealthKit, and detailed workout analytics remain later
 decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and export/
 restore are explicit and local. Restore validates the complete versioned backup before replacing

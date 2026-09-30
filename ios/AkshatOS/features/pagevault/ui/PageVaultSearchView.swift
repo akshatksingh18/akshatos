@@ -57,9 +57,8 @@ struct PageVaultSearchView: View {
                     onJump(hit)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("PAGE \(hit.page + 1)")
-                            .font(.caption2.weight(.bold)).tracking(1.5)
-                            .foregroundStyle(Palette.muted)
+                        Text("Page \(hit.page + 1)")
+                            .font(.caption).foregroundStyle(Palette.muted)
                         Text(hit.snippet)
                             .font(.callout)
                             .frame(maxWidth: .infinity, alignment: .leading)

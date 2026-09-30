@@ -123,4 +123,44 @@ import XCTest
         XCTAssertEqual(store.lastPerformance(for: currentBench)?.exercise.sets.first?.load, 50,
                        "Editing the active workout must not change the prior reference")
     }
+
+    func testLastPerformanceShowsEverySetRatherThanACount() throws {
+        var clock = Date(timeIntervalSince1970: 1_790_105_400)
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: try makeContainer()),
+                                 now: { clock })
+        store.load()
+        store.startWorkout(template: .upper)
+        let bench = try XCTUnwrap(store.active?.exercises.first { $0.name == "Dumbbell bench press" })
+        for (reps, load) in [(10, 50.0), (9, 50.0), (8, 52.5), (6, 55.0)] {
+            store.addSet(exerciseID: bench.id, reps: reps, load: load)
+        }
+        store.finishWorkout()
+
+        clock = clock.addingTimeInterval(86_400)
+        store.startWorkout(template: .upper)
+        let next = try XCTUnwrap(store.active?.exercises.first { $0.name == "Dumbbell bench press" })
+        let reference = try XCTUnwrap(store.lastPerformance(for: next))
+        let unit = next.loadMode.shortUnit
+        XCTAssertEqual(LiftLogStore.performanceSummary(reference.exercise),
+                       "S1 50 \(unit) × 10 · S2 50 \(unit) × 9 · S3 52.5 \(unit) × 8 · S4 55 \(unit) × 6",
+                       "The fourth set is shown, not hidden behind \"+1 more\"")
+    }
+
+    func testHistoryKeepsEveryFinishedWorkoutReachable() throws {
+        var clock = Date(timeIntervalSince1970: 1_790_105_400)
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: try makeContainer()),
+                                 now: { clock })
+        store.load()
+        for _ in 0..<15 {
+            store.startWorkout(template: .lower)
+            let first = try XCTUnwrap(store.active?.exercises.first)
+            store.addSet(exerciseID: first.id, reps: 8, load: 45)
+            store.finishWorkout()
+            clock = clock.addingTimeInterval(3 * 86_400)
+        }
+        let months = LiftWorkoutSession.byMonth(store.workouts)
+        XCTAssertEqual(months.flatMap(\.workouts).count, 15,
+                       "All 15 finished workouts are in the history, past the 12 the main screen used to show")
+        XCTAssertEqual(Set(months.flatMap(\.workouts).map(\.id)), Set(store.finished.map(\.id)))
+    }
 }

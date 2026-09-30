@@ -18,19 +18,13 @@ struct SquatDashboard: View {
     @State private var showDisableHome = false
     @State private var showOutsideStart = false
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 48
-    @ScaledMetric(relativeTo: .largeTitle) private var summaryCountSize: CGFloat = 64
     @ScaledMetric(relativeTo: .body) private var reminderAreaMinHeight: CGFloat = 76
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
-                    QuestBadge(text: "Daily power-up", icon: "bolt.fill", accent: Palette.coral)
-                    Text("Drop. Press.\nLevel up.")
-                        .font(.system(.largeTitle, design: .rounded, weight: .black))
-                    Text(Date(), format: .dateTime.weekday(.wide).month(.wide).day())
-                        .font(.subheadline).foregroundStyle(Palette.muted)
-                }
+                Text(Date(), format: .dateTime.weekday(.wide).month(.wide).day())
+                    .font(.subheadline).foregroundStyle(Palette.muted)
                 hero
                 if store.pendingActionCount > 0 {
                     Surface {
@@ -41,29 +35,26 @@ struct SquatDashboard: View {
                             .disabled(store.busy)
                     }
                 }
-                AccentSurface(accent: Palette.coral) {
+                Surface {
                     AdaptiveRow(spacing: 18) {
-                        ProgressOrbit(progress: powerProgress, value: "\(store.todayCount)", caption: "SETS",
-                                      accent: Palette.coral, systemImage: "bolt.fill")
+                        ProgressOrbit(progress: setsProgress, value: "\(store.todayCount)",
+                                      caption: store.todayCount == 1 ? "set" : "sets")
                     } trailing: {
-                        VStack(alignment: .leading, spacing: 7) {
-                            QuestBadge(text: powerStatus, icon: powerStatusIcon, accent: Palette.coral)
-                            Text("Pushup power")
-                                .font(.system(.title2, design: .rounded, weight: .black))
-                            Text("Every finished set charges today's power bar.")
-                                .font(.subheadline).foregroundStyle(Palette.muted)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Today").font(.headline)
+                            Text(setsStatus).font(.subheadline).foregroundStyle(Palette.muted)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("\(store.todayCount) pushup sets today. \(powerStatus).")
+                    .accessibilityLabel("\(store.todayCount) pushup sets today. \(setsStatus).")
                     Button { Task { await store.done() } } label: {
-                        Label("Set crushed  +1", systemImage: "bolt.fill")
+                        Text("Log a set")
                     }.buttonStyle(ActionStyle(primary: true))
                         .disabled(store.active == nil || store.staleDay || store.busy || !store.storageAvailable)
                         .accessibilityIdentifier("log-set")
                     ZStack {
-                        Text("Tap only after the pushup set is done — honor system, hero rules.")
+                        Text("Tap after you finish a set.")
                             .font(.caption).foregroundStyle(Palette.muted)
                             .opacity(canUndo ? 0 : 1)
                             .accessibilityHidden(canUndo)
@@ -86,7 +77,7 @@ struct SquatDashboard: View {
                         .font(.footnote).foregroundStyle(Palette.muted)
                 }
                 .accessibilityElement(children: .combine)
-                Text("AkshatOS · Preview 0.3.0")
+                Text("AkshatOS · \(Self.appVersion)")
                     .font(.caption2).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
             }.padding(22)
         }
@@ -131,18 +122,15 @@ struct SquatDashboard: View {
     }
 
     private var hero: some View {
-        AccentSurface(accent: Palette.lime) {
+        Surface {
             VStack(alignment: .leading, spacing: 18) {
                 AdaptiveRow {
-                    VStack(alignment: .leading, spacing: 8) {
-                        QuestBadge(text: "Reminder reactor", icon: "timer", accent: Palette.lime)
-                        Label(store.operational, systemImage: stateIcon)
-                            .font(.headline).foregroundStyle(Palette.lime)
-                    }
+                    Label(store.operational, systemImage: stateIcon)
+                        .font(.headline).foregroundStyle(Palette.accent)
                 } trailing: {
                     ZStack {
                         Color.clear
-                        if store.busy { ProgressView().tint(Palette.lime) }
+                        if store.busy { ProgressView().tint(Palette.accent) }
                     }
                     .frame(width: 20, height: 20)
                     .accessibilityHidden(!store.busy)
@@ -154,7 +142,7 @@ struct SquatDashboard: View {
                             let seconds = max(0, Int(ceil(next.timeIntervalSince(context.date))))
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(String(format: "%02d:%02d", seconds / 60, seconds % 60))
-                                    .font(.system(size: countdownSize, weight: .medium, design: .rounded)).monospacedDigit()
+                                    .font(.system(size: countdownSize, weight: .semibold)).monospacedDigit()
                                 Text(store.active?.reminderCadenceAnchor.map { $0 <= context.date } == true
                                      ? "until the next automatic nudge"
                                      : "until the next scheduled reminder")
@@ -242,25 +230,19 @@ struct SquatDashboard: View {
         return active.count > 0 && !store.staleDay
     }
 
-    private var powerProgress: Double {
+    private var setsProgress: Double {
         guard let goal = store.todayGoal, goal > 0 else {
             return min(1, Double(store.todayCount) / 8)
         }
         return min(1, Double(store.todayCount) / Double(goal))
     }
 
-    private var powerStatus: String {
+    private var setsStatus: String {
         guard let goal = store.todayGoal, goal > 0 else {
-            return store.todayCount == 0 ? "Ready player one" : "Momentum online"
+            return store.todayCount == 0 ? "No sets yet" : "No daily goal set"
         }
-        if store.todayCount >= goal { return "Quest cleared" }
-        if store.todayCount * 2 >= goal { return "Powering up" }
-        return store.todayCount == 0 ? "Ready player one" : "Combo started"
-    }
-
-    private var powerStatusIcon: String {
-        guard let goal = store.todayGoal, goal > 0, store.todayCount >= goal else { return "sparkles" }
-        return "trophy.fill"
+        if store.todayCount >= goal { return "Goal reached" }
+        return "\(goal - store.todayCount) of \(goal) to go"
     }
 
     private var interactionAnimation: Animation? {
@@ -280,45 +262,35 @@ struct SquatDashboard: View {
     }
 
     private var goalCard: some View {
-        AccentSurface(accent: Palette.gold) {
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    QuestBadge(text: "Today's quest", icon: "target", accent: Palette.gold)
-                    Text("Fill the power bar")
-                        .font(.system(.title3, design: .rounded, weight: .black))
-                }
-                Spacer()
-                Image(systemName: store.todayGoal.map { store.todayCount >= $0 } == true
-                      ? "trophy.fill" : "flame.fill")
-                    .font(.title).foregroundStyle(Palette.gold).accessibilityHidden(true)
-            }
+        Surface {
+            Text("Daily goal").font(.headline)
             if let goal = store.todayGoal {
                 AdaptiveRow {
-                    Text(store.todayCount >= goal ? "Quest cleared — the trophy is yours." : "\(max(0, goal - store.todayCount)) pushup sets until clear")
+                    Text(store.todayCount >= goal ? "Reached" : "\(max(0, goal - store.todayCount)) sets to go")
                 } trailing: {
                     Text("\(store.todayCount)/\(goal)").monospacedDigit()
                 }.font(.subheadline).foregroundStyle(Palette.muted)
                     .accessibilityElement(children: .combine)
-                ProgressView(value: Double(min(store.todayCount, goal)), total: Double(goal)).tint(Palette.lime)
+                ProgressView(value: Double(min(store.todayCount, goal)), total: Double(goal)).tint(Palette.accent)
                     .accessibilityLabel("Progress toward today's goal")
                     .accessibilityValue("\(min(store.todayCount, goal)) of \(goal) sets")
-                Text("Your streak is safe until the day ends. There is still time to finish the quest.")
+                Text("Your streak is safe until the day ends.")
                     .font(.caption).foregroundStyle(Palette.muted)
                     .opacity(store.todayCount < goal ? 1 : 0)
                     .accessibilityHidden(store.todayCount >= goal)
             } else {
-                Text("Daily quests are off. Choose a pushup-set goal in Settings to start a streak.")
+                Text("No daily goal. Set one in Settings to track a streak.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
             }
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 12) {
-                    stat("\(store.streaks.current)", "day streak")
-                    stat("\(store.streaks.best)", "personal best")
+                    stat("\(store.streaks.current)", "current streak")
+                    stat("\(store.streaks.best)", "best streak")
                 }
             } else {
                 HStack(spacing: 32) {
-                    stat("\(store.streaks.current)", "day streak")
-                    stat("\(store.streaks.best)", "personal best")
+                    stat("\(store.streaks.current)", "current streak")
+                    stat("\(store.streaks.best)", "best streak")
                 }
             }
         }
@@ -326,44 +298,46 @@ struct SquatDashboard: View {
 
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 14) {
-            QuestBadge(text: "Combo log", icon: "list.bullet", accent: Palette.aqua)
-            Text("Today's power trail").font(.system(.title3, design: .rounded, weight: .black))
+            Text("Logged today").font(.headline)
             let events = store.todayCompletions
             if events.isEmpty {
-                Text("Zero is just the loading screen. Finished pushup sets will land here.")
+                Text("No sets yet.")
                     .font(.subheadline).foregroundStyle(Palette.muted)
             }
             ForEach(Array(events.prefix(12))) { event in
                 AdaptiveRow(spacing: 12) {
                     HStack(spacing: 12) {
                         Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
-                            .foregroundStyle(Palette.lime).accessibilityHidden(true)
-                        Text(eventTitle(event.kind)).font(.subheadline)
+                            .foregroundStyle(Palette.accent).accessibilityHidden(true)
+                        Text(SquatDayRecap.eventTitle(event.kind)).font(.subheadline)
                     }
                 } trailing: {
                     Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
                 }.padding(.vertical, 5)
                     .accessibilityElement(children: .combine)
             }
-            Text("Past quests").font(.system(.title3, design: .rounded, weight: .black)).padding(.top, 8)
-            if store.daySummaries.isEmpty {
-                Text("Completed and active days will appear here.")
-                    .font(.subheadline).foregroundStyle(Palette.muted)
-            }
-            ForEach(store.daySummaries) { day in
-                Button { store.summary = day } label: {
-                    AdaptiveRow {
-                        Label(day.started.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
-                              systemImage: "clock.arrow.circlepath")
-                    } trailing: {
-                        HStack {
-                            Text("\(day.completedSets) pushup sets")
-                            Image(systemName: "chevron.right").accessibilityHidden(true)
-                        }
-                    }.font(.subheadline).padding(.vertical, 10)
-                        .accessibilityElement(children: .combine)
+            // The full history lives on its own screen; the dashboard only links to it, so its
+            // length never grows with the number of days kept.
+            // A full card, not bare text: with a plain button style only drawn content takes taps,
+            // so a text row left its middle dead. This matches the Lift Log and Body history rows.
+            NavigationLink {
+                SquatHistoryView().environmentObject(store)
+            } label: {
+                Surface {
+                    HStack {
+                        Text("History").font(.headline)
+                        Spacer()
+                        Text(store.historyDayCount == 1 ? "1 day" : "\(store.historyDayCount) days")
+                            .font(.subheadline).foregroundStyle(Palette.muted)
+                        Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                            .foregroundStyle(Palette.muted).accessibilityHidden(true)
+                    }
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .padding(.top, 8)
+            .accessibilityIdentifier("open-pushups-history")
         }
     }
 
@@ -372,7 +346,7 @@ struct SquatDashboard: View {
             Form {
                 Section("Your rhythm") {
                     Stepper("Every \(store.interval) minutes", value: $store.interval, in: 1...180)
-                    Stepper(store.goal == 0 ? "Daily quest: not set" : "Daily quest: \(store.goal) pushup sets",
+                    Stepper(store.goal == 0 ? "Daily goal: off" : "Daily goal: \(store.goal) sets",
                             value: $store.goal, in: 0...100)
                 }.disabled(store.active != nil || store.busy)
                 Section {
@@ -474,7 +448,7 @@ struct SquatDashboard: View {
                 }
             }.navigationTitle("Pushup settings")
                 .toolbar { Button("Done") { showSettings = false } }
-        }.tint(Palette.lime)
+        }.tint(Palette.accent)
             .animation(interactionAnimation, value: store.busy)
             .animation(interactionAnimation, value: store.homeEnabled)
             .animation(interactionAnimation, value: store.notificationAuthorization)
@@ -617,88 +591,33 @@ struct SquatDashboard: View {
         else { Task { await store.start() } }
     }
 
+    /// The installed version and build, read from the app rather than typed here, where it went
+    /// stale at 0.3.0.
+    private static var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
     private func summary(_ day: SquatDaySummary) -> some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    QuestBadge(text: "Quest recap", icon: "trophy.fill", accent: Palette.gold)
-                    Text("Power gained.\nDay saved.").font(.system(.largeTitle, design: .rounded, weight: .black))
-                    AccentSurface(accent: Palette.gold) {
-                        Text("\(day.completedSets)").font(.system(size: summaryCountSize, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
-                        Text("pushup sets completed this day").foregroundStyle(Palette.muted)
-                        Text(day.started.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
-                            .font(.headline)
-                        Text(goalDescription(day)).foregroundStyle(Palette.muted)
-                    }
-                    Surface {
-                        Label("Time in your day", systemImage: "clock").font(.headline)
-                        Text("Started \(day.started.formatted(date: .omitted, time: .shortened))")
-                        if let end = day.ended { Text("Ended \(end.formatted(date: .omitted, time: .shortened))") }
-                        else { Text("Day still open") }
-                        Text("Active \(duration(day.activeDuration)) · Paused \(duration(day.pausedDuration))")
-                        Text("\(day.sessions.count) session\(day.sessions.count == 1 ? "" : "s") · interval \(day.intervals.map(String.init).joined(separator: ", ")) min")
-                        Text("\(day.pauseSegments.count) pauses · \(day.snoozeTimes.count) snoozes")
-                    }
-                    if !day.pauseSegments.isEmpty {
-                        Surface {
-                            Label("Pause segments", systemImage: "pause.circle").font(.headline)
-                            ForEach(day.pauseSegments) { pause in
-                                AdaptiveRow {
-                                    Text("\(pause.started.formatted(date: .omitted, time: .shortened))–\(pause.ended.formatted(date: .omitted, time: .shortened))")
-                                } trailing: {
-                                    Text(duration(pause.duration)).foregroundStyle(Palette.muted)
-                                }.font(.subheadline)
-                            }
-                        }
-                    }
-                    Surface {
-                        Label("Daily timeline", systemImage: "list.bullet").font(.headline)
-                        if day.events.isEmpty { Text("No activity was logged.").foregroundStyle(Palette.muted) }
-                        ForEach(day.events) { event in
-                            AdaptiveRow {
-                                Text(eventTitle(event.kind))
-                            } trailing: {
-                                Text(event.date, style: .time).foregroundStyle(Palette.muted)
-                            }.font(.subheadline)
-                        }
-                    }
-                }.padding(24)
-            }.background(AppBackdrop()).navigationTitle("Quest recap")
+                SquatDayRecap(day: day).padding(24)
+            }.background(AppBackdrop()).navigationTitle("Summary")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { Button("Done") { store.summary = nil } }
-        }.tint(Palette.lime)
+        }.tint(Palette.accent)
     }
 
     private func stat(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(value).font(.system(.title, design: .rounded, weight: .bold))
+            Text(value).font(.title.weight(.semibold))
             Text(label).font(.caption).foregroundStyle(Palette.muted)
         }
         .accessibilityElement(children: .combine)
     }
 
-    private func eventTitle(_ kind: SquatEvent.Kind) -> String {
-        switch kind {
-        case .done: return "Pushup set completed"
-        case .pause: return "Reminders paused"
-        case .resume: return "Reminders resumed"
-        case .snooze: return "Extra nudge requested"
-        }
-    }
-
-    private func duration(_ value: TimeInterval) -> String {
-        let minutes = max(0, Int(value) / 60)
-        return minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m"
-    }
-
-    private func goalDescription(_ day: SquatDaySummary) -> String {
-        switch day.goalStatus {
-        case .notSet: return "No goal was set for this day."
-        case .reached: return "Quest cleared: \(day.completedSets)/\(day.goal!) pushup sets."
-        case .atRisk: return "Quest in progress: \(day.completedSets)/\(day.goal!) pushup sets."
-        case .missed: return "Quest not cleared: \(day.completedSets)/\(day.goal!) pushup sets."
-        }
-    }
 }
 
 struct SquatsBackupDocument: FileDocument {

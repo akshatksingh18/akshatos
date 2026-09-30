@@ -65,11 +65,9 @@ import SwiftUI
     var homePresence: HomePresence { homeState?.presence ?? .unknown }
     var shouldOfferOutsideStart: Bool { homeEnabled && homePresence == .outside }
     var streaks: (current: Int, best: Int) { SquatSession.streaks(sessions, now: now(), calendar: calendar) }
-    var daySummaries: [SquatDaySummary] {
-        Set(sessions.map(\.day)).compactMap { day in
-            SquatDaySummary.make(day: day, sessions: sessions, now: now(), calendar: calendar)
-        }.sorted { $0.day > $1.day }
-    }
+    var daySummaries: [SquatDaySummary] { SquatDaySummary.all(sessions, now: now(), calendar: calendar) }
+    /// How many days the history holds, without building every day's summary.
+    var historyDayCount: Int { Set(sessions.map(\.day)).count }
 
     init(defaults: UserDefaults = .standard, repository: (any SquatRepository)? = nil,
          reminders: (any SquatReminders)? = nil, inbox: (any SquatActionInbox)? = nil,

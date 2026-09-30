@@ -150,6 +150,14 @@ struct LiftExerciseRecord: Identifiable, Codable, Equatable {
     var latestSet: LiftSetRecord? { sets.last }
 }
 
+/// One calendar month of finished workouts. `id` is `yyyy-MM`; `month` is its first instant, for
+/// titles.
+struct LiftHistoryMonth: Identifiable, Equatable {
+    let id: String
+    let month: Date
+    var workouts: [LiftWorkoutSession]
+}
+
 struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     var id: UUID
     var startedAt: Date
@@ -168,6 +176,24 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
 
     var isActive: Bool { endedAt == nil }
     var setCount: Int { exercises.reduce(0) { $0 + $1.sets.count } }
+
+    /// Finished workouts grouped into calendar months, newest month and newest workout first. An
+    /// active workout is not history and is left out.
+    static func byMonth(_ workouts: [LiftWorkoutSession],
+                        calendar: Calendar = .current) -> [LiftHistoryMonth] {
+        let finished = workouts.filter { !$0.isActive }
+        let groups = Dictionary(grouping: finished) { workout -> DateComponents in
+            calendar.dateComponents([.year, .month], from: workout.startedAt)
+        }
+        return groups.compactMap { parts, values -> LiftHistoryMonth? in
+            guard let year = parts.year, let month = parts.month,
+                  let start = calendar.date(from: DateComponents(year: year, month: month, day: 1))
+            else { return nil }
+            return LiftHistoryMonth(id: String(format: "%04d-%02d", year, month), month: start,
+                                    workouts: values.sorted { $0.startedAt > $1.startedAt })
+        }
+        .sorted { $0.id > $1.id }
+    }
 
     mutating func addExercise(name: String, loadMode: LiftLoadMode,
                               equipmentNote: String = "") throws -> UUID {

@@ -18,13 +18,14 @@ final class AkshatOSUITests: XCTestCase {
         XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["open-pageVault"].exists, "PageVault is an available module")
         XCTAssertTrue(app.buttons["open-liftLog"].exists, "Lift Log is an available module")
+        XCTAssertTrue(app.buttons["open-body"].exists, "Body is an available module")
         XCTAssertFalse(app.buttons["open-reelVault"].exists, "ReelVault remains deferred")
         app.buttons["open-squats"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
         app.buttons["Pushup settings"].tap()
         XCTAssertTrue(app.navigationBars["Pushup settings"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.steppers.firstMatch.exists)
-        XCTAssertTrue(app.steppers["Daily quest: 8 pushup sets"].exists)
+        XCTAssertTrue(app.steppers["Daily goal: 8 sets"].exists)
         XCTAssertTrue(app.staticTexts["notification-permission-status"].exists)
         XCTAssertTrue(app.staticTexts["notification-permission-caveats"].waitForExistence(timeout: 5))
         app.swipeUp()
@@ -38,6 +39,27 @@ final class AkshatOSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["notification-actions-help"].waitForExistence(timeout: 5))
         app.navigationBars["Pushup settings"].buttons["Done"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
+    }
+
+    /// Pushup history is one row on the dashboard and a screen of its own, so the dashboard does
+    /// not grow with every day kept.
+    func testHistoryOpensOnItsOwnScreen() {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 10))
+        app.buttons["open-squats"].tap()
+        let history = app.buttons["open-pushups-history"]
+        XCTAssertTrue(history.waitForExistence(timeout: 10))
+        for _ in 0..<5 where !history.isHittable { app.swipeUp() }
+        XCTAssertTrue(history.isHittable)
+        history.tap()
+        XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["pushups-history-empty"].exists,
+                      "A fresh install explains that days will appear here")
+        capture("Pushup history")
+        app.navigationBars["History"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5),
+                      "Leaving history returns to the dashboard")
     }
 
     private func capture(_ name: String) {

@@ -1,12 +1,15 @@
 # AkshatOS
 
 A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard,
-**PageVault** for its PDF library, or **Lift Log** to record strength sessions. ReelVault is reserved
+**PageVault** for its PDF library, **Lift Log** to record strength sessions, or **Body** for daily
+weight, weekly measurements and progress photos ([body-log.md](body-log.md)). ReelVault is reserved
 for later and WHOOP stays a separate app.
 
-**Current state:** Working source 0.5.0 (28) lets a PDF on the laptop reach PageVault without
-picking it on the phone — a linked OneDrive inbox folder read each time PageVault opens, and Open in
-AkshatOS from other apps' share sheets. It is not yet CI- or phone-verified. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
+**Current state:** Build 28 (0.5.0) added a PageVault laptop inbox folder and Open in AkshatOS; the
+inbox failed to link on the phone and Akshat asked for both to be removed. Working source 0.6.0 (29)
+removes them, adds the Body module, gives Pushup and Lift Log history their own screens (Lift Log's reaching every
+workout), shows every set of a last performance, and replaces the Build-25 "quest" theme with a
+clean, minimal design in plain words, notifications and icon included; it awaits CI and installation. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
 templates, same-mode last-performance references and active-set editing to Lift Log. PR #54 merged
 at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including registered domain and
 hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133`
@@ -43,8 +46,8 @@ build skipping, and the server-enforced `main` protection. Green CI is not physi
 App composition, display-only hub, shared styling and the Pushup Reminder feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- Playful Homebase hub, Pushup Reminder power-up dashboard and PageVault story-quest library;
-  Lift Log is an available gold-accent strength portal and ReelVault is a visibly locked future portal.
+- A plain hub listing Pushup Reminder, PageVault and Lift Log, with ReelVault shown as not available
+  yet; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
 - Lift Log asks Upper or Lower at workout start, preloads the confirmed exercises in priority order,
   shows the last finished performance for the same exercise/mode, and edits active sets. It
   preserves per-side/per-hand/stack/added/total meanings, saves after every mutation, recovers
@@ -98,7 +101,7 @@ The accepted feature scope and dashboard behavior are in [`features.md`](feature
 
 ## Primary iPhone plan
 
-The `ios/` source opens the Homebase hub, a separate Pushup Reminder dashboard, the PageVault library,
+The `ios/` source opens the hub, a separate Pushup Reminder dashboard, the PageVault library,
 and Lift Log. The build path is
 Windows → GitHub macOS runner → unsigned IPA → Sideloadly → physical iPhone. It uses a bounded batch
 of one-off `UNTimeIntervalNotificationTrigger` requests for the normal reminder and automatic nudges,
@@ -167,7 +170,7 @@ safe.
 
 The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Pushups, PageVault, Lift Log, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
+Pushups, PageVault, Lift Log, Body, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates
@@ -177,7 +180,7 @@ The current target is AkshatOS; old downloaded standalone smoke files are not hu
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;
 - the permanent bundle ID, same Apple Account/team, early health checks, alerts, backup, and USB
   recovery rules must be preserved;
-- all four native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
+- all native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
   keeps a separate identity/process. No paid membership or rotation is needed for two slots.
 
 The AkshatOS bundle ID is `com.akshatksingh18.akshatos`. Preserve it and the same Apple Account

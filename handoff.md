@@ -1,9 +1,13 @@
 # AkshatOS session handoff
 
 **Status:** Current-state entry point for resuming AkshatOS work, not a specification or log.
-Working source 0.5.0 (28), on branch `feature/pagevault-inbox-open-in`, adds PageVault's OneDrive
-laptop inbox folder and Open in AkshatOS; it is locally checked only and needs its PR CI Gate, an
-artifact and a phone pass. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+Build 28 / 0.5.0 (28) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS; it is
+installed and enrolled, but linking the folder did nothing on the phone and Akshat asked for both
+features to be removed. Working source 0.6.0 (29), on branch `feature/remove-inbox-open-in`, adds the
+Body module (`body-log.md`), removes
+them, moves Pushup and Lift Log history to their own month-grouped screens, shows every set of a
+last performance, and replaces the "quest" theme with a clean, minimal design in plain words
+(notifications and icon included); it needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -63,7 +67,7 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
-- Launch into an app picker; select Pushup Reminder, PageVault, or Lift Log for its own destination.
+- Launch into an app picker; select Pushup Reminder, PageVault, Lift Log, or Body for its own destination.
   This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
@@ -83,8 +87,14 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   save-after-every-mutation active-session recovery, set edit/undo/discard/delete controls,
   finished history, validated JSON recovery and CSV export. `lift-log.md` owns its
   product/privacy/acceptance contract; none of it is cloud- or phone-verified yet.
-- Homebase hub, Pushup power-up dashboard, PageVault story-quest library, shared atmospheric visual
-  components, refreshed generated icon, and app-lifetime services across navigation.
+- Body (0.6.0 source, unverified): daily weigh-in with seven-day and weekly-block averages, the
+  eight-site weekly tape with guidance and per-site change, Navy body-fat and waist-to-height
+  estimates from a height set on the phone, camera/Photos progress photos with first-vs-latest
+  comparison, an optional weekly reminder routed by the `akshatos.body.` namespace, folder backup
+  with validated restore, and CSV. `body-log.md` owns it; no personal data belongs in this repo.
+- A plain hub list, Pushup dashboard, PageVault library and Lift Log on one minimal shared design
+  system (neutral surfaces, one accent, plain labels), a flat generated icon, and app-lifetime
+  services across navigation. The Build-25 "quest" theme is replaced in 0.6.0 (29); keep it plain.
 - Pushups lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
   normal-plus-59-nudge schedule with foreground replenishment, and one idle 9:00 AM start invitation
   that never auto-starts a day.
@@ -107,9 +117,9 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   Reading book at a time, highlights with Takeaways and a PDF export, full-text search, and
   folder/JSON export with validated, conflict-aware restore. Its reading loop is phone-confirmed as
   of Build 20; reading streaks were removed in Build 21. Build 22's pass reworked the highlighter
-  after it was found stacking marks; `cloud-build.md` owns that finding. Source for 0.5.0 (28) adds a
-  linked OneDrive laptop inbox folder read on every open and Open in AkshatOS for PDFs, both through
-  one serialized import path; neither is CI- or phone-verified yet.
+  after it was found stacking marks; `cloud-build.md` owns that finding. Imports run through one
+  serialized store path. The laptop inbox folder and Open in AkshatOS from Build 28 are removed in
+  0.6.0 (29) at Akshat's request; do not re-propose them.
 - Logical boundaries: `ios/AkshatOS/app/` composes features and owns the sole notification
   coordinator; `app/hub/` displays metadata and injected destinations; `shared/design-system/`
   is feature-independent; `features/squats/` and `features/pagevault/` own their domain, data,
@@ -135,10 +145,15 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Laptop-to-PageVault import (0.5.0 (28)):** publish the branch after Akshat confirms the public
-   push, pass its PR CI Gate, merge, validate the main-run artifact into `testing\`, then hand it over
-   for the inbox/Open in phone checks listed in `../book-reader/CLAUDE.md`'s acceptance matrix. On the
-   phone he needs the OneDrive app installed and enabled as a Files location before linking.
+1. **Build 29:** after Akshat confirms the public push, pass the PR CI Gate, merge, validate the
+   main-run artifact into `testing\` (replacing Build 28), then install it over Build 28 without
+   uninstalling. Check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
+   notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
+   history open on their own screens with every day/workout present, that the last-performance line
+   lists every set, that the Body module passes `body-log.md`'s phone checks (the camera prompt
+   appears only when a photo is taken), that existing data is intact, and that current-version
+   enrollment holds before
+   promoting Build 29 to `backup\`.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.

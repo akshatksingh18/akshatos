@@ -10,8 +10,6 @@ final class PageVaultUITests: XCTestCase {
         app.buttons["open-pageVault"].tap()
 
         XCTAssertTrue(app.buttons["import-pdf"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Enter the vault."].exists,
-                      "The story-quest presentation is visible on an empty library")
         XCTAssertTrue(app.staticTexts["No books yet"].exists, "A fresh library states it is empty")
         XCTAssertFalse(app.staticTexts["pagevault-import-measurement"].exists,
                        "No import measurement is shown before anything is imported")
@@ -42,29 +40,6 @@ final class PageVaultUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["There are no books to export yet."].waitForExistence(timeout: 5),
                       "Exporting an empty library says so instead of producing an empty folder")
         app.alerts.buttons["OK"].tap()
-        app.navigationBars.buttons["Done"].tap()
-        XCTAssertTrue(app.buttons["import-pdf"].waitForExistence(timeout: 5),
-                      "Closing the sheet returns to the library")
-    }
-
-    /// The folder picker is system UI, so this covers what the app owns: with nothing linked, the
-    /// library offers the laptop inbox and the sheet offers to link a folder and explains itself.
-    func testLaptopInboxSheetOffersToLinkAFolder() {
-        let app = XCUIApplication()
-        app.launch()
-        XCTAssertTrue(app.buttons["open-pageVault"].waitForExistence(timeout: 10))
-        app.buttons["open-pageVault"].tap()
-
-        XCTAssertTrue(app.buttons["pagevault-inbox"].waitForExistence(timeout: 10))
-        app.buttons["pagevault-inbox"].tap()
-        XCTAssertTrue(app.buttons["pagevault-inbox-link"].waitForExistence(timeout: 5),
-                      "With no folder linked, the sheet offers to link one")
-        XCTAssertFalse(app.buttons["pagevault-inbox-check"].exists,
-                       "Checking is only offered once a folder is linked")
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'OneDrive folder'"))
-                        .firstMatch.exists, "The sheet explains how the laptop reaches it")
-        capture("PageVault laptop inbox")
-
         app.navigationBars.buttons["Done"].tap()
         XCTAssertTrue(app.buttons["import-pdf"].waitForExistence(timeout: 5),
                       "Closing the sheet returns to the library")

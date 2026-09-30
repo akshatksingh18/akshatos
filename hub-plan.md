@@ -4,21 +4,23 @@
 build. PageVault is active and phone-accepted through Build 24; Akshat explicitly added Lift Log as
 a local-only strength utility. Build 27 is cloud/package, locally and phone verified with its fixed
 Upper/Lower workflow; current-version automatic-refresh enrollment also passes, and its artifact is
-the accepted recovery/refresh copy. `lift-log.md` owns it. ReelVault
+the accepted recovery/refresh copy. `lift-log.md` owns it. Body (weight, weekly measurements,
+progress photos) is a local-only module in working source, owned by `body-log.md`. ReelVault
 remains a later module and WHOOP stays standalone.
 Build/phone progress belongs in `cloud-build.md`, not this integration contract.
 
 ## Installed applications
 
 - **AkshatOS (accepted hub display name):** one SwiftUI application with Pushup Reminder,
-  PDF Reader/PageVault, Lift Log, and Reels/ReelVault sections, one entry point, bundle ID, profile,
+  PDF Reader/PageVault, Lift Log, Body, and Reels/ReelVault sections, one entry point, bundle ID, profile,
   and IPA.
 - **WHOOP:** its existing Flutter app remains independently built, installed, refreshed, and tested.
   Keep its native BLE restoration, database, and encrypted export/recovery separate from the hub.
 
 Two apps fit the free Personal Team allowance of three installed development apps; the third slot
-is unallocated, not an instruction to add a helper. All five product functions can be available
-without rotation or paid membership. This is source-level feature composition, not four guest
+is unallocated, not an instruction to add a helper. Every product function can be available
+without rotation or paid membership: Akshat's body-measurement tracker was added as a hub module
+rather than a separate app for exactly this reason. This is source-level feature composition, not guest
 IPAs, a PWA, LiveContainer, or an iOS extension workaround. No Flutter embedding is required.
 
 ## Native hub boundaries
@@ -27,7 +29,8 @@ App composition/navigation lives under `ios/AkshatOS/app/`, reusable UI under `s
 feature under `features/<feature>/`. Features must not depend on other features or the host;
 the host wires their entry points. `architecture.md` owns exact boundaries and checks.
 
-- Use one native SwiftUI host and four feature modules; module names need not be separate
+- Use one native SwiftUI host and its feature modules (Pushups, PageVault, Lift Log, Body, and the
+  reserved ReelVault); module names need not be separate
   application targets. Keep existing feature requirements and Android fallbacks intact.
 - A simple home/section selector opens each experience. Load PDF documents and video players only
   when needed and release them on exit; preserve each module's state when switching.
@@ -52,26 +55,22 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
     the second.
   - **A new module adds its namespace to that map in the same change that registers its category.**
     Forgetting is not a breakage — an unclaimed notification routes nowhere and the hub stays put,
-    which is the old behaviour.
-- **A file handed over by another app opens the feature that owns its type**, by the same rule.
-  The hub declares document types once for the whole app (`ios/Support/AkshatOS-Info.plist`; today
-  only PDF, for PageVault), and the app layer (`AppServices.openFile`) maps type → feature: it asks
-  the hub for that route and passes the file to the feature's import. Features never learn about hub
-  routes; a new type is declared and mapped in the same change. Types are declared not-in-place
-  with no `UIFileSharingEnabled`, so iOS delivers a copy and the app's Documents stay private. This is
-  a document type, not a share extension: no extra target or App ID.
+    which is the old behaviour. Registered today: Pushups (`akshatos.squats.`) and Body's weekly
+    reminder (`akshatos.body.`).
 - One hub means one system notification identity and permission settings. Explain that location
-  permission serves Pushups, selected video access serves Reels, and Files import (including
-  PageVault's linked inbox folder and shared-in PDFs) serves libraries and explicit Lift Log
-  backup/restore; none of these prompts, and logging a workout itself requests no permission.
+  permission serves Pushups, selected video access serves Reels, the camera serves Body's progress
+  photos only when one is taken, and Files import serves libraries and explicit Lift Log/Body
+  backup/restore; logging a workout or a weigh-in itself requests no permission. The hub
+  declares no document types: Open in AkshatOS was tried in Build 28 and removed at Akshat's request.
   Request permissions when their feature is used; do not require location to read a PDF.
 - Version module metadata independently in logically separate stores/directories with namespaced
   settings. Separation is organizational, not an OS security sandbox between modules. No cloud
   sync or cross-module data sharing is implied.
 - Provide per-feature and full-hub export/restore before retaining irreplaceable data. PDF/video
-  copies, headlines/bookmarks, and Pushups history/goals need recovery; disposable caches do not.
+  copies, headlines/bookmarks, Pushups history/goals, Lift Log workouts, and Body records and photos
+  need recovery; disposable caches do not.
 - Update, profile expiry, process crashes/force-quit, and uninstall affect the hub as a whole.
-  Uninstall removes all four modules' local data. The installed WHOOP app stays independent,
+  Uninstall removes every module's local data. The installed WHOOP app stays independent,
   although both signed apps still depend on Apple's signing services.
 - Normal background limits remain: system-scheduled notifications do not require the Pushups screen
   open, but Focus, permission changes, geofence delivery, and foreground presentation need tests.
@@ -111,10 +110,10 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
 - Use Local Anisette, initial trusted USB proof, Wi-Fi pairing, per-app auto-refresh enrollment,
   daemon startup, daily/48-hour maximum health-check gap, three-day refresh buffer, two-day
   escalation, and final-day USB recovery. Verify actual expiry/install success, not process startup.
-- Hub refresh/upgrade must preserve all four modules and recheck pending pushup requests. WHOOP
+- Hub refresh/upgrade must preserve every module and recheck pending pushup requests. WHOOP
   refresh/upgrade must separately preserve pairing/history and pass its BLE/restoration gates.
 - Export data before upgrades/migrations; test clean restore on disposable data before daily use.
-  One expired hub profile can block all four sections, so early alerts and same-ID repair matter.
+  One expired hub profile can block every section, so early alerts and same-ID repair matter.
 
 ## Acceptance sequence
 

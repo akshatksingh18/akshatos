@@ -18,7 +18,8 @@ import UIKit
     /// below.** Nothing breaks if it is forgotten: an unrecognised notification routes nowhere and
     /// the hub stays where it was, which is the behaviour this replaced.
     static let featureNamespaces: [(namespace: String, route: HubRoute)] = [
-        (ReminderService.namespace, .squats)
+        (ReminderService.namespace, .squats),
+        (BodyReminderService.namespace, .body)
     ]
 
     init(squats: SquatStore, navigator: HubNavigator) {

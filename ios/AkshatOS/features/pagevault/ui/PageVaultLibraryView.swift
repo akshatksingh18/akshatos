@@ -7,10 +7,8 @@ struct PageVaultLibraryView: View {
 
     @State private var showImporter = false
     @State private var showBackup = false
-    @State private var showInbox = false
     @State private var pendingRemoval: PageVaultBook?
     @State private var detail: PageVaultBook?
-    @Environment(\.scenePhase) private var scenePhase
 
     private let columns = [GridItem(.adaptive(minimum: 104), spacing: 16)]
 
@@ -23,9 +21,9 @@ struct PageVaultLibraryView: View {
                 } else {
                     continueReading
                     // Half-read books get their own shelf rather than sitting among unopened ones.
-                    shelf("In progress", icon: "book.pages.fill", books: store.startedBooks)
-                    shelf("Quest queue", icon: "rectangle.stack.fill", books: store.unstartedBooks)
-                    shelf("Completed tomes", icon: "checkmark.seal.fill", books: store.books(with: .finished))
+                    shelf("In progress", books: store.startedBooks)
+                    shelf("Want to read", books: store.unstartedBooks)
+                    shelf("Finished", books: store.books(with: .finished))
                 }
                 if let summary = store.lastImportSummary {
                     Text("Last import: \(summary)")
@@ -37,14 +35,7 @@ struct PageVaultLibraryView: View {
         }
         .background(AppBackdrop())
         .navigationTitle("PageVault")
-        .task {
-            await store.load()
-            await store.syncInbox()
-        }
-        // Coming back from the laptop's side of things is the moment a new PDF is most likely waiting.
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await store.syncInbox() } }
-        }
+        .task { await store.load() }
         .sheet(item: $detail) { book in
             PageVaultBookSheet(store: store, bookID: book.id)
         }
@@ -80,76 +71,50 @@ struct PageVaultLibraryView: View {
     }
 
     private var header: some View {
-        AccentSurface(accent: Palette.aqua) {
-            QuestBadge(text: "Story quest", icon: "bookmark.fill", accent: Palette.aqua)
-            Text("Enter the vault.")
-                .font(.system(.largeTitle, design: .rounded, weight: .black))
-            Text("Bring your own worlds. PageVault keeps them offline and remembers where you left the portal open.")
-                .font(.subheadline).foregroundStyle(Palette.muted)
-            HStack(spacing: 10) {
-                vaultStat("\(store.books.count)", store.books.count == 1 ? "BOOK" : "BOOKS", icon: "books.vertical.fill")
-                vaultStat("\(keptPassageCount)", keptPassageCount == 1 ? "PASSAGE" : "PASSAGES", icon: "quote.opening")
+        VStack(alignment: .leading, spacing: 12) {
+            if !store.books.isEmpty {
+                Text(librarySummary).font(.subheadline).foregroundStyle(Palette.muted)
             }
             Button {
                 showImporter = true
             } label: {
-                Label(store.busy ? "Opening portal…" : "Add a PDF portal", systemImage: "plus")
+                Text(store.busy ? "Adding…" : "Add PDF")
             }
             .buttonStyle(ActionStyle(primary: true))
             .disabled(store.busy || !store.storageAvailable)
             .accessibilityIdentifier("import-pdf")
-            // Reachable with an empty library too, which is exactly the state after a clean install.
-            NavigationLink {
-                PageVaultTakeawaysView(store: store,
-                                       onReadingSessionChange: onReadingSessionChange)
-            } label: {
-                Label("Open the treasure shelf", systemImage: "quote.opening")
+            HStack(spacing: 12) {
+                // Reachable with an empty library too, which is exactly the state after a clean install.
+                NavigationLink {
+                    PageVaultTakeawaysView(store: store,
+                                           onReadingSessionChange: onReadingSessionChange)
+                } label: {
+                    Text("Takeaways")
+                }
+                .buttonStyle(ActionStyle())
+                .accessibilityIdentifier("open-takeaways")
+                Button {
+                    showBackup = true
+                } label: {
+                    Text("Back up")
+                }
+                .buttonStyle(ActionStyle())
+                .accessibilityIdentifier("pagevault-backup")
             }
-            .buttonStyle(ActionStyle())
-            .accessibilityIdentifier("open-takeaways")
-            Button {
-                showBackup = true
-            } label: {
-                Label("Back up or restore", systemImage: "externaldrive")
-            }
-            .buttonStyle(ActionStyle())
-            .accessibilityIdentifier("pagevault-backup")
-            Button {
-                showInbox = true
-            } label: {
-                Label(store.inboxFolderName == nil ? "Link a laptop inbox" : "Laptop inbox",
-                      systemImage: "tray.and.arrow.down")
-            }
-            .buttonStyle(ActionStyle())
-            .disabled(!store.storageAvailable)
-            .accessibilityIdentifier("pagevault-inbox")
-            inboxStatus
         }
         .sheet(isPresented: $showBackup) { PageVaultBackupSheet(store: store) }
-        .sheet(isPresented: $showInbox) { PageVaultInboxSheet(store: store) }
     }
 
-    /// One quiet line about the inbox folder: while it is being read, and afterwards only when
-    /// something was added or needs attention.
-    @ViewBuilder private var inboxStatus: some View {
-        if store.inboxChecking {
-            Label("Checking \(store.inboxFolderName ?? "your inbox")…", systemImage: "tray.and.arrow.down")
-                .font(.caption).foregroundStyle(Palette.muted)
-        } else if store.inboxNeedsRelink {
-            Label("Your inbox folder needs linking again.", systemImage: "exclamationmark.triangle")
-                .font(.caption).foregroundStyle(Palette.coral)
-        } else if let report = store.inboxReport, report.isNews {
-            Label(report.summary, systemImage: "tray.and.arrow.down")
-                .font(.caption).foregroundStyle(Palette.muted)
-                .accessibilityIdentifier("pagevault-inbox-status")
-        }
+    private var librarySummary: String {
+        let books = store.books.count == 1 ? "1 book" : "\(store.books.count) books"
+        guard keptPassageCount > 0 else { return books }
+        return "\(books) · \(keptPassageCount == 1 ? "1 highlight" : "\(keptPassageCount) highlights")"
     }
 
     private var emptyState: some View {
-        AccentSurface(accent: Palette.violet) {
-            QuestBadge(text: "Vault empty", icon: "moon.stars.fill", accent: Palette.violet)
+        Surface {
             Text("No books yet").font(.headline)
-            Text("Drop in a PDF from Files, share one from another app, or link a laptop inbox folder. Your first story quest starts there.")
+            Text("Add a PDF from Files, iCloud Drive or OneDrive.")
                 .font(.subheadline).foregroundStyle(Palette.muted)
         }
         .accessibilityElement(children: .combine)
@@ -159,21 +124,19 @@ struct PageVaultLibraryView: View {
     @ViewBuilder private var continueReading: some View {
         if let book = store.current {
             VStack(alignment: .leading, spacing: 12) {
-                Text("CONTINUE READING")
-                    .font(.caption2.weight(.bold)).tracking(2).foregroundStyle(Palette.muted)
+                Text("Continue reading").font(.headline)
                 NavigationLink { reader(for: book) } label: {
-                    AccentSurface(accent: Palette.aqua) {
-                        QuestBadge(text: "Current portal", icon: "location.fill", accent: Palette.aqua)
+                    Surface {
                         HStack(alignment: .top, spacing: 16) {
                             PageVaultCoverView(url: store.coverURL(for: book),
                                                revision: store.coverRevision)
                                 .frame(width: 78, height: 104)
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(book.title)
-                                    .font(.system(.headline, design: .rounded)).lineLimit(3)
+                                    .font(.headline).lineLimit(3)
                                 Text(book.progressLabel)
-                                    .font(.caption.monospacedDigit()).foregroundStyle(Palette.lime)
-                                ProgressView(value: book.progressFraction).tint(Palette.lime)
+                                    .font(.caption.monospacedDigit()).foregroundStyle(Palette.accent)
+                                ProgressView(value: book.progressFraction).tint(Palette.accent)
                             }
                         }
                     }
@@ -185,13 +148,13 @@ struct PageVaultLibraryView: View {
         }
     }
 
-    @ViewBuilder private func shelf(_ title: String, icon: String, books: [PageVaultBook]) -> some View {
+    @ViewBuilder private func shelf(_ title: String, books: [PageVaultBook]) -> some View {
         if !books.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    QuestBadge(text: title, icon: icon, accent: Palette.violet)
+                    Text(title).font(.headline)
                     Spacer()
-                    Text("\(books.count)").font(.caption.monospacedDigit().weight(.bold))
+                    Text("\(books.count)").font(.subheadline.monospacedDigit())
                         .foregroundStyle(Palette.muted)
                 }
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
@@ -206,8 +169,8 @@ struct PageVaultLibraryView: View {
                                     .font(.caption2.monospacedDigit()).foregroundStyle(Palette.muted)
                             }
                             .padding(10)
-                            .background(Palette.cardGradient, in: RoundedRectangle(cornerRadius: 16))
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.07)))
+                            .background(Palette.card, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.06)))
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("open-book-\(book.id.uuidString)")
@@ -220,20 +183,6 @@ struct PageVaultLibraryView: View {
 
     private var keptPassageCount: Int {
         store.books.reduce(0) { $0 + $1.highlights.count }
-    }
-
-    private func vaultStat(_ value: String, _ label: String, icon: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon).foregroundStyle(Palette.aqua).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(value).font(.headline.monospacedDigit())
-                Text(label).font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Palette.muted)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.black.opacity(0.13), in: RoundedRectangle(cornerRadius: 14))
-        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder private func menu(for book: PageVaultBook) -> some View {

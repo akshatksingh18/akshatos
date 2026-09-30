@@ -3,7 +3,8 @@
 Personal native iPhone hub: the home screen selects a feature, starting with Pushup Reminder.
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
-the local-only strength-session module, owned by `lift-log.md`; ReelVault is reserved for later and
+the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
+weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is reserved for later and
 WHOOP stays standalone. This repository evolved from Squat Reminder and now presents that
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
@@ -17,8 +18,17 @@ reports that it works well end-to-end, closing the focused Lift Log phone-behavi
 database confirms version 0.4.0 at the expected final identity, automatic bundle-ID mode, completed
 current-version enrollment, no error and a seven-day expiry. Build 27 is therefore promoted to the
 accepted backup slot.
-Working source 0.5.0 (28) adds PageVault's OneDrive laptop inbox folder and Open in AkshatOS for
-PDFs; it is implemented and locally checked but awaits its PR CI Gate, a build and a phone pass.
+Build 28 (0.5.0) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS, passed CI and
+artifact validation, and is installed with current-version enrollment. On the phone, linking the
+inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.6.0 (29)
+removes them (keeping only the serialized import path), adds the **Body** module (daily weight,
+eight-site weekly tape, weekly reminder, Navy estimate, progress photos, backup/CSV — `body-log.md`),
+moves Pushup and Lift Log history
+off their main screens onto month-grouped history screens (Lift Log's now reaching every workout, not
+just the latest 12), shows every set of a last performance instead of "+N more", replaces the
+stale "Preview 0.3.0" footer with the installed version, and replaces the Build-25 "quest" theme
+across the hub, every module, the notifications and the icon with a clean, minimal design in plain
+words (`features.md`). It awaits CI, a build and installation.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -39,6 +49,13 @@ every feature is physically verified.
 
 - `lift-log.md` — Lift Log product, plate-per-side data contract, privacy boundary, source layout
   and acceptance gates; read before changing the strength logger.
+- `body-log.md` — Body module product contract (weigh-ins, the eight tape sites, estimates, photos,
+  reminder, backup/CSV), privacy boundary, source layout and acceptance gates; read before changing it.
+- `ios/AkshatOS/features/body/` — Body module: `domain/BodyLog.swift`, `data/` (SwiftData store and
+  photo files), `services/BodyReminderService.swift`, `BodyLogStore.swift`, and `ui/`.
+- `ios/tests/body/main.swift`, `ios/UnitTests/BodyLogPersistenceTests.swift`, and
+  `ios/UITests/BodyUITests.swift` — registered Body domain, persistence/photo/backup/reminder and
+  navigation coverage.
 - `handoff.md` — new-session entry point, current implementation/evidence boundaries and recommended
   continuation order; read to resume, then use its linked owning specifications and setup guides.
 - `ci.md` — pipeline stages, docs-only PR classification, feature test registration, failure
@@ -46,17 +63,17 @@ every feature is physically verified.
   changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
-- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload and the declared PDF
-  document type before publication.
-- `ios/Support/AkshatOS-Info.plist` — the only hand-written Info.plist keys (the PDF document type
-  behind Open in AkshatOS), merged with the generated ones; read with `hub-plan.md`'s file-routing
-  rule before declaring another type.
+- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication,
+  including that no document types or file sharing are declared.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
 - `ios/AkshatOS/features/squats/domain/SquatAction.swift` — shared action commands and delivery receipts.
 - `ios/AkshatOS/features/squats/domain/SquatDaySummary.swift` — same-date aggregation, active/paused
-  timing, goal status and detailed daily history.
+  timing, goal status, detailed daily history, and the one-pass day list and month grouping behind
+  the History screen.
+- `ios/AkshatOS/features/squats/ui/SquatHistoryView.swift` — the Pushup History screen (days by
+  month) and the day summary it shares with the end-of-day sheet.
 - `ios/AkshatOS/features/squats/domain/SquatsBackup.swift` — versioned local JSON export/restore
   contract and whole-file validation.
 - `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
@@ -85,7 +102,7 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  27 is the accepted copy and `testing\` is empty.
+  27 is the accepted copy and `testing\` holds Build 28, which is installed but will not be promoted.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -132,14 +149,13 @@ every feature is physically verified.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
   reading status, the place marker, highlights with their band geometry, folding and area-based
   identity, search matching, snippets and find marks, page themes,
-  page-fitting geometry and ink scanning, the export manifest with restore planning, and the laptop
-  inbox folder's rules), `data/` (versioned SwiftData store,
-  streamed copy-on-import storage, the inbox folder's bookmark/record, export staging, disposable
-  cover and page-measurement caches),
+  page-fitting geometry and ink scanning, and the export manifest with restore planning),
+  `data/` (versioned SwiftData store,
+  streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
-  its fitting screen, book sheet, backup sheet, laptop inbox sheet, the per-book takeaways list, the
-  Takeaways surface, search sheet, the page-jump picker). Product scope and
+  its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
+  search sheet, the page-jump picker). Product scope and
   gates are owned by `../book-reader/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
   reworked highlighter are not. Build 22 found the highlighter stacking marks over each other
@@ -147,14 +163,16 @@ every feature is physically verified.
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
-  hard-coded Upper/Lower templates, store, history/entry/edit UI, last-performance lookup, JSON
-  recovery and CSV export.
+  hard-coded Upper/Lower templates, store, entry/edit UI, the month-grouped history screen
+  (`ui/LiftLogHistoryView.swift`), last-performance lookup with every set shown, JSON recovery and
+  CSV export. `lift-log.md` owns the contract.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
   coverage. Build 27's expanded scenarios passed the complete PR and clean-main macOS CI gates.
 - `ios/UnitTests/PageVaultPersistenceTests.swift` — real copy-on-import, fingerprint dedupe,
   rejected/corrupt imports, the bookmarked place across store recreation, source-file-preserving
-  removal, the single-Reading-book invariant and cover generation.
+  removal, the single-Reading-book invariant, cover generation, and serialized imports (simultaneous
+  copies of one file, an import before the library has loaded).
 - `ios/UnitTests/PageVaultBackupTests.swift` — real-file export/restore: full export into a fresh
   library, reading data onto a re-imported PDF, a tampered PDF restoring nothing, add-only versus
   replace against a live library, and malformed or mis-picked exports.
@@ -163,17 +181,20 @@ every feature is physically verified.
   measurement reused after relaunch and removed with its book, and crop boxes applied in points.
 - `ios/UnitTests/PageVaultHighlightTests.swift` — highlights saved through the store and reloaded,
   carried by a full export and restored, rendered into their own PDF, and refused when there are none.
-- `ios/UnitTests/PageVaultInboxTests.swift` — the laptop inbox against a real folder (first link,
-  later passes, settled duplicates/broken files, removed books, relaunch, unlink, a vanished folder)
-  plus Open in delivery clean-up and simultaneous imports of one file.
 - `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
   phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
-- `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
+- `ios/AkshatOS/shared/design-system/` — feature-independent palette (neutrals plus one accent),
+  flat background, cards, progress ring and buttons; change the look here, not per screen.
+- `ios/scripts/generate-app-icon.swift` — draws the flat, minimal app icon on the CI runner. Core
+  Graphics draws with y pointing up, so the top of the icon is the largest y (the Build-25 icon's A
+  was drawn upside down because of this).
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.
 - `ios/AkshatOS/Resources/` — app assets; existing icon generation path is unchanged.
 - `ios/scripts/check-boundaries.py` — source dependency/delegate guard and negative fixtures;
-  run locally and in CI. Logical boundaries, not compiler-enforced Swift packages.
+  run locally and in CI. Logical boundaries, not compiler-enforced Swift packages. Process-wide
+  delegates stay in the app coordinator; a UIKit representable's own `context.coordinator` (the Body
+  camera) is the one allowed view-local exception.
 - `ios/tests/squats/main.swift` — executable Pushups domain assertions run by the cloud workflow.
 - `ios/UITests/` — simulator hub/dashboard/PageVault navigation tests and screenshot attachments;
   test runner is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
@@ -199,7 +220,7 @@ every feature is physically verified.
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder, PageVault, or Lift Log for its own
+- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, or Body for its own
   destination. Returning to the picker must not stop reminders. ReelVault remains visibly unavailable,
   not a fake app.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
@@ -415,7 +436,7 @@ every feature is physically verified.
 
 ### Accepted free-account app-slot portfolio
 
-- Install one native hub for Pushups, PageVault, Lift Log, and ReelVault, plus standalone WHOOP: two free slots.
+- Install one native hub for Pushups, PageVault, Lift Log, Body, and ReelVault, plus standalone WHOOP: two free slots.
   One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
   installation identity per module is required. Packaging is accepted; implementation is pending.
 - The hub's notification/geofence handlers belong to the application lifecycle, not the Pushups
@@ -424,7 +445,7 @@ every feature is physically verified.
   Pushups-owned requests. Never let navigation disable Home monitoring.
 - OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
   apply to the hub as a whole. Keep module stores/export logically separate and test cross-section
-  behavior. Deleting the hub removes all four modules' local data, so full recovery is mandatory.
+  behavior. Deleting the hub removes every module's local data, so full recovery is mandatory.
 - Use Windows Sideloadly, no phone-side host. Another signer is an explicit workflow choice; the
   spare slot is not automatic permission to add it. Free seven-day expiry/early refresh still apply.
 - `hub-plan.md` owns source/build ownership and identity reconciliation before coding.
@@ -592,7 +613,7 @@ The iPhone path can be described as working only when all of the following are t
   automation proves success rather than merely running, expiry risk raises a visible alert, and
   USB recovery has been rehearsed;
 - the common hub IPA can be signed by a fallback path without source changes, coexists with
-  standalone WHOOP in two free slots, and preserves all four modules across refresh/upgrade;
+  standalone WHOOP in two free slots, and preserves every module across refresh/upgrade;
 - Pushups actions and Home events work without opening its section, including while PageVault/Reels
   is visible, and their module transitions cannot cancel requests or delay durable action handling;
 - Android remains buildable as a fallback or is still explicitly documented as unverified—do not
@@ -635,8 +656,12 @@ data, device state, or durable release IPAs.
 - Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
-- Preserve the local-only, single-user Pushups feature scope within the accepted four-module hub;
+- Preserve the local-only, single-user Pushups feature scope within the accepted multi-module hub;
   packaging consolidation does not add new product features or activate WHOOP.
+- **Design and wording stay clean, minimal and plain.** Akshat rejected the Build-25 gamified
+  "quest" theme: no game metaphors (quests, portals, power-ups, combos, trophies, treasure) in the UI,
+  notifications or icon, one calm accent, flat surfaces, standard fonts, and labels that say plainly
+  what things are. `features.md` § Dashboard and visual direction owns the details.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
   Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily
   overview, and notification actions; keep optional Shortcuts automation distinct from the
