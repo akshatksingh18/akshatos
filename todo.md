@@ -8,8 +8,8 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox folder and Open
 in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
 and Lift Log history onto their own screens with the full last-performance set list, and replaces the
-"quest" theme with a clean, minimal design in plain words. It needs its PR CI Gate, a validated
-artifact and an install over Build 28, then a phone check of the redesign and wording (notifications
+"quest" theme with a clean, minimal design in plain words. Build 29 passed its PR/main CI Gates and
+artifact validation and needs an install over Build 28, then a phone check of the redesign and wording (notifications
 and icon included), Pushup history, Lift history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local

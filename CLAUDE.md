@@ -28,7 +28,7 @@ off their main screens onto month-grouped history screens (Lift Log's now reachi
 just the latest 12), shows every set of a last performance instead of "+N more", replaces the
 stale "Preview 0.3.0" footer with the installed version, and replaces the Build-25 "quest" theme
 across the hub, every module, the notifications and the icon with a clean, minimal design in plain
-words (`features.md`). It awaits CI, a build and installation.
+words (`features.md`). Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and waits in `testing\` for installation and its phone pass.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit

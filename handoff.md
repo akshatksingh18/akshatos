@@ -7,7 +7,7 @@ features to be removed. Working source 0.6.0 (29), on branch `feature/remove-inb
 Body module (`body-log.md`), removes
 them, moves Pushup and Lift Log history to their own month-grouped screens, shows every set of a
 last performance, and replaces the "quest" theme with a clean, minimal design in plain words
-(notifications and icon included); it needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+(notifications and icon included); Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and waits in `testing\` for installation over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -145,9 +145,8 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 29:** after Akshat confirms the public push, pass the PR CI Gate, merge, validate the
-   main-run artifact into `testing\` (replacing Build 28), then install it over Build 28 without
-   uninstalling. Check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
+1. **Build 29:** the validated candidate is `..\final-ipas\akshatos\testing\akshatos-build-29-2637ea1`.
+   Akshat installs it over Build 28 without uninstalling. Check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line
    lists every set, that the Body module passes `body-log.md`'s phone checks (the camera prompt
