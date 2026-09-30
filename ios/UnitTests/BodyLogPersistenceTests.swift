@@ -46,11 +46,13 @@ import XCTest
                                   configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
     }
 
+    // The fake is created in the body, not as a default argument: default arguments are evaluated
+    // outside the main actor, where a main-actor initializer cannot be called.
     private func makeStore(container: ModelContainer, photos name: String = "Photos",
-                           reminders: FakeBodyReminders = FakeBodyReminders()) throws -> BodyLogStore {
+                           reminders: FakeBodyReminders? = nil) throws -> BodyLogStore {
         let store = BodyLogStore(repository: SwiftDataBodyLogRepository(container: container),
                                  photos: try BodyPhotoStorage(root: sandbox.appendingPathComponent(name)),
-                                 reminders: reminders, defaults: defaults,
+                                 reminders: reminders ?? FakeBodyReminders(), defaults: defaults,
                                  now: { [unowned self] in self.clock }, calendar: calendar)
         store.load()
         return store
