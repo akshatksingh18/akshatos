@@ -161,15 +161,15 @@ left outstanding. The Build 24 entry under Phone findings records what passed; n
 
 One durable point from that pass, because it will come up again with a real book: **marks drawn into
 a page are not annotations and will not be hidden.** Grit is the example — import the cleaned copy
-rather than expecting PageVault to clear it. `../book-reader/features.md` owns the boundary.
+rather than expecting PageVault to clear it. `pagevault/features.md` owns the boundary.
 
 ## Phone findings
 
-Fixtures for PageVault passes come from `../book-reader/make-test-pdfs.py`, which writes them into a
+Fixtures for PageVault passes come from `pagevault/make-test-pdfs.py`, which writes them into a
 folder of your choosing. They are not kept on disk between passes: the set was 190 MB, almost all of
 it one synthetic scan, so it was cleared and is regenerated when a pass needs it. They are synthetic
 anyway, so a real scanned book is still needed for a memory verdict.
-`../book-reader/CLAUDE.md` owns what these findings mean for PageVault's gates.
+`pagevault/CLAUDE.md` owns what these findings mean for PageVault's gates.
 
 - **Build 12** (over Build 11, no uninstall): Done during both the ordinary cadence and a pending nudge
   starts a fresh full interval, the countdown survives background and force-close, buttons no longer
@@ -206,14 +206,14 @@ anyway, so a real scanned book is still needed for a memory verdict.
   a day — the routing contract in `hub-plan.md` holds on the device. The slider and the typed page
   agree, out-of-range numbers are refused, and jumping leaves the bookmark alone.
   The annotation hiding is confirmed too, against `07-highlight-boundary.pdf` from
-  `../book-reader/make-test-pdfs.py`, which carries both kinds of mark and renders them identically:
+  `pagevault/make-test-pdfs.py`, which carries both kinds of mark and renders them identically:
   the annotated pages (2, 3, 5) came up clean and the flattened page (4) kept its marks — the fix
   working and the boundary holding, in one import. Build 24 is fully accepted, and the stuck-mark
   defect from Build 22 is closed. The same pass then cleared everything PageVault had left: full-text
   search, the page themes with night inverting legibly, the highlights PDF export, Takeaways' own
   list, and — the gate held back to the end — **export and restore**, where a book removed from the
   library came back from a full export with its reading place and highlights intact.
-  `../book-reader/CLAUDE.md` owns what that leaves open; the short version is a clean-install restore
+  `pagevault/CLAUDE.md` owns what that leaves open; the short version is a clean-install restore
   (Akshat's call, since it means uninstalling), reading-data-only restore, and the Started shelf.
 - **Build 23** (installed over Build 21): the reworked highlighter, the search tint, Go to page from
   a Takeaways passage and the delete confirmation all work — Akshat called the set "perfect". One
@@ -246,8 +246,8 @@ anyway, so a real scanned book is still needed for a memory verdict.
   - Takeaways passages had no way to reach their page; tapping one did nothing.
   - The passage bin deleted with no confirmation, next to Go to page, so a mistap lost a passage.
   Akshat chose the fix: the highlighter now offers Highlight and Remove highlight explicitly rather
-  than inferring which is meant, and identity is geometric. `../book-reader/features.md` owns the
-  scope and `../book-reader/architecture.md` the mechanism. Search itself, the themes and the
+  than inferring which is meant, and identity is geometric. `pagevault/features.md` owns the
+  scope and `pagevault/architecture.md` the mechanism. Search itself, the themes and the
   highlights PDF export were still not tested. Export and restore are deliberately deferred until
   the features are finished.
 

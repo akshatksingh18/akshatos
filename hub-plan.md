@@ -128,7 +128,7 @@ ID are selected above; the identity is already phone-verified through Build 13.
 1. Build and verify the hub app picker and Pushups entry, with ReelVault clearly deferred.
 2. Implement Pushups' existing lifecycle, actions, streak, and optional Home behavior first.
 3. Integrate the native PageVault/PDFKit module (active; phases and gates owned by
-   `../book-reader/CLAUDE.md`) and the local Lift Log (`lift-log.md`), then ReelVault/AVFoundation
+   `pagevault/CLAUDE.md`) and the local Lift Log (`lift-log.md`), then ReelVault/AVFoundation
    later, each with its own persistence/import/performance/recovery tests; no feature gains are
    implied merely by a shell button. Making a
    module available also requires updating the hub picker's unavailable-card state and the UI

@@ -31,7 +31,7 @@ recovery loop is accepted on the phone through Build 24, and Build 25's refreshe
 accepted too; reading streaks were built and then removed at Akshat's request. Bundle ID
 `com.akshatksingh18.akshatos`.
 The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
-open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.
+open gates live in [todo.md](todo.md), and PageVault's in `pagevault/CLAUDE.md`.
 
 This repository evolved from Squat Reminder and now presents that feature as Pushup Reminder,
 retaining Git history and the unverified legacy Android Squats fallback. Source is temporarily public at

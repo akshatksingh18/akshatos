@@ -31,7 +31,7 @@ Update this file in place when resume guidance changes; the linked owning docume
    [CLAUDE.md](CLAUDE.md). Follow any applicable deeper instructions.
 2. Read [architecture.md](architecture.md) for implemented versus planned behavior,
    [todo.md](todo.md) for remaining gates, and [features.md](features.md) for the full product scope.
-   PageVault work also reads `../book-reader/CLAUDE.md`, `features.md` and `architecture.md`.
+   PageVault work also reads `pagevault/CLAUDE.md`, `features.md` and `architecture.md`.
 3. Read [cloud-build.md](cloud-build.md) before building/installing and [ci.md](ci.md) before
    accepting changes. [hub-plan.md](hub-plan.md) owns cross-project integration.
 4. Inspect local Git status, source and current GitHub checks before continuing. Do not assume
@@ -157,7 +157,7 @@ Back up important history before risky deployment/recovery tests, and do not uni
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.
 3. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
-   and record what the phone shows there and in `../book-reader/CLAUDE.md`. Fix defects before
+   and record what the phone shows there and in `pagevault/CLAUDE.md`. Fix defects before
    calling any reader behavior working.
 4. **Complete the remaining Pushups physical edge-case matrix:** locked/force-quit/reboot, permission,
    Focus/Scheduled Summary, picker/back, Undo/replay, summaries/recovery and Home-automation checks.

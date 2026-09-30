@@ -2,7 +2,7 @@
 
 This is current-state work, not a claim that either platform is already usable. The iPhone path is
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
-`../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
+`pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
 **Current focus:** Working source 0.6.0 (29) adds the Body module (weight, weekly measurements,
 photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox folder and Open
