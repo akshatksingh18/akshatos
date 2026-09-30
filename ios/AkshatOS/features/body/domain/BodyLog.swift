@@ -123,6 +123,16 @@ struct BodyWeek: Equatable, Identifiable {
     var id: String { start }
 }
 
+/// One month of Body history: its measurement sessions, the weekly blocks starting in it, and its
+/// weigh-ins, each newest first.
+struct BodyHistoryMonth: Equatable, Identifiable {
+    /// `yyyy-MM`.
+    let id: String
+    var measurements: [BodyMeasurement] = []
+    var weeks: [BodyWeek] = []
+    var weights: [BodyWeightEntry] = []
+}
+
 enum BodyLogError: LocalizedError, Equatable {
     case invalidWeight
     case invalidMeasurement(String)
@@ -146,6 +156,24 @@ enum BodyLogError: LocalizedError, Equatable {
 }
 
 enum BodyLog {
+    /// Groups history by the month of each record's day (a week by the month it starts in), newest
+    /// month first, keeping records newest first within a month.
+    static func byMonth(measurements: [BodyMeasurement], weeks: [BodyWeek],
+                        weights: [BodyWeightEntry]) -> [BodyHistoryMonth] {
+        var months: [String: BodyHistoryMonth] = [:]
+        func key(_ day: String) -> String { String(day.prefix(7)) }
+        for item in measurements.sorted(by: { $0.day > $1.day }) {
+            months[key(item.day), default: BodyHistoryMonth(id: key(item.day))].measurements.append(item)
+        }
+        for item in weeks.sorted(by: { $0.start > $1.start }) {
+            months[key(item.start), default: BodyHistoryMonth(id: key(item.start))].weeks.append(item)
+        }
+        for item in weights.sorted(by: { $0.day > $1.day }) {
+            months[key(item.day), default: BodyHistoryMonth(id: key(item.day))].weights.append(item)
+        }
+        return months.values.sorted { $0.id > $1.id }
+    }
+
     static let weightRange = 50.0...700.0
     static let inchRange = 5.0...80.0
     /// Progress photos are due once the latest is this many days old, matching a two-week rhythm.
@@ -294,13 +322,20 @@ struct BodyLogBackup: Codable, Equatable {
     var weights: [BodyWeightEntry]
     var measurements: [BodyMeasurement]
     var photos: [BodyPhoto]
+    /// Settings the estimates depend on. Optional, so backups made before they were carried still
+    /// read; a backup without them leaves the phone's settings as they are.
+    var heightInches: Double?
+    var measurementWeekday: Int?
 
-    init(exportedAt: Date, snapshot: BodyLogSnapshot) {
+    init(exportedAt: Date, snapshot: BodyLogSnapshot,
+         heightInches: Double? = nil, measurementWeekday: Int? = nil) {
         version = Self.currentVersion
         self.exportedAt = exportedAt
         weights = snapshot.weights
         measurements = snapshot.measurements
         photos = snapshot.photos
+        self.heightInches = heightInches
+        self.measurementWeekday = measurementWeekday
     }
 
     var snapshot: BodyLogSnapshot {
@@ -315,6 +350,12 @@ struct BodyLogBackup: Codable, Equatable {
         guard Set(ids).count == ids.count else { throw BodyLogError.invalidBackup("duplicate records") }
         guard Set(weights.map(\.day)).count == weights.count else {
             throw BodyLogError.invalidBackup("two weights on one day")
+        }
+        if let heightInches, !(36...96).contains(heightInches) {
+            throw BodyLogError.invalidBackup("height out of range")
+        }
+        if let measurementWeekday, !(1...7).contains(measurementWeekday) {
+            throw BodyLogError.invalidBackup("measurement day out of range")
         }
         let days = weights.map(\.day) + measurements.map(\.day) + photos.map(\.day)
         guard days.allSatisfy({ BodyLog.date(fromDay: $0, calendar: calendar) != nil }) else {

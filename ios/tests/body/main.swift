@@ -109,4 +109,29 @@ assert((try? newer.validated(calendar: calendar)) == nil, "A backup from a newer
 var badDay = backup
 badDay.photos[0].day = "2026-13-01"
 assert((try? badDay.validated(calendar: calendar)) == nil, "An impossible date is refused")
-print("PASS: 10 export and backup assertions")
+let withSettings = BodyLogBackup(exportedAt: noon, snapshot: snapshot, heightInches: 70, measurementWeekday: 1)
+let settingsDecoded = try! JSONDecoder().decode(BodyLogBackup.self, from: try! JSONEncoder().encode(withSettings))
+assert(settingsDecoded.heightInches == 70 && settingsDecoded.measurementWeekday == 1,
+       "Height and measurement day travel with the backup")
+assert(decoded.heightInches == nil && decoded.measurementWeekday == nil,
+       "A backup without settings still reads and leaves them unset")
+var badHeight = withSettings
+badHeight.heightInches = 7
+var badWeekday = withSettings
+badWeekday.measurementWeekday = 9
+assert((try? badHeight.validated(calendar: calendar)) == nil && (try? badWeekday.validated(calendar: calendar)) == nil,
+       "Out-of-range settings are refused")
+print("PASS: 13 export and backup assertions")
+
+// History by month: every record lands in its own month, newest month and record first.
+let octoberWeight = weight("2026-10-02", 177)
+let october = BodyMeasurement(day: "2026-10-03", recordedAt: noon, inches: ["waistNavel": 34])
+let byMonth = BodyLog.byMonth(measurements: sessions + [october], weeks: blocks, weights: weights + [octoberWeight])
+assert(byMonth.map(\.id) == ["2026-10", "2026-09"], "Months are newest first")
+assert(byMonth[0].weights == [octoberWeight] && byMonth[0].measurements == [october] && byMonth[0].weeks.isEmpty,
+       "October holds only October's records")
+assert(byMonth[1].weights.map(\.day) == ["2026-09-26", "2026-09-25", "2026-09-20", "2026-09-19", "2026-09-12"],
+       "Records inside a month are newest first")
+assert(byMonth[1].measurements.count == 3 && byMonth[1].weeks.count == 3, "Every September record is kept")
+assert(BodyLog.byMonth(measurements: [], weeks: [], weights: []).isEmpty, "No history, no months")
+print("PASS: 5 month-grouping assertions")

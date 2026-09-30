@@ -66,7 +66,7 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - Version module metadata independently in logically separate stores/directories with namespaced
   settings. Separation is organizational, not an OS security sandbox between modules. No cloud
   sync or cross-module data sharing is implied.
-- Provide per-feature and full-hub export/restore before retaining irreplaceable data. PDF/video
+- Provide per-feature and full-hub export/restore (see Full backup below) before retaining irreplaceable data. PDF/video
   copies, headlines/bookmarks, Pushups history/goals, Lift Log workouts, and Body records and photos
   need recovery; disposable caches do not.
 - Update, profile expiry, process crashes/force-quit, and uninstall affect the hub as a whole.
@@ -101,6 +101,47 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
 - `architecture.md` owns exact implemented versus target behavior. Finish Pushups before
   starting either media module; hub scaffolding is not full product acceptance.
 
+## Full backup
+
+Working source 0.7.0 (30) adds a **Backup** row at the bottom of the hub (below the modules, not a
+module) that backs up or restores every module at once; each module's own backup still works alone.
+It is implemented and covered by hosted tests but not yet phone-verified.
+
+- **Back up everything** writes one folder, `AkshatOS Backup YYYY-MM-DD`, through the system file
+  mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version, and one
+  entry per part: the module's id, name and item) beside each module's own, unchanged backup —
+  today `pushups.json`, `pagevault/` (manifest and every PDF; left out when the library is empty),
+  `lift-log.json` and `body/` (records, photos, height and measurement day). A part lifted out of
+  the folder still restores from inside its own module. A module that cannot be read stops the
+  backup rather than leaving a silently incomplete folder.
+- **Restore everything** takes that folder, reads the index, and checks every listed part with the
+  module's own validation before anything changes; one missing, damaged or unknown part (from a
+  module this build does not have) stops the whole restore. After confirmation each part applies:
+  Pushups, Lift Log and Body are replaced by the backup; PageVault adds missing books and gives the
+  rest the backup's place and status. The result names what was restored and anything that was not.
+- Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
+  of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.
+
+### How modules take part (the contract for every future module)
+
+- `shared/backup/HubBackupPart.swift` defines the protocol every module implements: a stable
+  `backupID` (never changed once shipped — old backups find their part by it), a `backupTitle`,
+  `writeBackup(into:)` (write the module's own backup as one file or folder and return its name, or
+  nil when there is nothing to keep), and `prepareBackupRestore(from:)` (check without changing
+  anything and return the restore to apply once every part has passed).
+- Each module conforms in its own `features/<module>/<Module>BackupPart.swift`, reusing its own
+  export and validation. `AppServices` lists every part once, in hub order, in
+  `FullBackupService(parts: [...])`. `FullBackupService` and the index know no module by name.
+- **Enforced in CI:** `ios/scripts/check-backup-coverage.py` runs in both the checks job and the macOS
+  build and fails when any folder under `features/` has no `HubBackupPart` conformance or is not
+  listed in that registry, and the service refuses duplicate ids.
+
+**Adding a module (for example ReelVault):** give it its own export/validate/restore first, add
+`<Module>BackupPart.swift` with a new `backupID`, list the store in `FullBackupService(parts:)`,
+extend `FullBackupTests` so the round trip fills and checks the new module and
+lists its id, and update this section's part list and `ci.md`. CI blocks the merge until the first
+two are done. Large media (ReelVault's videos) goes inside its part the same way PageVault's PDFs do.
+
 ## Refresh and recovery
 
 - Sign one hub IPA and one WHOOP IPA using stable respective identities and the same chosen
@@ -112,7 +153,7 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
   escalation, and final-day USB recovery. Verify actual expiry/install success, not process startup.
 - Hub refresh/upgrade must preserve every module and recheck pending pushup requests. WHOOP
   refresh/upgrade must separately preserve pairing/history and pass its BLE/restoration gates.
-- Export data before upgrades/migrations; test clean restore on disposable data before daily use.
+- Export data (Back up everything) before upgrades/migrations; test clean restore on disposable data before daily use.
   One expired hub profile can block every section, so early alerts and same-ID repair matter.
 
 ## Acceptance sequence

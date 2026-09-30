@@ -666,7 +666,10 @@ import SwiftUI
         } catch { homeFailure(error) }
     }
 
-    func restore(_ candidate: SquatsBackup) async {
+    /// Returns whether the restore landed, for the full-backup restore; the dashboard reads `notice`.
+    @discardableResult
+    func restore(_ candidate: SquatsBackup) async -> Bool {
+        var restored = false
         await perform {
             var backup = try candidate.validated()
             reminders.cancel()
@@ -685,7 +688,9 @@ import SwiftUI
             for action in pending { try? inbox.remove(action.id) }
             pendingActionCount = (try? inbox.pending().count) ?? 0
             notice = "Pushup history and settings were restored. Resume any open day to re-arm reminders."
+            restored = true
         }
+        return restored
     }
 
     func deleteHistory() async {

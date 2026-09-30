@@ -17,7 +17,9 @@ fallback. `iphone-plan.md` owns the proposed implementation and physical accepta
       offline, memory, interruption, corrupt-media, and low-storage tests.
 - [ ] Implement the accepted library/headline/shuffle/loop/pause flow and versioned local storage;
       test zero/one/many-video shuffle and additions/deletions/headline updates mid-cycle.
-- [ ] Implement full media+metadata export and clean-install restore before daily use/rotation.
+- [ ] Implement full media+metadata export and clean-install restore before daily use/rotation, and
+      join the hub's full backup with a `HubBackupPart` (`../hub-plan.md` § Full backup); CI blocks
+      the module until it does.
 - [ ] Verify same-ID refresh, upgrade/migration, expiry repair, approved portfolio coexistence,
       two refresh cycles, alerts, USB recovery, and retained video/headline data.
 

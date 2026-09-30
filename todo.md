@@ -103,23 +103,22 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
-- [ ] **Sideloadly daemon not running (after Build 29 testing).** The health check's startup
-      warning was true when checked: only the Sideloadly window was running, the daemon was not,
-      although its sign-in `Run` entry exists; its own log has not been written since 2026-09-18, so
-      why it stopped is unknown. Without it nothing auto-refreshes (WHOOP, last signed 2026-09-24,
-      expires around 2026-10-01). Also, the health task's logon trigger has no delay, so it can check
-      before the daemon has started and warn falsely. To do: find why the daemon stops (e.g. whether the
-      Sideloadly window stops it while open), restore it, and — with Akshat's approval, since it
-      changes a scheduled task — add a ~2-minute delay to the logon trigger. `setup.md` owns the detail.
-- [ ] **Move signing to a different Apple Account (after Build 29 testing).** Akshat reports Apple is
-      banning accounts used for sideloading and wants to switch accounts. Plan the transition for every
-      signed app (AkshatOS and WHOOP) before acting. Known impact: the final signed bundle IDs embed the
-      current team suffix (`scripts/signing-apps.json`), so a new account's team produces a different
-      app on the phone with an empty container — every module's data (Pushups, PageVault, Lift Log,
-      Body with photos) and WHOOP's must be exported and restored, and the old installs removed only
-      after restore is verified. Also covers: the new account's free limits (3 apps, 10 App IDs / 7
-      days), Sideloadly account and daemon enrollment, updating `signing-apps.json` and the health
-      check, re-proving refresh, and the recovery docs. Needs a written plan and Akshat's go-ahead.
+- [ ] **Phone-check the month dropdowns (Build 30).** Pushups, Lift Log and Body history show one
+      dropdown per month with the newest open; Logged today opens and closes and lists every set.
+- [ ] **Phone-check the full backup (Build 30).** Back up everything to OneDrive in Files, confirm
+      the folder holds every module (PDFs and photos included), then restore it and check each module.
+      Prove a clean restore into an empty app during the Apple Account switch, before deleting the
+      old install. `hub-plan.md` § Full backup owns the contract.
+- [ ] **Watch the daemon restart path once.** The false startup warning came from the health task's
+      logon run checking before the daemon had started (it starts about 40 seconds after sign-in);
+      the logon trigger now waits two minutes. If the daemon is found stopped, the check now starts it
+      and logs `WARN` instead of alerting. The daemon has since refreshed WHOOP unattended. Still open:
+      see one real `WARN` restart in the health log, and why it stopped around 2026-09-18 is unknown.
+      `setup.md` owns the detail.
+- [ ] **Move signing to a separate Apple Account (after Build 29 testing).** Planned in
+      `apple-account-switch.md`: new account (Akshat creates it), backups of every module and WHOOP,
+      one app at a time into the new team with restore before removing the old install, then the
+      health-check records and one unattended refresh. Waits for Akshat's go-ahead.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,
       automatic overdue nudges and legacy-snooze migration,

@@ -37,8 +37,8 @@ remote.
   least one set, or discarding the entire active workout with confirmation.
 - Finished history shows every exercise and set using its original measurement meaning. Deleting a
   finished workout requires confirmation. The Lift Log screen carries one **History** row with the
-  session count; it opens its own screen listing **every** finished workout by month, newest first,
-  in a lazy list. (Until 0.6.0 (29) the main screen listed only the latest 12, which left older
+  session count; it opens its own screen listing **every** finished workout in one dropdown per month,
+  newest first with only the newest open (dropdowns from 0.7.0 (30)). (Until 0.6.0 (29) the main screen listed only the latest 12, which left older
   workouts unreachable in the app.) History is kept indefinitely: a workout's record is estimated at a
   few kilobytes from its shape (not measured), so years of sessions stay small, and nothing is pruned
   automatically.

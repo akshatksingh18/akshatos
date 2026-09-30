@@ -32,13 +32,20 @@ height, weight or photo is bundled in source or belongs in this public repositor
   permission. Stored only in the app's storage as JPEGs re-encoded to at most 2048 px, which also
   drops the original's location metadata. The screen shows the first and latest photo of a pose side
   by side. Like PageVault's PDFs, photos are included in the phone's own device backup.
+- **History:** its own screen with one dropdown per month, newest first and only the newest open;
+  each month holds that month's measurement sessions (each opening its detail), weekly weight blocks
+  (by the month they start in) and weigh-ins (swipe to delete). From 0.7.0 (30); earlier builds
+  showed three undivided lists.
 - **Weekly reminder:** optional, on the measurement weekday (Saturday by default) at a chosen morning
   hour. It uses the `akshatos.body.` notification namespace, which the app layer routes to this
   module, and never touches Pushup Reminder's requests. Without notification permission the toggle
   stays off and says why.
 - **Backup and CSV:** the backup is a plain folder, `body-log.json` plus `photos/`, validated in full
   (version, unique records, one weigh-in per day, real dates, value ranges) before a confirmed restore
-  replaces everything; a failed restore changes nothing, photos included. CSV export is one row per
+  replaces everything; a failed restore changes nothing, photos included. From 0.7.0 it also carries
+  height and measurement day (optional, so older backups still read and leave them as they are); the
+  reminder setting is not carried, since it needs permission on the phone. The hub's Backup screen
+  includes this folder as `body/` (`hub-plan.md` § Full backup). CSV export is one row per
   day, oldest first: `date, weight_lb` then one inch column per site, blank where not measured.
 - Local-only, single-user: no account, HealthKit write, analytics, cloud sync or server.
 

@@ -192,10 +192,32 @@ $headlines = @()
 
 # A scheduled row cannot refresh anything while the daemon is absent. Skip this host-state check
 # for fixture databases so tests remain hermetic; production runs always enforce it.
+# A missing daemon is first restarted from the same executable its Windows startup entry launches,
+# because a stopped daemon is recoverable without Akshat and alarming him about it trained him to
+# expect a manual refresh. Only a daemon that will not come back is critical. The logon trigger is
+# also delayed two minutes so this does not race the startup entry that launches the daemon.
 if (-not $DatabasePath -and -not (Get-Process sideloadlydaemon -ErrorAction SilentlyContinue)) {
-    $worst = 2
-    $headlines += 'Sideloadly daemon is not running'
-    Write-Line 'CRITICAL' 'Sideloadly daemon is not running; automatic refresh cannot occur.'
+    $daemonPath = Join-Path $env:LOCALAPPDATA 'Sideloadly\sideloadlydaemon.exe'
+    $started = $false
+    if (Test-Path -LiteralPath $daemonPath) {
+        try {
+            Start-Process -FilePath $daemonPath -WorkingDirectory (Split-Path -Parent $daemonPath) -ErrorAction Stop
+            for ($i = 0; $i -lt 15 -and -not $started; $i++) {
+                Start-Sleep -Seconds 2
+                $started = [bool](Get-Process sideloadlydaemon -ErrorAction SilentlyContinue)
+            }
+        }
+        catch { Write-Line 'WARN' "Could not start the Sideloadly daemon: $($_.Exception.Message)" }
+    }
+    if ($started) {
+        # Logged, not alerted: nothing is left for Akshat to do.
+        Write-Line 'WARN''Sideloadly daemon was not running; the check started it again.'
+    }
+    else {
+        $worst = 2
+        $headlines += 'Sideloadly daemon is not running'
+        Write-Line 'CRITICAL' 'Sideloadly daemon is not running and could not be started; automatic refresh cannot occur.'
+    }
 }
 
 foreach ($app in $report.apps) {

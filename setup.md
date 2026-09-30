@@ -5,8 +5,9 @@ assumed. `cloud-build.md` owns producing and installing a build; this file owns 
 installed one alive.
 
 **Status:** The health check is installed and its scheduled execution is confirmed. It now treats a
-missing expected app, a stopped Sideloadly daemon, or the current version lacking a completed
-automatic-refresh registration as a blocking failure. AkshatOS Build
+missing expected app, a Sideloadly daemon it cannot restart, or the current version lacking a
+completed automatic-refresh registration as a blocking failure; a stopped daemon it restarts is only
+logged. AkshatOS Build
 24 expired after Sideloadly's scheduled-app registrations were cleared during WHOOP recovery; the
 same accepted IPA was reinstalled over the existing bundle by Wi-Fi on 2026-09-20, reached 100%,
 and created a completed automatic-refresh record with no error. WHOOP build 65 was clean-installed
@@ -36,7 +37,12 @@ promotion, while a later daemon refresh remains separate ongoing-cycle evidence.
   Daemon` entry in `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run`, and its own
   `refresh_at_hours` is 96 — it intends to act with three days left, which is the buffer the
   operating model calls for. Nothing here re-implements or drives it: automating its interface was
-  ruled out, and a second signer racing it would be worse than none.
+  ruled out, and a second signer racing it would be worse than none. The one exception is starting
+  it: if the health check finds the daemon stopped, it launches the same
+  `%LOCALAPPDATA%\Sideloadly\sideloadlydaemon.exe` the `Run` entry does and logs a `WARN`; only a
+  daemon that does not come back within 30 seconds raises the blocking dialog. The daemon starts
+  about 40 seconds after sign-in, so the task's logon trigger waits two minutes — without that
+  delay the logon run checked before the daemon existed and showed a false "not running" warning.
 - **The health check proves it happened.** This is the half that did not exist. A running daemon is
   not evidence: it can sit for days having done nothing, which is exactly how an app quietly stops
   launching and how the retired Squat Reminder registration reached expiry with no error recorded.
@@ -66,7 +72,7 @@ occasionally is what covers that gap — keep doing it.
 
 | | |
 |---|---|
-| Scheduled task | `AkshatOS Signing Health` — at logon, 09:00 and 21:00 daily |
+| Scheduled task | `AkshatOS Signing Health` — two minutes after logon, 09:00 and 21:00 daily; launched through `conhost.exe --headless` so no console window appears (closing one killed the run). Alerts are Windows Forms dialogs/balloons, confirmed to still display |
 | Check | `personal-project/akshatos/scripts/check-signing-health.ps1` |
 | Reader | `personal-project/akshatos/scripts/read-signing-state.py` |
 | Required-app contract | `personal-project/akshatos/scripts/signing-apps.json` |
@@ -123,7 +129,7 @@ testing must not be able to reach either file, whichever side of the sandbox it 
 | 3 days or less left | Balloon warning — the daemon should have acted at 4 days and did not |
 | 2 days or less, or expired | **Blocking dialog**, deliberately impossible to miss |
 | `failures_count` or `last_error` set | Blocking dialog naming the error |
-| Sideloadly daemon stopped | Blocking dialog — an enrolled row cannot refresh without the daemon |
+| Sideloadly daemon stopped | Restarted and logged as `WARN`; blocking dialog only if it will not start — an enrolled row cannot refresh without the daemon |
 | AkshatOS or WHOOP missing from the exact-identity contract | Blocking dialog |
 | Current app version has no completed scheduled registration | Blocking dialog with enrollment recovery |
 | Registration uses the wrong app-specific bundle-ID mode | Blocking dialog with exact recovery mode |

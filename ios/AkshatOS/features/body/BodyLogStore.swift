@@ -260,15 +260,27 @@ import SwiftUI
         }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        try encoder.encode(BodyLogBackup(exportedAt: now(), snapshot: exported))
+        try encoder.encode(BodyLogBackup(exportedAt: now(), snapshot: exported,
+                                         heightInches: heightInches, measurementWeekday: measurementWeekday))
             .write(to: folder.appendingPathComponent(BodyLogBackup.manifestName), options: .atomic)
         return folder
     }
 
+    /// Reads and checks a backup folder or lone manifest without changing anything.
+    func checkBackup(at source: URL) throws {
+        let isFolder = (try? source.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+        let manifest = isFolder ? source.appendingPathComponent(BodyLogBackup.manifestName) : source
+        _ = try JSONDecoder().decode(BodyLogBackup.self, from: Data(contentsOf: manifest))
+            .validated(calendar: calendar)
+    }
+
     /// Replaces everything with a backup folder (or a lone manifest, which restores no photos).
     /// The whole backup and every photo file are checked and staged before anything changes.
-    func restore(from source: URL) {
-        guard let photos else { message = "Photo storage is unavailable."; return }
+    /// Returns whether it landed, for the full-backup restore; this screen reads `message`.
+    @discardableResult
+    func restore(from source: URL) -> Bool {
+        guard let photos else { message = "Photo storage is unavailable."; return false }
+        var landed = false
         let scoped = source.startAccessingSecurityScopedResource()
         defer { if scoped { source.stopAccessingSecurityScopedResource() } }
         var staging: URL?
@@ -295,7 +307,10 @@ import SwiftUI
                 throw error
             }
             photos.discard(previous)
+            if let height = backup.heightInches { heightInches = height }
+            if let weekday = backup.measurementWeekday { measurementWeekday = weekday }
             load()
+            landed = true
             let skipped = backup.photos.count - restored.photos.count
             message = skipped > 0
                 ? "Restored. \(skipped) photo\(skipped == 1 ? " was" : "s were") missing from the backup and skipped."
@@ -306,5 +321,6 @@ import SwiftUI
             message = "Nothing was restored: \(error.localizedDescription)"
         }
         if let staging { try? FileManager.default.removeItem(at: staging) }
+        return landed
     }
 }
