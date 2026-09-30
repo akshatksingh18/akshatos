@@ -120,7 +120,7 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
 ### Implemented source-module boundaries
 
 - `ios/AkshatOS/app/`: composition root and process-wide services; the only layer allowed to wire
-  multiple features together. `app/hub/` takes metadata and a destination builder, not stores,
+  multiple features together, which is why the full backup (`app/backup/`) lives here. `app/hub/` takes metadata and a destination builder, not stores,
   database access, permissions or lifecycle commands.
 - `ios/AkshatOS/shared/design-system/`: UI tokens/components, without app or feature dependencies.
 - `ios/AkshatOS/features/squats/`: store plus `domain/` (Foundation-only), `data/` (SwiftData schema),

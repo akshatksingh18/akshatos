@@ -38,7 +38,10 @@ height, weight or photo is bundled in source or belongs in this public repositor
   stays off and says why.
 - **Backup and CSV:** the backup is a plain folder, `body-log.json` plus `photos/`, validated in full
   (version, unique records, one weigh-in per day, real dates, value ranges) before a confirmed restore
-  replaces everything; a failed restore changes nothing, photos included. CSV export is one row per
+  replaces everything; a failed restore changes nothing, photos included. From 0.7.0 it also carries
+  height and measurement day (optional, so older backups still read and leave them as they are); the
+  reminder setting is not carried, since it needs permission on the phone. The hub's Backup screen
+  includes this folder as `body/` (`hub-plan.md` § Full backup). CSV export is one row per
   day, oldest first: `date, weight_lb` then one inch column per site, blank where not measured.
 - Local-only, single-user: no account, HealthKit write, analytics, cloud sync or server.
 

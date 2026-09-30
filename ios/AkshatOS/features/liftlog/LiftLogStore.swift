@@ -163,14 +163,22 @@ import SwiftUI
         return Data((lines.joined(separator: "\n") + "\n").utf8)
     }
 
-    func restoreBackup(_ data: Data) {
+    /// Decodes and checks a backup without changing anything.
+    static func validatedBackup(_ data: Data) throws -> [LiftWorkoutSession] {
+        try JSONDecoder().decode(LiftLogBackup.self, from: data).validatedWorkouts()
+    }
+
+    @discardableResult
+    func restoreBackup(_ data: Data) -> Bool {
         do {
-            let backup = try JSONDecoder().decode(LiftLogBackup.self, from: data)
-            let restored = try backup.validatedWorkouts()
+            let restored = try Self.validatedBackup(data)
             try repository.replaceAll(with: restored)
             workouts = restored
+            storageAvailable = true
+            return true
         } catch {
             message = "That Lift Log backup is invalid and nothing was replaced: \(error.localizedDescription)"
+            return false
         }
     }
 

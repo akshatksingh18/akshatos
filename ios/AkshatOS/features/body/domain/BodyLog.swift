@@ -294,13 +294,20 @@ struct BodyLogBackup: Codable, Equatable {
     var weights: [BodyWeightEntry]
     var measurements: [BodyMeasurement]
     var photos: [BodyPhoto]
+    /// Settings the estimates depend on. Optional, so backups made before they were carried still
+    /// read; a backup without them leaves the phone's settings as they are.
+    var heightInches: Double?
+    var measurementWeekday: Int?
 
-    init(exportedAt: Date, snapshot: BodyLogSnapshot) {
+    init(exportedAt: Date, snapshot: BodyLogSnapshot,
+         heightInches: Double? = nil, measurementWeekday: Int? = nil) {
         version = Self.currentVersion
         self.exportedAt = exportedAt
         weights = snapshot.weights
         measurements = snapshot.measurements
         photos = snapshot.photos
+        self.heightInches = heightInches
+        self.measurementWeekday = measurementWeekday
     }
 
     var snapshot: BodyLogSnapshot {
@@ -315,6 +322,12 @@ struct BodyLogBackup: Codable, Equatable {
         guard Set(ids).count == ids.count else { throw BodyLogError.invalidBackup("duplicate records") }
         guard Set(weights.map(\.day)).count == weights.count else {
             throw BodyLogError.invalidBackup("two weights on one day")
+        }
+        if let heightInches, !(36...96).contains(heightInches) {
+            throw BodyLogError.invalidBackup("height out of range")
+        }
+        if let measurementWeekday, !(1...7).contains(measurementWeekday) {
+            throw BodyLogError.invalidBackup("measurement day out of range")
         }
         let days = weights.map(\.day) + measurements.map(\.day) + photos.map(\.day)
         guard days.allSatisfy({ BodyLog.date(fromDay: $0, calendar: calendar) != nil }) else {

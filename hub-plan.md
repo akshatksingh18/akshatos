@@ -66,7 +66,7 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - Version module metadata independently in logically separate stores/directories with namespaced
   settings. Separation is organizational, not an OS security sandbox between modules. No cloud
   sync or cross-module data sharing is implied.
-- Provide per-feature and full-hub export/restore before retaining irreplaceable data. PDF/video
+- Provide per-feature and full-hub export/restore (see Full backup below) before retaining irreplaceable data. PDF/video
   copies, headlines/bookmarks, Pushups history/goals, Lift Log workouts, and Body records and photos
   need recovery; disposable caches do not.
 - Update, profile expiry, process crashes/force-quit, and uninstall affect the hub as a whole.
@@ -101,6 +101,28 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
 - `architecture.md` owns exact implemented versus target behavior. Finish Pushups before
   starting either media module; hub scaffolding is not full product acceptance.
 
+## Full backup
+
+Working source 0.7.0 (30) adds a **Backup** row at the bottom of the hub (below the modules, not a
+module) that backs up or restores every module at once; each module's own backup still works alone.
+It is implemented and covered by hosted tests but not yet phone-verified.
+
+- **Back up everything** writes one folder, `AkshatOS Backup YYYY-MM-DD`, through the system file
+  mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version and the
+  parts present) beside each module's own, unchanged backup — `pushups.json`, `lift-log.json`,
+  `body/` (records, photos, height and measurement day) and `pagevault/` (manifest and every PDF;
+  left out when the library is empty). A part lifted out of the folder still restores from inside its
+  own module.
+- **Restore everything** takes that folder, reads the index, and checks every listed part with the
+  module's own validation before anything changes; one missing or damaged part stops the whole
+  restore. After confirmation, Pushups, Lift Log and Body are replaced by the backup, and PageVault
+  adds missing books and gives the rest the backup's place and status. The result names what was
+  restored and anything that was not.
+- Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
+  of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.
+- `FullBackupService` in `ios/AkshatOS/app/backup/` is the only code that knows every module; it
+  calls each module's own export/validate/restore and never reads their stores or files itself.
+
 ## Refresh and recovery
 
 - Sign one hub IPA and one WHOOP IPA using stable respective identities and the same chosen
@@ -112,7 +134,7 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
   escalation, and final-day USB recovery. Verify actual expiry/install success, not process startup.
 - Hub refresh/upgrade must preserve every module and recheck pending pushup requests. WHOOP
   refresh/upgrade must separately preserve pairing/history and pass its BLE/restoration gates.
-- Export data before upgrades/migrations; test clean restore on disposable data before daily use.
+- Export data (Back up everything) before upgrades/migrations; test clean restore on disposable data before daily use.
   One expired hub profile can block every section, so early alerts and same-ID repair matter.
 
 ## Acceptance sequence

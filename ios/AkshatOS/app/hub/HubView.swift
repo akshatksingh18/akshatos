@@ -42,6 +42,25 @@ struct HubView<Destination: View>: View {
                             .accessibilityElement(children: .combine)
                             .accessibilityLabel("\(entry.title), not available yet")
                         }
+
+                        NavigationLink(value: HubRoute.backup) {
+                            HStack(spacing: 14) {
+                                icon("externaldrive")
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Backup").font(.body.weight(.semibold))
+                                    Text("Everything in one folder").font(.subheadline).foregroundStyle(Palette.muted)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold)).foregroundStyle(Palette.muted)
+                                    .accessibilityHidden(true)
+                            }
+                            .padding(16)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 12)
+                        .accessibilityIdentifier("open-backup")
                     }.padding(20)
                 }
             }

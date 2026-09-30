@@ -6,6 +6,7 @@ struct HubRootView: View {
     @ObservedObject var pageVault: PageVaultStore
     @ObservedObject var liftLog: LiftLogStore
     @ObservedObject var bodyLog: BodyLogStore
+    let backup: FullBackupService
     @ObservedObject var navigator: HubNavigator
     let orientation: OrientationGate
     @Environment(\.scenePhase) private var scenePhase
@@ -43,6 +44,8 @@ struct HubRootView: View {
                 LiftLogView(store: liftLog)
             case .body:
                 BodyLogView(store: bodyLog)
+            case .backup:
+                FullBackupView(service: backup)
             case .reelVault:
                 // Unavailable entries are never links. No reel implementation is activated.
                 EmptyView()

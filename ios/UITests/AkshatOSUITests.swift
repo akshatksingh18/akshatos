@@ -62,6 +62,23 @@ final class AkshatOSUITests: XCTestCase {
                       "Leaving history returns to the dashboard")
     }
 
+    /// The hub's Backup row opens one screen that backs up or restores every module at once.
+    /// Saving and picking folders go through system sheets, which the hosted tests cover instead.
+    func testBackupOpensFromTheHub() {
+        let app = XCUIApplication()
+        app.launch()
+        let entry = app.buttons["open-backup"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        for _ in 0..<4 where !entry.isHittable { app.swipeUp() }
+        entry.tap()
+        XCTAssertTrue(app.navigationBars["Backup"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["backup-everything"].exists)
+        XCTAssertTrue(app.buttons["restore-everything"].exists)
+        capture("Backup")
+        app.navigationBars["Backup"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["open-backup"].waitForExistence(timeout: 5), "Leaving Backup returns to the hub")
+    }
+
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name

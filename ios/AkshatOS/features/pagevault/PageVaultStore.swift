@@ -127,7 +127,7 @@ import SwiftUI
     }
 
     /// Loads the library once if nothing has yet, because the duplicate check needs it.
-    private func ensureLoaded() async {
+    func ensureLoaded() async {
         if !loaded { await load() }
     }
 

@@ -10,6 +10,7 @@ struct AkshatOSApp: App {
                         pageVault: delegate.services.pageVault,
                         liftLog: delegate.services.liftLog,
                         bodyLog: delegate.services.bodyLog,
+                        backup: delegate.services.backup,
                         navigator: delegate.services.navigator,
                         orientation: delegate.services.orientation)
                 .preferredColorScheme(.dark)
@@ -26,6 +27,7 @@ struct AkshatOSApp: App {
     let pageVault: PageVaultStore
     let liftLog: LiftLogStore
     let bodyLog: BodyLogStore
+    let backup: FullBackupService
     let notifications: AppNotificationCoordinator
     /// App-lifetime, like the stores: a notification can be tapped before any hub screen exists,
     /// and the request has to survive until one does.
@@ -38,6 +40,7 @@ struct AkshatOSApp: App {
         pageVault = PageVaultStore()
         liftLog = LiftLogStore()
         bodyLog = BodyLogStore()
+        backup = FullBackupService(squats: squats, pageVault: pageVault, liftLog: liftLog, bodyLog: bodyLog)
         notifications = AppNotificationCoordinator(squats: squats, navigator: navigator)
     }
 }

@@ -27,8 +27,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos
         PRODUCT_NAME: AkshatOS
-        MARKETING_VERSION: "0.6.0"
-        CURRENT_PROJECT_VERSION: "29"
+        MARKETING_VERSION: "0.7.0"
+        CURRENT_PROJECT_VERSION: "30"
         GENERATE_INFOPLIST_FILE: "YES"
         INFOPLIST_KEY_CFBundleDisplayName: AkshatOS
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness

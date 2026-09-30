@@ -91,13 +91,21 @@ acceptance gates.
 Body is registered as its own feature suite. Its domain test covers day keys and impossible dates,
 weekly blocks from the measurement weekday, weight/inch validation and rounding, the fixed site
 identifiers, rolling and weekly averages, per-site change, the Navy formula against a hand
-computation, waist-to-height, photo cadence, CSV rows and backup validation/round trip. Hosted tests
+computation, waist-to-height, photo cadence, CSV rows and backup validation/round trip, including
+height and measurement day carried optionally and range-checked. Hosted tests
 cover one weigh-in per day across reopening, week change, session save/edit/delete and change,
 refused values, sites from a newer build surviving an edit, estimates needing height, JPEG photo
 storage and deletion, unreadable images, a full folder backup restored with photos, a rejected
 backup changing nothing, the reminder following permission, and CSV. The UI test opens Body, the
 measurement form with its guidance, history and photos. Fixtures are synthetic; no personal
 measurement appears in tests.
+
+The hub's full backup (`app/backup/`) is not a feature suite, since it spans every module; it is
+covered by `UnitTests/FullBackupTests.swift`, which fills all four modules on one simulated phone,
+backs them up to one folder and restores it into a fresh phone, proves one damaged part restores
+nothing, refuses a non-backup and a newer backup, leaves out an empty PageVault and names a missing
+part. The hub UI test opens the Backup screen and returns. Saving and picking the folder go through
+system sheets, which only the phone exercises.
 
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
 per-side load semantics, priority-ordered Upper/Lower definitions, exercise/set mutation and edit,
