@@ -318,20 +318,22 @@ struct SquatDashboard: View {
             }
             // The full history lives on its own screen; the dashboard only links to it, so its
             // length never grows with the number of days kept.
+            // A full card, not bare text: with a plain button style only drawn content takes taps,
+            // so a text row left its middle dead. This matches the Lift Log and Body history rows.
             NavigationLink {
                 SquatHistoryView().environmentObject(store)
             } label: {
-                AdaptiveRow {
-                    Text("History").font(.headline)
-                } trailing: {
+                Surface {
                     HStack {
+                        Text("History").font(.headline)
+                        Spacer()
                         Text(store.historyDayCount == 1 ? "1 day" : "\(store.historyDayCount) days")
                             .font(.subheadline).foregroundStyle(Palette.muted)
-                        Image(systemName: "chevron.right").accessibilityHidden(true)
+                        Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                            .foregroundStyle(Palette.muted).accessibilityHidden(true)
                     }
                 }
-                .padding(.vertical, 8)
-                .accessibilityElement(children: .combine)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .padding(.top, 8)
