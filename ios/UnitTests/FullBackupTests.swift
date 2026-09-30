@@ -103,7 +103,7 @@ import XCTest
             photos: try BodyPhotoStorage(root: root.appendingPathComponent("Photos")),
             reminders: SilentBodyReminders(), defaults: defaults, now: { clock }, calendar: calendar)
         body.load()
-        let backup = FullBackupService(squats: squats, pageVault: pageVault, liftLog: liftLog, bodyLog: body,
+        let backup = FullBackupService(parts: [squats, pageVault, liftLog, body],
                                        now: { clock }, calendar: calendar, appVersion: "test",
                                        scratch: root.appendingPathComponent("Outgoing"))
         return Phone(squats: squats, pageVault: pageVault, liftLog: liftLog, body: body, backup: backup)
@@ -163,7 +163,8 @@ import XCTest
         XCTAssertTrue(folder.lastPathComponent.hasPrefix("AkshatOS Backup 2026-09-19"))
         let manifest = try AkshatOSBackupManifest.decode(
             Data(contentsOf: folder.appendingPathComponent(AkshatOSBackupManifest.fileName)))
-        XCTAssertEqual(manifest.parts, [.pushups, .pageVault, .liftLog, .body])
+        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "pageVault", "liftLog", "body"])
+        XCTAssertEqual(manifest.parts.map(\.path), ["pushups.json", "pagevault", "lift-log.json", "body"])
         for part in manifest.parts {
             XCTAssertTrue(FileManager.default.fileExists(atPath: folder.appendingPathComponent(part.path).path),
                           "\(part.title) is in the folder")
@@ -175,6 +176,8 @@ import XCTest
         let summary = await fresh.backup.restore(prepared)
         XCTAssertTrue(summary.hasPrefix("Restored: Pushups, PageVault, Lift Log, Body."), summary)
         XCTAssertFalse(summary.contains("Not restored"), summary)
+        XCTAssertTrue(summary.contains("resume any open day"), "A module's note follows the summary")
+        XCTAssertNil(fresh.squats.notice, "The summary replaces the module's own alert")
 
         XCTAssertEqual(fresh.squats.sessions.map(\.count), [6], "Pushup history comes back")
         XCTAssertEqual(fresh.liftLog.totalSetCount, 1, "Lift Log comes back")
@@ -194,7 +197,7 @@ import XCTest
         let original = try await filledPhone()
         let folder = try await original.backup.prepareExport()
         try Data("not a backup".utf8).write(
-            to: folder.appendingPathComponent(AkshatOSBackupManifest.Part.liftLog.path), options: .atomic)
+            to: folder.appendingPathComponent("lift-log.json"), options: .atomic)
 
         let other = try await makePhone("PhoneB")
         other.body.logWeight(150)
@@ -235,14 +238,47 @@ import XCTest
         let folder = try await phone.backup.prepareExport()
         let manifest = try AkshatOSBackupManifest.decode(
             Data(contentsOf: folder.appendingPathComponent(AkshatOSBackupManifest.fileName)))
-        XCTAssertEqual(manifest.parts, [.pushups, .liftLog, .body], "An empty PageVault has nothing to export")
+        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "liftLog", "body"], "An empty PageVault has nothing to export")
 
-        try FileManager.default.removeItem(at: folder.appendingPathComponent(AkshatOSBackupManifest.Part.body.path))
+        try FileManager.default.removeItem(at: folder.appendingPathComponent("body"))
         do {
             _ = try await phone.backup.prepareRestore(from: folder)
             XCTFail("A listed part that is gone must be reported")
         } catch let error as AkshatOSBackupError {
             XCTAssertEqual(error, .missingPart("Body"))
         }
+    }
+
+    /// A backup from a build with a module this one lacks must not restore half of itself.
+    func testAPartFromAModuleThisBuildLacksIsRefused() async throws {
+        let phone = try await makePhone("PhoneA", squatSessions: [finishedDay(sets: 2)])
+        let folder = try await phone.backup.prepareExport()
+        let indexURL = folder.appendingPathComponent(AkshatOSBackupManifest.fileName)
+        var manifest = try AkshatOSBackupManifest.decode(Data(contentsOf: indexURL))
+        try Data("{}".utf8).write(to: folder.appendingPathComponent("reels.json"))
+        manifest.parts.append(.init(id: "reelVault", title: "ReelVault", path: "reels.json"))
+        try manifest.encoded().write(to: indexURL)
+        do {
+            _ = try await phone.backup.prepareRestore(from: folder)
+            XCTFail("An unknown part must stop the restore")
+        } catch let error as AkshatOSBackupError {
+            XCTAssertEqual(error, .unknownPart("ReelVault"))
+        }
+    }
+
+    func testModuleIdsMustBeUniqueAndPartNamesPlain() throws {
+        XCTAssertNoThrow(try AkshatOSBackupManifest.checkRegistry(["pushups", "body"]))
+        XCTAssertThrowsError(try AkshatOSBackupManifest.checkRegistry(["body", "body"]))
+        XCTAssertThrowsError(try AkshatOSBackupManifest.checkRegistry([""]))
+        XCTAssertTrue(AkshatOSBackupManifest.isPlainName("lift-log.json"))
+        for unsafe in ["../x", "a/b", ".hidden", "", AkshatOSBackupManifest.fileName] {
+            XCTAssertFalse(AkshatOSBackupManifest.isPlainName(unsafe), unsafe)
+        }
+    }
+
+    /// The live app registers every module, each under its own id.
+    func testTheAppRegistersEveryModule() throws {
+        let services = try XCTUnwrap((UIApplication.shared.delegate as? AkshatAppDelegate)?.services)
+        XCTAssertEqual(services.backup.parts.map(\.backupID), ["pushups", "pageVault", "liftLog", "body"])
     }
 }

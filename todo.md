@@ -103,6 +103,8 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
+- [ ] **Phone-check the month dropdowns (Build 30).** Pushups, Lift Log and Body history show one
+      dropdown per month with the newest open; Logged today opens and closes and lists every set.
 - [ ] **Phone-check the full backup (Build 30).** Back up everything to OneDrive in Files, confirm
       the folder holds every module (PDFs and photos included), then restore it and check each module.
       Prove a clean restore into an empty app during the Apple Account switch, before deleting the

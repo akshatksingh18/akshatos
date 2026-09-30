@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Every past day, on its own screen rather than the dashboard, grouped by month in a lazy list so
-/// a long history costs only the rows on screen.
+/// Every past day, on its own screen rather than the dashboard. Each month is a dropdown, newest
+/// open, so a long history is one row per month and a month's days are built only when opened.
 struct SquatHistoryView: View {
     @EnvironmentObject private var store: SquatStore
+    @State private var openMonths = OpenMonths()
 
     var body: some View {
         let months = SquatDaySummary.byMonth(store.daySummaries)
@@ -14,7 +15,9 @@ struct SquatHistoryView: View {
                     .accessibilityIdentifier("pushups-history-empty")
             }
             ForEach(months) { month in
-                Section {
+                MonthGroup(title: MonthKey.title(month.id),
+                           summary: "\(month.completedSets) sets",
+                           isExpanded: $openMonths.month(month.id)) {
                     ForEach(month.days) { day in
                         NavigationLink {
                             ScrollView { SquatDayRecap(day: day).padding(24) }
@@ -25,19 +28,15 @@ struct SquatHistoryView: View {
                             row(day)
                         }
                     }
-                } header: {
-                    AdaptiveRow {
-                        Text(Self.monthTitle(month.id))
-                    } trailing: {
-                        Text("\(month.completedSets) sets").monospacedDigit()
-                    }
                 }
+                .accessibilityIdentifier("pushups-month-\(month.id)")
             }
         }
         .scrollContentBackground(.hidden)
         .background(AppBackdrop())
         .navigationTitle("History")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { openMonths.seed(newest: months.first?.id) }
     }
 
     private func row(_ day: SquatDaySummary) -> some View {
@@ -54,15 +53,6 @@ struct SquatHistoryView: View {
         }
         .font(.subheadline)
         .accessibilityElement(children: .combine)
-    }
-
-    /// `yyyy-MM` as a readable month, such as "September 2026".
-    static func monthTitle(_ key: String) -> String {
-        let parser = DateFormatter()
-        parser.locale = Locale(identifier: "en_US_POSIX")
-        parser.dateFormat = "yyyy-MM"
-        guard let date = parser.date(from: key) else { return key }
-        return date.formatted(.dateTime.month(.wide).year())
     }
 }
 

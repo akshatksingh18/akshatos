@@ -40,7 +40,9 @@ struct AkshatOSApp: App {
         pageVault = PageVaultStore()
         liftLog = LiftLogStore()
         bodyLog = BodyLogStore()
-        backup = FullBackupService(squats: squats, pageVault: pageVault, liftLog: liftLog, bodyLog: bodyLog)
+        // Every module takes part in the full backup, in hub order. check-backup-coverage.py fails
+        // CI if a module in features/ is missing from this list.
+        backup = FullBackupService(parts: [squats, pageVault, liftLog, bodyLog])
         notifications = AppNotificationCoordinator(squats: squats, navigator: navigator)
     }
 }

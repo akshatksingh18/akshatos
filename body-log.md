@@ -32,6 +32,10 @@ height, weight or photo is bundled in source or belongs in this public repositor
   permission. Stored only in the app's storage as JPEGs re-encoded to at most 2048 px, which also
   drops the original's location metadata. The screen shows the first and latest photo of a pose side
   by side. Like PageVault's PDFs, photos are included in the phone's own device backup.
+- **History:** its own screen with one dropdown per month, newest first and only the newest open;
+  each month holds that month's measurement sessions (each opening its detail), weekly weight blocks
+  (by the month they start in) and weigh-ins (swipe to delete). From 0.7.0 (30); earlier builds
+  showed three undivided lists.
 - **Weekly reminder:** optional, on the measurement weekday (Saturday by default) at a chosen morning
   hour. It uses the `akshatos.body.` notification namespace, which the app layer routes to this
   module, and never touches Pushup Reminder's requests. Without notification permission the toggle

@@ -92,7 +92,8 @@ Body is registered as its own feature suite. Its domain test covers day keys and
 weekly blocks from the measurement weekday, weight/inch validation and rounding, the fixed site
 identifiers, rolling and weekly averages, per-site change, the Navy formula against a hand
 computation, waist-to-height, photo cadence, CSV rows and backup validation/round trip, including
-height and measurement day carried optionally and range-checked. Hosted tests
+height and measurement day carried optionally and range-checked, and history grouped by month.
+Hosted tests
 cover one weigh-in per day across reopening, week change, session save/edit/delete and change,
 refused values, sites from a newer build surviving an edit, estimates needing height, JPEG photo
 storage and deletion, unreadable images, a full folder backup restored with photos, a rejected
@@ -103,8 +104,11 @@ measurement appears in tests.
 The hub's full backup (`app/backup/`) is not a feature suite, since it spans every module; it is
 covered by `UnitTests/FullBackupTests.swift`, which fills all four modules on one simulated phone,
 backs them up to one folder and restores it into a fresh phone, proves one damaged part restores
-nothing, refuses a non-backup and a newer backup, leaves out an empty PageVault and names a missing
-part. The hub UI test opens the Backup screen and returns. Saving and picking the folder go through
+nothing, refuses a non-backup, a newer backup and a part from a module the build lacks, leaves out an
+empty PageVault, names a missing part, checks unique ids and safe part names, and pins the live
+app's registered module list. `ios/scripts/check-backup-coverage.py` runs beside the boundary check
+in both the checks job and the macOS build and fails when a module under `features/` does not take
+part in the full backup (no `HubBackupPart`, or not listed in `AppServices`). The hub UI test opens the Backup screen and returns. Saving and picking the folder go through
 system sheets, which only the phone exercises.
 
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit

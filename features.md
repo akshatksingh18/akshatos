@@ -115,7 +115,8 @@ stays a dimmed "Not available yet" row rather than pretending to be usable.
   says "Reached" without inflating the count again.
 - The primary lifecycle control changes with state: Start my day, Pause, Resume, or View summary.
   **End my day** remains visually separate and requires confirmation so it is not hit accidentally.
-- The compact **Logged today** list shows only completed sets and their completion times. Pause,
+- **Logged today** is a dropdown, closed by default, whose heading shows the day's set count; opened,
+  it lists every completed set and its time (from 0.7.0 (30); earlier builds showed up to 12 inline). Pause,
   resume, snooze and other reminder-maintenance events remain internal lifecycle/history data and
   must not clutter this dashboard list. Undo remains available for the most recent completed set.
 - Small quick controls expose Pause, Resume, and notification settings only
@@ -254,9 +255,10 @@ from unobservable deliveries. Scheduled notifications can be delayed or suppress
 settings, so only explicit user actions count as completions.
 
 Keep finalized daily summaries locally so the user can revisit past days. The dashboard carries
-only a **History** row with the number of days kept; it opens its own screen listing days by
-month, newest first, with each month's set total and a check mark on days whose goal was reached, in a
-lazy list, and each day opens its recap. The dashboard never lists history itself, so it does not
+only a **History** row with the number of days kept; it opens its own screen with one dropdown per
+month, newest first and only the newest open, each showing the month's set total; opened, it lists
+that month's days with a check mark on days whose goal was reached, and each day opens its recap
+(month dropdowns from 0.7.0 (30)). The dashboard never lists history itself, so it does not
 grow or slow down as days accumulate (implemented in 0.6.0 (29) source, not yet phone-verified).
 History is kept indefinitely and never pruned automatically: a day's record is estimated at a few
 kilobytes from its shape (not measured), so years of daily use stay in the low megabytes, and deleting

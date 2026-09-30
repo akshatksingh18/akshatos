@@ -108,20 +108,40 @@ module) that backs up or restores every module at once; each module's own backup
 It is implemented and covered by hosted tests but not yet phone-verified.
 
 - **Back up everything** writes one folder, `AkshatOS Backup YYYY-MM-DD`, through the system file
-  mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version and the
-  parts present) beside each module's own, unchanged backup — `pushups.json`, `lift-log.json`,
-  `body/` (records, photos, height and measurement day) and `pagevault/` (manifest and every PDF;
-  left out when the library is empty). A part lifted out of the folder still restores from inside its
-  own module.
+  mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version, and one
+  entry per part: the module's id, name and item) beside each module's own, unchanged backup —
+  today `pushups.json`, `pagevault/` (manifest and every PDF; left out when the library is empty),
+  `lift-log.json` and `body/` (records, photos, height and measurement day). A part lifted out of
+  the folder still restores from inside its own module. A module that cannot be read stops the
+  backup rather than leaving a silently incomplete folder.
 - **Restore everything** takes that folder, reads the index, and checks every listed part with the
-  module's own validation before anything changes; one missing or damaged part stops the whole
-  restore. After confirmation, Pushups, Lift Log and Body are replaced by the backup, and PageVault
-  adds missing books and gives the rest the backup's place and status. The result names what was
-  restored and anything that was not.
+  module's own validation before anything changes; one missing, damaged or unknown part (from a
+  module this build does not have) stops the whole restore. After confirmation each part applies:
+  Pushups, Lift Log and Body are replaced by the backup; PageVault adds missing books and gives the
+  rest the backup's place and status. The result names what was restored and anything that was not.
 - Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
   of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.
-- `FullBackupService` in `ios/AkshatOS/app/backup/` is the only code that knows every module; it
-  calls each module's own export/validate/restore and never reads their stores or files itself.
+
+### How modules take part (the contract for every future module)
+
+- `shared/backup/HubBackupPart.swift` defines the protocol every module implements: a stable
+  `backupID` (never changed once shipped — old backups find their part by it), a `backupTitle`,
+  `writeBackup(into:)` (write the module's own backup as one file or folder and return its name, or
+  nil when there is nothing to keep), and `prepareBackupRestore(from:)` (check without changing
+  anything and return the restore to apply once every part has passed).
+- Each module conforms in its own `features/<module>/<Module>BackupPart.swift`, reusing its own
+  export and validation. `AppServices` lists every part once, in hub order, in
+  `FullBackupService(parts: [...])`. `FullBackupService` and the index know no module by name.
+- **Enforced in CI:** `ios/scripts/check-backup-coverage.py` runs in both the checks job and the macOS
+  build and fails when any folder under `features/` has no `HubBackupPart` conformance or is not
+  listed in that registry. `FullBackupTests.testTheAppRegistersEveryModule` pins the live app's list,
+  and the service refuses duplicate ids.
+
+**Adding a module (for example ReelVault):** give it its own export/validate/restore first, add
+`<Module>BackupPart.swift` with a new `backupID`, list the store in `FullBackupService(parts:)`,
+extend `FullBackupTests` so the round trip fills and checks the new module and the registry test
+names its id, and update this section's part list and `ci.md`. CI blocks the merge until the first
+two are done. Large media (ReelVault's videos) goes inside its part the same way PageVault's PDFs do.
 
 ## Refresh and recovery
 

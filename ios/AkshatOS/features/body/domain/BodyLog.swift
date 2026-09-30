@@ -123,6 +123,16 @@ struct BodyWeek: Equatable, Identifiable {
     var id: String { start }
 }
 
+/// One month of Body history: its measurement sessions, the weekly blocks starting in it, and its
+/// weigh-ins, each newest first.
+struct BodyHistoryMonth: Equatable, Identifiable {
+    /// `yyyy-MM`.
+    let id: String
+    var measurements: [BodyMeasurement] = []
+    var weeks: [BodyWeek] = []
+    var weights: [BodyWeightEntry] = []
+}
+
 enum BodyLogError: LocalizedError, Equatable {
     case invalidWeight
     case invalidMeasurement(String)
@@ -146,6 +156,24 @@ enum BodyLogError: LocalizedError, Equatable {
 }
 
 enum BodyLog {
+    /// Groups history by the month of each record's day (a week by the month it starts in), newest
+    /// month first, keeping records newest first within a month.
+    static func byMonth(measurements: [BodyMeasurement], weeks: [BodyWeek],
+                        weights: [BodyWeightEntry]) -> [BodyHistoryMonth] {
+        var months: [String: BodyHistoryMonth] = [:]
+        func key(_ day: String) -> String { String(day.prefix(7)) }
+        for item in measurements.sorted(by: { $0.day > $1.day }) {
+            months[key(item.day), default: BodyHistoryMonth(id: key(item.day))].measurements.append(item)
+        }
+        for item in weeks.sorted(by: { $0.start > $1.start }) {
+            months[key(item.start), default: BodyHistoryMonth(id: key(item.start))].weeks.append(item)
+        }
+        for item in weights.sorted(by: { $0.day > $1.day }) {
+            months[key(item.day), default: BodyHistoryMonth(id: key(item.day))].weights.append(item)
+        }
+        return months.values.sorted { $0.id > $1.id }
+    }
+
     static let weightRange = 50.0...700.0
     static let inchRange = 5.0...80.0
     /// Progress photos are due once the latest is this many days old, matching a two-week rhythm.

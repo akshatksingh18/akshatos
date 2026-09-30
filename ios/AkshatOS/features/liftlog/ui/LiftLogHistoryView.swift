@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Every finished workout, grouped by month in a lazy list so a long history costs only the rows
-/// on screen.
+/// Every finished workout. Each month is a dropdown, newest open, so a long history is one row per
+/// month and a month's workouts are built only when opened.
 struct LiftLogHistoryView: View {
     @ObservedObject var store: LiftLogStore
+    @State private var openMonths = OpenMonths()
 
     var body: some View {
         let months = LiftWorkoutSession.byMonth(store.workouts)
@@ -14,7 +15,9 @@ struct LiftLogHistoryView: View {
                     .accessibilityIdentifier("lift-history-empty")
             }
             ForEach(months) { month in
-                Section {
+                MonthGroup(title: month.month.formatted(.dateTime.month(.wide).year()),
+                           summary: month.workouts.count == 1 ? "1 workout" : "\(month.workouts.count) workouts",
+                           isExpanded: $openMonths.month(month.id)) {
                     ForEach(month.workouts) { workout in
                         NavigationLink {
                             LiftWorkoutDetailView(workout: workout) { store.deleteWorkout(workout.id) }
@@ -27,19 +30,15 @@ struct LiftLogHistoryView: View {
                             }
                         }
                     }
-                } header: {
-                    AdaptiveRow {
-                        Text(month.month.formatted(.dateTime.month(.wide).year()))
-                    } trailing: {
-                        Text(month.workouts.count == 1 ? "1 workout" : "\(month.workouts.count) workouts")
-                    }
                 }
+                .accessibilityIdentifier("lift-month-\(month.id)")
             }
         }
         .scrollContentBackground(.hidden)
         .background(AppBackdrop())
         .navigationTitle("Lift history")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { openMonths.seed(newest: months.first?.id) }
     }
 }
 

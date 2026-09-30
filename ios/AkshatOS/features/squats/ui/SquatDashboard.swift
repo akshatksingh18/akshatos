@@ -5,6 +5,7 @@ struct SquatDashboard: View {
     @EnvironmentObject private var store: SquatStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var showLoggedToday = false
     @State private var showSettings = false
     @State private var showEnd = false
     @State private var showRestart = false
@@ -298,23 +299,40 @@ struct SquatDashboard: View {
 
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Logged today").font(.headline)
+            // A dropdown, closed by default, so a busy day's sets never push the rest of the
+            // dashboard down. Every set of the day is inside it.
             let events = store.todayCompletions
             if events.isEmpty {
-                Text("No sets yet.")
-                    .font(.subheadline).foregroundStyle(Palette.muted)
-            }
-            ForEach(Array(events.prefix(12))) { event in
-                AdaptiveRow(spacing: 12) {
-                    HStack(spacing: 12) {
-                        Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
-                            .foregroundStyle(Palette.accent).accessibilityHidden(true)
-                        Text(SquatDayRecap.eventTitle(event.kind)).font(.subheadline)
-                    }
+                AdaptiveRow {
+                    Text("Logged today").font(.headline)
                 } trailing: {
-                    Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
-                }.padding(.vertical, 5)
+                    Text("No sets yet").font(.subheadline).foregroundStyle(Palette.muted)
+                }
+            } else {
+                DisclosureGroup(isExpanded: $showLoggedToday) {
+                    ForEach(events) { event in
+                        AdaptiveRow(spacing: 12) {
+                            HStack(spacing: 12) {
+                                Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
+                                    .foregroundStyle(Palette.accent).accessibilityHidden(true)
+                                Text(SquatDayRecap.eventTitle(event.kind)).font(.subheadline)
+                            }
+                        } trailing: {
+                            Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
+                        }.padding(.vertical, 5)
+                            .accessibilityElement(children: .combine)
+                    }
+                } label: {
+                    AdaptiveRow {
+                        Text("Logged today").font(.headline)
+                    } trailing: {
+                        Text(events.count == 1 ? "1 set" : "\(events.count) sets")
+                            .font(.subheadline).monospacedDigit().foregroundStyle(Palette.muted)
+                    }
                     .accessibilityElement(children: .combine)
+                }
+                .tint(Palette.muted)
+                .accessibilityIdentifier("logged-today")
             }
             // The full history lives on its own screen; the dashboard only links to it, so its
             // length never grows with the number of days kept.

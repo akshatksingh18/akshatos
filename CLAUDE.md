@@ -32,8 +32,10 @@ stale "Preview 0.3.0" footer with the installed version, and replaces the Build-
 across the hub, every module, the notifications and the icon with a clean, minimal design in plain
 words (`features.md`). Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation, and is installed from `testing\`: Sideloadly records 0.6.0 at the expected identity with current-version automatic-refresh enrollment and no error. Its phone pass is pending.
 Working source 0.7.0 (30) adds the hub's full backup: one folder with every module's own backup,
-restored only after every part is checked (`hub-plan.md` § Full backup). It is not yet built or
-phone-verified.
+restored only after every part is checked, with every module required by CI to take part
+(`hub-plan.md` § Full backup). It also turns the Pushups, Lift Log and Body history screens into
+one dropdown per month and Pushups' Logged today into a closed-by-default dropdown. It is not yet
+built or phone-verified.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -155,12 +157,19 @@ every feature is physically verified.
   display-only picker with metadata and injected destinations; read for host integration changes.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
   everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
-- `ios/AkshatOS/app/backup/` — the hub's full backup: `AkshatOSBackup.swift` (the folder's index
-  and errors, Foundation-only), `FullBackupService.swift` (calls each module's own backup, validate
-  and restore; the only code that knows every module) and `FullBackupView.swift` (the Backup screen).
+- `ios/AkshatOS/app/backup/` — the hub's full backup: `AkshatOSBackup.swift` (the folder's index,
+  part-name and registry checks, errors; Foundation-only), `FullBackupService.swift` (runs every
+  registered `HubBackupPart`, knowing no module by name) and `FullBackupView.swift` (the Backup screen).
+- `ios/AkshatOS/shared/backup/HubBackupPart.swift` — the protocol every module implements to join the
+  full backup; `hub-plan.md` § Full backup owns the contract and the add-a-module steps.
+- `ios/AkshatOS/features/*/<Module>BackupPart.swift` (`SquatsBackupPart`, `PageVaultBackupPart`,
+  `LiftLogBackupPart`, `BodyBackupPart`) — each module's conformance, reusing its own backup.
+- `ios/scripts/check-backup-coverage.py` — fails CI when a `features/` module has no `HubBackupPart`
+  or is missing from `FullBackupService(parts:)` in `AppServices`; has its own negative fixtures.
 - `ios/UnitTests/FullBackupTests.swift` — every module backed up by one phone and restored into a
-  fresh one, a damaged part restoring nothing, non-backup and newer folders refused, an empty
-  library left out and a missing part named.
+  fresh one, a damaged part restoring nothing, non-backup, newer and unknown-module backups refused,
+  an empty library left out, a missing part named, unique ids and safe part names, and the live
+  app's registered module list.
 - `ios/AkshatOS/app/hub/HubNavigation.swift` — the one pending hub route, so a tapped notification
   opens the feature that sent it instead of leaving the last screen up. Plain hub state with no
   feature types or services; the namespace→route map lives in `AppNotificationCoordinator.swift`
@@ -203,7 +212,8 @@ every feature is physically verified.
 - `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
   phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
 - `ios/AkshatOS/shared/design-system/` — feature-independent palette (neutrals plus one accent),
-  flat background, cards, progress ring and buttons; change the look here, not per screen.
+  flat background, cards, progress ring and buttons, plus `MonthGroup.swift`, the month dropdown
+  every history screen uses (newest month open); change the look here, not per screen.
 - `ios/scripts/generate-app-icon.swift` — draws the flat, minimal app icon on the CI runner. Core
   Graphics draws with y pointing up, so the top of the icon is the largest y (the Build-25 icon's A
   was drawn upside down because of this).
@@ -672,6 +682,9 @@ data, device state, or durable release IPAs.
   alternative. The only reason to push earlier is something Akshat needs in hand right away — a build
   he is about to install, or a fix he is waiting on to test. When in doubt, hold and say what is
   waiting.
+- **Every module joins the full backup.** A new module under `features/` needs its own
+  export/restore and a `HubBackupPart` listed in `AppServices` before it merges; CI enforces this
+  (`hub-plan.md` § Full backup lists the steps).
 - Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
