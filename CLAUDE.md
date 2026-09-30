@@ -20,7 +20,10 @@ accepted backup slot.
 Build 28 (0.5.0) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS, passed CI and
 artifact validation, and is installed with current-version enrollment. On the phone, linking the
 inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.5.1 (29)
-removes them, keeping only the serialized import path; it awaits CI, a build and installation.
+removes them (keeping only the serialized import path), moves Pushup Past quests and Lift Log history
+off their main screens onto month-grouped history screens (Lift Log's now reaching every workout, not
+just the latest 12), shows every set of a last performance instead of "+N more", and replaces the
+stale "Preview 0.3.0" footer with the installed version. It awaits CI, a build and installation.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -55,7 +58,10 @@ every feature is physically verified.
   scheduling/save failures and file/disk recovery regression tests.
 - `ios/AkshatOS/features/squats/domain/SquatAction.swift` — shared action commands and delivery receipts.
 - `ios/AkshatOS/features/squats/domain/SquatDaySummary.swift` — same-date aggregation, active/paused
-  timing, goal status and detailed daily history.
+  timing, goal status, detailed daily history, and the one-pass day list and month grouping behind
+  Past quests.
+- `ios/AkshatOS/features/squats/ui/SquatHistoryView.swift` — the Past quests screen (days by month)
+  and the day recap it shares with the end-of-day summary.
 - `ios/AkshatOS/features/squats/domain/SquatsBackup.swift` — versioned local JSON export/restore
   contract and whole-file validation.
 - `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
@@ -145,8 +151,9 @@ every feature is physically verified.
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
-  hard-coded Upper/Lower templates, store, history/entry/edit UI, last-performance lookup, JSON
-  recovery and CSV export.
+  hard-coded Upper/Lower templates, store, entry/edit UI, the month-grouped history screen
+  (`ui/LiftLogHistoryView.swift`), last-performance lookup with every set shown, JSON recovery and
+  CSV export. `lift-log.md` owns the contract.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
   coverage. Build 27's expanded scenarios passed the complete PR and clean-main macOS CI gates.

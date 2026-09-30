@@ -4,7 +4,8 @@
 Build 28 / 0.5.0 (28) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS; it is
 installed and enrolled, but linking the folder did nothing on the phone and Akshat asked for both
 features to be removed. Working source 0.5.1 (29), on branch `feature/remove-inbox-open-in`, removes
-them and needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+them, moves Pushup Past quests and Lift Log history to their own month-grouped screens, and shows
+every set of a last performance; it needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -138,8 +139,10 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 1. **Build 29 removal:** after Akshat confirms the public push, pass the PR CI Gate, merge, validate
    the main-run artifact into `testing\` (replacing Build 28), then install it over Build 28 without
-   uninstalling. Check that PageVault no longer shows the inbox button, the library, Pushups and Lift
-   Log are intact, and current-version enrollment holds before promoting Build 29 to `backup\`.
+   uninstalling. Check that PageVault no longer shows the inbox button, that Past quests and Lift
+   history open on their own screens with every day/workout present, that the last-performance line
+   lists every set, that existing data is intact, and that current-version enrollment holds before
+   promoting Build 29 to `backup\`.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.

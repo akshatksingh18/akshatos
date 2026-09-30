@@ -40,6 +40,27 @@ final class AkshatOSUITests: XCTestCase {
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
     }
 
+    /// Past quests are one row on the dashboard and a screen of their own, so the dashboard does
+    /// not grow with every day kept.
+    func testPastQuestsOpenOnTheirOwnScreen() {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 10))
+        app.buttons["open-squats"].tap()
+        let history = app.buttons["open-pushups-history"]
+        XCTAssertTrue(history.waitForExistence(timeout: 10))
+        for _ in 0..<5 where !history.isHittable { app.swipeUp() }
+        XCTAssertTrue(history.isHittable)
+        history.tap()
+        XCTAssertTrue(app.navigationBars["Past quests"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["pushups-history-empty"].exists,
+                      "A fresh install explains that days will appear here")
+        capture("Pushup past quests")
+        app.navigationBars["Past quests"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5),
+                      "Leaving history returns to the dashboard")
+    }
+
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name

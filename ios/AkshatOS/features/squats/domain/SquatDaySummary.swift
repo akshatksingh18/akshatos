@@ -8,6 +8,13 @@ struct SquatPauseSegment: Identifiable, Equatable {
     var duration: TimeInterval { max(0, ended.timeIntervalSince(started)) }
 }
 
+/// One calendar month of Pushup history. `id` is `yyyy-MM`.
+struct SquatHistoryMonth: Identifiable, Equatable {
+    let id: String
+    var days: [SquatDaySummary]
+    var completedSets: Int { days.reduce(0) { $0 + $1.completedSets } }
+}
+
 struct SquatDaySummary: Identifiable, Equatable {
     enum GoalStatus: Equatable { case notSet, reached, atRisk, missed }
 
@@ -27,6 +34,23 @@ struct SquatDaySummary: Identifiable, Equatable {
 
     var id: String { day }
     var events: [SquatEvent] { sessions.flatMap(\.events).sorted { $0.date < $1.date } }
+
+    /// Every day in the history, newest first. Sessions are grouped by day once: filtering the
+    /// whole history for each day made this grow with the square of the number of days kept.
+    static func all(_ sessions: [SquatSession], now: Date = Date(),
+                    calendar: Calendar = .current) -> [SquatDaySummary] {
+        Dictionary(grouping: sessions, by: \.day).compactMap { day, values in
+            make(day: day, sessions: values, now: now, calendar: calendar)
+        }.sorted { $0.day > $1.day }
+    }
+
+    /// Days grouped into calendar months, newest month and newest day first. A day key is
+    /// `yyyy-MM-dd`, so its first seven characters are already the month.
+    static func byMonth(_ days: [SquatDaySummary]) -> [SquatHistoryMonth] {
+        Dictionary(grouping: days) { String($0.day.prefix(7)) }
+            .map { SquatHistoryMonth(id: $0.key, days: $0.value.sorted { $0.day > $1.day }) }
+            .sorted { $0.id > $1.id }
+    }
 
     static func make(day: String, sessions: [SquatSession], now: Date = Date(),
                      calendar: Calendar = .current) -> SquatDaySummary? {

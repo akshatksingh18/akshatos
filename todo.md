@@ -5,8 +5,10 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
 **Current focus:** Working source 0.5.1 (29) removes Build 28's PageVault laptop inbox folder and Open
-in AkshatOS at Akshat's request, after linking the folder did nothing on the phone. It needs its PR CI
-Gate, a validated artifact and an install over Build 28 confirming the rest of the app is unchanged. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
+and Lift Log history onto their own screens with the full last-performance set list. It needs its PR
+CI Gate, a validated artifact and an install over Build 28, then a phone check of Past quests, Lift
+history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
 checksum/IPA validation. Akshat reports that the installed Build 27 works well end-to-end. Sideloadly

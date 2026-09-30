@@ -91,11 +91,15 @@ acceptance gates.
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
 per-side load semantics, priority-ordered Upper/Lower definitions, exercise/set mutation and edit,
 undo, unperformed-template cleanup, finish-state enforcement, round-trip validation and backup
-rejection of multiple active workouts. Hosted SwiftData tests cover
+rejection of multiple active workouts, plus month-grouped history (order, year boundary, the active
+workout excluded, every finished workout reachable). Hosted SwiftData tests cover
 repository round trips and upsert behavior, save-after-every-mutation active-session recovery,
-template preloading, persisted editing, same-mode last-performance lookup, validated backup
-replacement and load-mode-preserving/CSV-escaped export. Its UI test covers the Homebase entry,
-Lift Log destination and Upper-template start. Build 26 passed the complete macOS suite; Build 27's
+template preloading, persisted editing, same-mode last-performance lookup with every set in its
+summary, history reaching more than 12 workouts, validated backup
+replacement and load-mode-preserving/CSV-escaped export. Its UI tests cover the Homebase entry,
+Lift Log destination, Upper-template start and the history screen. The Pushups domain test also
+covers Past quests' one-pass day list and month grouping, and a UI test opens Past quests on its
+own screen. Build 26 passed the complete macOS suite; Build 27's
 expanded scenarios passed the complete PR and clean-main macOS suites, including IPA inspection.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future

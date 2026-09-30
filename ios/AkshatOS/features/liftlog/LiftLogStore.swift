@@ -198,6 +198,14 @@ import SwiftUI
         return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
     }
 
+    /// Every set of a previous performance, in order — "S1 45 lb/side × 8 · S2 …". All of them,
+    /// never "+1 more": the point of the reference is knowing exactly what was lifted.
+    static func performanceSummary(_ exercise: LiftExerciseRecord) -> String {
+        exercise.sets.enumerated().map { index, set in
+            "S\(index + 1) \(weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)"
+        }.joined(separator: " · ")
+    }
+
     static func weightText(_ value: Double) -> String {
         value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
     }

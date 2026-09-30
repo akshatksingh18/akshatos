@@ -170,7 +170,7 @@ struct LiftLogView: View {
             }
 
             if let reference = store.lastPerformance(for: exercise) {
-                LastPerformanceView(reference: reference, compact: true)
+                LastPerformanceView(reference: reference)
             } else {
                 Text("Last performance: none yet for this exercise and measurement mode.")
                     .font(.caption).foregroundStyle(Palette.muted)
@@ -214,36 +214,26 @@ struct LiftLogView: View {
         }
     }
 
+    /// One row into the full history. The main screen used to list only the latest 12 workouts,
+    /// which left every older one unreachable; the history screen shows them all.
     private var history: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("History").font(.title2.bold())
-                Spacer()
-                Text("\(store.finished.count) sessions").font(.caption).foregroundStyle(Palette.muted)
-            }
-            if store.finished.isEmpty {
-                Surface { Text("Finished workouts will appear here.").foregroundStyle(Palette.muted) }
-            } else {
-                ForEach(store.finished.prefix(12)) { workout in
-                    NavigationLink {
-                        LiftWorkoutDetailView(workout: workout) { store.deleteWorkout(workout.id) }
-                    } label: {
-                        Surface {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(workout.startedAt.formatted(date: .abbreviated, time: .omitted))
-                                        .font(.headline)
-                                    Text("\(workout.exercises.count) exercises · \(workout.setCount) sets")
-                                        .font(.caption).foregroundStyle(Palette.muted)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right").foregroundStyle(Palette.gold)
-                            }
-                        }
-                    }.buttonStyle(.plain)
+        NavigationLink {
+            LiftLogHistoryView(store: store)
+        } label: {
+            Surface {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("History").font(.title2.bold())
+                        Text(store.finished.count == 1 ? "1 session" : "\(store.finished.count) sessions")
+                            .font(.caption).foregroundStyle(Palette.muted)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").foregroundStyle(Palette.gold)
                 }
             }
         }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("open-lift-history")
     }
 
     private var backupControls: some View {
@@ -315,7 +305,7 @@ private struct LiftSetEntryView: View {
                 }
                 Section("Last performance") {
                     if let reference {
-                        LastPerformanceView(reference: reference, compact: false)
+                        LastPerformanceView(reference: reference)
                     } else {
                         Text("No previous finished workout contains this exercise with the same measurement mode.")
                             .font(.caption).foregroundStyle(.secondary)
@@ -344,66 +334,22 @@ private struct LiftSetEntryView: View {
 
 private struct LastPerformanceView: View {
     let reference: LiftPerformanceReference
-    let compact: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Last performance · \(reference.workoutDate.formatted(date: .abbreviated, time: .omitted))")
                 .font(.caption.weight(.semibold)).foregroundStyle(Palette.gold)
-            Text(setSummary)
+            Text(LiftLogStore.performanceSummary(reference.exercise))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(Palette.muted)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("last-performance-sets")
             if !reference.exercise.equipmentNote.isEmpty {
                 Text(reference.exercise.equipmentNote)
                     .font(.caption2).foregroundStyle(Palette.muted)
             }
         }
         .accessibilityElement(children: .combine)
-    }
-
-    private var setSummary: String {
-        let displayedSets = compact ? Array(reference.exercise.sets.prefix(3)) : reference.exercise.sets
-        let summary = displayedSets.enumerated().map { index, set in
-            "S\(index + 1) \(LiftLogStore.weightText(set.load)) \(reference.exercise.loadMode.shortUnit) × \(set.reps)"
-        }.joined(separator: " · ")
-        let hiddenCount = reference.exercise.sets.count - displayedSets.count
-        return hiddenCount > 0 ? "\(summary) · +\(hiddenCount) more" : summary
-    }
-}
-
-private struct LiftWorkoutDetailView: View {
-    let workout: LiftWorkoutSession
-    let onDelete: () -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var confirmingDelete = false
-
-    var body: some View {
-        ZStack {
-            AppBackdrop()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(workout.startedAt.formatted(date: .complete, time: .shortened))
-                        .font(.title2.bold())
-                    ForEach(workout.exercises) { exercise in
-                        Surface {
-                            Text(exercise.name).font(.title3.bold())
-                            Text(exercise.loadMode.title).font(.caption).foregroundStyle(Palette.gold)
-                            ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
-                                Text("Set \(index + 1): \(LiftLogStore.weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)")
-                                    .font(.subheadline.monospacedDigit())
-                            }
-                        }
-                    }
-                    Button("Delete workout", role: .destructive) { confirmingDelete = true }
-                        .buttonStyle(ActionStyle())
-                }.padding(20)
-            }
-        }
-        .navigationTitle("Workout")
-        .alert("Delete this workout?", isPresented: $confirmingDelete) {
-            Button("Delete", role: .destructive) { onDelete(); dismiss() }
-            Button("Cancel", role: .cancel) {}
-        } message: { Text("This cannot be undone unless it exists in an exported backup.") }
     }
 }
 

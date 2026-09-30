@@ -72,3 +72,31 @@ assert(LiftWorkoutTemplate.lower.exercises.map(\.name) == [
 assert(LiftWorkoutTemplate.upper.exercises.first?.loadMode == .addedWeight)
 assert(LiftWorkoutTemplate.lower.exercises[3].loadMode == .stack)
 print("PASS: Lift Log domain assertions (templates, per-side load, edit, finish, validation, backup)")
+
+// History screen: finished workouts grouped by month, newest first, the active one left out.
+var historyCalendar = Calendar(identifier: .gregorian)
+historyCalendar.timeZone = TimeZone(identifier: "UTC")!
+func historyWorkout(_ year: Int, _ month: Int, _ day: Int) -> LiftWorkoutSession {
+    let start = historyCalendar.date(from: DateComponents(year: year, month: month, day: day, hour: 18))!
+    return LiftWorkoutSession(startedAt: start, endedAt: start.addingTimeInterval(3_600))
+}
+let historyEarly = historyWorkout(2026, 9, 5)
+let historyLate = historyWorkout(2026, 9, 20)
+let historyAugust = historyWorkout(2026, 8, 30)
+let historyNewYear = historyWorkout(2027, 1, 2)
+let historyActive = LiftWorkoutSession(startedAt: historyCalendar.date(
+    from: DateComponents(year: 2027, month: 1, day: 3))!)
+let liftMonths = LiftWorkoutSession.byMonth(
+    [historyEarly, historyAugust, historyActive, historyNewYear, historyLate], calendar: historyCalendar)
+assert(liftMonths.map(\.id) == ["2027-01", "2026-09", "2026-08"],
+       "Months are newest first, across a year boundary")
+assert(liftMonths[1].workouts.map(\.id) == [historyLate.id, historyEarly.id],
+       "Workouts inside a month are newest first")
+assert(!liftMonths.flatMap(\.workouts).contains { $0.id == historyActive.id },
+       "The workout in progress is not history")
+assert(liftMonths[2].month == historyCalendar.date(from: DateComponents(year: 2026, month: 8, day: 1)),
+       "A month carries its first day for its title")
+assert(liftMonths.flatMap(\.workouts).count == 4, "Every finished workout is reachable, not just recent ones")
+assert(LiftWorkoutSession.byMonth([historyActive], calendar: historyCalendar).isEmpty,
+       "A history holding only the active workout is empty")
+print("PASS: 6 Lift Log history assertions (month order, year boundary, in-month order, active excluded, all reachable)")

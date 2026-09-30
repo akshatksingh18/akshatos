@@ -250,8 +250,14 @@ The summary must not claim how many notifications iOS actually showed or calcula
 from unobservable deliveries. Scheduled notifications can be delayed or suppressed by user/system
 settings, so only explicit user actions count as completions.
 
-Keep finalized daily summaries locally so the user can revisit recent days. A simple history screen
-shows daily set counts, goal result, and streak status and can open an individual day. Charts,
+Keep finalized daily summaries locally so the user can revisit past days. The dashboard carries
+only a **Past quests** row with the number of days kept; it opens its own screen listing days by
+month, newest first, with each month's set total and a trophy on days whose goal was cleared, in a
+lazy list, and each day opens its recap. The dashboard never lists history itself, so it does not
+grow or slow down as days accumulate (implemented in 0.5.1 (29) source, not yet phone-verified).
+History is kept indefinitely and never pruned automatically: a day's record is estimated at a few
+kilobytes from its shape (not measured), so years of daily use stay in the low megabytes, and deleting
+completed history remains an explicit Settings action. Charts,
 achievements beyond the streak, sharing, HealthKit, and detailed workout analytics remain later
 decisions. There is no account, cloud sync, remote analytics, or server. Data deletion and export/
 restore are explicit and local. Restore validates the complete versioned backup before replacing

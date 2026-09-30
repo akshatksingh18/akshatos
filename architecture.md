@@ -22,7 +22,9 @@ unchanged lifecycle engine. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. Build 28 added
 PageVault's laptop inbox folder and Open in AkshatOS; after the inbox failed to link on the phone,
-Akshat asked for both to be removed, and working source 0.5.1 (29) removes them. PageVault's technical
+Akshat asked for both to be removed, and working source 0.5.1 (29) removes them. The same source moves
+Pushup and Lift Log history onto their own month-grouped screens and builds Pushup day summaries in
+one pass instead of filtering the whole history per day. PageVault's technical
 plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation

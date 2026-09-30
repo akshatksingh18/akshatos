@@ -55,7 +55,8 @@ owns build and device evidence.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.5.1 (29)**; minimum iOS 17.
   Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone); 0.5.1
-  (29) removes the inbox and Open in and is not built yet. The facts below describe the accepted Build 27.
+  (29) removes the inbox and Open in, moves Pushup and Lift Log history to their own screens and shows
+  every last-performance set, and is not built yet. The facts below describe the accepted Build 27.
   Build 27 passed the complete PR and main-branch CI Gates, package inspection, checksum and local IPA
   validation. Build 27 is installed, phone-accepted, enrolled for current-version automatic refresh
   at the expected identity/mode, and retained in the local backup slot; `testing\` holds Build 28. Build

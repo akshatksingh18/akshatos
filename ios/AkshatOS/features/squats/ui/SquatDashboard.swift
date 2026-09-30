@@ -18,7 +18,6 @@ struct SquatDashboard: View {
     @State private var showDisableHome = false
     @State private var showOutsideStart = false
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 48
-    @ScaledMetric(relativeTo: .largeTitle) private var summaryCountSize: CGFloat = 64
     @ScaledMetric(relativeTo: .body) private var reminderAreaMinHeight: CGFloat = 76
 
     var body: some View {
@@ -86,7 +85,7 @@ struct SquatDashboard: View {
                         .font(.footnote).foregroundStyle(Palette.muted)
                 }
                 .accessibilityElement(children: .combine)
-                Text("AkshatOS · Preview 0.3.0")
+                Text("AkshatOS · \(Self.appVersion)")
                     .font(.caption2).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
             }.padding(22)
         }
@@ -338,32 +337,34 @@ struct SquatDashboard: View {
                     HStack(spacing: 12) {
                         Image(systemName: event.kind == .done ? "checkmark.circle.fill" : "circle.dashed")
                             .foregroundStyle(Palette.lime).accessibilityHidden(true)
-                        Text(eventTitle(event.kind)).font(.subheadline)
+                        Text(SquatDayRecap.eventTitle(event.kind)).font(.subheadline)
                     }
                 } trailing: {
                     Text(event.date, style: .time).font(.caption).foregroundStyle(Palette.muted)
                 }.padding(.vertical, 5)
                     .accessibilityElement(children: .combine)
             }
-            Text("Past quests").font(.system(.title3, design: .rounded, weight: .black)).padding(.top, 8)
-            if store.daySummaries.isEmpty {
-                Text("Completed and active days will appear here.")
-                    .font(.subheadline).foregroundStyle(Palette.muted)
-            }
-            ForEach(store.daySummaries) { day in
-                Button { store.summary = day } label: {
-                    AdaptiveRow {
-                        Label(day.started.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
-                              systemImage: "clock.arrow.circlepath")
-                    } trailing: {
-                        HStack {
-                            Text("\(day.completedSets) pushup sets")
-                            Image(systemName: "chevron.right").accessibilityHidden(true)
-                        }
-                    }.font(.subheadline).padding(.vertical, 10)
-                        .accessibilityElement(children: .combine)
+            // The full history lives on its own screen; the dashboard only links to it, so its
+            // length never grows with the number of days kept.
+            NavigationLink {
+                SquatHistoryView().environmentObject(store)
+            } label: {
+                AdaptiveRow {
+                    Label("Past quests", systemImage: "clock.arrow.circlepath")
+                        .font(.system(.title3, design: .rounded, weight: .black))
+                } trailing: {
+                    HStack {
+                        Text(store.historyDayCount == 1 ? "1 day" : "\(store.historyDayCount) days")
+                            .font(.subheadline).foregroundStyle(Palette.muted)
+                        Image(systemName: "chevron.right").accessibilityHidden(true)
+                    }
                 }
+                .padding(.vertical, 8)
+                .accessibilityElement(children: .combine)
             }
+            .buttonStyle(.plain)
+            .padding(.top, 8)
+            .accessibilityIdentifier("open-pushups-history")
         }
     }
 
@@ -617,52 +618,19 @@ struct SquatDashboard: View {
         else { Task { await store.start() } }
     }
 
+    /// The installed version and build, read from the app rather than typed here, where it went
+    /// stale at 0.3.0.
+    private static var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
     private func summary(_ day: SquatDaySummary) -> some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    QuestBadge(text: "Quest recap", icon: "trophy.fill", accent: Palette.gold)
-                    Text("Power gained.\nDay saved.").font(.system(.largeTitle, design: .rounded, weight: .black))
-                    AccentSurface(accent: Palette.gold) {
-                        Text("\(day.completedSets)").font(.system(size: summaryCountSize, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
-                        Text("pushup sets completed this day").foregroundStyle(Palette.muted)
-                        Text(day.started.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
-                            .font(.headline)
-                        Text(goalDescription(day)).foregroundStyle(Palette.muted)
-                    }
-                    Surface {
-                        Label("Time in your day", systemImage: "clock").font(.headline)
-                        Text("Started \(day.started.formatted(date: .omitted, time: .shortened))")
-                        if let end = day.ended { Text("Ended \(end.formatted(date: .omitted, time: .shortened))") }
-                        else { Text("Day still open") }
-                        Text("Active \(duration(day.activeDuration)) · Paused \(duration(day.pausedDuration))")
-                        Text("\(day.sessions.count) session\(day.sessions.count == 1 ? "" : "s") · interval \(day.intervals.map(String.init).joined(separator: ", ")) min")
-                        Text("\(day.pauseSegments.count) pauses · \(day.snoozeTimes.count) snoozes")
-                    }
-                    if !day.pauseSegments.isEmpty {
-                        Surface {
-                            Label("Pause segments", systemImage: "pause.circle").font(.headline)
-                            ForEach(day.pauseSegments) { pause in
-                                AdaptiveRow {
-                                    Text("\(pause.started.formatted(date: .omitted, time: .shortened))–\(pause.ended.formatted(date: .omitted, time: .shortened))")
-                                } trailing: {
-                                    Text(duration(pause.duration)).foregroundStyle(Palette.muted)
-                                }.font(.subheadline)
-                            }
-                        }
-                    }
-                    Surface {
-                        Label("Daily timeline", systemImage: "list.bullet").font(.headline)
-                        if day.events.isEmpty { Text("No activity was logged.").foregroundStyle(Palette.muted) }
-                        ForEach(day.events) { event in
-                            AdaptiveRow {
-                                Text(eventTitle(event.kind))
-                            } trailing: {
-                                Text(event.date, style: .time).foregroundStyle(Palette.muted)
-                            }.font(.subheadline)
-                        }
-                    }
-                }.padding(24)
+                SquatDayRecap(day: day).padding(24)
             }.background(AppBackdrop()).navigationTitle("Quest recap")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { Button("Done") { store.summary = nil } }
@@ -677,28 +645,6 @@ struct SquatDashboard: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func eventTitle(_ kind: SquatEvent.Kind) -> String {
-        switch kind {
-        case .done: return "Pushup set completed"
-        case .pause: return "Reminders paused"
-        case .resume: return "Reminders resumed"
-        case .snooze: return "Extra nudge requested"
-        }
-    }
-
-    private func duration(_ value: TimeInterval) -> String {
-        let minutes = max(0, Int(value) / 60)
-        return minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m"
-    }
-
-    private func goalDescription(_ day: SquatDaySummary) -> String {
-        switch day.goalStatus {
-        case .notSet: return "No goal was set for this day."
-        case .reached: return "Quest cleared: \(day.completedSets)/\(day.goal!) pushup sets."
-        case .atRisk: return "Quest in progress: \(day.completedSets)/\(day.goal!) pushup sets."
-        case .missed: return "Quest not cleared: \(day.completedSets)/\(day.goal!) pushup sets."
-        }
-    }
 }
 
 struct SquatsBackupDocument: FileDocument {
