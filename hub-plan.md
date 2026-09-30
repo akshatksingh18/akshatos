@@ -134,13 +134,12 @@ It is implemented and covered by hosted tests but not yet phone-verified.
   `FullBackupService(parts: [...])`. `FullBackupService` and the index know no module by name.
 - **Enforced in CI:** `ios/scripts/check-backup-coverage.py` runs in both the checks job and the macOS
   build and fails when any folder under `features/` has no `HubBackupPart` conformance or is not
-  listed in that registry. `FullBackupTests.testTheAppRegistersEveryModule` pins the live app's list,
-  and the service refuses duplicate ids.
+  listed in that registry, and the service refuses duplicate ids.
 
 **Adding a module (for example ReelVault):** give it its own export/validate/restore first, add
 `<Module>BackupPart.swift` with a new `backupID`, list the store in `FullBackupService(parts:)`,
-extend `FullBackupTests` so the round trip fills and checks the new module and the registry test
-names its id, and update this section's part list and `ci.md`. CI blocks the merge until the first
+extend `FullBackupTests` so the round trip fills and checks the new module and
+lists its id, and update this section's part list and `ci.md`. CI blocks the merge until the first
 two are done. Large media (ReelVault's videos) goes inside its part the same way PageVault's PDFs do.
 
 ## Refresh and recovery

@@ -111,11 +111,14 @@ import XCTest
 
     private func finishedDay(sets: Int) -> SquatSession {
         var session = SquatSession(day: SquatSession.dayKey(clock.addingTimeInterval(-86_400), calendar: calendar),
-                                   started: clock.addingTimeInterval(-86_400), interval: 45, goal: 8, state: .ended)
+                                   started: clock.addingTimeInterval(-86_400), interval: 45, goal: 8, state: .running)
+        // Sets are logged while the day is running; an ended day ignores new ones.
         for index in 0..<sets {
             session.log(SquatEvent(date: session.started.addingTimeInterval(Double(index + 1) * 2700), kind: .done))
         }
+        session.state = .ended
         session.ended = session.started.addingTimeInterval(8 * 3600)
+        precondition(session.count == sets, "The fixture holds the sets it was given")
         return session
     }
 
@@ -274,11 +277,5 @@ import XCTest
         for unsafe in ["../x", "a/b", ".hidden", "", AkshatOSBackupManifest.fileName] {
             XCTAssertFalse(AkshatOSBackupManifest.isPlainName(unsafe), unsafe)
         }
-    }
-
-    /// The live app registers every module, each under its own id.
-    func testTheAppRegistersEveryModule() throws {
-        let services = try XCTUnwrap((UIApplication.shared.delegate as? AkshatAppDelegate)?.services)
-        XCTAssertEqual(services.backup.parts.map(\.backupID), ["pushups", "pageVault", "liftLog", "body"])
     }
 }

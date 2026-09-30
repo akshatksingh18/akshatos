@@ -168,8 +168,7 @@ every feature is physically verified.
   or is missing from `FullBackupService(parts:)` in `AppServices`; has its own negative fixtures.
 - `ios/UnitTests/FullBackupTests.swift` — every module backed up by one phone and restored into a
   fresh one, a damaged part restoring nothing, non-backup, newer and unknown-module backups refused,
-  an empty library left out, a missing part named, unique ids and safe part names, and the live
-  app's registered module list.
+  an empty library left out, a missing part named, and unique ids and safe part names.
 - `ios/AkshatOS/app/hub/HubNavigation.swift` — the one pending hub route, so a tapped notification
   opens the feature that sent it instead of leaving the last screen up. Plain hub state with no
   feature types or services; the namespace→route map lives in `AppNotificationCoordinator.swift`

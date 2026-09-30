@@ -105,8 +105,7 @@ The hub's full backup (`app/backup/`) is not a feature suite, since it spans eve
 covered by `UnitTests/FullBackupTests.swift`, which fills all four modules on one simulated phone,
 backs them up to one folder and restores it into a fresh phone, proves one damaged part restores
 nothing, refuses a non-backup, a newer backup and a part from a module the build lacks, leaves out an
-empty PageVault, names a missing part, checks unique ids and safe part names, and pins the live
-app's registered module list. `ios/scripts/check-backup-coverage.py` runs beside the boundary check
+empty PageVault, names a missing part, and checks unique ids and safe part names. `ios/scripts/check-backup-coverage.py` runs beside the boundary check
 in both the checks job and the macOS build and fails when a module under `features/` does not take
 part in the full backup (no `HubBackupPart`, or not listed in `AppServices`). The hub UI test opens the Backup screen and returns. Saving and picking the folder go through
 system sheets, which only the phone exercises.
