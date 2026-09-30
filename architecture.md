@@ -29,7 +29,7 @@ Pushup and Lift Log history onto their own month-grouped screens and builds Push
 one pass instead of filtering the whole history per day, and replaces the Build-25 themed design
 system (gradients, glow, per-module colours, badges) with a minimal one in
 `shared/design-system/DesignSystem.swift`. PageVault's technical
-plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-build.md`.
+plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation
 
@@ -134,7 +134,7 @@ plan is owned by `../book-reader/architecture.md`; build evidence by `cloud-buil
   store for books and reading days, the streamed copy-on-import file storage, and the disposable
   cover cache), `services/` (the only import-time PDFKit inspection and cover rendering), and `ui/`
   (library grid, paged `PDFView` reader, book sheet). Its scope, gates, and locked decisions belong
-  to `../book-reader/`. Page changes arrive via `PDFViewPageChanged`, never a `PDFView` delegate, so
+  to `pagevault/`. Page changes arrive via `PDFViewPageChanged`, never a `PDFView` delegate, so
   process-wide delegate ownership stays with the app coordinator. Reading days are written whenever
   a goal is live, so an unbookmarked day is a real miss rather than an unrecorded gap. Page changes
   persist nothing at all: an explicit bookmark is what moves the place, claims the book as the one

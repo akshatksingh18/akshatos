@@ -2,10 +2,11 @@
 
 Personal native iPhone hub: the home screen selects a feature, starting with Pushup Reminder.
 PageVault is the activated next module — its scope, phases, and progress are owned by
-`../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
+`pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
-weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is reserved for later and
-WHOOP stays standalone. This repository evolved from Squat Reminder and now presents that
+weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is reserved for
+later, with its plan and Android draft in `reelvault/`, and WHOOP stays standalone. Everything for
+the hub lives in this one folder and repository. This repository evolved from Squat Reminder and now presents that
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
@@ -28,7 +29,7 @@ off their main screens onto month-grouped history screens (Lift Log's now reachi
 just the latest 12), shows every set of a last performance instead of "+N more", replaces the
 stale "Preview 0.3.0" footer with the installed version, and replaces the Build-25 "quest" theme
 across the hub, every module, the notifications and the icon with a clean, minimal design in plain
-words (`features.md`). It awaits CI, a build and installation.
+words (`features.md`). Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and waits in `testing\` for installation and its phone pass.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -41,12 +42,18 @@ Akshat subsequently reported that Build 25 works perfectly, closing its focused 
 pass; its artifact is now the accepted recovery/refresh copy. This does not substitute for the broader
 edge-case, refresh/recovery and multi-cycle soak matrix, which remains open. Build 13 remains the detailed
 accepted evidence for the unchanged movement lifecycle. PageVault v1 is phone-accepted through Build 24
-(`../book-reader/CLAUDE.md`), and Build 25's refreshed presentation is now accepted too. `cloud-build.md` owns build evidence and the
+(`pagevault/CLAUDE.md`), and Build 25's refreshed presentation is now accepted too. `cloud-build.md` owns build evidence and the
 working source version; `todo.md` owns open gates. The full target contract below is not a claim that
 every feature is physically verified.
 
 ## Files
 
+- `pagevault/` — PageVault's product scope, deployment plan, phases, device findings and fixture
+  generator; routed through `pagevault/CLAUDE.md`. Its source is in `ios/AkshatOS/features/pagevault/`.
+  Merged in from the former private `book-reader` repository, which keeps the earlier history.
+- `reelvault/` — ReelVault's iPhone plan and the unverified Android draft app; routed through
+  `reelvault/CLAUDE.md`. Merged in from the former private `reels` repository, which keeps the
+  earlier history.
 - `lift-log.md` — Lift Log product, plate-per-side data contract, privacy boundary, source layout
   and acceptance gates; read before changing the strength logger.
 - `body-log.md` — Body module product contract (weigh-ins, the eight tape sites, estimates, photos,
@@ -156,7 +163,7 @@ every feature is physically verified.
   capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
   its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
   search sheet, the page-jump picker). Product scope and
-  gates are owned by `../book-reader/`. Its reading loop, the page curl, drawing highlights and
+  gates are owned by `pagevault/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
   reworked highlighter are not. Build 22 found the highlighter stacking marks over each other
   because identity compared captured text rather than the page area covered; it now offers Highlight

@@ -2,14 +2,14 @@
 
 This is current-state work, not a claim that either platform is already usable. The iPhone path is
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
-`../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
+`pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
 **Current focus:** Working source 0.6.0 (29) adds the Body module (weight, weekly measurements,
 photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox folder and Open
 in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
 and Lift Log history onto their own screens with the full last-performance set list, and replaces the
-"quest" theme with a clean, minimal design in plain words. It needs its PR CI Gate, a validated
-artifact and an install over Build 28, then a phone check of the redesign and wording (notifications
+"quest" theme with a clean, minimal design in plain words. Build 29 passed its PR/main CI Gates and
+artifact validation and needs an install over Build 28, then a phone check of the redesign and wording (notifications
 and icon included), Pushup history, Lift history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
@@ -103,6 +103,23 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
+- [ ] **Sideloadly daemon not running (after Build 29 testing).** The health check's startup
+      warning was true when checked: only the Sideloadly window was running, the daemon was not,
+      although its sign-in `Run` entry exists; its own log has not been written since 2026-09-18, so
+      why it stopped is unknown. Without it nothing auto-refreshes (WHOOP, last signed 2026-09-24,
+      expires around 2026-10-01). Also, the health task's logon trigger has no delay, so it can check
+      before the daemon has started and warn falsely. To do: find why the daemon stops (e.g. whether the
+      Sideloadly window stops it while open), restore it, and — with Akshat's approval, since it
+      changes a scheduled task — add a ~2-minute delay to the logon trigger. `setup.md` owns the detail.
+- [ ] **Move signing to a different Apple Account (after Build 29 testing).** Akshat reports Apple is
+      banning accounts used for sideloading and wants to switch accounts. Plan the transition for every
+      signed app (AkshatOS and WHOOP) before acting. Known impact: the final signed bundle IDs embed the
+      current team suffix (`scripts/signing-apps.json`), so a new account's team produces a different
+      app on the phone with an empty container — every module's data (Pushups, PageVault, Lift Log,
+      Body with photos) and WHOOP's must be exported and restored, and the old installs removed only
+      after restore is verified. Also covers: the new account's free limits (3 apps, 10 App IDs / 7
+      days), Sideloadly account and daemon enrollment, updating `signing-apps.json` and the health
+      check, re-proving refresh, and the recovery docs. Needs a written plan and Akshat's go-ahead.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,
       automatic overdue nudges and legacy-snooze migration,

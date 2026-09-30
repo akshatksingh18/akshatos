@@ -9,7 +9,7 @@ for later and WHOOP stays a separate app.
 inbox failed to link on the phone and Akshat asked for both to be removed. Working source 0.6.0 (29)
 removes them, adds the Body module, gives Pushup and Lift Log history their own screens (Lift Log's reaching every
 workout), shows every set of a last performance, and replaces the Build-25 "quest" theme with a
-clean, minimal design in plain words, notifications and icon included; it awaits CI and installation. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
+clean, minimal design in plain words, notifications and icon included; Build 29 passed CI and artifact validation and awaits installation. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
 templates, same-mode last-performance references and active-set editing to Lift Log. PR #54 merged
 at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including registered domain and
 hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133`
@@ -31,7 +31,7 @@ recovery loop is accepted on the phone through Build 24, and Build 25's refreshe
 accepted too; reading streaks were built and then removed at Akshat's request. Bundle ID
 `com.akshatksingh18.akshatos`.
 The working source version, build evidence and install steps live in [cloud-build.md](cloud-build.md);
-open gates live in [todo.md](todo.md), and PageVault's in `../book-reader/CLAUDE.md`.
+open gates live in [todo.md](todo.md), and PageVault's in `pagevault/CLAUDE.md`.
 
 This repository evolved from Squat Reminder and now presents that feature as Pushup Reminder,
 retaining Git history and the unverified legacy Android Squats fallback. Source is temporarily public at

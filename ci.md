@@ -3,7 +3,7 @@
 **Status:** Enforced on every pull request and on `main`. The public repository's `main` branch
 requires a strict, up-to-date `CI Gate`; documentation-only PRs keep Source checks and the gate while
 skipping the macOS build, which is directly verified. The gate result for the current source is
-recorded in `cloud-build.md`, which owns artifact and device evidence; `../book-reader/CLAUDE.md` owns
+recorded in `cloud-build.md`, which owns artifact and device evidence; `pagevault/CLAUDE.md` owns
 PageVault's phone verification.
 
 ## Automated checks
@@ -85,7 +85,7 @@ Simulator coverage cannot exercise the system document picker, the file mover th
 real large-file memory pressure, rotation, paged swipe feel, how the sepia and night pages look, how
 a text selection actually snaps to words and lines, or whether fitted pages read comfortably. Each
 reader change needs its own device pass, owned by
-`../book-reader/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
+`pagevault/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
 acceptance gates.
 
 Body is registered as its own feature suite. Its domain test covers day keys and impossible dates,

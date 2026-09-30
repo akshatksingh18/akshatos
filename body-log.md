@@ -4,7 +4,7 @@ Local-only body-composition tracking inside AkshatOS: a daily morning weigh-in, 
 measurement of eight sites, and progress photos every two weeks. It exists to support a calorie
 deficit in which the weekly weight trend, the waist and the photos decide — not any single day.
 
-**Status:** Implemented in working source 0.6.0 (29), not yet CI-, build- or phone-verified. The
+**Status:** In Build 29 (0.6.0), which passed PR/main CI and artifact validation (`cloud-build.md`); not yet installed or phone-verified. The
 private coaching logs in the workspace's `health/fitness/` project remain the source of truth until
 Akshat explicitly switches entry to the phone (see Acceptance gates). No personal measurement,
 height, weight or photo is bundled in source or belongs in this public repository.

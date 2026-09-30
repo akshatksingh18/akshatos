@@ -14,7 +14,7 @@ focused physical-phone behavior pass. Sideloadly confirms current-version automa
 enrollment at the expected final identity in automatic mode, with no error and a seven-day expiry;
 Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
 superseded. Working source 0.6.0 (29) moves history to its own screen holding every finished
-workout and shows every set of the last performance instead of "+N more"; it awaits CI and a
+workout and shows every set of the last performance instead of "+N more"; it passed CI in Build 29 and awaits a
 phone pass. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.

@@ -23,8 +23,17 @@ installed it over Build 27 by Sideloadly; the database confirms version 0.5.0 at
 enrollment, no error and expiry on 2026-10-04 at 10:16 local. **Phone finding:** linking the laptop
 inbox did nothing — in the folder picker, tapping **Open** inside the synced folder had no effect.
 Akshat asked for the inbox and Open in AkshatOS to be removed rather than fixed, so Build 28 will not
-be promoted; Build 27 stays the accepted backup. Working source **0.6.0 (29)** removes both and adds
-the Body module; it also adds the camera usage description to the Info.plist.
+be promoted; Build 27 stays the accepted backup. **Build 29 / 0.6.0 (29)** removes both, adds the
+Body module (with the camera usage description), gives Pushup and Lift Log history their own
+screens, and replaces the quest theme with the minimal design. PR #57's first two runs failed and
+were fixed in the PR: a main-actor fake built in a test default argument (compile error), then the
+Pushup History row only accepting taps on its text (now a full card). Run `36655530523` then passed
+the complete CI Gate (135 hosted tests and 8 UI tests, 0 failures); PR #57 merged at `2637ea1`, main
+run `36656727736` passed and published `akshatos-ios-140`. Its SHA-256 matched locally,
+`validate-ipa.py` passed (no document types, no file sharing), the packaged version is 0.6.0 (29)
+with the camera description, and the hub, Pushups, Body, Body measure and PageVault screenshots were
+reviewed. It sits in `..\final-ipas\akshatos\testing\akshatos-build-29-2637ea1`, replacing Build 28
+there, and awaits installation over Build 28 and its phone pass.
 **Build 27 / 0.4.0 (27)** adds mode guidance,
 priority-ordered Upper/Lower templates, same-mode last-performance references and active-set editing.
 PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate and published
@@ -55,10 +64,9 @@ owns build and device evidence.
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.6.0 (29)**; minimum iOS 17.
-  Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone); 0.6.0
-  (29) removes the inbox and Open in, moves Pushup and Lift Log history to their own screens, shows
-  every last-performance set, and replaces the "quest" theme with a minimal design (icon included);
-  it is not built yet. The facts below describe the accepted Build 27.
+  Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone). Build
+  29 (0.6.0) passed PR/main CI, checksum and local IPA validation and is the candidate in
+  `testing\`, not yet installed. The facts below describe the accepted Build 27.
   Build 27 passed the complete PR and main-branch CI Gates, package inspection, checksum and local IPA
   validation. Build 27 is installed, phone-accepted, enrolled for current-version automatic refresh
   at the expected identity/mode, and retained in the local backup slot; `testing\` holds Build 28. Build
@@ -128,7 +136,8 @@ accepted build's files are guaranteed to still exist, at `D:\AI Important Files\
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 28 | `akshatos-build-28-6c08c87\akshatos-ios-136` | `6c08c87` (#56) | [36328010157](https://github.com/akshatksingh18/akshatos/actions/runs/36328010157) | `544701ea48c630538f43bb48f3482ba6d393a12c20a1bb74202ec8fb7f1df324` | **Installed, not accepted** — complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, but linking the laptop inbox did nothing on the phone, so the inbox and Open in are removed in Build 29; in `testing\` until Build 29 replaces it |
+| 29 | `akshatos-build-29-2637ea1\akshatos-ios-140` | `2637ea1` (#57) | [36656727736](https://github.com/akshatksingh18/akshatos/actions/runs/36656727736) | `4c49f4e23254a272f1742b5eebb73181c6af97ba4e5d4373c4634717a36c1acb` | **Candidate in `testing\`** — complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; not yet installed or phone-tested |
+| 28 | `akshatos-build-28-6c08c87\akshatos-ios-136` | `6c08c87` (#56) | [36328010157](https://github.com/akshatksingh18/akshatos/actions/runs/36328010157) | `544701ea48c630538f43bb48f3482ba6d393a12c20a1bb74202ec8fb7f1df324` | **Installed, not accepted** — complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, but linking the laptop inbox did nothing on the phone, so the inbox and Open in are removed in Build 29; removed from `testing\` when Build 29 arrived and reproducible from its run |
 | 27 | `akshatos-build-27-ebb44d3\akshatos-ios-133` | `ebb44d3` (#54) | [35925770220](https://github.com/akshatksingh18/akshatos/actions/runs/35925770220) | `744b7ed57d76259773f35d71b30196544bc8b58f91341f6cd676c76b17f0bb9f` | **Accepted, installed, current** — complete PR/main CI Gates, package inspection, checksum/local IPA validation, focused phone behavior and current-version automatic-refresh enrollment pass; files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-27-ebb44d3` |
 | 26 | `akshatos-build-26-7a4f639\akshatos-ios-129` | `7a4f639` (#52) | [35870794873](https://github.com/akshatksingh18/akshatos/actions/runs/35870794873) | `46904f57e6dba743e083b7813dc8aa788088aff841c046c264a39d04cc617b83` | Complete CI Gate, package inspection, checksum and local IPA validation passed; superseded by Build 27 and removed from the one-slot local testing cache; reproduce from Git/run if needed |
 | 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52 pre-merge candidate) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | Accepted Pushup/presentation baseline; superseded by Build 27 and removed from the one-slot local backup cache; reproduce from Git/run if needed |
@@ -152,15 +161,15 @@ left outstanding. The Build 24 entry under Phone findings records what passed; n
 
 One durable point from that pass, because it will come up again with a real book: **marks drawn into
 a page are not annotations and will not be hidden.** Grit is the example — import the cleaned copy
-rather than expecting PageVault to clear it. `../book-reader/features.md` owns the boundary.
+rather than expecting PageVault to clear it. `pagevault/features.md` owns the boundary.
 
 ## Phone findings
 
-Fixtures for PageVault passes come from `../book-reader/make-test-pdfs.py`, which writes them into a
+Fixtures for PageVault passes come from `pagevault/make-test-pdfs.py`, which writes them into a
 folder of your choosing. They are not kept on disk between passes: the set was 190 MB, almost all of
 it one synthetic scan, so it was cleared and is regenerated when a pass needs it. They are synthetic
 anyway, so a real scanned book is still needed for a memory verdict.
-`../book-reader/CLAUDE.md` owns what these findings mean for PageVault's gates.
+`pagevault/CLAUDE.md` owns what these findings mean for PageVault's gates.
 
 - **Build 12** (over Build 11, no uninstall): Done during both the ordinary cadence and a pending nudge
   starts a fresh full interval, the countdown survives background and force-close, buttons no longer
@@ -197,14 +206,14 @@ anyway, so a real scanned book is still needed for a memory verdict.
   a day — the routing contract in `hub-plan.md` holds on the device. The slider and the typed page
   agree, out-of-range numbers are refused, and jumping leaves the bookmark alone.
   The annotation hiding is confirmed too, against `07-highlight-boundary.pdf` from
-  `../book-reader/make-test-pdfs.py`, which carries both kinds of mark and renders them identically:
+  `pagevault/make-test-pdfs.py`, which carries both kinds of mark and renders them identically:
   the annotated pages (2, 3, 5) came up clean and the flattened page (4) kept its marks — the fix
   working and the boundary holding, in one import. Build 24 is fully accepted, and the stuck-mark
   defect from Build 22 is closed. The same pass then cleared everything PageVault had left: full-text
   search, the page themes with night inverting legibly, the highlights PDF export, Takeaways' own
   list, and — the gate held back to the end — **export and restore**, where a book removed from the
   library came back from a full export with its reading place and highlights intact.
-  `../book-reader/CLAUDE.md` owns what that leaves open; the short version is a clean-install restore
+  `pagevault/CLAUDE.md` owns what that leaves open; the short version is a clean-install restore
   (Akshat's call, since it means uninstalling), reading-data-only restore, and the Started shelf.
 - **Build 23** (installed over Build 21): the reworked highlighter, the search tint, Go to page from
   a Takeaways passage and the delete confirmation all work — Akshat called the set "perfect". One
@@ -237,8 +246,8 @@ anyway, so a real scanned book is still needed for a memory verdict.
   - Takeaways passages had no way to reach their page; tapping one did nothing.
   - The passage bin deleted with no confirmation, next to Go to page, so a mistap lost a passage.
   Akshat chose the fix: the highlighter now offers Highlight and Remove highlight explicitly rather
-  than inferring which is meant, and identity is geometric. `../book-reader/features.md` owns the
-  scope and `../book-reader/architecture.md` the mechanism. Search itself, the themes and the
+  than inferring which is meant, and identity is geometric. `pagevault/features.md` owns the
+  scope and `pagevault/architecture.md` the mechanism. Search itself, the themes and the
   highlights PDF export were still not tested. Export and restore are deliberately deferred until
   the features are finished.
 
