@@ -22,7 +22,9 @@ unchanged lifecycle engine. The broader edge-case,
 refresh/recovery and soak matrix remains open. The remaining full-product contract below
 is not all implemented, and cloud checks cannot establish real device behavior. Build 28 added
 PageVault's laptop inbox folder and Open in AkshatOS; after the inbox failed to link on the phone,
-Akshat asked for both to be removed, and working source 0.5.1 (29) removes them. The same source moves
+Akshat asked for both to be removed, and working source 0.6.0 (29) removes them. The same source adds
+the Body feature (`features/body/`, owned by `body-log.md`) with its own SwiftData store, photo
+files, and a weekly reminder under the `akshatos.body.` namespace routed by the app layer; it moves
 Pushup and Lift Log history onto their own month-grouped screens and builds Pushup day summaries in
 one pass instead of filtering the whole history per day, and replaces the Build-25 themed design
 system (gradients, glow, per-module colours, badges) with a minimal one in
@@ -358,7 +360,7 @@ The workflow builds AkshatOS from this repository. Build 25 contains the hub, Pu
 but no Lift Log or ReelVault. Build 26 is the first verified IPA containing Lift Log; Build 27 extends
 it and passed its own complete CI/package and local-validation gates. Keep
 Pushups handlers at host scope, namespace requests, and test notifications while other modules are
-foregrounded. One hub refresh must preserve all four modules' state.
+foregrounded. One hub refresh must preserve every module's state.
 
 
 The primary compiler is the public repository's GitHub Actions macOS runner because no local Mac

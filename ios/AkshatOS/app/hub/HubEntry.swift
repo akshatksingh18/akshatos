@@ -1,6 +1,6 @@
 /// Hub metadata contains no feature stores, persistence models, or business commands.
 enum HubRoute: String {
-    case squats, pageVault, liftLog, reelVault
+    case squats, pageVault, liftLog, body, reelVault
 }
 
 struct HubEntry: Identifiable {

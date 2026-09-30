@@ -38,6 +38,18 @@
       "UITests/PageVaultUITests.swift"
     ]
   },
+  "body": {
+    "domain_sources": [
+      "AkshatOS/features/body/domain/BodyLog.swift"
+    ],
+    "domain_test": "tests/body/main.swift",
+    "integration_tests": [
+      "UnitTests/BodyLogPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/BodyUITests.swift"
+    ]
+  },
   "liftlog": {
     "domain_sources": [
       "AkshatOS/features/liftlog/domain/LiftWorkout.swift"

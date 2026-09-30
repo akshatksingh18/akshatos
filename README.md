@@ -1,12 +1,13 @@
 # AkshatOS
 
 A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard,
-**PageVault** for its PDF library, or **Lift Log** to record strength sessions. ReelVault is reserved
+**PageVault** for its PDF library, **Lift Log** to record strength sessions, or **Body** for daily
+weight, weekly measurements and progress photos ([body-log.md](body-log.md)). ReelVault is reserved
 for later and WHOOP stays a separate app.
 
 **Current state:** Build 28 (0.5.0) added a PageVault laptop inbox folder and Open in AkshatOS; the
-inbox failed to link on the phone and Akshat asked for both to be removed. Working source 0.5.1 (29)
-removes them, gives Pushup and Lift Log history their own screens (Lift Log's reaching every
+inbox failed to link on the phone and Akshat asked for both to be removed. Working source 0.6.0 (29)
+removes them, adds the Body module, gives Pushup and Lift Log history their own screens (Lift Log's reaching every
 workout), shows every set of a last performance, and replaces the Build-25 "quest" theme with a
 clean, minimal design in plain words, notifications and icon included; it awaits CI and installation. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
 templates, same-mode last-performance references and active-set editing to Lift Log. PR #54 merged
@@ -169,7 +170,7 @@ safe.
 
 The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Pushups, PageVault, Lift Log, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
+Pushups, PageVault, Lift Log, Body, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates
@@ -179,7 +180,7 @@ The current target is AkshatOS; old downloaded standalone smoke files are not hu
 - Windows uses Sideloadly/Local Anisette to sign and refresh the cached IPA;
 - the permanent bundle ID, same Apple Account/team, early health checks, alerts, backup, and USB
   recovery rules must be preserved;
-- all four native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
+- all native feature modules will share one hub identity, IPA, permissions, and update; WHOOP
   keeps a separate identity/process. No paid membership or rotation is needed for two slots.
 
 The AkshatOS bundle ID is `com.akshatksingh18.akshatos`. Preserve it and the same Apple Account

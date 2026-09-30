@@ -27,7 +27,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos
         PRODUCT_NAME: AkshatOS
-        MARKETING_VERSION: "0.5.1"
+        MARKETING_VERSION: "0.6.0"
         CURRENT_PROJECT_VERSION: "29"
         GENERATE_INFOPLIST_FILE: "YES"
         INFOPLIST_KEY_CFBundleDisplayName: AkshatOS
@@ -35,6 +35,7 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "AkshatOS uses your current location once so you can choose and confirm your Home boundary."
+        INFOPLIST_KEY_NSCameraUsageDescription: "AkshatOS uses the camera only when you take a progress photo. Photos stay on this iPhone."
         INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: "AkshatOS uses one Home boundary to pause pushup reminders when you leave and resume them when you return, even when the app is closed."
         # Landscape is permitted only so the PageVault reader can rotate; `OrientationGate` keeps
         # every other screen portrait through the app delegate.

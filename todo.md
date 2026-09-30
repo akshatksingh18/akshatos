@@ -4,7 +4,8 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `../book-reader/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Working source 0.5.1 (29) removes Build 28's PageVault laptop inbox folder and Open
+**Current focus:** Working source 0.6.0 (29) adds the Body module (weight, weekly measurements,
+photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox folder and Open
 in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
 and Lift Log history onto their own screens with the full last-performance set list, and replaces the
 "quest" theme with a clean, minimal design in plain words. It needs its PR CI Gate, a validated
@@ -51,7 +52,7 @@ promotion are complete; the broader physical and refresh items below stay open. 
 - [x] **Pushup product shift in source.** Visible Squats copy is now Pushup Reminder across the hub,
       dashboard, notifications, settings, Home permission text and backups. Legacy `Squat*`
       code/storage and `squats.*` identifiers stay unchanged to preserve upgrades. The playful
-      "quest" presentation Build 25 added alongside it is superseded by 0.5.1 (29)'s minimal design.
+      "quest" presentation Build 25 added alongside it is superseded by 0.6.0 (29)'s minimal design.
 
 - [x] **Cloud pipeline and repository controls.** Source, inventory and workflow checks, registered
       domain suites, hosted persistence tests, UI navigation, device build, IPA inspection and

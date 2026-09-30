@@ -88,6 +88,17 @@ reader change needs its own device pass, owned by
 `../book-reader/CLAUDE.md`. OS-process/device restart and protected-device storage remain separate
 acceptance gates.
 
+Body is registered as its own feature suite. Its domain test covers day keys and impossible dates,
+weekly blocks from the measurement weekday, weight/inch validation and rounding, the fixed site
+identifiers, rolling and weekly averages, per-site change, the Navy formula against a hand
+computation, waist-to-height, photo cadence, CSV rows and backup validation/round trip. Hosted tests
+cover one weigh-in per day across reopening, week change, session save/edit/delete and change,
+refused values, sites from a newer build surviving an edit, estimates needing height, JPEG photo
+storage and deletion, unreadable images, a full folder backup restored with photos, a rejected
+backup changing nothing, the reminder following permission, and CSV. The UI test opens Body, the
+measurement form with its guidance, history and photos. Fixtures are synthetic; no personal
+measurement appears in tests.
+
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
 per-side load semantics, priority-ordered Upper/Lower definitions, exercise/set mutation and edit,
 undo, unperformed-template cleanup, finish-state enforcement, round-trip validation and backup

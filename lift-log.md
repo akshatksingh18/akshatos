@@ -13,7 +13,7 @@ and IPA validation. Akshat installed Build 27 and reports that it works well end
 focused physical-phone behavior pass. Sideloadly confirms current-version automatic-refresh
 enrollment at the expected final identity in automatic mode, with no error and a seven-day expiry;
 Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
-superseded. Working source 0.5.1 (29) moves history to its own screen holding every finished
+superseded. Working source 0.6.0 (29) moves history to its own screen holding every finished
 workout and shows every set of the last performance instead of "+N more"; it awaits CI and a
 phone pass. No
 private workout history is bundled in source or authorized for the repository's current public
@@ -38,7 +38,7 @@ remote.
 - Finished history shows every exercise and set using its original measurement meaning. Deleting a
   finished workout requires confirmation. The Lift Log screen carries one **History** row with the
   session count; it opens its own screen listing **every** finished workout by month, newest first,
-  in a lazy list. (Until 0.5.1 (29) the main screen listed only the latest 12, which left older
+  in a lazy list. (Until 0.6.0 (29) the main screen listed only the latest 12, which left older
   workouts unreachable in the app.) History is kept indefinitely: a workout's record is estimated at a
   few kilobytes from its shape (not measured), so years of sessions stay small, and nothing is pruned
   automatically.

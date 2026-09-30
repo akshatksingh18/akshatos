@@ -3,7 +3,8 @@
 Personal native iPhone hub: the home screen selects a feature, starting with Pushup Reminder.
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `../book-reader/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
-the local-only strength-session module, owned by `lift-log.md`; ReelVault is reserved for later and
+the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
+weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is reserved for later and
 WHOOP stays standalone. This repository evolved from Squat Reminder and now presents that
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
@@ -19,8 +20,10 @@ current-version enrollment, no error and a seven-day expiry. Build 27 is therefo
 accepted backup slot.
 Build 28 (0.5.0) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS, passed CI and
 artifact validation, and is installed with current-version enrollment. On the phone, linking the
-inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.5.1 (29)
-removes them (keeping only the serialized import path), moves Pushup Past quests and Lift Log history
+inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.6.0 (29)
+removes them (keeping only the serialized import path), adds the **Body** module (daily weight,
+eight-site weekly tape, weekly reminder, Navy estimate, progress photos, backup/CSV — `body-log.md`),
+moves Pushup and Lift Log history
 off their main screens onto month-grouped history screens (Lift Log's now reaching every workout, not
 just the latest 12), shows every set of a last performance instead of "+N more", replaces the
 stale "Preview 0.3.0" footer with the installed version, and replaces the Build-25 "quest" theme
@@ -46,6 +49,13 @@ every feature is physically verified.
 
 - `lift-log.md` — Lift Log product, plate-per-side data contract, privacy boundary, source layout
   and acceptance gates; read before changing the strength logger.
+- `body-log.md` — Body module product contract (weigh-ins, the eight tape sites, estimates, photos,
+  reminder, backup/CSV), privacy boundary, source layout and acceptance gates; read before changing it.
+- `ios/AkshatOS/features/body/` — Body module: `domain/BodyLog.swift`, `data/` (SwiftData store and
+  photo files), `services/BodyReminderService.swift`, `BodyLogStore.swift`, and `ui/`.
+- `ios/tests/body/main.swift`, `ios/UnitTests/BodyLogPersistenceTests.swift`, and
+  `ios/UITests/BodyUITests.swift` — registered Body domain, persistence/photo/backup/reminder and
+  navigation coverage.
 - `handoff.md` — new-session entry point, current implementation/evidence boundaries and recommended
   continuation order; read to resume, then use its linked owning specifications and setup guides.
 - `ci.md` — pipeline stages, docs-only PR classification, feature test registration, failure
@@ -182,7 +192,9 @@ every feature is physically verified.
   reminder behavior/storage, but not the process-wide notification delegate.
 - `ios/AkshatOS/Resources/` — app assets; existing icon generation path is unchanged.
 - `ios/scripts/check-boundaries.py` — source dependency/delegate guard and negative fixtures;
-  run locally and in CI. Logical boundaries, not compiler-enforced Swift packages.
+  run locally and in CI. Logical boundaries, not compiler-enforced Swift packages. Process-wide
+  delegates stay in the app coordinator; a UIKit representable's own `context.coordinator` (the Body
+  camera) is the one allowed view-local exception.
 - `ios/tests/squats/main.swift` — executable Pushups domain assertions run by the cloud workflow.
 - `ios/UITests/` — simulator hub/dashboard/PageVault navigation tests and screenshot attachments;
   test runner is not packaged in the device IPA and adds no installed app slot on Akshat's phone.
@@ -208,7 +220,7 @@ every feature is physically verified.
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder, PageVault, or Lift Log for its own
+- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, or Body for its own
   destination. Returning to the picker must not stop reminders. ReelVault remains visibly unavailable,
   not a fake app.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
@@ -424,7 +436,7 @@ every feature is physically verified.
 
 ### Accepted free-account app-slot portfolio
 
-- Install one native hub for Pushups, PageVault, Lift Log, and ReelVault, plus standalone WHOOP: two free slots.
+- Install one native hub for Pushups, PageVault, Lift Log, Body, and ReelVault, plus standalone WHOOP: two free slots.
   One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
   installation identity per module is required. Packaging is accepted; implementation is pending.
 - The hub's notification/geofence handlers belong to the application lifecycle, not the Pushups
@@ -433,7 +445,7 @@ every feature is physically verified.
   Pushups-owned requests. Never let navigation disable Home monitoring.
 - OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
   apply to the hub as a whole. Keep module stores/export logically separate and test cross-section
-  behavior. Deleting the hub removes all four modules' local data, so full recovery is mandatory.
+  behavior. Deleting the hub removes every module's local data, so full recovery is mandatory.
 - Use Windows Sideloadly, no phone-side host. Another signer is an explicit workflow choice; the
   spare slot is not automatic permission to add it. Free seven-day expiry/early refresh still apply.
 - `hub-plan.md` owns source/build ownership and identity reconciliation before coding.
@@ -601,7 +613,7 @@ The iPhone path can be described as working only when all of the following are t
   automation proves success rather than merely running, expiry risk raises a visible alert, and
   USB recovery has been rehearsed;
 - the common hub IPA can be signed by a fallback path without source changes, coexists with
-  standalone WHOOP in two free slots, and preserves all four modules across refresh/upgrade;
+  standalone WHOOP in two free slots, and preserves every module across refresh/upgrade;
 - Pushups actions and Home events work without opening its section, including while PageVault/Reels
   is visible, and their module transitions cannot cancel requests or delay durable action handling;
 - Android remains buildable as a fallback or is still explicitly documented as unverified—do not
@@ -644,7 +656,7 @@ data, device state, or durable release IPAs.
 - Treat each new hub feature as unverified until it passes its tests and physical-device run; do
   not describe intended behavior as tested behavior. Track iPhone and Android verification
   separately.
-- Preserve the local-only, single-user Pushups feature scope within the accepted four-module hub;
+- Preserve the local-only, single-user Pushups feature scope within the accepted multi-module hub;
   packaging consolidation does not add new product features or activate WHOOP.
 - **Design and wording stay clean, minimal and plain.** Akshat rejected the Build-25 gamified
   "quest" theme: no game metaphors (quests, portals, power-ups, combos, trophies, treasure) in the UI,

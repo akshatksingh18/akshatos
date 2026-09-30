@@ -93,7 +93,7 @@ cannot create duplicate schedules, duplicate sessions, or duplicate completion e
 ## Dashboard and visual direction
 
 **Clean and minimal, in plain words** (Akshat's standing direction, which replaced the Build-25
-"quest" theme in 0.5.1 (29)): a flat near-black background, flat cards with a hairline edge, the
+"quest" theme in 0.6.0 (29)): a flat near-black background, flat cards with a hairline edge, the
 standard system font, and one calm accent colour used sparingly for the thing that matters on a
 screen. No game metaphors anywhere — no quests, portals, power-ups, combos, trophies or treasure —
 in the UI or in notifications; labels say plainly what things are ("Log a set", "Daily goal",
@@ -257,7 +257,7 @@ Keep finalized daily summaries locally so the user can revisit past days. The da
 only a **History** row with the number of days kept; it opens its own screen listing days by
 month, newest first, with each month's set total and a check mark on days whose goal was reached, in a
 lazy list, and each day opens its recap. The dashboard never lists history itself, so it does not
-grow or slow down as days accumulate (implemented in 0.5.1 (29) source, not yet phone-verified).
+grow or slow down as days accumulate (implemented in 0.6.0 (29) source, not yet phone-verified).
 History is kept indefinitely and never pruned automatically: a day's record is estimated at a few
 kilobytes from its shape (not measured), so years of daily use stay in the low megabytes, and deleting
 completed history remains an explicit Settings action. Charts,

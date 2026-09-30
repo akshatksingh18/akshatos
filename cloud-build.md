@@ -23,7 +23,8 @@ installed it over Build 27 by Sideloadly; the database confirms version 0.5.0 at
 enrollment, no error and expiry on 2026-10-04 at 10:16 local. **Phone finding:** linking the laptop
 inbox did nothing — in the folder picker, tapping **Open** inside the synced folder had no effect.
 Akshat asked for the inbox and Open in AkshatOS to be removed rather than fixed, so Build 28 will not
-be promoted; Build 27 stays the accepted backup. Working source **0.5.1 (29)** removes both.
+be promoted; Build 27 stays the accepted backup. Working source **0.6.0 (29)** removes both and adds
+the Body module; it also adds the camera usage description to the Info.plist.
 **Build 27 / 0.4.0 (27)** adds mode guidance,
 priority-ordered Upper/Lower templates, same-mode last-performance references and active-set editing.
 PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate and published
@@ -53,8 +54,8 @@ owns build and device evidence.
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.5.1 (29)**; minimum iOS 17.
-  Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone); 0.5.1
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.6.0 (29)**; minimum iOS 17.
+  Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone); 0.6.0
   (29) removes the inbox and Open in, moves Pushup and Lift Log history to their own screens, shows
   every last-performance set, and replaces the "quest" theme with a minimal design (icon included);
   it is not built yet. The facts below describe the accepted Build 27.
