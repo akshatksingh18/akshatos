@@ -4,8 +4,9 @@
 Build 28 / 0.5.0 (28) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS; it is
 installed and enrolled, but linking the folder did nothing on the phone and Akshat asked for both
 features to be removed. Working source 0.5.1 (29), on branch `feature/remove-inbox-open-in`, removes
-them, moves Pushup Past quests and Lift Log history to their own month-grouped screens, and shows
-every set of a last performance; it needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+them, moves Pushup and Lift Log history to their own month-grouped screens, shows every set of a
+last performance, and replaces the "quest" theme with a clean, minimal design in plain words
+(notifications and icon included); it needs CI, an artifact and an install over Build 28. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -85,8 +86,9 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   save-after-every-mutation active-session recovery, set edit/undo/discard/delete controls,
   finished history, validated JSON recovery and CSV export. `lift-log.md` owns its
   product/privacy/acceptance contract; none of it is cloud- or phone-verified yet.
-- Homebase hub, Pushup power-up dashboard, PageVault story-quest library, shared atmospheric visual
-  components, refreshed generated icon, and app-lifetime services across navigation.
+- A plain hub list, Pushup dashboard, PageVault library and Lift Log on one minimal shared design
+  system (neutral surfaces, one accent, plain labels), a flat generated icon, and app-lifetime
+  services across navigation. The Build-25 "quest" theme is replaced in 0.5.1 (29); keep it plain.
 - Pushups lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
   normal-plus-59-nudge schedule with foreground replenishment, and one idle 9:00 AM start invitation
   that never auto-starts a day.
@@ -137,9 +139,10 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 29 removal:** after Akshat confirms the public push, pass the PR CI Gate, merge, validate
-   the main-run artifact into `testing\` (replacing Build 28), then install it over Build 28 without
-   uninstalling. Check that PageVault no longer shows the inbox button, that Past quests and Lift
+1. **Build 29:** after Akshat confirms the public push, pass the PR CI Gate, merge, validate the
+   main-run artifact into `testing\` (replacing Build 28), then install it over Build 28 without
+   uninstalling. Check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
+   notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line
    lists every set, that existing data is intact, and that current-version enrollment holds before
    promoting Build 29 to `backup\`.

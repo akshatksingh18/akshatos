@@ -55,8 +55,9 @@ owns build and device evidence.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.5.1 (29)**; minimum iOS 17.
   Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone); 0.5.1
-  (29) removes the inbox and Open in, moves Pushup and Lift Log history to their own screens and shows
-  every last-performance set, and is not built yet. The facts below describe the accepted Build 27.
+  (29) removes the inbox and Open in, moves Pushup and Lift Log history to their own screens, shows
+  every last-performance set, and replaces the "quest" theme with a minimal design (icon included);
+  it is not built yet. The facts below describe the accepted Build 27.
   Build 27 passed the complete PR and main-branch CI Gates, package inspection, checksum and local IPA
   validation. Build 27 is installed, phone-accepted, enrolled for current-version automatic refresh
   at the expected identity/mode, and retained in the local backup slot; `testing\` holds Build 28. Build
@@ -258,7 +259,7 @@ anyway, so a real scanned book is still needed for a memory verdict.
 5. Complete Apple verification, Developer Mode, and developer trust prompts as required. Require the
    signing-health check to print `ENROLLED` for the exact AkshatOS identity/current version and
    `IDENTITY` with mode `automatic`; a 100% one-off install does not satisfy the release gate.
-6. Open **AkshatOS**: the first screen must be the Homebase picker. Select **Pushup Reminder**; test back
+6. Open **AkshatOS**: the first screen must be the hub list. Select **Pushup Reminder**; test back
    navigation to the hub. Build 27 must also expose Lift Log and preserve its separate local store;
    follow `lift-log.md`'s disposable-session and JSON/CSV recovery pass. ReelVault must clearly say
    it is not available.

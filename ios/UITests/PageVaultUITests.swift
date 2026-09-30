@@ -10,8 +10,6 @@ final class PageVaultUITests: XCTestCase {
         app.buttons["open-pageVault"].tap()
 
         XCTAssertTrue(app.buttons["import-pdf"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Enter the vault."].exists,
-                      "The story-quest presentation is visible on an empty library")
         XCTAssertTrue(app.staticTexts["No books yet"].exists, "A fresh library states it is empty")
         XCTAssertFalse(app.staticTexts["pagevault-import-measurement"].exists,
                        "No import measurement is shown before anything is imported")

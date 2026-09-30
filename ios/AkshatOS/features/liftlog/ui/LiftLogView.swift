@@ -102,23 +102,21 @@ struct LiftLogView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            QuestBadge(text: "Strength log", icon: "dumbbell.fill", accent: Palette.gold)
-            Text("Every working set,\nwithout fake totals.")
-                .font(.system(.largeTitle, design: .rounded, weight: .black))
-            Text("Plates per side is the default. Bar, sled, and machine resistance stay separate unless you actually know them.")
-                .foregroundStyle(Palette.muted)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(Date(), format: .dateTime.weekday(.wide).month(.wide).day())
+                .font(.subheadline).foregroundStyle(Palette.muted)
+            Text("Loads are plates per side unless an exercise says otherwise.")
+                .font(.footnote).foregroundStyle(Palette.muted)
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("lift-log-header")
     }
 
     private var startCard: some View {
-        AccentSurface(accent: Palette.gold) {
-            Label("Ready for the next session", systemImage: "figure.strengthtraining.traditional")
-                .font(.title3.bold())
-            Text("Choose Upper or Lower. Your exercises load in priority order, ready for set entry.")
-                .foregroundStyle(Palette.muted)
+        Surface {
+            Text("No workout in progress").font(.headline)
+            Text("Choose Upper or Lower. Exercises load in priority order.")
+                .font(.subheadline).foregroundStyle(Palette.muted)
             Button("Start workout") { showingTemplatePicker = true }
                 .buttonStyle(ActionStyle(primary: true))
                 .accessibilityIdentifier("start-lift-workout")
@@ -128,7 +126,7 @@ struct LiftLogView: View {
 
     private func activeWorkout(_ workout: LiftWorkoutSession) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            AccentSurface(accent: Palette.gold) {
+            Surface {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Workout in progress").font(.title3.bold())
@@ -137,7 +135,7 @@ struct LiftLogView: View {
                     }
                     Spacer()
                     Text("\(workout.setCount) sets")
-                        .font(.headline.monospacedDigit()).foregroundStyle(Palette.gold)
+                        .font(.headline.monospacedDigit()).foregroundStyle(Palette.accent)
                 }
                 Text("Exercises are ordered from highest to lowest priority. Skip from the bottom when time is short.")
                     .font(.caption).foregroundStyle(Palette.muted)
@@ -159,7 +157,7 @@ struct LiftLogView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(exercise.name).font(.title3.bold())
-                    Text(exercise.loadMode.title).font(.caption).foregroundStyle(Palette.gold)
+                    Text(exercise.loadMode.title).font(.caption).foregroundStyle(Palette.accent)
                     if !exercise.equipmentNote.isEmpty {
                         Text(exercise.equipmentNote).font(.caption).foregroundStyle(Palette.muted)
                     }
@@ -228,7 +226,7 @@ struct LiftLogView: View {
                             .font(.caption).foregroundStyle(Palette.muted)
                     }
                     Spacer()
-                    Image(systemName: "chevron.right").foregroundStyle(Palette.gold)
+                    Image(systemName: "chevron.right").foregroundStyle(Palette.accent)
                 }
             }
         }
@@ -338,7 +336,7 @@ private struct LastPerformanceView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Last performance · \(reference.workoutDate.formatted(date: .abbreviated, time: .omitted))")
-                .font(.caption.weight(.semibold)).foregroundStyle(Palette.gold)
+                .font(.caption.weight(.semibold)).foregroundStyle(Palette.accent)
             Text(LiftLogStore.performanceSummary(reference.exercise))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(Palette.muted)

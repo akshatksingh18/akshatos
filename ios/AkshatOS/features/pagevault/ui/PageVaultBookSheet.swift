@@ -47,7 +47,7 @@ struct PageVaultBookSheet: View {
                         Text(status.label)
                         Spacer()
                         if book.status == status {
-                            Image(systemName: "checkmark").foregroundStyle(Palette.lime)
+                            Image(systemName: "checkmark").foregroundStyle(Palette.accent)
                         }
                     }
                 }

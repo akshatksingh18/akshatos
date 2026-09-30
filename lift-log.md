@@ -62,7 +62,7 @@ remote.
 - `ios/AkshatOS/features/liftlog/data/` — feature-owned SwiftData schema and repository.
 - `ios/AkshatOS/features/liftlog/LiftLogStore.swift` — save-before-publish commands, active-session
   recovery, JSON backup/restore and CSV export.
-- `ios/AkshatOS/features/liftlog/ui/` — Homebase destination, active workout, set entry and
+- `ios/AkshatOS/features/liftlog/ui/` — hub destination, active workout, set entry and
   recovery controls (`LiftLogView.swift`), and the month-grouped history screen with workout detail
   (`LiftLogHistoryView.swift`).
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and

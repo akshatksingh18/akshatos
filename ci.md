@@ -96,10 +96,10 @@ workout excluded, every finished workout reachable). Hosted SwiftData tests cove
 repository round trips and upsert behavior, save-after-every-mutation active-session recovery,
 template preloading, persisted editing, same-mode last-performance lookup with every set in its
 summary, history reaching more than 12 workouts, validated backup
-replacement and load-mode-preserving/CSV-escaped export. Its UI tests cover the Homebase entry,
+replacement and load-mode-preserving/CSV-escaped export. Its UI tests cover the hub entry,
 Lift Log destination, Upper-template start and the history screen. The Pushups domain test also
-covers Past quests' one-pass day list and month grouping, and a UI test opens Past quests on its
-own screen. Build 26 passed the complete macOS suite; Build 27's
+covers the History screen's one-pass day list and month grouping, and a UI test opens Pushup
+History on its own screen. Build 26 passed the complete macOS suite; Build 27's
 expanded scenarios passed the complete PR and clean-main macOS suites, including IPA inspection.
 
 A registry entry proves test wiring, not test quality or complete feature coverage. Each future

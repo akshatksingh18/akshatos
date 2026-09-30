@@ -33,7 +33,7 @@ struct PageVaultPageJumpView: View {
             VStack(spacing: 26) {
                 VStack(spacing: 6) {
                     Text("\(page)")
-                        .font(.system(size: 54, weight: .bold, design: .rounded).monospacedDigit())
+                        .font(.system(size: 54, weight: .semibold).monospacedDigit())
                         .accessibilityIdentifier("jump-target-page")
                     Text("of \(pageCount)")
                         .font(.subheadline).foregroundStyle(Palette.muted)
@@ -52,7 +52,7 @@ struct PageVaultPageJumpView: View {
                     } maximumValueLabel: {
                         Text("\(pageCount)").font(.caption2).foregroundStyle(Palette.muted)
                     }
-                    .tint(Palette.lime)
+                    .tint(Palette.accent)
                     .accessibilityIdentifier("jump-slider")
                     .onChange(of: target) { _, value in
                         let settled = min(max(Int(value.rounded()), 1), pageCount)

@@ -47,6 +47,6 @@ struct HomeSetupView: View {
                         }.disabled(store.homeDraft == nil || store.busy)
                     }
                 }
-        }.tint(Palette.lime)
+        }.tint(Palette.accent)
     }
 }

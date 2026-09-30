@@ -12,21 +12,19 @@ struct HubRootView: View {
 
     var body: some View {
         HubView(entries: [
-            HubEntry(id: .squats, title: "Pushup Reminder", subtitle: "Drop, press, and power up your day.",
-                     icon: "bolt.fill", isAvailable: true,
-                     status: squats.operational, detail: "\(squats.todayCount) pushup sets",
-                     statusIcon: squats.active == nil ? "sun.max" : "circle.fill"),
-            HubEntry(id: .pageVault, title: "PageVault", subtitle: "Open a portal. Keep what you find.",
+            HubEntry(id: .squats, title: "Pushup Reminder", subtitle: "Reminders for pushup sets",
+                     icon: "figure.strengthtraining.functional", isAvailable: true,
+                     status: squats.operational,
+                     detail: squats.todayCount == 1 ? "1 set today" : "\(squats.todayCount) sets today"),
+            HubEntry(id: .pageVault, title: "PageVault", subtitle: "PDF library",
                      icon: "book.closed", isAvailable: true,
-                     status: pageVault.books.isEmpty ? "Vault is waiting" : "Vault online",
-                     detail: pageVault.books.isEmpty ? "Add your first PDF" : "\(pageVault.books.count) books",
-                     statusIcon: "book"),
-            HubEntry(id: .liftLog, title: "Lift Log", subtitle: "Record every working set your way.",
-                     icon: "dumbbell.fill", isAvailable: true,
-                     status: liftLog.active == nil ? "Ready to train" : "Workout in progress",
-                     detail: "\(liftLog.finished.count) sessions · \(liftLog.totalSetCount) sets",
-                     statusIcon: "chart.line.uptrend.xyaxis"),
-            HubEntry(id: .reelVault, title: "ReelVault", subtitle: "A future portal for the good stuff.",
+                     status: pageVault.books.isEmpty ? "No books yet"
+                        : pageVault.books.count == 1 ? "1 book" : "\(pageVault.books.count) books"),
+            HubEntry(id: .liftLog, title: "Lift Log", subtitle: "Strength sessions",
+                     icon: "dumbbell", isAvailable: true,
+                     status: liftLog.active == nil ? "Ready" : "Workout in progress",
+                     detail: liftLog.finished.count == 1 ? "1 session" : "\(liftLog.finished.count) sessions"),
+            HubEntry(id: .reelVault, title: "ReelVault", subtitle: "Not available yet",
                      icon: "play.rectangle", isAvailable: false)
         ], path: $path) { route in
             switch route {

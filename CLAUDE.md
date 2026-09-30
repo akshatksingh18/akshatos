@@ -22,8 +22,10 @@ artifact validation, and is installed with current-version enrollment. On the ph
 inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.5.1 (29)
 removes them (keeping only the serialized import path), moves Pushup Past quests and Lift Log history
 off their main screens onto month-grouped history screens (Lift Log's now reaching every workout, not
-just the latest 12), shows every set of a last performance instead of "+N more", and replaces the
-stale "Preview 0.3.0" footer with the installed version. It awaits CI, a build and installation.
+just the latest 12), shows every set of a last performance instead of "+N more", replaces the
+stale "Preview 0.3.0" footer with the installed version, and replaces the Build-25 "quest" theme
+across the hub, every module, the notifications and the icon with a clean, minimal design in plain
+words (`features.md`). It awaits CI, a build and installation.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -59,9 +61,9 @@ every feature is physically verified.
 - `ios/AkshatOS/features/squats/domain/SquatAction.swift` — shared action commands and delivery receipts.
 - `ios/AkshatOS/features/squats/domain/SquatDaySummary.swift` — same-date aggregation, active/paused
   timing, goal status, detailed daily history, and the one-pass day list and month grouping behind
-  Past quests.
-- `ios/AkshatOS/features/squats/ui/SquatHistoryView.swift` — the Past quests screen (days by month)
-  and the day recap it shares with the end-of-day summary.
+  the History screen.
+- `ios/AkshatOS/features/squats/ui/SquatHistoryView.swift` — the Pushup History screen (days by
+  month) and the day summary it shares with the end-of-day sheet.
 - `ios/AkshatOS/features/squats/domain/SquatsBackup.swift` — versioned local JSON export/restore
   contract and whole-file validation.
 - `ios/AkshatOS/features/squats/data/SquatActionInbox.swift` — atomic, after-first-unlock action inbox.
@@ -171,7 +173,11 @@ every feature is physically verified.
   carried by a full export and restored, rendered into their own PDF, and refused when there are none.
 - `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
   phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
-- `ios/AkshatOS/shared/design-system/` — feature-independent colors and UI components.
+- `ios/AkshatOS/shared/design-system/` — feature-independent palette (neutrals plus one accent),
+  flat background, cards, progress ring and buttons; change the look here, not per screen.
+- `ios/scripts/generate-app-icon.swift` — draws the flat, minimal app icon on the CI runner. Core
+  Graphics draws with y pointing up, so the top of the icon is the largest y (the Build-25 icon's A
+  was drawn upside down because of this).
 - `ios/AkshatOS/features/squats/` — store, `domain/`, `data/`, `services/`, and `ui/`; owns
   reminder behavior/storage, but not the process-wide notification delegate.
 - `ios/AkshatOS/Resources/` — app assets; existing icon generation path is unchanged.
@@ -640,6 +646,10 @@ data, device state, or durable release IPAs.
   separately.
 - Preserve the local-only, single-user Pushups feature scope within the accepted four-module hub;
   packaging consolidation does not add new product features or activate WHOOP.
+- **Design and wording stay clean, minimal and plain.** Akshat rejected the Build-25 gamified
+  "quest" theme: no game metaphors (quests, portals, power-ups, combos, trophies, treasure) in the UI,
+  notifications or icon, one calm accent, flat surfaces, standard fonts, and labels that say plainly
+  what things are. `features.md` § Dashboard and visual direction owns the details.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
   Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily
   overview, and notification actions; keep optional Shortcuts automation distinct from the

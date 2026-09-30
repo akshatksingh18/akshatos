@@ -6,9 +6,10 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 
 **Current focus:** Working source 0.5.1 (29) removes Build 28's PageVault laptop inbox folder and Open
 in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
-and Lift Log history onto their own screens with the full last-performance set list. It needs its PR
-CI Gate, a validated artifact and an install over Build 28, then a phone check of Past quests, Lift
-history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+and Lift Log history onto their own screens with the full last-performance set list, and replaces the
+"quest" theme with a clean, minimal design in plain words. It needs its PR CI Gate, a validated
+artifact and an install over Build 28, then a phone check of the redesign and wording (notifications
+and icon included), Pushup history, Lift history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
 checksum/IPA validation. Akshat reports that the installed Build 27 works well end-to-end. Sideloadly
@@ -28,7 +29,7 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Done
 
-- [x] **Lift Log MVP in local source.** The Homebase exposes a separate local-only strength logger
+- [x] **Lift Log MVP in local source.** The hub exposes a separate local-only strength logger
       with one durable active session, hard-coded Upper/Lower templates in priority order,
       plates-per-side/per-hand/stack/added/total meanings and examples, same-mode last-performance
       references, active-set edit/undo, finished history, destructive confirmations, validated JSON
@@ -47,11 +48,10 @@ promotion are complete; the broader physical and refresh items below stay open. 
       Build 25 is promoted to the accepted recovery/refresh slot. The broader physical matrix below
       remains separate and is not implied by this focused acceptance.
 
-- [x] **Pushup product shift and playful presentation in source.** Visible Squats copy is now Pushup
-      Reminder across the hub, dashboard, notifications, settings, Home permission text and backups.
-      The hub is a Homebase, Pushups uses truthful power-up/quest feedback, PageVault uses story-quest
-      and treasure-shelf framing, and the generated icon carries the same module-orbit language.
-      Legacy `Squat*` code/storage and `squats.*` identifiers stay unchanged to preserve upgrades.
+- [x] **Pushup product shift in source.** Visible Squats copy is now Pushup Reminder across the hub,
+      dashboard, notifications, settings, Home permission text and backups. Legacy `Squat*`
+      code/storage and `squats.*` identifiers stay unchanged to preserve upgrades. The playful
+      "quest" presentation Build 25 added alongside it is superseded by 0.5.1 (29)'s minimal design.
 
 - [x] **Cloud pipeline and repository controls.** Source, inventory and workflow checks, registered
       domain suites, hosted persistence tests, UI navigation, device build, IPA inspection and

@@ -19,7 +19,7 @@ struct SquatHistoryView: View {
                         NavigationLink {
                             ScrollView { SquatDayRecap(day: day).padding(24) }
                                 .background(AppBackdrop())
-                                .navigationTitle("Quest recap")
+                                .navigationTitle("Summary")
                                 .navigationBarTitleDisplayMode(.inline)
                         } label: {
                             row(day)
@@ -36,16 +36,21 @@ struct SquatHistoryView: View {
         }
         .scrollContentBackground(.hidden)
         .background(AppBackdrop())
-        .navigationTitle("Past quests")
+        .navigationTitle("History")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private func row(_ day: SquatDaySummary) -> some View {
         AdaptiveRow {
-            Label(day.started.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
-                  systemImage: day.goalStatus == .reached ? "trophy.fill" : "clock.arrow.circlepath")
+            Text(day.started.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
         } trailing: {
-            Text("\(day.completedSets) pushup sets").monospacedDigit()
+            HStack(spacing: 6) {
+                Text(day.completedSets == 1 ? "1 set" : "\(day.completedSets) sets").monospacedDigit()
+                if day.goalStatus == .reached {
+                    Image(systemName: "checkmark").foregroundStyle(Palette.accent)
+                        .accessibilityLabel("goal reached")
+                }
+            }
         }
         .font(.subheadline)
         .accessibilityElement(children: .combine)
@@ -67,18 +72,16 @@ struct SquatDayRecap: View {
     @ScaledMetric(relativeTo: .largeTitle) private var countSize: CGFloat = 64
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            QuestBadge(text: "Quest recap", icon: "trophy.fill", accent: Palette.gold)
-            Text("Power gained.\nDay saved.").font(.system(.largeTitle, design: .rounded, weight: .black))
-            AccentSurface(accent: Palette.gold) {
-                Text("\(day.completedSets)").font(.system(size: countSize, weight: .bold, design: .rounded)).foregroundStyle(Palette.lime)
-                Text("pushup sets completed this day").foregroundStyle(Palette.muted)
-                Text(day.started.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
-                    .font(.headline)
+        VStack(alignment: .leading, spacing: 16) {
+            Text(day.started.formatted(.dateTime.weekday(.wide).month(.wide).day().year()))
+                .font(.title2.bold())
+            Surface {
+                Text("\(day.completedSets)").font(.system(size: countSize, weight: .semibold))
+                Text(day.completedSets == 1 ? "set completed" : "sets completed").foregroundStyle(Palette.muted)
                 Text(Self.goalDescription(day)).foregroundStyle(Palette.muted)
             }
             Surface {
-                Label("Time in your day", systemImage: "clock").font(.headline)
+                Text("Time").font(.headline)
                 Text("Started \(day.started.formatted(date: .omitted, time: .shortened))")
                 if let end = day.ended { Text("Ended \(end.formatted(date: .omitted, time: .shortened))") }
                 else { Text("Day still open") }
@@ -88,7 +91,7 @@ struct SquatDayRecap: View {
             }
             if !day.pauseSegments.isEmpty {
                 Surface {
-                    Label("Pause segments", systemImage: "pause.circle").font(.headline)
+                    Text("Pauses").font(.headline)
                     ForEach(day.pauseSegments) { pause in
                         AdaptiveRow {
                             Text("\(pause.started.formatted(date: .omitted, time: .shortened))–\(pause.ended.formatted(date: .omitted, time: .shortened))")
@@ -99,7 +102,7 @@ struct SquatDayRecap: View {
                 }
             }
             Surface {
-                Label("Daily timeline", systemImage: "list.bullet").font(.headline)
+                Text("Timeline").font(.headline)
                 if day.events.isEmpty { Text("No activity was logged.").foregroundStyle(Palette.muted) }
                 ForEach(day.events) { event in
                     AdaptiveRow {
@@ -129,9 +132,9 @@ struct SquatDayRecap: View {
     static func goalDescription(_ day: SquatDaySummary) -> String {
         switch day.goalStatus {
         case .notSet: return "No goal was set for this day."
-        case .reached: return "Quest cleared: \(day.completedSets)/\(day.goal ?? 0) pushup sets."
-        case .atRisk: return "Quest in progress: \(day.completedSets)/\(day.goal ?? 0) pushup sets."
-        case .missed: return "Quest not cleared: \(day.completedSets)/\(day.goal ?? 0) pushup sets."
+        case .reached: return "Goal reached: \(day.completedSets) of \(day.goal ?? 0)."
+        case .atRisk: return "In progress: \(day.completedSets) of \(day.goal ?? 0)."
+        case .missed: return "Goal missed: \(day.completedSets) of \(day.goal ?? 0)."
         }
     }
 }

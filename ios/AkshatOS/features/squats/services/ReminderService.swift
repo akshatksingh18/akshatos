@@ -42,9 +42,9 @@ struct ReminderSnapshot {
     static let automaticNudgeCount = 59
     static let scheduleVersion = 2
     static let featureDisplayName = "Pushup Reminder"
-    static let dailyStartTitle = "Your Pushup quest is ready"
-    static let regularTitle = "Pushup time — floor is yours"
-    static let automaticTitle = "Your Pushup quest is still waiting"
+    static let dailyStartTitle = "Pushup Reminder"
+    static let regularTitle = "Pushup time"
+    static let automaticTitle = "Pushup set still due"
     let center = UNUserNotificationCenter.current()
 
     static var activeIdentifiers: [String] {
@@ -152,7 +152,7 @@ struct ReminderSnapshot {
         guard !requests.contains(where: { $0.identifier == Self.dailyStart }) else { return }
         let content = UNMutableNotificationContent()
         content.title = Self.dailyStartTitle
-        content.body = "Open AkshatOS, start the quest, and charge today's power bar."
+        content.body = "Start your day when you're ready."
         content.sound = .default
         let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: 9, minute: 0), repeats: true)
         try await center.add(UNNotificationRequest(identifier: Self.dailyStart, content: content, trigger: trigger))
@@ -173,8 +173,8 @@ struct ReminderSnapshot {
         let content = UNMutableNotificationContent()
         content.title = automatic ? Self.automaticTitle : Self.regularTitle
         content.body = automatic
-            ? "Finish a set, then tap Done to bank it and return to your normal interval."
-            : "Crush a pushup set, then tap Done to bank the point."
+            ? "Do a set, then tap Done to get back to your normal interval."
+            : "Do a set, then tap Done."
         content.sound = .default
         content.categoryIdentifier = Self.categoryID
         content.userInfo = [

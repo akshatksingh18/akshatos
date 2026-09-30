@@ -11,5 +11,4 @@ struct HubEntry: Identifiable {
     let isAvailable: Bool
     var status = ""
     var detail = ""
-    var statusIcon = "circle.fill"
 }

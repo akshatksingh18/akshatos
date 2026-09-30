@@ -59,7 +59,7 @@ struct LiftWorkoutDetailView: View {
                     ForEach(workout.exercises) { exercise in
                         Surface {
                             Text(exercise.name).font(.title3.bold())
-                            Text(exercise.loadMode.title).font(.caption).foregroundStyle(Palette.gold)
+                            Text(exercise.loadMode.title).font(.caption).foregroundStyle(Palette.accent)
                             ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
                                 Text("Set \(index + 1): \(LiftLogStore.weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)")
                                     .font(.subheadline.monospacedDigit())
