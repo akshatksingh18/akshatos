@@ -103,6 +103,23 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
+- [ ] **Sideloadly daemon not running (after Build 29 testing).** The health check's startup
+      warning was true when checked: only the Sideloadly window was running, the daemon was not,
+      although its sign-in `Run` entry exists; its own log has not been written since 2026-09-18, so
+      why it stopped is unknown. Without it nothing auto-refreshes (WHOOP, last signed 2026-09-24,
+      expires around 2026-10-01). Also, the health task's logon trigger has no delay, so it can check
+      before the daemon has started and warn falsely. To do: find why the daemon stops (e.g. whether the
+      Sideloadly window stops it while open), restore it, and — with Akshat's approval, since it
+      changes a scheduled task — add a ~2-minute delay to the logon trigger. `setup.md` owns the detail.
+- [ ] **Move signing to a different Apple Account (after Build 29 testing).** Akshat reports Apple is
+      banning accounts used for sideloading and wants to switch accounts. Plan the transition for every
+      signed app (AkshatOS and WHOOP) before acting. Known impact: the final signed bundle IDs embed the
+      current team suffix (`scripts/signing-apps.json`), so a new account's team produces a different
+      app on the phone with an empty container — every module's data (Pushups, PageVault, Lift Log,
+      Body with photos) and WHOOP's must be exported and restored, and the old installs removed only
+      after restore is verified. Also covers: the new account's free limits (3 apps, 10 App IDs / 7
+      days), Sideloadly account and daemon enrollment, updating `signing-apps.json` and the health
+      check, re-proving refresh, and the recovery docs. Needs a written plan and Akshat's go-ahead.
 - [ ] **Run the physical-iPhone matrix.** Permission allow/deny/revoke, one-minute test interval,
       dashboard/notification actions while locked and backgrounded, Start/Pause/Resume/End,
       automatic overdue nudges and legacy-snooze migration,
