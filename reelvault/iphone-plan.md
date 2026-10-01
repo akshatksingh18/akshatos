@@ -1,9 +1,27 @@
 # ReelVault iPhone plan
 
-**State:** ReelVault is selected as a feature module in one native iPhone hub with Squat Reminder
-and PageVault; WHOOP stays standalone. iOS ReelVault is unbuilt; the hub is owned by `../`. The existing
-Android scaffold is unverified. This is an accepted packaging plan, not authorization to move
-repositories, change build identities, enroll in paid signing, or remove installed apps.
+**State:** ReelVault is a feature module of the AkshatOS hub; WHOOP stays standalone. Its first
+version is implemented in AkshatOS working source 0.9.0 (32) and not yet built or phone-verified;
+`README.md` says what it does and `architecture.md` how. Where the first version differs from the
+proposals below, the difference is listed under "First version versus this plan". The existing
+Android scaffold is unverified. This plan is not authorization to change build identities, enroll in
+paid signing, or remove installed apps.
+
+## First version versus this plan
+
+- Built as planned: copy-on-import from Photos and Files as files (never one large in-memory
+  value), a streamed fingerprint with duplicate detection, a playability check before a video
+  enters the library, staging then promotion with interrupted copies cleaned at launch, a versioned
+  SwiftData record per video, stable ids in the shuffle queue, at most three live players with only
+  the visible one playing, looping, tap to pause, headline editing, removal of the app's copy only,
+  and a full backup validated by size and checksum.
+- Different: the proposed "explain duplicated storage before importing large videos" is a line in
+  the empty state and the library, not a prompt per import. Import shows a spinner, with no
+  percentage or cancel. The backup is a plain folder restored by adding and updating, not an archive
+  with conflict prompts. The audio session is `.playback`, so sound plays with the ring switch on
+  silent; that choice is open to change after the phone pass.
+- Not done: the physical feasibility run in step 3 below, a low-storage or cloud-only-source test,
+  and the device-backup exclusion decision. `todo.md` lists them.
 
 ## Product scope
 

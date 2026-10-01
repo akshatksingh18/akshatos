@@ -120,6 +120,40 @@ import XCTest
         XCTAssertEqual(narrator.state, .stopped, "Turning pages after stopping does not start reading")
     }
 
+    func testAPageIsOnePassageAndASentenceCrossingThePageBreakIsSpokenWhole() throws {
+        let flowing = PageVaultNarrator(url: try makeBook(book), title: "Atomic Test Book",
+                                        pageCount: 3, defaults: defaults)
+        flowing.play(from: 0)
+        XCTAssertEqual(flowing.speaking,
+                       "The first sentence of page one is here. The second sentence follows it closely.",
+                       "The voice is given the page as one passage, not a sentence at a time")
+        flowing.stop()
+
+        let split = [
+            ["A full sentence here.", "This one runs over the"],
+            ["page break and ends there. Then a last one."]
+        ]
+        let narrator = PageVaultNarrator(url: try makeBook(split), title: "Atomic Test Book",
+                                         pageCount: 2, defaults: defaults)
+        var turned: [Int] = []
+        narrator.onPageTurn = { turned.append($0) }
+        narrator.play(from: 0)
+        XCTAssertEqual(narrator.speaking, "A full sentence here.",
+                       "The sentence that does not end on the page is held for the next page")
+        narrator.skip(1)
+        XCTAssertEqual(narrator.page, 1)
+        XCTAssertEqual(turned, [1])
+        XCTAssertEqual(narrator.speaking, "This one runs over the page break and ends there. Then a last one.",
+                       "The sentence is spoken whole across the page break")
+        XCTAssertNil(narrator.segment, "Its carried-over words are not on the page shown, so nothing is tinted yet")
+        narrator.skip(1)
+        XCTAssertEqual(narrator.segment?.spoken, "page break and ends there.")
+        narrator.skip(-1)
+        XCTAssertEqual(narrator.speaking, "This one runs over the page break and ends there. Then a last one.",
+                       "Back from the top of the page replays the sentence from its start")
+        narrator.stop()
+    }
+
     func testABookWithNoTextSaysSoInsteadOfPlaying() throws {
         let url = sandbox.appendingPathComponent("image-only.pdf")
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 400, height: 600))

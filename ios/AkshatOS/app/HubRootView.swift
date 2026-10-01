@@ -6,6 +6,7 @@ struct HubRootView: View {
     @ObservedObject var pageVault: PageVaultStore
     @ObservedObject var liftLog: LiftLogStore
     @ObservedObject var bodyLog: BodyLogStore
+    @ObservedObject var reelVault: ReelVaultStore
     let backup: FullBackupService
     @ObservedObject var navigator: HubNavigator
     let orientation: OrientationGate
@@ -30,8 +31,10 @@ struct HubRootView: View {
                      icon: "ruler", isAvailable: true,
                      status: bodyLog.todayWeight.map { String(format: "%.1f lb today", $0.pounds) } ?? "Not weighed today",
                      detail: bodyLog.thisWeekMeasurement == nil ? "Measure this week" : "Measured this week"),
-            HubEntry(id: .reelVault, title: "ReelVault", subtitle: "Not available yet",
-                     icon: "play.rectangle", isAvailable: false)
+            HubEntry(id: .reelVault, title: "ReelVault", subtitle: "Your videos",
+                     icon: "play.rectangle", isAvailable: true,
+                     status: reelVault.videos.isEmpty ? "No videos yet"
+                        : reelVault.videos.count == 1 ? "1 video" : "\(reelVault.videos.count) videos")
         ], path: $path) { route in
             switch route {
             case .squats:
@@ -47,14 +50,14 @@ struct HubRootView: View {
             case .backup:
                 FullBackupView(service: backup)
             case .reelVault:
-                // Unavailable entries are never links. No reel implementation is activated.
-                EmptyView()
+                ReelVaultView(store: reelVault)
             }
         }
         .task {
             await squats.refresh()
             liftLog.load()
             bodyLog.load()
+            reelVault.load()
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await squats.refresh() } }

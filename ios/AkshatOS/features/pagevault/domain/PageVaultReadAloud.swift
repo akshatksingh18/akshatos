@@ -11,6 +11,29 @@ struct PageVaultSpeechSegment: Equatable {
     var mark: PageVaultFindMark { PageVaultFindMark(page: page, offset: offset, length: length) }
 }
 
+/// What the voice is given for one page: a single continuous passage, so it keeps a natural flow
+/// across sentences instead of starting afresh at each one, with where every sentence begins in it
+/// so the reader can still tint the sentence being spoken.
+struct PageVaultSpeechPlan: Equatable {
+    struct Start: Equatable {
+        /// Position in `text`, counted in UTF-16 units as the speech engine reports progress.
+        var utf16: Int
+        /// The page sentence that starts here, or nil for words carried over from the page before.
+        var segment: Int?
+    }
+
+    var text: String
+    var starts: [Start]
+    /// A sentence left unfinished at the foot of the page. It is spoken with the next page, so a
+    /// sentence running over a page break is one sentence to the voice.
+    var carry: String?
+
+    /// The start in force at a position the voice has reached.
+    func start(atUTF16 location: Int) -> Start? {
+        starts.last { $0.utf16 <= location }
+    }
+}
+
 /// Turns a page's text layer into sentences worth speaking.
 ///
 /// PDF text arrives one printed line at a time, with running headers, footers and page numbers at
@@ -119,8 +142,10 @@ enum PageVaultReadAloud {
     }
 
     /// The region with line breaks turned into spaces, one character for one so offsets still line
-    /// up, except where a line is clearly shorter than the page's lines: the end of a paragraph or a
-    /// heading, which keeps its break so it is not run into the next sentence.
+    /// up, except at the end of a paragraph or a heading: a line clearly shorter than the page's
+    /// lines that either ends its sentence or is followed by a line starting with a capital or a
+    /// digit. Being short is not enough by itself, or text that arrives in narrow pieces would be
+    /// chopped into fragments.
     static func sentenceText(_ region: [Character]) -> [Character] {
         let text = String(region)
         let all = lines(text)
@@ -128,13 +153,58 @@ enum PageVaultReadAloud {
         let widths = all.map(\.length).sorted()
         let typical = widths.isEmpty ? 0 : widths[widths.count * 3 / 4]
         var keptBreaks = Set<Int>()
-        for line in all where Double(line.length) < Double(typical) * 0.6 {
-            keptBreaks.insert(line.offset + line.length)
+        for (position, line) in all.enumerated() where Double(line.length) < Double(typical) * 0.6 {
+            let next = position + 1 < all.count ? all[position + 1].text.first { !$0.isWhitespace } : nil
+            let startsAfresh = next.map { $0.isUppercase || $0.isNumber } ?? true
+            if !isOpenEnded(line.text) || startsAfresh {
+                keptBreaks.insert(line.offset + line.length)
+            }
         }
         return region.enumerated().map { index, character in
             guard character.isNewline else { return character }
             return keptBreaks.contains(index) ? "\n" : " "
         }
+    }
+
+    /// Whether text stops without ending its sentence, as the last words on a page often do.
+    static func isOpenEnded(_ spoken: String) -> Bool {
+        guard let last = spoken.last(where: { !$0.isWhitespace }) else { return false }
+        return !".!?\u{2026}:;\"\u{201D}\u{2019})]".contains(last)
+    }
+
+    /// One passage for the voice: the page's sentences from `index` on, after any words carried
+    /// over from the previous page. With `holdOpenTail`, a last sentence that does not end on this
+    /// page is left out and returned as `carry` for the next page's passage.
+    static func plan(segments: [PageVaultSpeechSegment], from index: Int, carryIn: String?,
+                     holdOpenTail: Bool) -> PageVaultSpeechPlan {
+        var pieces = Array(segments.enumerated().dropFirst(max(0, index)))
+        var carry: String?
+        if holdOpenTail, let last = pieces.last, isOpenEnded(last.element.spoken) {
+            carry = last.element.spoken
+            pieces.removeLast()
+        }
+        var text = ""
+        var starts: [PageVaultSpeechPlan.Start] = []
+        var afterCarry = false
+        if let carryIn, !carryIn.isEmpty, !pieces.isEmpty {
+            text = carryIn
+            starts.append(.init(utf16: 0, segment: nil))
+            afterCarry = true
+        }
+        for (position, piece) in pieces {
+            if afterCarry, text.hasSuffix("-"), piece.spoken.first?.isLowercase == true {
+                // A word hyphenated across the page break is one word again.
+                text.removeLast()
+            } else if !text.isEmpty {
+                // A heading or other line that stops without punctuation gets a breath, not a full stop.
+                let breath = !afterCarry && isOpenEnded(text) && !",\u{2014}-".contains(text.last ?? " ")
+                text += breath ? ", " : " "
+            }
+            afterCarry = false
+            starts.append(.init(utf16: text.utf16.count, segment: position))
+            text += piece.spoken
+        }
+        return PageVaultSpeechPlan(text: text, starts: starts, carry: carry)
     }
 
     private static let ligatures: [Character: String] = [

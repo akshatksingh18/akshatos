@@ -9,8 +9,10 @@ photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox fo
 in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
 and Lift Log history onto their own screens with the full last-performance set list, and replaces the
 "quest" theme with a clean, minimal design in plain words. Build 29 passed its PR/main CI Gates and
-artifact validation and is installed; Build 30 (full backup, month dropdowns) is validated in
-`testing\` and needs an install over it, then a phone check of the redesign and wording (notifications
+artifact validation and was installed; Build 31 (full backup, month dropdowns, Lift Log splits,
+PageVault read aloud) is installed over it and accepted by Akshat on the phone, including Build 29's
+redesign, Body and the notification icon after a restart. The text that follows records what Build 29 needed:
+an install over Build 28, then a phone check of the redesign and wording (notifications
 and icon included), Pushup history, Lift history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
@@ -104,28 +106,27 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
-- [ ] **Phone-check PageVault read aloud (Build 31).** Start on a page, hear the sentence tinted,
-      pages turning by themselves, back/forward a sentence, speed and voice, pause and resume, turn a
-      page by hand while playing and while paused, lock the screen and use the lock-screen and
-      headphone controls, a phone call pausing it, and leaving the reader stopping it. Note how
-      headers, page numbers, footnotes and any two-column pages sound in a real book; the bookmark
-      must not move by itself.
-- [ ] **Phone-check Lift Log splits (Build 31).** The three starting splits appear; add, rename,
-      reorder and delete a split and its exercises; start a split and an empty workout; Add exercise
-      during a workout; history shows the split name; existing workouts and last performance intact.
-- [ ] **Phone-check the month dropdowns (Build 30).** Pushups, Lift Log and Body history show one
-      dropdown per month with the newest open; Logged today opens and closes and lists every set.
-- [ ] **Phone-check the full backup (Build 30).** Back up everything to OneDrive in Files, confirm
-      the folder holds every module (PDFs and photos included), then restore it and check each module.
-      Prove a clean restore into an empty app during the Apple Account switch, before deleting the
-      old install. `hub-plan.md` § Full backup owns the contract.
+- [ ] **Phone-check the read-aloud voice (Build 32).** Build 31's controls, tint, page turns and
+      lock-screen controls work on the phone, but the voice sounded robotic and restarted its pitch
+      as if every few words began a sentence. Build 32 gives the voice a whole page as one passage
+      and carries a sentence across the page break. Check that it now flows, that the tint still
+      follows, that skip and pause still work, and whether an Enhanced or Premium voice is installed
+      (Settings → Accessibility → Spoken Content → Voices); the basic voice stays robotic whatever
+      the app does. The cause was inferred from the code, not heard, so report how it sounds.
+- [ ] **Phone-check ReelVault (Build 32).** Add videos from Photos and from Files (small and
+      large, portrait and landscape), write and edit headlines in the feed and the library, swipe
+      through at least two full rounds (every video once a round, never twice in a row), the video
+      looping until swiped, tap to pause and resume, sound only from the video on screen and how it
+      behaves with the ring switch on silent, leaving and returning to the app, removing a video,
+      airplane mode after import, a ReelVault backup and restore, and Back up everything including
+      it. Note memory or stutter with large videos and fast swipes.
 - [ ] **Watch the daemon restart path once.** The false startup warning came from the health task's
       logon run checking before the daemon had started (it starts about 40 seconds after sign-in);
       the logon trigger now waits two minutes. If the daemon is found stopped, the check now starts it
       and logs `WARN` instead of alerting. The daemon has since refreshed WHOOP unattended. Still open:
       see one real `WARN` restart in the health log, and why it stopped around 2026-09-18 is unknown.
       `setup.md` owns the detail.
-- [ ] **Move signing to a separate Apple Account (after Build 29 testing).** Planned in
+- [ ] **Move signing to a separate Apple Account.** Planned in
       `apple-account-switch.md`: new account (Akshat creates it), backups of every module and WHOOP,
       one app at a time into the new team with restore before removing the old install, then the
       health-check records and one unattended refresh. Waits for Akshat's go-ahead.

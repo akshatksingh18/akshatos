@@ -3,7 +3,7 @@
 Plan for signing AkshatOS and WHOOP with a dedicated Apple Account instead of Akshat's main one.
 `setup.md` owns weekly signing; this file owns only the one-time switch.
 
-**Status:** Planned, not started. Waits for Build 30 (the full backup) to be installed and checked, then Akshat creates the new
+**Status:** Planned, not started. Waits for Build 31 (which has the full backup) to be installed and checked, then Akshat creates the new
 account and gives the go-ahead. Nothing is blocked today: AkshatOS 0.6.0 installed on 2026-09-29 and
 WHOOP was refreshed by the daemon on 2026-09-27 under the current account.
 
@@ -45,7 +45,7 @@ one is blocked.
    everything, and in WHOOP its encrypted export, both into OneDrive in Files; confirm the folders
    are there. Do this
    before anything else, and redo it if a day passes.
-3. **AkshatOS.** In Sideloadly, add the new account, then install the cached Build 30 (or later) IPA,
+3. **AkshatOS.** In Sideloadly, add the new account, then install the cached Build 31 (or later) IPA,
    which has the full backup, with the usual settings (automatic bundle-ID mode, automatic refresh on). Trust the new developer under
    Settings → General → VPN & Device Management. The new AkshatOS opens empty — use Backup →
    Restore everything there, turn notifications back on, set up Home again, and check the data. Only then delete

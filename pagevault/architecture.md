@@ -168,9 +168,12 @@ identity fields stay required. A removed field needs nothing: unknown keys are i
 - Read-aloud (`services/PageVaultNarrator.swift`) opens its own `PDFDocument` on the main actor,
   reads one page's text layer at a time and hands it with its neighbours' top and bottom lines to the
   pure `domain/PageVaultReadAloud.swift`, which drops repeated headers/footers and page numbers,
-  splits sentences with offsets in characters, and builds the cleaned spoken text. One
-  `AVSpeechUtterance` per sentence; only the utterance it is waiting on can move reading on, so a
-  skip, stop or speed change never double-advances. The sentence is tinted through the reader
+  splits sentences with offsets in characters, builds the cleaned spoken text, and plans one passage
+  per page (`PageVaultSpeechPlan`: the text, where each sentence starts in UTF-16 units, and an
+  unfinished last sentence to carry to the next page). One `AVSpeechUtterance` per page passage,
+  because an utterance per sentence made the voice restart its pitch each time; the synthesizer's
+  will-speak callback maps its position back to a sentence for the tint. Only the utterance it is
+  waiting on can move reading on, so a skip, stop or speed change never double-advances. The sentence is tinted through the reader
   controller, which re-applies it to whichever page view becomes visible; page turns go through the
   pager's jump with the curl animated. The narrator owns its synthesizer's delegate (a small relay
   object; `check-boundaries.py` allows `synthesizer.delegate` only), and while reading it holds the

@@ -196,32 +196,43 @@ font resizing. The page image itself is never re-laid out.
   validation require no backend or network. A document provider is an import source, not a runtime
   dependency.
 
-## Read aloud (AkshatOS 0.8.0 (31), not yet phone-verified)
+## Read aloud (from AkshatOS 0.8.0 (31))
 
 Akshat's books are digital copies with a text layer, so the phone's own voice can read them like an
-audiobook. Implemented, covered by tests, not yet tried on the phone.
+audiobook. On the phone, Build 31's button, bar, tint, page turns and lock-screen controls work, but
+the voice sounded robotic and restarted its pitch as if every few words began a sentence. Build 31
+spoke one sentence per utterance; working source 0.9.0 (32) hands the voice a whole page as one
+passage (see the second bullet), not yet built or heard. The cause was inferred from the code, not
+measured on the phone, and the basic system voice is robotic whatever the app does.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
   above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and
   stop; the same button stops it too.
-- It reads one sentence at a time, tints the sentence being read on the page, and turns pages with
-  the curl as it goes. Turning a page by hand moves reading there, still playing or still paused;
+- The voice is given each page as one continuous passage and reports its progress, which moves the
+  tint from sentence to sentence. A last sentence that does not end on the page is held back and
+  spoken whole with the next page (a word hyphenated across the break is joined), so nothing is cut
+  at a page turn; its carried-over words are not tinted. A heading or other line without closing
+  punctuation gets a short breath rather than a full stop. Pages turn with the curl as it goes. Turning a page by hand moves reading there, still playing or still paused;
   play then starts at the top of that page. A page with no text is passed over.
 - It keeps reading with the screen locked and answers the lock screen, Control Center and headphone
   buttons (play, pause, next and previous sentence), showing the book and page. A phone call or
   another app's audio pauses it. Leaving the reader stops it.
 - Running headers and footers (a top or bottom line repeated on nearby pages), page numbers and
   roman numerals are skipped; words hyphenated across a line end are joined; ligatures are spelled
-  out. Footnotes, captions and unusual layouts are read as they come, and two-column pages may come
+  out. A line is treated as ending a paragraph or being a heading only when it is clearly short and
+  either ends its sentence or is followed by a line starting with a capital or digit, so text that
+  arrives in narrow lines is not chopped into fragments. Footnotes, captions and unusual layouts are read as they come, and two-column pages may come
   out in the wrong order.
-- Speeds 0.75× to 2× and the voice are remembered. "Best available" picks the highest-quality voice
+- Speeds 0.75× to 2× and the voice are remembered. When only the basic voice is installed, the first
+  play says once where the natural voices are. "Best available" picks the highest-quality voice
   installed for the phone's language; Enhanced and Premium voices are a free download in Settings →
   Accessibility → Spoken Content → Voices. Novelty and Personal Voice voices are not offered.
 - It never moves the book's place: only the bookmark does, as everywhere in the reader. Pausing
   leaves the page on screen, so tapping the bookmark keeps it.
 - Everything is on the phone: the system speech voice, no network, no account. A scanned book has
   no text and says so instead of playing; OCR stays out of scope.
-- The app declares the audio background mode for this, and nothing else uses it.
+- The app declares the audio background mode for this. Nothing else plays in the background:
+  ReelVault's videos stop when the app is not in front.
 
 ## v2 / optional improvements
 

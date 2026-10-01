@@ -4,8 +4,9 @@ Personal native iPhone hub: the home screen selects a feature, starting with Pus
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
-weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is reserved for
-later, with its plan and Android draft in `reelvault/`, and WHOOP stays standalone. Everything for
+weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is the local-only
+feed of Akshat's own videos with a headline each, owned by `reelvault/`, with its source in
+`ios/AkshatOS/features/reelvault/`; WHOOP stays standalone. Everything for
 the hub lives in this one folder and repository. The hub's **Backup** screen backs up or restores
 every module at once (`hub-plan.md` § Full backup). This repository evolved from Squat Reminder and now presents that
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
@@ -36,12 +37,20 @@ restored only after every part is checked, with every module required by CI to t
 (`hub-plan.md` § Full backup). It also turns the Pushups, Lift Log and Body history screens into
 one dropdown per month and Pushups' Logged today into a closed-by-default dropdown. PR #59 merged at
 `10357b9`; main run `36763493014` passed and artifact `akshatos-ios-144` passed local checksum, IPA
-validation and screenshot review. Build 30 waits in `testing\` for installation and its phone pass.
+validation and screenshot review. Build 30 was never installed and is superseded by Build 31.
 Working source 0.8.0 (31) replaces Lift Log's fixed Upper/Lower templates with splits Akshat edits in
 the app (starting with Lower day, Back and biceps day and Chest day), adds Add exercise during any
 workout and an empty workout (`lift-log.md`), and adds PageVault **read aloud**: a headphones button
 reads the book from the page on screen with the phone's own voice, turning pages and continuing with
-the screen locked (`pagevault/features.md` § Read aloud). It is not yet built or phone-verified.
+the screen locked (`pagevault/features.md` § Read aloud). PR #60 merged at `46445c5`; main run
+`36877588699` passed and artifact `akshatos-ios-147` passed local checksum, IPA validation and
+screenshot review. Akshat installed Build 31 and reports everything works on the phone, including
+Build 29's redesign, Body and the notification icon after a restart, except that the read-aloud voice
+sounds robotic and broken up. Sideloadly records 0.8.0 at the expected identity in automatic mode with
+current-version enrollment and no error, so Build 31 is promoted to the accepted backup slot.
+Working source 0.9.0 (32) adds the first **ReelVault** version (`reelvault/`) and hands the read-aloud
+voice a whole page as one passage, carrying a sentence across the page break, instead of a sentence
+at a time. It is not yet built or phone-verified.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -63,8 +72,9 @@ every feature is physically verified.
 - `pagevault/` — PageVault's product scope, deployment plan, phases, device findings and fixture
   generator; routed through `pagevault/CLAUDE.md`. Its source is in `ios/AkshatOS/features/pagevault/`.
   Merged in from the former private `book-reader` repository, which keeps the earlier history.
-- `reelvault/` — ReelVault's iPhone plan and the unverified Android draft app; routed through
-  `reelvault/CLAUDE.md`. Merged in from the former private `reels` repository, which keeps the
+- `reelvault/` — ReelVault's product scope, iPhone plan, architecture, open gates and the unverified
+  Android draft app; routed through `reelvault/CLAUDE.md`. Its source is in
+  `ios/AkshatOS/features/reelvault/`. Merged in from the former private `reels` repository, which keeps the
   earlier history.
 - `lift-log.md` — Lift Log product, plate-per-side data contract, privacy boundary, source layout
   and acceptance gates; read before changing the strength logger.
@@ -124,8 +134,7 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  27 is the accepted copy and `testing\` holds Build 30 (the full backup and month dropdowns), not
-  yet installed; Build 29 is on the phone.
+  31 is the accepted, installed copy and `testing\` is empty until Build 32 is built.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -199,6 +208,15 @@ every feature is physically verified.
   because identity compared captured text rather than the page area covered; it now offers Highlight
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
+- `ios/AkshatOS/features/reelvault/` — ReelVault: `domain/ReelVault.swift` (the video record,
+  headline and file-name rules, the shuffle bag, the backup manifest and restore plan;
+  Foundation-only), `data/` (versioned SwiftData store and streamed copy-on-import file storage with
+  backup staging), `services/ReelVideoInspector.swift` (is it a playable video, and how long),
+  `ReelVaultStore.swift`, `ReelVaultBackupPart.swift`, and `ui/` (the feed, its small player pool,
+  the library, and the add-from-Photos/Files buttons). `reelvault/` owns scope and gates.
+- `ios/tests/reelvault/main.swift`, `ios/UnitTests/ReelVaultPersistenceTests.swift`, and
+  `ios/UITests/ReelVaultUITests.swift` — registered ReelVault domain, storage/backup and navigation
+  coverage.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
   splits Akshat edits in the app (`data/LiftSplitStorage.swift`, `ui/LiftSplitsView.swift`, which
   also holds the Add exercise form), store, entry/edit UI, the month-grouped history screen
@@ -263,9 +281,8 @@ every feature is physically verified.
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, or Body for its own
-  destination. Returning to the picker must not stop reminders. ReelVault remains visibly unavailable,
-  not a fake app.
+- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, Body, or ReelVault
+  for its own destination. Returning to the picker must not stop reminders.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
 
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), use

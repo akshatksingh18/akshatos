@@ -112,12 +112,28 @@ system sheets, which only the phone exercises.
 
 PageVault read-aloud adds domain assertions (sentences with character offsets, repeated
 headers/footers, page numbers and roman numerals skipped, line-end hyphens joined only before a
-lowercase word, short heading lines kept apart, ligatures and soft hyphens) and hosted
+lowercase word, short heading lines kept apart, narrow lines not chopped into fragments, ligatures
+and soft hyphens, and the one-passage-per-page plan: sentence starts, a sentence held back and
+carried across the page break, a hyphenated word joined across it, a heading's breath) and hosted
 `PageVaultReadAloudTests` on generated PDFs: reading from a page past its header and page number with
 the offset matching PDFKit's text, skipping across pages and turning them, pause/resume/stop,
-following a hand page turn while paused and playing, a text-less book saying so, and the remembered
-speed. Real speech, the lock screen, headphones and interruptions are phone checks.
+following a hand page turn while paused and playing, a page handed to the voice as one passage, a
+sentence spoken whole across a page break, a text-less book saying so, and the remembered speed. Real speech, the lock screen, headphones and interruptions are phone checks.
 `validate-ipa.py` also requires the audio background mode and no other.
+
+ReelVault is registered as its own feature suite. Its domain test covers the shuffle with a seeded
+generator (empty, one video, every video once a round over many seeds, never twice in a row across
+rounds, a video removed or added during a round), headline and file-name rules, whole-library
+validation, the backup manifest (round trip, newer version, garbage, invalid content) and the
+restore plan (additions by fingerprint, headline updates, a blank headline never overwriting).
+Hosted tests use real files and a real store per simulated phone: copy-on-import surviving the
+original's deletion and a reopen, the same video refused even when two imports arrive at once, a
+non-video refused by the real inspector with nothing left behind, a real H.264 file generated in the
+test accepted with its length, headline clean-up and persistence, removal deleting only the app's
+copy, the feed's rounds, a backup restored into a fresh library byte-for-byte, a damaged or missing
+video restoring nothing, restoring onto a video already present only updating its headline, and the
+hub's full backup carrying ReelVault. The UI test opens ReelVault and its library from the hub.
+Picking from Photos or Files, real playback, sound and memory under large videos are phone checks.
 
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
 per-side load semantics, the starting splits and split validation (trimming, names, case-insensitive

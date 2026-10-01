@@ -18,7 +18,8 @@ workout and shows every set of the last performance instead of "+N more"; it pas
 phone pass. Working source 0.8.0 (31) replaces the hard-coded Upper/Lower templates with **splits
 Akshat edits in the app** (starting with Lower day, Back and biceps day and Chest day, since the
 old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
-and keeps each workout's split name in history; it is not yet built or phone-verified. No
+and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
+reports working on the phone. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
 

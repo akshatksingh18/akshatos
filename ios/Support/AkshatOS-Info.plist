@@ -3,7 +3,7 @@
 <!--
   Only the keys Xcode cannot generate from INFOPLIST_KEY_ build settings. Xcode merges this file
   with the generated keys (GENERATE_INFOPLIST_FILE stays on). The audio background mode is what
-  lets PageVault keep reading aloud with the screen locked; nothing else plays audio.
+  lets PageVault keep reading aloud with the screen locked; ReelVault pauses when not in front.
 -->
 <plist version="1.0">
 <dict>

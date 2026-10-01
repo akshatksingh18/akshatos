@@ -2,7 +2,11 @@ import AVFoundation
 import MediaPlayer
 import PDFKit
 
-/// Reads a book aloud with the phone's own voice, from a page onward, one sentence at a time.
+/// Reads a book aloud with the phone's own voice, from a page onward.
+///
+/// Each page is handed to the voice as one continuous passage, and a sentence that runs over a
+/// page break is spoken whole with the next page, so the voice keeps a natural flow instead of
+/// starting afresh at every sentence. The voice reports its progress, which moves the tint.
 ///
 /// It turns pages as it goes, keeps going with the screen locked, and answers the lock screen,
 /// Control Center and headphone buttons while it is reading. It never moves the book's place: only
@@ -14,6 +18,7 @@ import PDFKit
     private enum Keys {
         static let speed = "pagevault.readAloud.speed"
         static let voice = "pagevault.readAloud.voice"
+        static let voiceTip = "pagevault.readAloud.voiceTipShown"
     }
 
     @Published private(set) var state: State = .stopped
@@ -48,8 +53,15 @@ import PDFKit
     private var document: PDFDocument?
     private var texts: [Int: String] = [:]
     private var segments: [PageVaultSpeechSegment] = []
+    /// The sentence being spoken, or -1 while speaking words carried over from the previous page.
     private var index = 0
-    /// The one utterance whose end should move reading on. Anything else finishing — a sentence
+    /// The passage being spoken and where each sentence starts in it.
+    private var plan: PageVaultSpeechPlan?
+    /// Words from the previous page's unfinished last sentence that open the current passage.
+    private var carriedIn: String?
+    /// What was last handed to the voice. Read by tests; the voice itself cannot be heard there.
+    private(set) var speaking = ""
+    /// The one utterance whose end should move reading on. Anything else finishing — a passage
     /// cut short by skip, stop or a speed change — is ignored.
     private var current: AVSpeechUtterance?
     private var commands: [(MPRemoteCommand, Any)] = []
@@ -67,6 +79,9 @@ import PDFKit
         synthesizer.delegate = relay
         relay.finished = { [weak self] utterance in
             Task { @MainActor in self?.finished(utterance) }
+        }
+        relay.reached = { [weak self] location, utterance in
+            Task { @MainActor in self?.reached(location, in: utterance) }
         }
     }
 
@@ -87,7 +102,8 @@ import PDFKit
         // actually starts.
         if self.page != page { onPageTurn?(self.page) }
         begin()
-        speakCurrent()
+        suggestBetterVoiceOnce()
+        speak(from: 0, carryIn: nil)
     }
 
     /// The reader was turned by hand: reading moves to that page, still playing or still paused.
@@ -100,6 +116,7 @@ import PDFKit
         cancelSpeech()
         guard loadFirstReadable(from: target) else { return }
         index = 0
+        carriedIn = nil
         segment = segments.first
         if page != target { onPageTurn?(page) }
         updateNowPlaying()
@@ -130,26 +147,39 @@ import PDFKit
     func skip(_ step: Int) {
         guard state != .stopped else { return }
         cancelSpeech()
+        state = .playing
+        if index < 0 {
+            // In the words carried over the page break: forward is this page's first sentence, back
+            // is the sentence before the one that ran over.
+            if step < 0, loadLastReadable(before: page) {
+                onPageTurn?(page)
+                speak(from: max(0, segments.count - 2), carryIn: nil)
+            } else {
+                speak(from: 0, carryIn: nil)
+            }
+            return
+        }
         let target = index + step
         if target < 0 {
-            guard loadLastReadable(before: page) else { index = 0; speakCurrent(); return }
-            index = segments.count - 1
+            guard loadLastReadable(before: page) else { speak(from: 0, carryIn: nil); return }
             onPageTurn?(page)
+            speak(from: segments.count - 1, carryIn: nil)
         } else if target >= segments.count {
             guard loadFirstReadable(from: page + 1) else { finish(); return }
-            index = 0
             onPageTurn?(page)
+            speak(from: 0, carryIn: nil)
         } else {
-            index = target
+            speak(from: target, carryIn: nil)
         }
-        state = .playing
-        speakCurrent()
     }
 
     func stop() {
         cancelSpeech()
         state = .stopped
         segment = nil
+        plan = nil
+        carriedIn = nil
+        index = 0
         end()
     }
 
@@ -187,17 +217,30 @@ import PDFKit
 
     // MARK: - Reading
 
+    /// Says the passage from the sentence reading has reached, as after a pause that could not be
+    /// continued, or a speed or voice change.
     private func speakCurrent() {
-        guard index < segments.count else {
-            guard loadFirstReadable(from: page + 1) else { finish(); return }
-            index = 0
-            onPageTurn?(page)
-            speakCurrent()
+        speak(from: max(0, index), carryIn: index < 0 ? carriedIn : nil)
+    }
+
+    /// Hands the voice the rest of this page from `start` as one passage. A last sentence that
+    /// does not end on this page is held back and spoken with the next page.
+    private func speak(from start: Int, carryIn: String?) {
+        let hasNext = nextReadablePage(after: page) != nil
+        let made = PageVaultReadAloud.plan(segments: segments, from: start, carryIn: carryIn,
+                                           holdOpenTail: hasNext)
+        guard !made.text.isEmpty else {
+            // Only the unfinished last sentence was left: it belongs to the next page's passage.
+            moveOn(carry: made.carry)
             return
         }
-        let next = segments[index]
-        segment = next
-        let utterance = AVSpeechUtterance(string: next.spoken)
+        plan = made
+        carriedIn = carryIn
+        let first = made.starts.first?.segment
+        index = first ?? -1
+        setSegment(first.map { segments[$0] })
+        speaking = made.text
+        let utterance = AVSpeechUtterance(string: made.text)
         utterance.voice = voice
         utterance.rate = min(AVSpeechUtteranceMaximumSpeechRate,
                              max(AVSpeechUtteranceMinimumSpeechRate,
@@ -208,14 +251,41 @@ import PDFKit
         updateNowPlaying()
     }
 
+    /// Turns to the next page with text and reads on, opening with any words carried over.
+    private func moveOn(carry: String?) {
+        guard loadFirstReadable(from: page + 1) else { finish(); return }
+        onPageTurn?(page)
+        speak(from: 0, carryIn: carry)
+    }
+
     private func finished(_ utterance: AVSpeechUtterance) {
         guard utterance === current, state == .playing else { return }
         current = nil
-        index += 1
-        speakCurrent()
+        moveOn(carry: plan?.carry)
     }
 
-    /// Says the current sentence again from its start, as after a speed or voice change.
+    /// The voice has reached a position in the passage: the tint follows to that sentence.
+    private func reached(_ location: Int, in utterance: AVSpeechUtterance) {
+        guard utterance === current, let start = plan?.start(atUTF16: location) else { return }
+        let reachedIndex = start.segment ?? -1
+        guard reachedIndex != index else { return }
+        index = reachedIndex
+        setSegment(start.segment.flatMap { $0 < segments.count ? segments[$0] : nil })
+    }
+
+    private func setSegment(_ value: PageVaultSpeechSegment?) {
+        if segment != value { segment = value }
+    }
+
+    /// The basic voice every iPhone starts with sounds robotic. Said once: where the natural ones are.
+    private func suggestBetterVoiceOnce() {
+        guard !defaults.bool(forKey: Keys.voiceTip),
+              !Self.voices().contains(where: { $0.quality != .default }) else { return }
+        defaults.set(true, forKey: Keys.voiceTip)
+        notice = "This phone only has the basic voice, which sounds robotic. For a natural voice, download a free Enhanced or Premium one in Settings → Accessibility → Spoken Content → Voices → English, then pick it from the speed menu here."
+    }
+
+    /// Starts again from the sentence being read, as after a speed or voice change.
     private func restartSentence() {
         guard state == .playing else { return }
         cancelSpeech()
@@ -269,6 +339,15 @@ import PDFKit
             candidate += 1
         }
         return false
+    }
+
+    private func nextReadablePage(after start: Int) -> Int? {
+        var candidate = start + 1
+        while candidate < pageCount {
+            if !sentences(on: candidate).isEmpty { return candidate }
+            candidate += 1
+        }
+        return nil
     }
 
     private func loadLastReadable(before end: Int) -> Bool {
@@ -347,8 +426,15 @@ import PDFKit
 /// state and the synthesizer's callbacks are not formally isolated.
 final class PageVaultSpeechRelay: NSObject, AVSpeechSynthesizerDelegate {
     var finished: ((AVSpeechUtterance) -> Void)?
+    var reached: ((Int, AVSpeechUtterance) -> Void)?
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         finished?(utterance)
+    }
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+                           willSpeakRangeOfSpeechString characterRange: NSRange,
+                           utterance: AVSpeechUtterance) {
+        reached?(characterRange.location, utterance)
     }
 }

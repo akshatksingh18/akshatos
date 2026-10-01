@@ -31,9 +31,10 @@ the library came back from a full export with its reading place and highlights i
 the gate Akshat deliberately held to the end and, with it, v1's last unverified feature. What remains
 is a clean-install restore, which means uninstalling and is his call, plus reading-data-only restore
 and the Started shelf, neither of which the device rounds covered. Reading streaks were removed at his request.
-**Read aloud** (AkshatOS 0.8.0 (31), not yet built or phone-verified): a headphones button reads the
-book aloud from the page on screen with the phone's own voice, sentence by sentence with the sentence
-tinted, turning pages and continuing with the screen locked; `features.md` § Read aloud.
+**Read aloud** (from AkshatOS 0.8.0 (31)): a headphones button reads the book aloud from the page on
+screen with the phone's own voice, tinting the sentence, turning pages and continuing with the screen
+locked. On the phone its controls work but Build 31's voice sounded robotic and broken up; 0.9.0 (32)
+speaks a page as one passage and is not yet heard on the phone. `features.md` § Read aloud.
 **Being removed:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
 phone, linking the folder did nothing, and Akshat asked for both to be removed; AkshatOS Build 29
 takes them out (see the laptop-to-phone decision below). PDFs still reach PageVault through the
