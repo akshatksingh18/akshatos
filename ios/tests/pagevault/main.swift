@@ -582,7 +582,7 @@ print("PASS: 7 theme assertions (stored values, labels, default, inversion, reti
 func spokenRange(_ text: String, _ segment: PageVaultSpeechSegment) -> String {
     String(Array(text)[segment.offset..<(segment.offset + segment.length)])
 }
-let readPage = "The Habit Loop 47\nIt was a bright cold day in April, and the clocks were strik-\nning thirteen. Winston Smith hurried home.\nShort line.\nThen another sentence follows here.\n47"
+let readPage = "The Habit Loop 47\nIt was a bright cold day in April, and the clocks were strik-\ning thirteen. Winston Smith hurried home.\nShort line.\nThen another sentence follows here.\n47"
 let readNeighbours = [["thehabitloop", "nextpagebody"], ["thehabitloop"]]
 let readSegments = PageVaultReadAloud.segments(page: 3, text: readPage, neighbours: readNeighbours)
 assert(readSegments.map(\.spoken) == [
