@@ -145,13 +145,15 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 29:** the validated candidate is `..\final-ipas\akshatos\testing\akshatos-build-29-2637ea1`.
-   It is installed over Build 28 and enrolled. Check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
+1. **Build 30, then Build 29's checks:** the validated candidate is
+   `..\final-ipas\akshatos\testing\akshatos-build-30-10357b9` (0.7.0: full backup, month dropdowns);
+   Build 29 is installed and enrolled. Install Build 30 over it without uninstalling, check the backup
+   and dropdowns per `todo.md`, and check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line
    lists every set, that the Body module passes `body-log.md`'s phone checks (the camera prompt
    appears only when a photo is taken), and that existing data is intact before
-   promoting Build 29 to `backup\`.
+   promoting Build 30 to `backup\`.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.

@@ -34,8 +34,9 @@ words (`features.md`). Build 29 passed PR/main CI (PR #57, `2637ea1`) and local 
 Working source 0.7.0 (30) adds the hub's full backup: one folder with every module's own backup,
 restored only after every part is checked, with every module required by CI to take part
 (`hub-plan.md` § Full backup). It also turns the Pushups, Lift Log and Body history screens into
-one dropdown per month and Pushups' Logged today into a closed-by-default dropdown. It is not yet
-built or phone-verified.
+one dropdown per month and Pushups' Logged today into a closed-by-default dropdown. PR #59 merged at
+`10357b9`; main run `36763493014` passed and artifact `akshatos-ios-144` passed local checksum, IPA
+validation and screenshot review. Build 30 waits in `testing\` for installation and its phone pass.
 Working source 0.8.0 (31) replaces Lift Log's fixed Upper/Lower templates with splits Akshat edits in
 the app (starting with Lower day, Back and biceps day and Chest day), adds Add exercise during any
 workout and an empty workout (`lift-log.md`). It is not yet built or phone-verified.
@@ -118,7 +119,8 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  27 is the accepted copy and `testing\` holds the installed Build 29 awaiting its phone pass.
+  27 is the accepted copy and `testing\` holds Build 30 (the full backup and month dropdowns), not
+  yet installed; Build 29 is on the phone.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
