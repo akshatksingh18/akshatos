@@ -1,27 +1,36 @@
 # TODO / known gaps
 
-The iPhone plan is primary; iOS implementation is not activated. Android remains an unverified
-fallback. `iphone-plan.md` owns the proposed implementation and physical acceptance details.
+The first iPhone version is implemented in AkshatOS working source 0.9.0 (32) and passes nothing
+on a phone yet. Android remains an unverified fallback. `iphone-plan.md` owns the plan and the
+physical acceptance details; `README.md` says what the first version does.
 
-## iPhone activation and delivery gates
+## iPhone gates
 
 - [x] Shared hub source/build owner and identity selected in `../hub-plan.md`: `../`.
-      ReelVault implementation is still deferred; Squats comes first and WHOOP stays separate.
 - [x] Consolidated into the AkshatOS repository's `reelvault/` folder (the former private `reels`
       repository keeps the earlier history); the Android source is preserved here.
-- [ ] On activation, integrate ReelVault as a native module under `../ios/AkshatOS/features/`
-      rather than a standalone target, with media and signing exclusions checked first.
-- [ ] Build/download/checksum the common hub Release IPA and pass its manual Sideloadly USB open test.
+- [x] Integrated as a native module under `../ios/AkshatOS/features/reelvault/`, not a standalone
+      target, with its own versioned store and file folder.
+- [x] The library, headline, shuffle, loop and pause flow with versioned local storage, with
+      zero/one/many-video shuffle and additions/deletions mid-round covered by tests.
+- [x] Full media-and-headline backup and restore, and the hub's full backup through a
+      `HubBackupPart` (`../hub-plan.md` § Full backup).
+- [ ] Pass the cloud build and install it (Build 32), then the phone checks in `../todo.md`:
+      Photos and Files import with small and large real videos, playback, sound, the silent switch,
+      offline use, interruption, memory and stutter under fast swipes.
+- [ ] Import feedback for large videos: a copy shows only a spinner, with no percentage or cancel.
+- [ ] A cloud-only Photos or Files video that has to download first, corrupt media, an unsupported
+      codec and low storage are handled by refusing the import with a message, but only the
+      corrupt-file and duplicate paths are tested; try the rest on the phone.
+- [ ] Decide whether the video copies stay in the phone's own device backup (they do now, like
+      PageVault's PDFs) once the library's real size is known.
+- [ ] A clean-install restore, which means uninstalling and is Akshat's call; it comes for free with
+      the Apple Account switch.
+- [ ] Verify same-ID refresh, upgrade/migration, expiry repair, two refresh cycles and retained
+      video/headline data.
 
-- [ ] Prove file-based Photos/Files import and AVFoundation playback with actual large-video,
-      offline, memory, interruption, corrupt-media, and low-storage tests.
-- [ ] Implement the accepted library/headline/shuffle/loop/pause flow and versioned local storage;
-      test zero/one/many-video shuffle and additions/deletions/headline updates mid-cycle.
-- [ ] Implement full media+metadata export and clean-install restore before daily use/rotation, and
-      join the hub's full backup with a `HubBackupPart` (`../hub-plan.md` § Full backup); CI blocks
-      the module until it does.
-- [ ] Verify same-ID refresh, upgrade/migration, expiry repair, approved portfolio coexistence,
-      two refresh cycles, alerts, USB recovery, and retained video/headline data.
+Not built, by the accepted scope: favorites, a manual reshuffle button, a mute toggle, auto-advance
+when a video ends, remembering the position inside a video, and thumbnails in the library.
 
 ## Android fallback gaps (deferred)
 

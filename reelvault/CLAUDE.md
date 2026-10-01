@@ -1,16 +1,17 @@
 # ReelVault
 
-Personal, local-only ReelVault feature for the planned native iPhone hub: select owned videos,
-add a headline to each, and browse them as a vertical reel alongside Squats and PageVault. The existing Kotlin/Compose Android scaffold is preserved
+Personal, local-only ReelVault module of the native AkshatOS iPhone hub: select owned videos,
+add a headline to each, and browse them as a vertical reel. The existing Kotlin/Compose Android scaffold is preserved
 as an unverified fallback. Personal sideloading only: no backend, analytics, account, or store release.
 
-**Status:** iPhone planning — no iOS source, cloud workflow, IPA, or device verification exists.
-Android remains an unverified scaffold. Moves to iOS Scaffold only when Akshat activates the
-shared hub cloud-build/install spike; daily use additionally requires media/recovery and signing gates.
+**Status:** First iPhone version implemented in AkshatOS working source 0.9.0 (32), with domain,
+storage/backup and navigation tests; not yet built by CI, installed, or tried on the phone. Its source
+is in `../ios/AkshatOS/features/reelvault/`. It becomes daily-use once Build 32 passes the phone
+checks in `../todo.md`. Android remains an unverified scaffold.
 
 ## Files
 
-- `README.md` — intended user behavior and activation/setup instructions.
+- `README.md` — what the first iPhone version does, and the Android fallback's setup.
 - `iphone-plan.md` — iPhone feature plan, shared portfolio capacity gate, proposed media/storage
   design, private cloud-build/Sideloadly workflow, and physical-device acceptance phases.
 - `architecture.md` — stack, source layout, and non-obvious design decisions; read before changing

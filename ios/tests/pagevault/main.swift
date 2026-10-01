@@ -624,3 +624,52 @@ assert(PageVaultReadAloud.spokenText("well-\nknown") == "wellknown" && PageVault
 assert(PageVaultReadAloud.edgeKeys("Title 3\nbody\nmore body\nend\nTitle 4") == ["title", "body", "end", "title"],
        "Edge keys are the top and bottom lines reduced to their letters")
 print("PASS: 14 read-aloud assertions (sentences, headers, page numbers, hyphens, headings, offsets, cleanup)")
+
+
+// Read aloud as one passage a page, so the voice flows across sentences and across page breaks.
+func spokenOnly(_ text: String) -> PageVaultSpeechSegment {
+    PageVaultSpeechSegment(page: 0, offset: 0, length: text.count, spoken: text)
+}
+let passage = PageVaultReadAloud.plan(segments: readSegments, from: 0, carryIn: nil, holdOpenTail: true)
+assert(passage.text == readSegments.map(\.spoken).joined(separator: " ") && passage.carry == nil,
+       "A page of finished sentences is one passage with nothing held back")
+assert(passage.starts.map(\.segment) == [0, 1, 2, 3] && passage.starts[0].utf16 == 0)
+assert(passage.start(atUTF16: passage.starts[2].utf16 + 3)?.segment == 2 && passage.start(atUTF16: 0)?.segment == 0,
+       "A position the voice reports maps back to its sentence")
+assert(PageVaultReadAloud.plan(segments: readSegments, from: 2, carryIn: nil, holdOpenTail: true).text
+       == "Short line. Then another sentence follows here.", "Reading can start from any sentence")
+
+let runsOver = [spokenOnly("First one ends."), spokenOnly("This one runs over the")]
+let held = PageVaultReadAloud.plan(segments: runsOver, from: 0, carryIn: nil, holdOpenTail: true)
+assert(held.text == "First one ends." && held.carry == "This one runs over the",
+       "A sentence that does not end on the page is held for the next page")
+let lastPage = PageVaultReadAloud.plan(segments: runsOver, from: 0, carryIn: nil, holdOpenTail: false)
+assert(lastPage.text == "First one ends. This one runs over the" && lastPage.carry == nil,
+       "With no next page nothing is held back")
+let onlyTail = PageVaultReadAloud.plan(segments: runsOver, from: 1, carryIn: nil, holdOpenTail: true)
+assert(onlyTail.text.isEmpty && onlyTail.carry == "This one runs over the")
+
+let nextPage = [spokenOnly("page break and ends."), spokenOnly("Next.")]
+let carried = PageVaultReadAloud.plan(segments: nextPage, from: 0, carryIn: "This one runs over the", holdOpenTail: true)
+assert(carried.text == "This one runs over the page break and ends. Next.",
+       "The carried words and the rest of their sentence are spoken as one")
+assert(carried.starts.map(\.segment) == [nil, 0, 1] && carried.starts[1].utf16 == "This one runs over the ".utf16.count,
+       "The carried words belong to no sentence on this page; the page's own start after them")
+assert(PageVaultReadAloud.plan(segments: [spokenOnly("national trade grew.")], from: 0, carryIn: "The inter-",
+                               holdOpenTail: false).text == "The international trade grew.",
+       "A word hyphenated across the page break is joined")
+assert(PageVaultReadAloud.plan(segments: [spokenOnly("Chapter One"), spokenOnly("The morning was quiet.")], from: 0,
+                               carryIn: nil, holdOpenTail: false).text == "Chapter One, The morning was quiet.",
+       "A heading gets a breath, not a full stop")
+assert(PageVaultReadAloud.isOpenEnded("runs over the") && PageVaultReadAloud.isOpenEnded("and then,")
+       && !PageVaultReadAloud.isOpenEnded("It ended. ") && !PageVaultReadAloud.isOpenEnded("she said.\u{201D}")
+       && !PageVaultReadAloud.isOpenEnded(""), "Open-ended means no closing punctuation")
+
+let narrow = "It was a\nbright cold\nday in april\nand the clocks\nwere striking\nthirteen."
+let narrowSegments = PageVaultReadAloud.segments(page: 0, text: narrow, neighbours: [])
+assert(narrowSegments.map(\.spoken) == ["It was a bright cold day in april and the clocks were striking thirteen."],
+       "Text that arrives in narrow lines is one sentence, not a fragment a line: \(narrowSegments.map(\.spoken))")
+let shortMidSentence = "The committee met on a rainy Tuesday morning to discuss\nthe plan\nand everyone agreed that the budget needed a careful second review."
+assert(PageVaultReadAloud.segments(page: 0, text: shortMidSentence, neighbours: []).count == 1,
+       "A short line in the middle of a sentence does not split it")
+print("PASS: 13 read-aloud passage assertions (one passage, carry across pages, hyphen, heading, narrow lines)")

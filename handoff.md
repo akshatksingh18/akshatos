@@ -7,7 +7,7 @@ features to be removed. Source 0.6.0 (29) adds the
 Body module (`body-log.md`), removes
 them, moves Pushup and Lift Log history to their own month-grouped screens, shows every set of a
 last performance, and replaces the "quest" theme with a clean, minimal design in plain words
-(notifications and icon included); Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and is installed from `testing\` over Build 28 with current-version enrollment; its phone pass is pending. Working source 0.7.0 (30), on branch `feature/full-backup`, adds the hub's full backup, which CI requires every module to join (`hub-plan.md` § Full backup), and month dropdowns for Pushups, Lift Log and Body history plus a Logged today dropdown; it is merged as PR #59. Working source 0.8.0 (31), on branch `feature/lift-splits`, makes Lift Log's splits editable in the app (`lift-log.md`); branch `feature/read-aloud`, on top of it, adds PageVault read aloud (`pagevault/features.md` § Read aloud). Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+(notifications and icon included); Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and is installed from `testing\` over Build 28 with current-version enrollment; its phone pass is pending. Working source 0.7.0 (30), on branch `feature/full-backup`, adds the hub's full backup, which CI requires every module to join (`hub-plan.md` § Full backup), and month dropdowns for Pushups, Lift Log and Body history plus a Logged today dropdown; it is merged as PR #59. Source 0.8.0 (31), merged as PR #60, makes Lift Log's splits editable in the app (`lift-log.md`) and adds PageVault read aloud (`pagevault/features.md` § Read aloud); Build 31 is installed, accepted by Akshat on the phone and in `backup\`. Working source 0.9.0 (32), on branch `feature/reelvault`, adds the first ReelVault version (`reelvault/`) and reads a page aloud as one passage after Build 31's voice sounded robotic and broken up. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -68,11 +68,10 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
 - Launch into an app picker; select Pushup Reminder, PageVault, Lift Log, or Body for its own destination.
-  This is not a combined dashboard. ReelVault/Reels remains an unavailable planned card.
+  This is not a combined dashboard. ReelVault's first version is in working source 0.9.0 (32).
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
   visuals and notifications plus PageVault's refreshed presentation are accepted in Build 25.
-  ReelVault stays deferred.
   The movement feature's remaining physical/refresh items stay open and are not superseded by PageVault work.
   Native source for both media modules goes into this hub. WHOOP stays standalone.
 - One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
@@ -145,15 +144,13 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 30, then Build 29's checks:** the validated candidate is
-   `..\final-ipas\akshatos\testing\akshatos-build-30-10357b9` (0.7.0: full backup, month dropdowns);
-   Build 29 is installed and enrolled. Install Build 30 over it without uninstalling, check the backup
-   and dropdowns per `todo.md`, and check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
+1. **Build 32:** build, validate and install 0.9.0 (32) over the accepted Build 31, then run its
+   phone checks in `todo.md` (read-aloud voice, ReelVault). For reference, Build 29's checks were: the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line
    lists every set, that the Body module passes `body-log.md`'s phone checks (the camera prompt
    appears only when a photo is taken), and that existing data is intact before
-   promoting Build 30 to `backup\`.
+   promoting it; those passed with Build 31.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.

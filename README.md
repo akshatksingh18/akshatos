@@ -2,14 +2,15 @@
 
 A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard,
 **PageVault** for its PDF library, **Lift Log** to record strength sessions, or **Body** for daily
-weight, weekly measurements and progress photos ([body-log.md](body-log.md)). ReelVault is reserved
-for later and WHOOP stays a separate app.
+weight, weekly measurements and progress photos ([body-log.md](body-log.md)), or **ReelVault** for a
+feed of your own videos with a headline each ([reelvault/](reelvault/README.md)). WHOOP stays a
+separate app.
 
 **Current state:** Build 28 (0.5.0) added a PageVault laptop inbox folder and Open in AkshatOS; the
 inbox failed to link on the phone and Akshat asked for both to be removed. Working source 0.6.0 (29)
 removes them, adds the Body module, gives Pushup and Lift Log history their own screens (Lift Log's reaching every
 workout), shows every set of a last performance, and replaces the Build-25 "quest" theme with a
-clean, minimal design in plain words, notifications and icon included; Build 29 passed CI and artifact validation and is installed; its phone pass is pending. Working source 0.7.0 (30) adds a **Backup** screen on the hub that backs up or restores every module in one folder, which every future module must join ([hub-plan.md](hub-plan.md)), and turns history into one dropdown per month and Pushups' Logged today into a dropdown. Working source 0.8.0 (31) lets you edit Lift Log's splits in the app, add exercises during any workout and start an empty workout ([lift-log.md](lift-log.md)), and adds PageVault **read aloud** with the phone's own voice ([pagevault/features.md](pagevault/features.md)). Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
+clean, minimal design in plain words, notifications and icon included; Build 29 passed CI and artifact validation and is installed; its phone pass is pending. Working source 0.7.0 (30) adds a **Backup** screen on the hub that backs up or restores every module in one folder, which every future module must join ([hub-plan.md](hub-plan.md)), and turns history into one dropdown per month and Pushups' Logged today into a dropdown. Working source 0.8.0 (31) lets you edit Lift Log's splits in the app, add exercises during any workout and start an empty workout ([lift-log.md](lift-log.md)), and adds PageVault **read aloud** with the phone's own voice ([pagevault/features.md](pagevault/features.md)); Build 31 is installed and accepted. Working source 0.9.0 (32) adds the first ReelVault version and makes read-aloud speak a page as one flowing passage. Version 0.4.0 (27) adds concise measurement guidance, priority-ordered Upper/Lower
 templates, same-mode last-performance references and active-set editing to Lift Log. PR #54 merged
 at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including registered domain and
 hosted simulator tests, simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133`
@@ -46,8 +47,8 @@ build skipping, and the server-enforced `main` protection. Green CI is not physi
 App composition, display-only hub, shared styling and the Pushup Reminder feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- A plain hub listing Pushup Reminder, PageVault and Lift Log, with ReelVault shown as not available
-  yet; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
+- A plain hub listing Pushup Reminder, PageVault, Lift Log, Body and ReelVault, with a Backup row
+  for all of them; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
 - Lift Log asks Upper or Lower at workout start, preloads the confirmed exercises in priority order,
   shows the last finished performance for the same exercise/mode, and edits active sets. It
   preserves per-side/per-hand/stack/added/total meanings, saves after every mutation, recovers

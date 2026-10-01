@@ -1,8 +1,43 @@
 # ReelVault Architecture
 
-**State:** iPhone-first plan; no iOS implementation exists. Android source is an unverified fallback.
+**State:** The first iPhone version is implemented in AkshatOS working source 0.9.0 (32), not yet
+built or phone-verified. Android source is an unverified fallback.
 
-## Planned iPhone architecture
+## iPhone implementation
+
+Source: `../ios/AkshatOS/features/reelvault/`.
+
+- `domain/ReelVault.swift` (Foundation-only): `ReelVideo` (id, the app copy's file name, headline,
+  import date, duration, size, SHA-256 fingerprint); headline and file-name rules; whole-library
+  validation; `ReelShuffleBag`; the backup manifest; and `ReelRestorePlan`, which recognises a video
+  by fingerprint so a restore adds what is missing and only updates headlines on what is here.
+- `ReelShuffleBag` keeps a queue of ids, the ids already played this round, and the last one shown.
+  Each call takes the library's current ids: removed ids drop out, an id neither queued nor played
+  is inserted at a random place in the round, an empty queue starts a new shuffled round, and a
+  first entry equal to the last one shown is swapped away. The generator is injected, so tests use a
+  seeded one.
+- `data/`: `ReelVaultSchemaV1` holds one row per video with a JSON payload, in its own `ReelVault`
+  store. `ReelVaultStorage` streams a picked file into `Incoming/` in one-megabyte chunks while
+  hashing it, promotes a checked copy into `Media/<uuid>.<ext>`, clears abandoned staging at load,
+  and stages a backup folder in `Outgoing/` (kept out of device backup). The media copies
+  themselves stay in the phone's device backup, like PageVault's PDFs.
+- `services/ReelVideoInspector.swift` asks AVFoundation whether the copy is playable, has a video
+  track and has a finite length. It sits behind a protocol so storage tests can use a stand-in.
+- `ReelVaultStore.swift` (main actor): imports run one after another, so two copies of one video
+  cannot both pass the duplicate check; a video is published only after its copy is promoted and
+  its record saved, and a failed save removes the copy. Restore stages and verifies every added file
+  before the library changes, and rolls back anything it added if a later step fails.
+  `ReelVaultBackupPart.swift` is its `HubBackupPart`.
+- `ui/`: `ReelFeedView` is a vertically paging scroll view of feed pages, each one appearance of a
+  video with its own id, extended from the shuffle two pages ahead. `ReelPlayerPool` gives the page
+  on screen and its two neighbours an `AVQueuePlayer` with an `AVPlayerLooper`, releases the rest,
+  and plays only the page on screen (unmuted); neighbours wait muted at their first frame.
+  `ReelPlayerLayer` shows an `AVPlayerLayer` with no system controls. Playback stops while paused,
+  while the headline is being edited, and while the scene is not active. The pool sets the audio
+  session to `.playback`/`.moviePlayback` on appear and deactivates it on leaving. No delegate is
+  used anywhere in the module.
+
+## Earlier iPhone plan notes
 
 `iphone-plan.md` owns the proposed SwiftUI/AVFoundation/AVKit stack, file-backed Photos/Files
 copy-on-import, app-private media, versioned local metadata, export/restore, and device gates.

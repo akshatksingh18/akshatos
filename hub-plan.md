@@ -5,8 +5,9 @@ build. PageVault is active and phone-accepted through Build 24; Akshat explicitl
 a local-only strength utility. Build 27 is cloud/package, locally and phone verified with its fixed
 Upper/Lower workflow; current-version automatic-refresh enrollment also passes, and its artifact is
 the accepted recovery/refresh copy. `lift-log.md` owns it. Body (weight, weekly measurements,
-progress photos) is a local-only module in working source, owned by `body-log.md`. ReelVault
-remains a later module and WHOOP stays standalone.
+progress photos) is a local-only module, owned by `body-log.md`. ReelVault's first version (a
+feed of Akshat's own videos with headlines) is in working source 0.9.0 (32), owned by `reelvault/`
+and not yet built or phone-verified. WHOOP stays standalone.
 Build/phone progress belongs in `cloud-build.md`, not this integration contract.
 
 ## Installed applications
@@ -29,8 +30,8 @@ App composition/navigation lives under `ios/AkshatOS/app/`, reusable UI under `s
 feature under `features/<feature>/`. Features must not depend on other features or the host;
 the host wires their entry points. `architecture.md` owns exact boundaries and checks.
 
-- Use one native SwiftUI host and its feature modules (Pushups, PageVault, Lift Log, Body, and the
-  reserved ReelVault); module names need not be separate
+- Use one native SwiftUI host and its feature modules (Pushups, PageVault, Lift Log, Body, and
+  ReelVault); module names need not be separate
   application targets. Keep existing feature requirements and Android fallbacks intact.
 - A simple home/section selector opens each experience. Load PDF documents and video players only
   when needed and release them on exit; preserve each module's state when switching.
@@ -93,8 +94,8 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
   and installation evidence are owned by [the build guide](cloud-build.md). No retained
   feature data is being migrated; do not generalize that exception to future data-bearing updates.
 - Launch into a hub app-selection screen, then select **Pushup Reminder** for its dashboard.
-  PageVault opens its own PDF library and Lift Log opens its own workout logger; ReelVault stays a
-  clearly unavailable planned card and does not open a fake app.
+  PageVault opens its own PDF library, Lift Log its own workout logger, Body its log and ReelVault
+  its video feed.
   Returning to the hub must leave the Pushups session and scheduling untouched.
 - Generate one AkshatOS Xcode target from `akshatos/ios/project.yml` and build through its
   macOS workflow. Ordinary Release IPA, payload inspection and SHA-256, no signing secrets in CI.
@@ -112,14 +113,16 @@ It is implemented and covered by hosted tests but not yet phone-verified.
   mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version, and one
   entry per part: the module's id, name and item) beside each module's own, unchanged backup —
   today `pushups.json`, `pagevault/` (manifest and every PDF; left out when the library is empty),
-  `lift-log.json` and `body/` (records, photos, height and measurement day). A part lifted out of
+  `lift-log.json`, `body/` (records, photos, height and measurement day) and, from 0.9.0 (32),
+  `reelvault/` (manifest and every video; left out when there are none). A part lifted out of
   the folder still restores from inside its own module. A module that cannot be read stops the
   backup rather than leaving a silently incomplete folder.
 - **Restore everything** takes that folder, reads the index, and checks every listed part with the
   module's own validation before anything changes; one missing, damaged or unknown part (from a
   module this build does not have) stops the whole restore. After confirmation each part applies:
   Pushups, Lift Log and Body are replaced by the backup; PageVault adds missing books and gives the
-  rest the backup's place and status. The result names what was restored and anything that was not.
+  rest the backup's place and status; ReelVault adds missing videos and gives the rest the backup's
+  headline. The result names what was restored and anything that was not.
 - Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
   of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.
 
@@ -137,11 +140,11 @@ It is implemented and covered by hosted tests but not yet phone-verified.
   build and fails when any folder under `features/` has no `HubBackupPart` conformance or is not
   listed in that registry, and the service refuses duplicate ids.
 
-**Adding a module (for example ReelVault):** give it its own export/validate/restore first, add
+**Adding a module (as ReelVault was):** give it its own export/validate/restore first, add
 `<Module>BackupPart.swift` with a new `backupID`, list the store in `FullBackupService(parts:)`,
 extend `FullBackupTests` so the round trip fills and checks the new module and
 lists its id, and update this section's part list and `ci.md`. CI blocks the merge until the first
-two are done. Large media (ReelVault's videos) goes inside its part the same way PageVault's PDFs do.
+two are done. Large media goes inside its part, as PageVault's PDFs and ReelVault's videos do.
 
 ## Refresh and recovery
 
@@ -161,13 +164,13 @@ two are done. Large media (ReelVault's videos) goes inside its part the same way
 
 Pushup Reminder is AkshatOS's first completed feature and its daily loop is accepted in ongoing phone
 use. PageVault is the activated media module and is phone-accepted through Build 24. Akshat's later
-explicit decision adds Lift Log as a narrow local utility without activating ReelVault; ReelVault
-stays reserved. Pushups' open
+explicit decisions added Lift Log and Body as narrow local utilities and then activated ReelVault's
+first version. Pushups' open
 physical edge-case, refresh/recovery, and soak items remain owned by `todo.md` and `cloud-build.md`
 and must not be dropped because PageVault started. Source/build ownership and the permanent bundle
 ID are selected above; the identity is already phone-verified through Build 13.
 
-1. Build and verify the hub app picker and Pushups entry, with ReelVault clearly deferred.
+1. Build and verify the hub app picker and Pushups entry.
 2. Implement Pushups' existing lifecycle, actions, streak, and optional Home behavior first.
 3. Integrate the native PageVault/PDFKit module (active; phases and gates owned by
    `pagevault/CLAUDE.md`) and the local Lift Log (`lift-log.md`), then ReelVault/AVFoundation
