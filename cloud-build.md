@@ -63,7 +63,7 @@ owns build and device evidence.
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.7.0 (30)**, adding the hub's full backup; minimum iOS 17.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.8.0 (31)**, making Lift Log's splits editable (0.7.0 (30), the full backup and month dropdowns, is merged as PR #59); minimum iOS 17.
   Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone). Build
   29 (0.6.0) passed PR/main CI, checksum and local IPA validation and is installed from
   `testing\` with current-version enrollment; its phone pass is pending. The facts below describe the accepted Build 27.

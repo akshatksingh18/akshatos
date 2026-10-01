@@ -49,8 +49,9 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
   `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
-  choosing Lift Log. Lift Log asks Upper/Lower before atomically creating the active workout and
-  preloading its ordered exercises; finishing removes unperformed template entries. ReelVault stays a noninteractive
+  choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
+  the active workout and preloading the split's ordered exercises; more can be added during the
+  workout, and finishing removes exercises with no sets. ReelVault stays a noninteractive
   planned card. WHOOP remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting

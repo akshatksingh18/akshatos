@@ -15,15 +15,22 @@ enrollment at the expected final identity in automatic mode, with no error and a
 Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
 superseded. Working source 0.6.0 (29) moves history to its own screen holding every finished
 workout and shows every set of the last performance instead of "+N more"; it passed CI in Build 29 and awaits a
-phone pass. No
+phone pass. Working source 0.8.0 (31) replaces the hard-coded Upper/Lower templates with **splits
+Akshat edits in the app** (starting with Lower day, Back and biceps day and Chest day, since the
+old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
+and keeps each workout's split name in history; it is not yet built or phone-verified. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
 
 ## Product contract
 
-- One active workout at a time. Start asks for Upper or Lower and immediately creates a durable
-  session containing every exercise in the confirmed highest-to-lowest priority order. Exercises
-  left empty because time ran out disappear when the session finishes; every performed set remains.
+- One active workout at a time. Start offers each of Akshat's **splits** plus an **Empty workout**,
+  and immediately creates a durable session containing the split's exercises in its
+  highest-to-lowest priority order (none for an empty workout). **Add exercise** adds any exercise to
+  the active workout, offering exercises logged before as he types so one exercise keeps one name.
+  Exercises left empty because time ran out disappear when the session finishes; every performed set
+  remains. A workout records the split's name as text, so renaming or deleting a split later never
+  rewrites history; history and workout detail show it.
   Each mutation saves the full workout before the UI claims success, so relaunch can recover an
   unfinished session.
 - **Plates per side** is the default measurement. A recorded `42.5 lb/side` remains exactly that. The
@@ -42,29 +49,40 @@ remote.
   workouts unreachable in the app.) History is kept indefinitely: a workout's record is estimated at a
   few kilobytes from its shape (not measured), so years of sessions stay small, and nothing is pruned
   automatically.
-- The Upper and Lower routine names, order and default measurement modes are deliberately bundled
-  in source at Akshat's explicit request. No historical performance, body measurement or private
-  workout row is bundled. The most recent finished occurrence with the same normalized exercise
+- **Splits** are edited on their own screen (a Splits row on the Lift Log screen): add, rename,
+  delete (past workouts are kept), reorder, and edit each split's exercises — name, load mode and
+  optional note, in priority order. Limits: a name under 40 characters, unique ignoring case, at
+  most 20 exercises a split and 20 splits; deleting every split is allowed, since an empty workout
+  still works. They are saved in the app's preferences (`liftlog.splits`) and carried in the JSON
+  backup. A new install, or an existing one updating from 0.7.0, starts with Lower day (unchanged
+  from the old Lower template), Back and biceps day (weighted pull-ups, seated cable row, dumbbell
+  biceps curl) and Chest day (dumbbell bench press, shoulder press, pec-deck fly, triceps pushdown),
+  the starting lists Akshat chose; only names, order and modes are in source. No historical
+  performance, body measurement or private workout row is bundled. The most recent finished occurrence with the same normalized exercise
   name and load mode supplies a read-only last-performance reference on the active card and set form.
   It lists every set of that performance (`S1 50 lb/hand × 10 · … · S4 55 lb/hand × 6`), wrapping
   as needed; the card no longer truncates to three sets with "+N more".
 - Data stays in a feature-owned, versioned SwiftData store. There is no account, HealthKit write,
   analytics, cloud sync or server.
-- JSON export is the restorable full backup. Restore validates the complete versioned payload and
-  asks before replacing current Lift Log data. CSV export provides a transparent row per set for
+- JSON export is the restorable full backup, including the splits (an optional field, so older
+  backups still read and leave the current splits alone). Restore validates the complete versioned
+  payload, splits included, and asks before replacing current Lift Log data; if the workouts then
+  fail to save, the previous splits are put back. CSV export provides a transparent row per set for
   personal analysis or later workspace import; it includes the load mode so `42.5 lb/side` cannot
   be mistaken for a 42.5 lb total.
 
 ## Current source layout
 
 - `ios/AkshatOS/features/liftlog/domain/LiftWorkout.swift` — pure workout, exercise, set, load-mode,
-  Upper/Lower template, validation and backup contract.
-- `ios/AkshatOS/features/liftlog/data/` — feature-owned SwiftData schema and repository.
+  split (with the starting splits), validation and backup contract.
+- `ios/AkshatOS/features/liftlog/data/` — feature-owned SwiftData schema and repository, and
+  `LiftSplitStorage.swift` (splits as one JSON value in the app's preferences).
 - `ios/AkshatOS/features/liftlog/LiftLogStore.swift` — save-before-publish commands, active-session
   recovery, JSON backup/restore and CSV export.
 - `ios/AkshatOS/features/liftlog/ui/` — hub destination, active workout, set entry and
-  recovery controls (`LiftLogView.swift`), and the month-grouped history screen with workout detail
-  (`LiftLogHistoryView.swift`).
+  recovery controls (`LiftLogView.swift`), the month-grouped history screen with workout detail
+  (`LiftLogHistoryView.swift`), and the Splits screen, split editor and the exercise form shared
+  with Add exercise (`LiftSplitsView.swift`).
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered domain, persistence and hub-navigation coverage.
 
@@ -87,7 +105,7 @@ remote.
 
 - Importing the historical workspace CSV, because older rows mix true totals, plate loads and
   unknown machine resistance; automatic conversion would fabricate precision.
-- Editing finished sets, customizable templates/programming, rest timers, RIR/RPE, automatic
+- Editing finished sets, target sets/reps or programming inside a split, rest timers, RIR/RPE, automatic
   progression advice, personal records, charts, HealthKit, social/sharing features and cloud sync.
   These require separate product decisions after the core logger and recovery path pass on-device.
 
@@ -99,6 +117,8 @@ remote.
   repository. The explicitly authorized routine definition contains names/order/modes only; tests
   use synthetic performance values.
 - Every schema change after the first installed Lift Log build requires an explicit migration and
-  same-ID upgrade test. Never reset the store to make a migration pass.
+  same-ID upgrade test. Never reset the store to make a migration pass. (0.8.0's `splitName` is an
+  optional field inside the existing JSON payload, so older rows decode unchanged; a domain test
+  decodes a pre-split record.)
 - Update this file, the hub contract, architecture, README, TODO and build evidence when implemented
   or verified state changes.

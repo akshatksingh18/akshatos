@@ -111,15 +111,20 @@ part in the full backup (no `HubBackupPart`, or not listed in `AppServices`). Th
 system sheets, which only the phone exercises.
 
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
-per-side load semantics, priority-ordered Upper/Lower definitions, exercise/set mutation and edit,
-undo, unperformed-template cleanup, finish-state enforcement, round-trip validation and backup
+per-side load semantics, the starting splits and split validation (trimming, names, case-insensitive
+uniqueness, limits), the split name kept on a workout and absent from older records, splits in the
+backup, exercise/set mutation and edit, undo, unperformed-exercise cleanup, finish-state enforcement, round-trip validation and backup
 rejection of multiple active workouts, plus month-grouped history (order, year boundary, the active
 workout excluded, every finished workout reachable). Hosted SwiftData tests cover
 repository round trips and upsert behavior, save-after-every-mutation active-session recovery,
-template preloading, persisted editing, same-mode last-performance lookup with every set in its
+split preloading, the starting splits saved on first launch, splits added/edited/reordered/deleted and
+reopened, invalid splits refused unchanged, empty workouts with exercises added as you go, history
+keeping a renamed split's old name, splits carried by the backup (and left alone by an older one)
+and rolled back when a workout restore fails, persisted editing, same-mode last-performance lookup with every set in its
 summary, history reaching more than 12 workouts, validated backup
 replacement and load-mode-preserving/CSV-escaped export. Its UI tests cover the hub entry,
-Lift Log destination, Upper-template start and the history screen. The Pushups domain test also
+Lift Log destination, starting the Back and biceps split, the empty-workout option, adding an
+exercise during a workout, the Splits screen with its editor, and the history screen. The Pushups domain test also
 covers the History screen's one-pass day list and month grouping, and a UI test opens Pushup
 History on its own screen. Build 26 passed the complete macOS suite; Build 27's
 expanded scenarios passed the complete PR and clean-main macOS suites, including IPA inspection.

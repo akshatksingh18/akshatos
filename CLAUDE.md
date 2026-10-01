@@ -36,6 +36,9 @@ restored only after every part is checked, with every module required by CI to t
 (`hub-plan.md` § Full backup). It also turns the Pushups, Lift Log and Body history screens into
 one dropdown per month and Pushups' Logged today into a closed-by-default dropdown. It is not yet
 built or phone-verified.
+Working source 0.8.0 (31) replaces Lift Log's fixed Upper/Lower templates with splits Akshat edits in
+the app (starting with Lower day, Back and biceps day and Chest day), adds Add exercise during any
+workout and an empty workout (`lift-log.md`). It is not yet built or phone-verified.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -190,7 +193,8 @@ every feature is physically verified.
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
-  hard-coded Upper/Lower templates, store, entry/edit UI, the month-grouped history screen
+  splits Akshat edits in the app (`data/LiftSplitStorage.swift`, `ui/LiftSplitsView.swift`, which
+  also holds the Add exercise form), store, entry/edit UI, the month-grouped history screen
   (`ui/LiftLogHistoryView.swift`), last-performance lookup with every set shown, JSON recovery and
   CSV export. `lift-log.md` owns the contract.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and

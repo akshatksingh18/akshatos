@@ -60,57 +60,95 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-struct LiftTemplateExercise: Equatable {
-    let name: String
-    let loadMode: LiftLoadMode
-    let equipmentNote: String
+/// One exercise in a split, in priority order.
+struct LiftSplitExercise: Identifiable, Codable, Equatable {
+    var id: UUID
+    var name: String
+    var loadMode: LiftLoadMode
+    var equipmentNote: String
 
-    init(_ name: String, _ loadMode: LiftLoadMode, equipmentNote: String = "") {
+    init(id: UUID = UUID(), _ name: String, _ loadMode: LiftLoadMode, equipmentNote: String = "") {
+        self.id = id
         self.name = name
         self.loadMode = loadMode
         self.equipmentNote = equipmentNote
     }
 }
 
-enum LiftWorkoutTemplate: String, CaseIterable, Identifiable {
-    case upper
-    case lower
+/// A workout day Akshat names and fills himself, such as "Chest day". Starting a workout from it
+/// loads its exercises in order; lower entries can be left empty when time is short.
+struct LiftSplit: Identifiable, Codable, Equatable {
+    static let maxNameLength = 40
+    static let maxExercises = 20
+    static let maxSplits = 20
 
-    var id: String { rawValue }
+    var id: UUID
+    var name: String
+    var exercises: [LiftSplitExercise]
 
-    var title: String {
-        switch self {
-        case .upper: return "Upper day"
-        case .lower: return "Lower day"
-        }
+    init(id: UUID = UUID(), name: String, exercises: [LiftSplitExercise] = []) {
+        self.id = id
+        self.name = name
+        self.exercises = exercises
     }
 
-    /// Ordered from highest to lowest priority. Lower entries may be skipped when time is short.
-    var exercises: [LiftTemplateExercise] {
-        switch self {
-        case .upper:
-            return [
-                LiftTemplateExercise("Weighted pull-ups", .addedWeight),
-                LiftTemplateExercise("Dumbbell bench press", .perHand),
-                LiftTemplateExercise("Seated cable row", .stack),
-                LiftTemplateExercise("Shoulder press", .perHand,
-                                     equipmentNote: "Default: dumbbells"),
-                LiftTemplateExercise("Pec-deck fly", .stack),
-                LiftTemplateExercise("Triceps pushdown", .stack)
-            ]
-        case .lower:
-            return [
-                LiftTemplateExercise("Smith-machine squat", .platesPerSide,
-                                     equipmentNote: "Smith bar resistance excluded"),
-                LiftTemplateExercise("Barbell Romanian deadlift", .platesPerSide,
-                                     equipmentNote: "Bar weight excluded"),
-                LiftTemplateExercise("Leg press", .platesPerSide,
-                                     equipmentNote: "Sled/base resistance excluded"),
-                LiftTemplateExercise("Seated machine leg curl", .stack),
-                LiftTemplateExercise("Seated calf raise", .platesPerSide,
-                                     equipmentNote: "Machine base resistance excluded")
-            ]
+    /// Trimmed and checked: a name, at most 20 exercises, each with a name.
+    func validated() throws -> LiftSplit {
+        var checked = self
+        checked.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !checked.name.isEmpty else { throw LiftLogError.emptySplitName }
+        guard checked.name.count <= Self.maxNameLength, exercises.count <= Self.maxExercises else {
+            throw LiftLogError.splitTooLarge
         }
+        guard Set(exercises.map(\.id)).count == exercises.count else { throw LiftLogError.duplicateIdentifier }
+        checked.exercises = try exercises.map { exercise in
+            var trimmed = exercise
+            trimmed.name = exercise.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            trimmed.equipmentNote = exercise.equipmentNote.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.name.isEmpty else { throw LiftLogError.emptyExerciseName }
+            return trimmed
+        }
+        return checked
+    }
+
+    /// The whole list: each split valid, no two with the same id or the same name, at most 20.
+    static func validatedList(_ splits: [LiftSplit]) throws -> [LiftSplit] {
+        let checked = try splits.map { try $0.validated() }
+        guard checked.count <= maxSplits else { throw LiftLogError.splitTooLarge }
+        guard Set(checked.map(\.id)).count == checked.count else { throw LiftLogError.duplicateIdentifier }
+        guard Set(checked.map { $0.name.lowercased() }).count == checked.count else {
+            throw LiftLogError.duplicateSplitName
+        }
+        return checked
+    }
+
+    /// What a new install starts with: Lower as before, and the old Upper day split into two.
+    /// Every one of them can be renamed, edited, reordered or deleted in the app.
+    static var starting: [LiftSplit] {
+        [
+            LiftSplit(name: "Lower day", exercises: [
+                LiftSplitExercise("Smith-machine squat", .platesPerSide,
+                                  equipmentNote: "Smith bar resistance excluded"),
+                LiftSplitExercise("Barbell Romanian deadlift", .platesPerSide,
+                                  equipmentNote: "Bar weight excluded"),
+                LiftSplitExercise("Leg press", .platesPerSide,
+                                  equipmentNote: "Sled/base resistance excluded"),
+                LiftSplitExercise("Seated machine leg curl", .stack),
+                LiftSplitExercise("Seated calf raise", .platesPerSide,
+                                  equipmentNote: "Machine base resistance excluded")
+            ]),
+            LiftSplit(name: "Back and biceps day", exercises: [
+                LiftSplitExercise("Weighted pull-ups", .addedWeight),
+                LiftSplitExercise("Seated cable row", .stack),
+                LiftSplitExercise("Dumbbell biceps curl", .perHand)
+            ]),
+            LiftSplit(name: "Chest day", exercises: [
+                LiftSplitExercise("Dumbbell bench press", .perHand),
+                LiftSplitExercise("Shoulder press", .perHand, equipmentNote: "Default: dumbbells"),
+                LiftSplitExercise("Pec-deck fly", .stack),
+                LiftSplitExercise("Triceps pushdown", .stack)
+            ])
+        ]
     }
 }
 
@@ -164,14 +202,18 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     var endedAt: Date?
     var exercises: [LiftExerciseRecord]
     var notes: String
+    /// The split it was started from, kept as text so renaming or deleting the split later never
+    /// rewrites history. Nil for an empty workout and for workouts logged before splits existed.
+    var splitName: String?
 
     init(id: UUID = UUID(), startedAt: Date = Date(), endedAt: Date? = nil,
-         exercises: [LiftExerciseRecord] = [], notes: String = "") {
+         exercises: [LiftExerciseRecord] = [], notes: String = "", splitName: String? = nil) {
         self.id = id
         self.startedAt = startedAt
         self.endedAt = endedAt
         self.exercises = exercises
         self.notes = notes
+        self.splitName = splitName
     }
 
     var isActive: Bool { endedAt == nil }
@@ -289,6 +331,9 @@ enum LiftLogError: LocalizedError, Equatable {
     case activeWorkoutExists
     case duplicateIdentifier
     case duplicateActiveWorkout
+    case emptySplitName
+    case duplicateSplitName
+    case splitTooLarge
 
     var errorDescription: String? {
         switch self {
@@ -303,6 +348,9 @@ enum LiftLogError: LocalizedError, Equatable {
         case .activeWorkoutExists: return "Finish or discard the active workout first."
         case .duplicateIdentifier: return "The workout contains duplicate records."
         case .duplicateActiveWorkout: return "Only one workout can be active at a time."
+        case .emptySplitName: return "Give the split a name."
+        case .duplicateSplitName: return "Another split already has that name."
+        case .splitTooLarge: return "Keep a split name under 40 characters, at most 20 exercises a split and 20 splits."
         }
     }
 }
@@ -312,11 +360,18 @@ struct LiftLogBackup: Codable, Equatable {
     var version: Int
     var exportedAt: Date
     var workouts: [LiftWorkoutSession]
+    /// Optional, so backups made before splits existed still read; they leave the splits alone.
+    var splits: [LiftSplit]?
 
-    init(exportedAt: Date = Date(), workouts: [LiftWorkoutSession]) {
+    init(exportedAt: Date = Date(), workouts: [LiftWorkoutSession], splits: [LiftSplit]? = nil) {
         version = Self.currentVersion
         self.exportedAt = exportedAt
         self.workouts = workouts
+        self.splits = splits
+    }
+
+    func validatedSplits() throws -> [LiftSplit]? {
+        try splits.map(LiftSplit.validatedList)
     }
 
     func validatedWorkouts() throws -> [LiftWorkoutSession] {

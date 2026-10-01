@@ -61,17 +61,48 @@ assert(LiftLoadMode.addedWeight.guidance.contains("bodyweight"))
 assert(LiftLoadMode.addedWeight.example.contains("weighted pull-ups"))
 assert(LiftLoadMode.total.guidance.contains("complete known load"))
 assert(LiftLoadMode.total.example.contains("95 lb total"))
-assert(LiftWorkoutTemplate.upper.exercises.map(\.name) == [
-    "Weighted pull-ups", "Dumbbell bench press", "Seated cable row", "Shoulder press",
-    "Pec-deck fly", "Triceps pushdown"
-])
-assert(LiftWorkoutTemplate.lower.exercises.map(\.name) == [
+let starting = LiftSplit.starting
+assert(starting.map(\.name) == ["Lower day", "Back and biceps day", "Chest day"],
+       "A new install starts with Lower and the old Upper day split in two")
+assert(starting[0].exercises.map(\.name) == [
     "Smith-machine squat", "Barbell Romanian deadlift", "Leg press",
     "Seated machine leg curl", "Seated calf raise"
+], "Lower day is unchanged")
+assert(starting[1].exercises.map(\.name) == ["Weighted pull-ups", "Seated cable row", "Dumbbell biceps curl"])
+assert(starting[2].exercises.map(\.name) == [
+    "Dumbbell bench press", "Shoulder press", "Pec-deck fly", "Triceps pushdown"
 ])
-assert(LiftWorkoutTemplate.upper.exercises.first?.loadMode == .addedWeight)
-assert(LiftWorkoutTemplate.lower.exercises[3].loadMode == .stack)
-print("PASS: Lift Log domain assertions (templates, per-side load, edit, finish, validation, backup)")
+assert(starting[1].exercises.first?.loadMode == .addedWeight)
+assert(starting[0].exercises[3].loadMode == .stack)
+assert((try? LiftSplit.validatedList(starting)) != nil, "The starting splits are valid")
+
+// Splits: trimmed, named, unique by name ignoring case, bounded.
+let trimmed = try! LiftSplit(name: "  Arms day ", exercises: [LiftSplitExercise(" Curl ", .perHand, equipmentNote: " EZ bar ")]).validated()
+assert(trimmed.name == "Arms day" && trimmed.exercises[0].name == "Curl" && trimmed.exercises[0].equipmentNote == "EZ bar")
+assert((try? LiftSplit(name: " ").validated()) == nil, "A split needs a name")
+assert((try? LiftSplit(name: "Arms", exercises: [LiftSplitExercise("", .stack)]).validated()) == nil,
+       "Every exercise in a split needs a name")
+assert((try? LiftSplit(name: String(repeating: "x", count: 41)).validated()) == nil, "Names stay short")
+assert((try? LiftSplit.validatedList(starting + [LiftSplit(name: "CHEST DAY")])) == nil,
+       "Two splits cannot share a name, ignoring case")
+assert((try? LiftSplit.validatedList((0..<21).map { LiftSplit(name: "Day \($0)") })) == nil, "At most 20 splits")
+assert((try! LiftSplit.validatedList([])).isEmpty, "Deleting every split is allowed; empty workouts still work")
+
+// A workout remembers its split's name; older records without one still read.
+let named = LiftWorkoutSession(startedAt: Date(timeIntervalSince1970: 1_790_105_400), splitName: "Chest day")
+let namedRoundTrip = try! JSONDecoder().decode(LiftWorkoutSession.self, from: try! JSONEncoder().encode(named))
+assert(namedRoundTrip.splitName == "Chest day")
+let olderWorkout = #"{"id":"6F1F8C1E-4C1E-4E8A-9C1A-111111111111","startedAt":0,"exercises":[],"notes":""}"#
+assert((try! JSONDecoder().decode(LiftWorkoutSession.self, from: Data(olderWorkout.utf8))).splitName == nil,
+       "A workout saved before splits existed has no split name")
+
+// The backup carries splits when present and validates them.
+let withSplits = LiftLogBackup(workouts: [], splits: starting)
+assert((try! withSplits.validatedSplits())?.count == 3)
+assert((try! LiftLogBackup(workouts: []).validatedSplits()) == nil, "An older backup has no splits to restore")
+assert((try? LiftLogBackup(workouts: [], splits: [LiftSplit(name: "")]).validatedSplits()) == nil,
+       "A backup with a bad split is refused")
+print("PASS: Lift Log domain assertions (splits, per-side load, edit, finish, validation, backup)")
 
 // History screen: finished workouts grouped by month, newest first, the active one left out.
 var historyCalendar = Calendar(identifier: .gregorian)

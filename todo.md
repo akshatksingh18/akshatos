@@ -103,6 +103,9 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
+- [ ] **Phone-check Lift Log splits (Build 31).** The three starting splits appear; add, rename,
+      reorder and delete a split and its exercises; start a split and an empty workout; Add exercise
+      during a workout; history shows the split name; existing workouts and last performance intact.
 - [ ] **Phone-check the month dropdowns (Build 30).** Pushups, Lift Log and Body history show one
       dropdown per month with the newest open; Logged today opens and closes and lists every set.
 - [ ] **Phone-check the full backup (Build 30).** Back up everything to OneDrive in Files, confirm
