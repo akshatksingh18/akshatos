@@ -104,6 +104,12 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
+- [ ] **Phone-check PageVault read aloud (Build 31).** Start on a page, hear the sentence tinted,
+      pages turning by themselves, back/forward a sentence, speed and voice, pause and resume, turn a
+      page by hand while playing and while paused, lock the screen and use the lock-screen and
+      headphone controls, a phone call pausing it, and leaving the reader stopping it. Note how
+      headers, page numbers, footnotes and any two-column pages sound in a real book; the bookmark
+      must not move by itself.
 - [ ] **Phone-check Lift Log splits (Build 31).** The three starting splits appear; add, rename,
       reorder and delete a split and its exercises; start a split and an empty workout; Add exercise
       during a workout; history shows the split name; existing workouts and last performance intact.

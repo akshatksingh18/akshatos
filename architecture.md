@@ -153,7 +153,9 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
 All sources still compile into the existing AkshatOS module/application target. These are logical
 source boundaries, not independently compiled packages or OS security isolation.
 `python ios/scripts/check-boundaries.py` guards top-level type dependencies, pure-domain imports,
-presentation/service separation and sole delegate ownership; six negative fixtures test the guard.
+presentation/service separation and sole delegate ownership; seven negative fixtures test the guard,
+and two view-local delegates are allowed: a UIKit representable's own coordinator (Body camera) and
+PageVault read-aloud's speech synthesizer.
 It is a lightweight source scan, not a full Swift parser; compiler and review still matter.
 
 The user-facing product is **Pushup Reminder**, but existing `Squat*` Swift types, the `Squats`

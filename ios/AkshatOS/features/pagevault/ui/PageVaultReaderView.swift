@@ -15,9 +15,39 @@ import SwiftUI
     /// mark to remove without reaching into the PDF view each time the toolbar is laid out.
     @Published private(set) var selectionCaptures: [PageVaultHighlightService.Capture] = []
     private weak var view: PDFView?
-    private var jumper: ((Int, PageVaultFindMark?) -> Void)?
+    private var jumper: ((Int, PageVaultFindMark?, Bool) -> Void)?
+    /// The sentence being read aloud. Kept here because each page is its own view: the tint has to
+    /// be put back on whichever page view becomes visible.
+    private var spoken: PageVaultFindMark?
+    /// Whether the visible page view carries the read-aloud tint, so clearing it never wipes a
+    /// search result's tint that was not ours.
+    private var tinted = false
 
-    func attach(_ view: PDFView) { self.view = view }
+    func attach(_ view: PDFView) {
+        self.view = view
+        tinted = false
+        applySpoken()
+    }
+
+    /// Tints the sentence being read, or clears the tint with nil.
+    func showSpoken(_ mark: PageVaultFindMark?) {
+        spoken = mark
+        applySpoken()
+    }
+
+    private func applySpoken() {
+        guard let view, let document = view.document else { return }
+        let shown = view.currentPage.map { document.index(for: $0) }
+        if let spoken, spoken.page == shown,
+           let found = PageVaultHighlightService.selection(for: spoken, in: document) {
+            found.color = PageVaultHighlightService.reading
+            view.highlightedSelections = [found]
+            tinted = true
+        } else if tinted {
+            view.highlightedSelections = nil
+            tinted = false
+        }
+    }
 
     func finishRestoring(at page: Int) {
         currentPage = page
@@ -56,13 +86,20 @@ import SwiftUI
 
     /// Supplied by the pager, because each page is its own view: moving between them is not
     /// something the visible PDF view can do by itself.
-    func attachJump(_ jump: @escaping (Int, PageVaultFindMark?) -> Void) { jumper = jump }
+    func attachJump(_ jump: @escaping (Int, PageVaultFindMark?, Bool) -> Void) { jumper = jump }
 
     /// Moves to a page. A `mark` tints the words that were searched for, so arriving from a result
     /// does not mean hunting down the page for them.
     func go(to index: Int, mark: PageVaultFindMark? = nil) {
-        jumper?(index, mark)
+        jumper?(index, mark, false)
         currentPage = index
+    }
+
+    /// Turns to a page with the page-curl, as reading aloud moves on.
+    func turn(to index: Int) {
+        guard index != currentPage else { return }
+        currentPage = index
+        jumper?(index, nil, true)
     }
 }
 
@@ -77,6 +114,7 @@ struct PageVaultReaderView: View {
     let onReadingSessionChange: (Bool) -> Void
 
     @StateObject private var controller = PageVaultReaderController()
+    @StateObject private var narrator: PageVaultNarrator
     /// Decided once, as the reader opens. Rebuilding the page view afterwards would lose the page
     /// being read, so a measurement that lands later is used the next time the book is opened.
     @State private var opened: Bool
@@ -92,6 +130,8 @@ struct PageVaultReaderView: View {
         _store = ObservedObject(wrappedValue: store)
         self.openAt = openAt
         self.onReadingSessionChange = onReadingSessionChange
+        _narrator = StateObject(wrappedValue: PageVaultNarrator(url: url, title: book.title,
+                                                                pageCount: book.pageCount))
         // An already-measured book opens fitted on the first frame, with no fitting screen at all.
         let fitted = store.pageCrops(for: book)
         _crops = State(initialValue: fitted)
@@ -105,7 +145,12 @@ struct PageVaultReaderView: View {
         Group {
             if opened {
                 document
-                    .overlay(alignment: .bottom) { pageIndicator }
+                    .overlay(alignment: .bottom) {
+                        VStack(spacing: 8) {
+                            if narrator.state != .stopped { PageVaultReadAloudBar(narrator: narrator) }
+                            pageIndicator
+                        }
+                    }
             } else {
                 fitting
             }
@@ -113,6 +158,7 @@ struct PageVaultReaderView: View {
         .navigationTitle(book.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) { readAloudButton }
             ToolbarItem(placement: .topBarTrailing) { highlightButton }
             ToolbarItem(placement: .topBarTrailing) { readerMenu }
             ToolbarItem(placement: .topBarTrailing) { placeButton }
@@ -140,7 +186,38 @@ struct PageVaultReaderView: View {
             onReadingSessionChange(true)
             store.noteOpened(book)
         }
-        .onDisappear { onReadingSessionChange(false) }
+        .onDisappear {
+            narrator.stop()
+            onReadingSessionChange(false)
+        }
+        .onAppear {
+            let reader = controller
+            narrator.onPageTurn = { [weak reader] page in reader?.turn(to: page) }
+        }
+        .onChange(of: narrator.segment) { _, segment in controller.showSpoken(segment?.mark) }
+        // Turning the page yourself moves reading to that page, playing or paused.
+        .onChange(of: controller.currentPage) { _, page in narrator.follow(page: page) }
+        .alert("Read aloud", isPresented: Binding(get: { narrator.notice != nil },
+                                                  set: { if !$0 { narrator.clearNotice() } })) {
+            Button("OK") { narrator.clearNotice() }
+        } message: { Text(narrator.notice ?? "") }
+    }
+
+    /// Starts reading this page aloud, or stops reading. Pausing and skipping are on the bar that
+    /// appears while it reads.
+    private var readAloudButton: some View {
+        Button {
+            if narrator.state == .stopped {
+                narrator.play(from: controller.currentPage)
+            } else {
+                narrator.stop()
+            }
+        } label: {
+            Image(systemName: narrator.state == .stopped ? "headphones" : "headphones.circle.fill")
+        }
+        .disabled(controller.restoring)
+        .accessibilityIdentifier("read-aloud")
+        .accessibilityLabel(narrator.state == .stopped ? "Read aloud from this page" : "Stop reading aloud")
     }
 
     private var document: some View {

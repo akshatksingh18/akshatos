@@ -19,4 +19,6 @@ with zipfile.ZipFile(sys.argv[1]) as archive:
     # types, and its Documents folder stays private.
     assert "CFBundleDocumentTypes" not in metadata, "No document types are declared"
     assert not metadata.get("UIFileSharingEnabled"), "The app's Documents folder must stay private"
+    # PageVault read-aloud keeps speaking with the screen locked; no other background mode is used.
+    assert metadata.get("UIBackgroundModes") == ["audio"], "Only the audio background mode is declared"
     print("IPA structure, identity, metadata and payload checks passed.")

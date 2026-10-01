@@ -16,6 +16,10 @@ enum PageVaultHighlightService {
     /// signpost that vanishes on the next page turn must not look like a passage you kept.
     static let finder = UIColor.systemTeal
 
+    /// The sentence being read aloud. Soft, and also not the marker colour: it moves on with the
+    /// voice and is never kept.
+    static let reading = UIColor.systemTeal.withAlphaComponent(0.35)
+
     /// The selection covering a search match on one page, ready to be tinted.
     ///
     /// The offset arrives counted in characters, as `PageVaultSearch` counts them, while `NSRange`

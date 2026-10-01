@@ -60,7 +60,8 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - One hub means one system notification identity and permission settings. Explain that location
   permission serves Pushups, selected video access serves Reels, the camera serves Body's progress
   photos only when one is taken, and Files import serves libraries and explicit Lift Log/Body
-  backup/restore; logging a workout or a weigh-in itself requests no permission. The hub
+  backup/restore; logging a workout or a weigh-in itself requests no permission. The only
+  background mode is audio, for PageVault read-aloud, which asks for no permission. The hub
   declares no document types: Open in AkshatOS was tried in Build 28 and removed at Akshat's request.
   Request permissions when their feature is used; do not require location to read a PDF.
 - Version module metadata independently in logically separate stores/directories with namespaced

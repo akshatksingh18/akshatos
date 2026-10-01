@@ -39,7 +39,9 @@ one dropdown per month and Pushups' Logged today into a closed-by-default dropdo
 validation and screenshot review. Build 30 waits in `testing\` for installation and its phone pass.
 Working source 0.8.0 (31) replaces Lift Log's fixed Upper/Lower templates with splits Akshat edits in
 the app (starting with Lower day, Back and biceps day and Chest day), adds Add exercise during any
-workout and an empty workout (`lift-log.md`). It is not yet built or phone-verified.
+workout and an empty workout (`lift-log.md`), and adds PageVault **read aloud**: a headphones button
+reads the book from the page on screen with the phone's own voice, turning pages and continuing with
+the screen locked (`pagevault/features.md` § Read aloud). It is not yet built or phone-verified.
 Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
 Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
 playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
@@ -81,7 +83,10 @@ every feature is physically verified.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
 - `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication,
-  including that no document types or file sharing are declared.
+  including that no document types or file sharing are declared and that the only background mode
+  is audio (PageVault read-aloud).
+- `ios/Support/AkshatOS-Info.plist` — the only Info.plist keys Xcode cannot generate from build
+  settings, merged with the generated ones: the audio background mode for PageVault read-aloud.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
@@ -180,13 +185,13 @@ every feature is physically verified.
   and the contract in `hub-plan.md`.
 - `ios/AkshatOS/features/pagevault/` — PageVault: `domain/` (Foundation-only book/library logic plus
   reading status, the place marker, highlights with their band geometry, folding and area-based
-  identity, search matching, snippets and find marks, page themes,
+  identity, search matching, snippets and find marks, read-aloud sentences, page themes,
   page-fitting geometry and ink scanning, and the export manifest with restore planning),
   `data/` (versioned SwiftData store,
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
-  capture and the highlights PDF, page-text search), `ui/` (library grid, the page-curl reader with
-  its fitting screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
+  capture and the highlights PDF, page-text search, the read-aloud narrator), `ui/` (library grid,
+  the page-curl reader with its fitting screen and read-aloud bar, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
   search sheet, the page-jump picker). Product scope and
   gates are owned by `pagevault/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the
@@ -214,6 +219,9 @@ every feature is physically verified.
   measurement reused after relaunch and removed with its book, and crop boxes applied in points.
 - `ios/UnitTests/PageVaultHighlightTests.swift` — highlights saved through the store and reloaded,
   carried by a full export and restored, rendered into their own PDF, and refused when there are none.
+- `ios/UnitTests/PageVaultReadAloudTests.swift` — read-aloud on generated PDFs: header and page
+  number skipped, sentence offsets matching PDFKit's text, skipping across pages, pause/resume/stop,
+  hand page turns while paused or playing, a text-less book, and the remembered speed.
 - `ios/UnitTests/PageVaultSearchTests.swift` — search over a real text layer: every page carrying the
   phrase, case-insensitivity, one-letter queries refused, and nothing found in an image-only page.
 - `ios/AkshatOS/shared/design-system/` — feature-independent palette (neutrals plus one accent),
@@ -227,8 +235,9 @@ every feature is physically verified.
 - `ios/AkshatOS/Resources/` — app assets; existing icon generation path is unchanged.
 - `ios/scripts/check-boundaries.py` — source dependency/delegate guard and negative fixtures;
   run locally and in CI. Logical boundaries, not compiler-enforced Swift packages. Process-wide
-  delegates stay in the app coordinator; a UIKit representable's own `context.coordinator` (the Body
-  camera) is the one allowed view-local exception.
+  delegates stay in the app coordinator; the allowed view-local exceptions are a UIKit
+  representable's own `context.coordinator` (the Body camera) and a reader-owned speech
+  synthesizer's delegate (PageVault read-aloud).
 - `ios/tests/squats/main.swift` — executable Pushups domain assertions run by the cloud workflow.
 - `ios/UITests/` — simulator hub/dashboard/PageVault navigation tests and screenshot attachments;
   test runner is not packaged in the device IPA and adds no installed app slot on Akshat's phone.

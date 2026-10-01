@@ -576,3 +576,51 @@ assert(PageVaultTheme.stored("warm") == .sepia,
 assert(PageVaultTheme.stored("moonlight") == .sepia && PageVaultTheme.stored(nil) == .sepia,
        "An unknown or missing stored theme falls back to the default rather than failing")
 print("PASS: 7 theme assertions (stored values, labels, default, inversion, retired warm, fallback)")
+
+
+// Read aloud: sentences from a page's text layer, with headers, footers and page numbers left out.
+func spokenRange(_ text: String, _ segment: PageVaultSpeechSegment) -> String {
+    String(Array(text)[segment.offset..<(segment.offset + segment.length)])
+}
+let readPage = "The Habit Loop 47\nIt was a bright cold day in April, and the clocks were strik-\nning thirteen. Winston Smith hurried home.\nShort line.\nThen another sentence follows here.\n47"
+let readNeighbours = [["thehabitloop", "nextpagebody"], ["thehabitloop"]]
+let readSegments = PageVaultReadAloud.segments(page: 3, text: readPage, neighbours: readNeighbours)
+assert(readSegments.map(\.spoken) == [
+    "It was a bright cold day in April, and the clocks were striking thirteen.",
+    "Winston Smith hurried home.",
+    "Short line.",
+    "Then another sentence follows here."
+], "The running header and page number are skipped and a hyphenated word is joined: \(readSegments.map(\.spoken))")
+assert(readSegments.allSatisfy { $0.page == 3 })
+assert(spokenRange(readPage, readSegments[0]).hasPrefix("It was") && spokenRange(readPage, readSegments[0]).hasSuffix("thirteen."),
+       "Each sentence keeps its exact place on the page, so the reader can tint it")
+assert(readSegments[0].mark == PageVaultFindMark(page: 3, offset: readSegments[0].offset, length: readSegments[0].length))
+
+let unrepeatedHeader = PageVaultReadAloud.segments(page: 0, text: readPage, neighbours: [["somethingelse"]])
+assert(unrepeatedHeader.first?.spoken == "The Habit Loop 47 It was a bright cold day in April, and the clocks were striking thirteen."
+       || unrepeatedHeader.first?.spoken.hasPrefix("The Habit Loop") == true,
+       "A top line not repeated on nearby pages is read as text")
+
+assert(PageVaultReadAloud.segments(page: 0, text: "12", neighbours: []).isEmpty, "A page holding only its number has nothing to read")
+assert(PageVaultReadAloud.segments(page: 0, text: "", neighbours: []).isEmpty, "A blank page has nothing to read")
+assert(PageVaultReadAloud.isPageNumberLike("xii") && PageVaultReadAloud.isPageNumberLike(" 214 ")
+       && PageVaultReadAloud.isPageNumberLike("— 9 —") && !PageVaultReadAloud.isPageNumberLike("Chapter 9"),
+       "Numbers, roman numerals and ornaments are page numbers; words are not")
+let romanFooter = PageVaultReadAloud.segments(page: 0, text: "A preface sentence ends here.\nxii", neighbours: [])
+assert(romanFooter.map(\.spoken) == ["A preface sentence ends here."], "A roman page number is skipped")
+
+let heading = PageVaultReadAloud.segments(page: 0,
+    text: "Chapter One\nThe morning was quiet and the street was empty of people.\nNobody came.", neighbours: [])
+assert(heading.first?.spoken == "Chapter One", "A short heading line is its own sentence, not run into the next")
+
+let accented = "Café au lait. Très bien."
+let accentSegments = PageVaultReadAloud.segments(page: 0, text: accented, neighbours: [])
+assert(accentSegments.count == 2 && accentSegments[1].offset == 14 && accentSegments[1].length == 10,
+       "Offsets count characters, so accented text lines up with the page")
+assert(PageVaultReadAloud.spokenText("the \u{FB01}nal  re\u{00AD}sult\nhere") == "the final result here",
+       "Ligatures are spelled out, soft hyphens dropped and spacing made single")
+assert(PageVaultReadAloud.spokenText("well-\nknown") == "wellknown" && PageVaultReadAloud.spokenText("May-\nJune") == "May-\nJune".replacingOccurrences(of: "\n", with: " "),
+       "A line-end hyphen joins only when the next line starts lowercase")
+assert(PageVaultReadAloud.edgeKeys("Title 3\nbody\nmore body\nend\nTitle 4") == ["title", "body", "end", "title"],
+       "Edge keys are the top and bottom lines reduced to their letters")
+print("PASS: 14 read-aloud assertions (sentences, headers, page numbers, hyphens, headings, offsets, cleanup)")

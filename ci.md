@@ -110,6 +110,15 @@ in both the checks job and the macOS build and fails when a module under `featur
 part in the full backup (no `HubBackupPart`, or not listed in `AppServices`). The hub UI test opens the Backup screen and returns. Saving and picking the folder go through
 system sheets, which only the phone exercises.
 
+PageVault read-aloud adds domain assertions (sentences with character offsets, repeated
+headers/footers, page numbers and roman numerals skipped, line-end hyphens joined only before a
+lowercase word, short heading lines kept apart, ligatures and soft hyphens) and hosted
+`PageVaultReadAloudTests` on generated PDFs: reading from a page past its header and page number with
+the offset matching PDFKit's text, skipping across pages and turning them, pause/resume/stop,
+following a hand page turn while paused and playing, a text-less book saying so, and the remembered
+speed. Real speech, the lock screen, headphones and interruptions are phone checks.
+`validate-ipa.py` also requires the audio background mode and no other.
+
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
 per-side load semantics, the starting splits and split validation (trimming, names, case-insensitive
 uniqueness, limits), the split name kept on a workout and absent from older records, splits in the

@@ -33,8 +33,9 @@ def check(sources):
             if path.startswith("app/hub/") and other.startswith("features/"):
                 errors.append(f"{path}: hub presentation depends on feature type {symbol}")
         # Process-wide delegates (notifications, location) belong to the app coordinator. A UIKit
-        # representable handing its own coordinator to a view-local controller is not process-wide.
-        if (re.search(r"\.delegate\s*=(?!\s*context\.coordinator\b)", source)
+        # representable handing its own coordinator to a view-local controller is not process-wide,
+        # and neither is a speech synthesizer owned by one reader (PageVault read-aloud).
+        if (re.search(r"(?<!synthesizer)\.delegate\s*=(?!\s*context\.coordinator\b)", source)
                 and path != "app/AppNotificationCoordinator.swift"):
             errors.append(f"{path}: process-wide delegate belongs to the app coordinator")
         if own == "shared" or path.startswith("app/hub/"):
@@ -62,6 +63,10 @@ def self_test():
         assert check({**base, path: violation}), path
     assert not check({**base, "features/reels/Picker.swift": "picker.delegate = context.coordinator"}), \
         "A view-local UIKit coordinator delegate is allowed"
+    assert not check({**base, "features/reels/Speech.swift": "synthesizer.delegate = relay"}), \
+        "A reader-owned speech synthesizer delegate is allowed"
+    assert check({**base, "features/reels/Bad.swift": "manager.delegate = relay"}), \
+        "Any other delegate assignment still fails"
 
 
 if __name__ == "__main__":
@@ -72,5 +77,5 @@ if __name__ == "__main__":
     errors = check(sources)
     if errors:
         raise SystemExit("\n".join(errors))
-    print(f"Boundary checks passed for {len(sources)} Swift files; 6 negative fixtures and "
-          "1 allowed view-local delegate passed.")
+    print(f"Boundary checks passed for {len(sources)} Swift files; 7 negative fixtures and "
+          "2 allowed view-local delegates passed.")
