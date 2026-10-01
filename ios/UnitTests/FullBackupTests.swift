@@ -95,7 +95,7 @@ import XCTest
         let liftLog = LiftLogStore(
             repository: SwiftDataLiftLogRepository(
                 container: try container(LiftLogSchemaV1.self, LiftLogMigration.self, name: "\(name)-liftlog")),
-            now: { clock })
+            splits: DefaultsLiftSplitStorage(defaults: defaults), now: { clock })
         liftLog.load()
         let body = BodyLogStore(
             repository: SwiftDataBodyLogRepository(
@@ -144,7 +144,7 @@ import XCTest
     /// Fills every module on one phone and returns it.
     private func filledPhone() async throws -> Phone {
         let phone = try await makePhone("PhoneA", squatSessions: [finishedDay(sets: 6)])
-        phone.liftLog.startWorkout(template: .lower)
+        phone.liftLog.startWorkout(split: phone.liftLog.splits.first)
         let exercise = try XCTUnwrap(phone.liftLog.active?.exercises.first)
         phone.liftLog.addSet(exerciseID: exercise.id, reps: 8, load: 45)
         phone.body.logWeight(182.4)

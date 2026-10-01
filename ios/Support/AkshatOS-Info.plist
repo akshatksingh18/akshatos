@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Only the keys Xcode cannot generate from INFOPLIST_KEY_ build settings. Xcode merges this file
+  with the generated keys (GENERATE_INFOPLIST_FILE stays on). The audio background mode is what
+  lets PageVault keep reading aloud with the screen locked; nothing else plays audio.
+-->
+<plist version="1.0">
+<dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+</dict>
+</plist>

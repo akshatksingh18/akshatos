@@ -49,8 +49,9 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
   display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
   `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
   `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
-  choosing Lift Log. Lift Log asks Upper/Lower before atomically creating the active workout and
-  preloading its ordered exercises; finishing removes unperformed template entries. ReelVault stays a noninteractive
+  choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
+  the active workout and preloading the split's ordered exercises; more can be added during the
+  workout, and finishing removes exercises with no sets. ReelVault stays a noninteractive
   planned card. WHOOP remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting
@@ -152,7 +153,9 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
 All sources still compile into the existing AkshatOS module/application target. These are logical
 source boundaries, not independently compiled packages or OS security isolation.
 `python ios/scripts/check-boundaries.py` guards top-level type dependencies, pure-domain imports,
-presentation/service separation and sole delegate ownership; six negative fixtures test the guard.
+presentation/service separation and sole delegate ownership; seven negative fixtures test the guard,
+and two view-local delegates are allowed: a UIKit representable's own coordinator (Body camera) and
+PageVault read-aloud's speech synthesizer.
 It is a lightweight source scan, not a full Swift parser; compiler and review still matter.
 
 The user-facing product is **Pushup Reminder**, but existing `Squat*` Swift types, the `Squats`

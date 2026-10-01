@@ -23,7 +23,8 @@ struct LiftLogHistoryView: View {
                             LiftWorkoutDetailView(workout: workout) { store.deleteWorkout(workout.id) }
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(workout.startedAt.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                                Text(workout.startedAt.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
+                                     + (workout.splitName.map { " · \($0)" } ?? ""))
                                     .font(.headline)
                                 Text("\(workout.exercises.count) exercises · \(workout.setCount) sets")
                                     .font(.caption).foregroundStyle(Palette.muted)
@@ -55,6 +56,9 @@ struct LiftWorkoutDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(workout.startedAt.formatted(date: .complete, time: .shortened))
                         .font(.title2.bold())
+                    if let splitName = workout.splitName {
+                        Text(splitName).font(.headline).foregroundStyle(Palette.accent)
+                    }
                     ForEach(workout.exercises) { exercise in
                         Surface {
                             Text(exercise.name).font(.title3.bold())

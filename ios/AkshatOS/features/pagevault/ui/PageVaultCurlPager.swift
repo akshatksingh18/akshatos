@@ -163,8 +163,8 @@ struct PageVaultCurlDocumentView: UIViewControllerRepresentable {
         context.coordinator.attach(pager: pager)
         // Each page is its own view, so a search result or a highlight is only reachable by the
         // pager swapping that page in.
-        controller.attachJump { [weak coordinator = context.coordinator] index, mark in
-            coordinator?.jump(to: index, mark: mark)
+        controller.attachJump { [weak coordinator = context.coordinator] index, mark, animated in
+            coordinator?.jump(to: index, mark: mark, animated: animated)
         }
         // Only the data source is set: supplying pages is all this needs, and a delegate would
         // break the project's rule that the app layer owns them.
@@ -213,13 +213,15 @@ struct PageVaultCurlDocumentView: UIViewControllerRepresentable {
         /// belongs to one arrival, so nothing keeps it once that page exists.
         private var pendingMark: PageVaultFindMark?
 
-        /// Moves to a page without animating: this is a jump from a search result or the highlights
-        /// list, not a page turn.
-        func jump(to index: Int, mark: PageVaultFindMark? = nil) {
+        /// Moves to a page. A jump from a search result or the highlights list does not animate;
+        /// reading aloud turns the page with the curl, backwards when it steps back a page.
+        func jump(to index: Int, mark: PageVaultFindMark? = nil, animated: Bool = false) {
             pendingMark = mark
             defer { pendingMark = nil }
             guard let pager, let target = page(at: index) else { return }
-            pager.setViewControllers([target], direction: .forward, animated: false)
+            let shown = (pager.viewControllers?.first as? PageVaultCurlPage)?.index ?? index
+            pager.setViewControllers([target], direction: index < shown ? .reverse : .forward,
+                                     animated: animated)
         }
 
         func page(at index: Int) -> PageVaultCurlPage? {

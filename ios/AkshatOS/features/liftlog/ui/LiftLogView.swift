@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct LiftLogView: View {
     @ObservedObject var store: LiftLogStore
     @State private var showingTemplatePicker = false
+    @State private var addingExercise: LiftExerciseDraft?
     @State private var setEditor: LiftSetEditorSelection?
     @State private var confirmingFinish = false
     @State private var confirmingDiscard = false
@@ -24,6 +25,7 @@ struct LiftLogView: View {
                     if let active = store.active { activeWorkout(active) }
                     else { startCard }
                     history
+                    splitsRow
                     backupControls
                 }
                 .padding(20)
@@ -47,15 +49,22 @@ struct LiftLogView: View {
                 }
             }
         }
+        .sheet(item: $addingExercise) { draft in
+            LiftExerciseForm(draft: draft, suggestions: store.recentExercises) { saved in
+                store.addExercise(name: saved.name, loadMode: saved.loadMode,
+                                  equipmentNote: saved.equipmentNote)
+            }
+        }
         .confirmationDialog("Choose workout", isPresented: $showingTemplatePicker,
                             titleVisibility: .visible) {
-            ForEach(LiftWorkoutTemplate.allCases) { template in
-                Button(template.title) { store.startWorkout(template: template) }
-                    .accessibilityIdentifier("start-\(template.rawValue)-workout")
+            ForEach(store.splits) { split in
+                Button(split.name) { store.startWorkout(split: split) }
             }
+            Button("Empty workout") { store.startWorkout(split: nil) }
+                .accessibilityIdentifier("start-empty-workout")
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Every exercise loads in priority order. Leave the lower-priority ones empty when time is short.")
+            Text("A split loads its exercises in order; leave the last ones empty when time is short. You can add exercises during any workout.")
         }
         .alert("Finish this workout?", isPresented: $confirmingFinish) {
             Button("Finish workout") { store.finishWorkout() }
@@ -115,7 +124,7 @@ struct LiftLogView: View {
     private var startCard: some View {
         Surface {
             Text("No workout in progress").font(.headline)
-            Text("Choose Upper or Lower. Exercises load in priority order.")
+            Text("Choose one of your splits, or start empty and add exercises as you go.")
                 .font(.subheadline).foregroundStyle(Palette.muted)
             Button("Start workout") { showingTemplatePicker = true }
                 .buttonStyle(ActionStyle(primary: true))
@@ -129,7 +138,7 @@ struct LiftLogView: View {
             Surface {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Workout in progress").font(.title3.bold())
+                        Text(workout.splitName ?? "Workout in progress").font(.title3.bold())
                         Text(workout.startedAt.formatted(date: .abbreviated, time: .shortened))
                             .font(.caption).foregroundStyle(Palette.muted)
                     }
@@ -137,11 +146,21 @@ struct LiftLogView: View {
                     Text("\(workout.setCount) sets")
                         .font(.headline.monospacedDigit()).foregroundStyle(Palette.accent)
                 }
-                Text("Exercises are ordered from highest to lowest priority. Skip from the bottom when time is short.")
+                Text(workout.exercises.isEmpty
+                     ? "Add the exercises you do today."
+                     : "Exercises are ordered from highest to lowest priority. Skip from the bottom when time is short; exercises without sets are dropped when you finish.")
                     .font(.caption).foregroundStyle(Palette.muted)
             }
 
             ForEach(workout.exercises) { exercise in exerciseCard(exercise) }
+
+            Button {
+                addingExercise = LiftExerciseDraft()
+            } label: {
+                Label("Add exercise", systemImage: "plus")
+            }
+            .buttonStyle(ActionStyle())
+            .accessibilityIdentifier("add-workout-exercise")
 
             Button("Finish workout") { confirmingFinish = true }
                 .buttonStyle(ActionStyle())
@@ -232,6 +251,29 @@ struct LiftLogView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("open-lift-history")
+    }
+
+    /// Your workout days, edited on their own screen.
+    private var splitsRow: some View {
+        NavigationLink {
+            LiftSplitsView(store: store)
+        } label: {
+            Surface {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Splits").font(.title2.bold())
+                        Text(store.splits.map(\.name).joined(separator: " · "))
+                            .font(.caption).foregroundStyle(Palette.muted)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").foregroundStyle(Palette.accent)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("open-lift-splits")
     }
 
     private var backupControls: some View {

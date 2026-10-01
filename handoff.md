@@ -7,7 +7,7 @@ features to be removed. Source 0.6.0 (29) adds the
 Body module (`body-log.md`), removes
 them, moves Pushup and Lift Log history to their own month-grouped screens, shows every set of a
 last performance, and replaces the "quest" theme with a clean, minimal design in plain words
-(notifications and icon included); Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and is installed from `testing\` over Build 28 with current-version enrollment; its phone pass is pending. Working source 0.7.0 (30), on branch `feature/full-backup`, adds the hub's full backup, which CI requires every module to join (`hub-plan.md` § Full backup), and month dropdowns for Pushups, Lift Log and Body history plus a Logged today dropdown. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
+(notifications and icon included); Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation and is installed from `testing\` over Build 28 with current-version enrollment; its phone pass is pending. Working source 0.7.0 (30), on branch `feature/full-backup`, adds the hub's full backup, which CI requires every module to join (`hub-plan.md` § Full backup), and month dropdowns for Pushups, Lift Log and Body history plus a Logged today dropdown; it is merged as PR #59. Working source 0.8.0 (31), on branch `feature/lift-splits`, makes Lift Log's splits editable in the app (`lift-log.md`); branch `feature/read-aloud`, on top of it, adds PageVault read aloud (`pagevault/features.md` § Read aloud). Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 last-performance references and active-set editing. PR #54 merged at `ebb44d3`; main run
 `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA
 validation. Akshat installed it and reports that it works well end-to-end, closing the focused Lift
@@ -82,8 +82,8 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 
 ## Implemented in source
 
-- Lift Log: feature-owned workout domain and SwiftData store, hard-coded priority Upper/Lower
-  templates, explicit load meanings and guidance, same-mode last-performance lookup,
+- Lift Log: feature-owned workout domain and SwiftData store, splits edited in the app (from 0.8.0
+  (31); Upper/Lower were hard-coded before), Add exercise and empty workouts, explicit load meanings and guidance, same-mode last-performance lookup,
   save-after-every-mutation active-session recovery, set edit/undo/discard/delete controls,
   finished history, validated JSON recovery and CSV export. `lift-log.md` owns its
   product/privacy/acceptance contract; none of it is cloud- or phone-verified yet.
@@ -145,13 +145,15 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 29:** the validated candidate is `..\final-ipas\akshatos\testing\akshatos-build-29-2637ea1`.
-   It is installed over Build 28 and enrolled. Check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
+1. **Build 30, then Build 29's checks:** the validated candidate is
+   `..\final-ipas\akshatos\testing\akshatos-build-30-10357b9` (0.7.0: full backup, month dropdowns);
+   Build 29 is installed and enrolled. Install Build 30 over it without uninstalling, check the backup
+   and dropdowns per `todo.md`, and check the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line
    lists every set, that the Body module passes `body-log.md`'s phone checks (the camera prompt
    appears only when a photo is taken), and that existing data is intact before
-   promoting Build 29 to `backup\`.
+   promoting Build 30 to `backup\`.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.

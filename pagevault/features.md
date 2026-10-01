@@ -196,6 +196,33 @@ font resizing. The page image itself is never re-laid out.
   validation require no backend or network. A document provider is an import source, not a runtime
   dependency.
 
+## Read aloud (AkshatOS 0.8.0 (31), not yet phone-verified)
+
+Akshat's books are digital copies with a text layer, so the phone's own voice can read them like an
+audiobook. Implemented, covered by tests, not yet tried on the phone.
+
+- A headphones button in the reader starts reading at the top of the page on screen. A bar appears
+  above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and
+  stop; the same button stops it too.
+- It reads one sentence at a time, tints the sentence being read on the page, and turns pages with
+  the curl as it goes. Turning a page by hand moves reading there, still playing or still paused;
+  play then starts at the top of that page. A page with no text is passed over.
+- It keeps reading with the screen locked and answers the lock screen, Control Center and headphone
+  buttons (play, pause, next and previous sentence), showing the book and page. A phone call or
+  another app's audio pauses it. Leaving the reader stops it.
+- Running headers and footers (a top or bottom line repeated on nearby pages), page numbers and
+  roman numerals are skipped; words hyphenated across a line end are joined; ligatures are spelled
+  out. Footnotes, captions and unusual layouts are read as they come, and two-column pages may come
+  out in the wrong order.
+- Speeds 0.75× to 2× and the voice are remembered. "Best available" picks the highest-quality voice
+  installed for the phone's language; Enhanced and Premium voices are a free download in Settings →
+  Accessibility → Spoken Content → Voices. Novelty and Personal Voice voices are not offered.
+- It never moves the book's place: only the bookmark does, as everywhere in the reader. Pausing
+  leaves the page on screen, so tapping the bookmark keeps it.
+- Everything is on the phone: the system speech voice, no network, no account. A scanned book has
+  no text and says so instead of playing; OCR stays out of scope.
+- The app declares the audio background mode for this, and nothing else uses it.
+
 ## v2 / optional improvements
 
 - **Notes attached to a highlight:** not built. Highlights keep the passage and its page, nothing
@@ -218,8 +245,8 @@ font resizing. The page image itself is never re-laid out.
 - DRM bypass or files the user does not own.
 - Accounts, multi-user support, advertising, analytics, required cloud sync, or a PageVault backend.
 - App Store/general-market distribution work unless Akshat explicitly expands the project.
-- Reader-specific widgets, push notifications, App Groups, iCloud capabilities, background modes,
-  or extensions for v1; the host's Pushup Reminder notification/geofence services remain independently needed.
+- Reader-specific widgets, push notifications, App Groups, iCloud capabilities, extensions, or any
+  background mode other than read-aloud's audio; the host's Pushup Reminder notification/geofence services remain independently needed.
 
 ## Feature acceptance rule
 

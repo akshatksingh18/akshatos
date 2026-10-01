@@ -18,11 +18,63 @@ final class LiftLogUITests: XCTestCase {
         let start = app.buttons["start-lift-workout"]
         XCTAssertTrue(start.exists)
         start.tap()
-        let upper = app.buttons["start-upper-workout"].firstMatch
-        XCTAssertTrue(upper.waitForExistence(timeout: 5))
-        upper.tap()
+        XCTAssertTrue(app.buttons["start-empty-workout"].waitForExistence(timeout: 5),
+                      "An empty workout is offered beside the splits")
+        let backDay = app.buttons["Back and biceps day"].firstMatch
+        XCTAssertTrue(backDay.waitForExistence(timeout: 5))
+        backDay.tap()
         XCTAssertTrue(app.staticTexts["Weighted pull-ups"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Last performance: none yet for this exercise and measurement mode."].exists)
+
+        let add = app.buttons["add-workout-exercise"]
+        for _ in 0..<6 where !add.isHittable { app.swipeUp() }
+        add.tap()
+        let name = app.textFields["lift-exercise-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Hammer curl")
+        app.buttons["save-lift-exercise"].tap()
+        XCTAssertTrue(app.staticTexts["Hammer curl"].waitForExistence(timeout: 5),
+                      "An exercise added during the workout appears in it")
+        capture("Lift Log workout")
+    }
+
+    /// Splits are their own screen: the starting three are listed and each opens its editor.
+    func testSplitsOpenAndShowTheirExercises() {
+        let app = XCUIApplication()
+        app.launch()
+        let entry = app.staticTexts["Lift Log"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        for _ in 0..<4 where !entry.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        entry.tap()
+        let splits = app.buttons["open-lift-splits"]
+        XCTAssertTrue(splits.waitForExistence(timeout: 10))
+        for _ in 0..<6 where !splits.isHittable { app.swipeUp() }
+        splits.tap()
+        XCTAssertTrue(app.navigationBars["Splits"].waitForExistence(timeout: 5))
+        for day in ["Lower day", "Back and biceps day", "Chest day"] {
+            XCTAssertTrue(row(app, day).exists, "\(day) is listed")
+        }
+        XCTAssertTrue(app.buttons["add-lift-split"].exists)
+        capture("Lift splits")
+        row(app, "Chest day").tap()
+        XCTAssertTrue(app.navigationBars["Edit split"].waitForExistence(timeout: 5))
+        XCTAssertTrue(row(app, "Dumbbell bench press").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["add-split-exercise"].exists)
+        app.navigationBars["Edit split"].buttons["Cancel"].tap()
+        XCTAssertTrue(app.navigationBars["Splits"].waitForExistence(timeout: 5))
+    }
+
+    /// A list row that is a button reads as one element, labelled with all of its text.
+    private func row(_ app: XCUIApplication, _ text: String) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
+    }
+
+    private func capture(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     /// History is one row on the main screen and a screen of its own holding every workout.

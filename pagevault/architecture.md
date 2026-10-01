@@ -165,6 +165,17 @@ identity fields stay required. A removed field needs nothing: unknown keys are i
   must not be used. Keep the `PDFView` background white and page shadows off, so the overlay covers
   page and surround identically and a page narrower than the screen does not sit inside dark
   letterbox bands.
+- Read-aloud (`services/PageVaultNarrator.swift`) opens its own `PDFDocument` on the main actor,
+  reads one page's text layer at a time and hands it with its neighbours' top and bottom lines to the
+  pure `domain/PageVaultReadAloud.swift`, which drops repeated headers/footers and page numbers,
+  splits sentences with offsets in characters, and builds the cleaned spoken text. One
+  `AVSpeechUtterance` per sentence; only the utterance it is waiting on can move reading on, so a
+  skip, stop or speed change never double-advances. The sentence is tinted through the reader
+  controller, which re-applies it to whichever page view becomes visible; page turns go through the
+  pager's jump with the curl animated. The narrator owns its synthesizer's delegate (a small relay
+  object; `check-boundaries.py` allows `synthesizer.delegate` only), and while reading it holds the
+  audio session (`.playback`, `.spokenAudio`), the remote commands and Now Playing, releasing all
+  three on stop. The app's `Support/AkshatOS-Info.plist` declares the audio background mode.
 - Search runs on its own `PDFDocument` off the main actor, reading each page's text layer. A detached
   task does not inherit cancellation, so the store passes an explicit signal that the calling task
   cancels — that is what makes the next keystroke supersede the search already running. Matching,

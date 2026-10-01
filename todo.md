@@ -9,7 +9,8 @@ photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox fo
 in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
 and Lift Log history onto their own screens with the full last-performance set list, and replaces the
 "quest" theme with a clean, minimal design in plain words. Build 29 passed its PR/main CI Gates and
-artifact validation and needs an install over Build 28, then a phone check of the redesign and wording (notifications
+artifact validation and is installed; Build 30 (full backup, month dropdowns) is validated in
+`testing\` and needs an install over it, then a phone check of the redesign and wording (notifications
 and icon included), Pushup history, Lift history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
 same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
 main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
@@ -103,6 +104,15 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
+- [ ] **Phone-check PageVault read aloud (Build 31).** Start on a page, hear the sentence tinted,
+      pages turning by themselves, back/forward a sentence, speed and voice, pause and resume, turn a
+      page by hand while playing and while paused, lock the screen and use the lock-screen and
+      headphone controls, a phone call pausing it, and leaving the reader stopping it. Note how
+      headers, page numbers, footnotes and any two-column pages sound in a real book; the bookmark
+      must not move by itself.
+- [ ] **Phone-check Lift Log splits (Build 31).** The three starting splits appear; add, rename,
+      reorder and delete a split and its exercises; start a split and an empty workout; Add exercise
+      during a workout; history shows the split name; existing workouts and last performance intact.
 - [ ] **Phone-check the month dropdowns (Build 30).** Pushups, Lift Log and Body history show one
       dropdown per month with the newest open; Logged today opens and closes and lists every set.
 - [ ] **Phone-check the full backup (Build 30).** Back up everything to OneDrive in Files, confirm

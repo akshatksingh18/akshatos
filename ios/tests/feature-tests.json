@@ -21,6 +21,7 @@
       "AkshatOS/features/pagevault/domain/PageVaultBook.swift",
       "AkshatOS/features/pagevault/domain/PageVaultHighlight.swift",
       "AkshatOS/features/pagevault/domain/PageVaultSearch.swift",
+      "AkshatOS/features/pagevault/domain/PageVaultReadAloud.swift",
       "AkshatOS/features/pagevault/domain/PageVaultTheme.swift",
       "AkshatOS/features/pagevault/domain/PageVaultReading.swift",
       "AkshatOS/features/pagevault/domain/PageVaultLayout.swift",
@@ -31,6 +32,7 @@
       "UnitTests/PageVaultPersistenceTests.swift",
       "UnitTests/PageVaultHighlightTests.swift",
       "UnitTests/PageVaultSearchTests.swift",
+      "UnitTests/PageVaultReadAloudTests.swift",
       "UnitTests/PageVaultBackupTests.swift",
       "UnitTests/PageVaultLayoutTests.swift"
     ],
