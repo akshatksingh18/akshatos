@@ -33,7 +33,7 @@ import PDFKit
             restartSentence()
         }
     }
-    /// Nil follows the best voice installed for the phone's language.
+    /// Nil follows the highest-quality voice across the phone's language variants.
     @Published var voiceID: String? {
         didSet {
             defaults.set(voiceID, forKey: Keys.voice)
@@ -211,8 +211,8 @@ import PDFKit
     private var voice: AVSpeechSynthesisVoice? {
         if let voiceID, let chosen = AVSpeechSynthesisVoice(identifier: voiceID) { return chosen }
         let code = AVSpeechSynthesisVoice.currentLanguageCode()
-        let all = Self.voices()
-        return all.first { $0.language == code } ?? all.first
+        return PageVaultReadAloud.bestVoice(in: Self.voices(), languageCode: code,
+                                           quality: { $0.quality.rawValue }, language: { $0.language })
     }
 
     // MARK: - Reading

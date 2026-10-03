@@ -12,10 +12,10 @@ simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133` pas
 and IPA validation. Akshat installed Build 27 and reports that it works well end-to-end, closing the
 focused physical-phone behavior pass. Sideloadly confirms current-version automatic-refresh
 enrollment at the expected final identity in automatic mode, with no error and a seven-day expiry;
-Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
+Build 27 was the accepted backup and is superseded by accepted Build 31. Build 26 implemented the core feature and is
 superseded. Working source 0.6.0 (29) moves history to its own screen holding every finished
-workout and shows every set of the last performance instead of "+N more"; it passed CI in Build 29 and awaits a
-phone pass. Working source 0.8.0 (31) replaces the hard-coded Upper/Lower templates with **splits
+workout and shows every set of the last performance instead of "+N more"; it passed CI in Build 29
+and Akshat accepted its phone behavior with Build 31. Working source 0.8.0 (31) replaces the hard-coded Upper/Lower templates with **splits
 Akshat edits in the app** (starting with Lower day, Back and biceps day and Chest day, since the
 old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
 and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
@@ -95,7 +95,7 @@ remote.
 - Akshat reports the installed Build 27 works well end-to-end on the physical phone. This closes the
   focused Lift Log behavior pass without inventing a more granular checklist than was reported.
 - Current-version automatic-refresh enrollment for the expected signed identity and automatic mode
-  is confirmed; Build 27 is the accepted backup artifact.
+  was confirmed for Build 27; Build 31 is now the accepted backup artifact.
 - Until Akshat explicitly activates the source-of-truth switch, `health/fitness/data/lift-log.csv`
   remains the coaching source of truth.
   After activation, phone entries become primary for new sessions only when Akshat explicitly

@@ -118,7 +118,11 @@ carried across the page break, a hyphenated word joined across it, a heading's b
 `PageVaultReadAloudTests` on generated PDFs: reading from a page past its header and page number with
 the offset matching PDFKit's text, skipping across pages and turning them, pause/resume/stop,
 following a hand page turn while paused and playing, a page handed to the voice as one passage, a
-sentence spoken whole across a page break, a text-less book saying so, and the remembered speed. Real speech, the lock screen, headphones and interruptions are phone checks.
+sentence spoken whole across a page break, a text-less book saying so, and the remembered speed.
+Local Build 33 adds nine synthetic domain assertions for automatic voice selection: Premium or
+Enhanced over a basic exact-locale voice, candidate-order independence, exact-locale ties, a sole
+basic voice, no candidates, an absent exact locale and other language variants. These assertions
+are already included by the registered PageVault domain suite; their execution awaits cloud CI. Real speech, the lock screen, headphones and interruptions are phone checks.
 `validate-ipa.py` also requires the audio background mode and no other.
 
 ReelVault is registered as its own feature suite. Its domain test covers the shuffle with a seeded

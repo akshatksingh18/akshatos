@@ -1,7 +1,8 @@
 # ReelVault iPhone plan
 
 **State:** ReelVault is a feature module of the AkshatOS hub; WHOOP stays standalone. Its first
-version is implemented in AkshatOS working source 0.9.0 (32) and not yet built or phone-verified;
+version shipped in AkshatOS 0.9.0 (32), passed cloud CI/artifact validation and is installed
+with current-version automatic-refresh enrollment; its phone pass is pending;
 `README.md` says what it does and `architecture.md` how. Where the first version differs from the
 proposals below, the difference is listed under "First version versus this plan". The existing
 Android scaffold is unverified. This plan is not authorization to change build identities, enroll in
@@ -111,7 +112,7 @@ Ordinary expiry is repaired with same-account/team, same-bundle overwrite, not u
 
 ## Shared cloud-build and Sideloadly plan
 
-Use the single native-hub pipeline in `../hub-plan.md`: private macOS/Xcode compilation,
+Use the single native-hub pipeline in `../hub-plan.md`: currently public GitHub macOS/Xcode compilation,
 standard unsigned Release IPA with source/version/capability/SHA-256 metadata, and Windows
 Sideloadly signing. Do not create a ReelVault-specific workflow or reserve a standalone bundle ID.
 The previous standalone candidate is not an active installation identity.
@@ -121,15 +122,16 @@ repository is the source/build owner, and the Android fallback is preserved here
 source/docs only, never videos, exports, Apple credentials,
 profiles, device identifiers, or IPAs committed to Git.
 
-Keep current/previous known-good hub IPAs outside Git. Refresh the same cached binary without a
+Keep the accepted hub IPA and one pending candidate outside Git using the shared backup/testing cache. Refresh the same cached binary without a
 source rebuild, using the same Apple Account/team and hub identity. Follow daily/48-hour checks,
 three-day refresh buffer, two-day escalation, final-day USB recovery, and two-cycle validation.
-One hub refresh updates all three modules; confirm videos/headlines, PDFs/progress, and squat
+One hub refresh updates every module; confirm videos/headlines, PDFs/progress, and squat
 state/actions survive. Neither Sideloadly nor Git is a backup of the user library.
 
-Sideloadly is installed, but the downloaded Squat Reminder IPA is only a standalone smoke build.
-No combined hub IPA exists yet. Choose identity and test any existing-container migration before
-keeping real data; do not relabel an old download as the hub.
+The hub's permanent identity is selected and installed. Build 31 is the accepted recovery IPA;
+Build 32 includes ReelVault and is installed pending its phone pass. `../cloud-build.md` owns the
+artifact evidence and `../../final-ipas/README.md` the one-slot backup/testing cache model.
+The old standalone Squat Reminder smoke IPA is historical and must never be relabeled as the hub.
 
 ## Implementation sequence and acceptance
 

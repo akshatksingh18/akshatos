@@ -2,7 +2,8 @@
 
 **State:** The reading loop is confirmed on the physical iPhone as of Build 20 — page fitting,
 bookmark restore, the tinted page, paging and a full-library export (results in `CLAUDE.md`). Restore into
-a library missing those books remains unverified. Reading streaks have been removed. The table of
+a library missing those books passed on the phone in Build 24. Clean-install restore remains
+unexercised by Akshat's decision. Reading streaks have been removed. The table of
 contents was removed from v1. Accepted Build 25 refreshed the library and Takeaways with a themed
 presentation only, which 0.6.0 (29) replaces with a plain, minimal one; persistence, reading
 behavior and the deliberate removal of reading streaks are unchanged by either. The presentation passed the AkshatOS PR #52 macOS CI Gate,
@@ -31,6 +32,16 @@ and recovery, and `features.md` owns product scope.
   imported PDF and durable metadata separately from regenerable cover thumbnails/cache.
 - **Network/services:** none required for normal use. No account, backend, analytics, remote push,
   required cloud sync, or runtime dependence on the source document provider.
+
+## Read-aloud voice selection
+
+The narrator offers installed non-novelty, non-personal voices for the phone's language.
+An explicit saved voice identifier takes precedence. In local Build 33, the Foundation-only
+`PageVaultReadAloud.bestVoice` ranks automatic candidates by quality across regional variants,
+then exact locale for equal quality, retaining the supplied order for other ties. The narrator
+maps AVFoundation voices into that policy; synthetic domain cases need no downloaded voice.
+Build 32's exact-locale-first selection is superseded only in source; Build 33 CI and device
+verification remain pending. Passage construction, speed, storage and audio lifecycle are unchanged.
 
 ## Storage and import ownership
 

@@ -1,7 +1,8 @@
 # ReelVault Architecture
 
-**State:** The first iPhone version is implemented in AkshatOS working source 0.9.0 (32), not yet
-built or phone-verified. Android source is an unverified fallback.
+**State:** The first iPhone version shipped in AkshatOS 0.9.0 (32), passed cloud CI and local
+artifact validation, and is installed with current-version automatic-refresh enrollment. Its
+physical-device pass is pending. Android source is an unverified fallback.
 
 ## iPhone implementation
 
@@ -46,10 +47,10 @@ playing. Do not transfer Android SAF URI semantics or ExoPlayer APIs to iOS. The
 scope retains looping, tap pause/resume, editable headlines, and no-repeat shuffle; optional
 thumbnails/resume/auto-advance and previously cut features remain outside the required MVP.
 
-The build proposal is a private macOS cloud job producing a conventional unsigned Release IPA,
-then Windows Sideloadly signing/refresh of the shared native hub, not a standalone ReelVault IPA.
-The accepted model is Squats + PageVault + ReelVault in one SwiftUI application and standalone
-WHOOP: two installed apps. This project lives in the AkshatOS repository but has no iOS implementation yet. The canonical
+The hub's currently public GitHub macOS job produces a conventional unsigned Release IPA,
+then Windows Sideloadly signs/refreshes the shared native hub. Pushup Reminder, PageVault, Lift Log,
+Body and ReelVault share one SwiftUI app, with WHOOP standalone: two installed apps. ReelVault's
+iOS implementation and its preserved Android fallback live in the AkshatOS repository. The canonical
 hub source/build owner is `../`; do not create a competing standalone target. Shared
 identity, lazy module loading, data separation, and update/recovery rules are in `../hub-plan.md`.
 

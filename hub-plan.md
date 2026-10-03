@@ -1,14 +1,10 @@
 # AkshatOS — shared integration contract
 
-**Status:** Integration implementation activated — AkshatOS owns the native hub and Pushup-first
-build. PageVault is active and phone-accepted through Build 24; Akshat explicitly added Lift Log as
-a local-only strength utility. Build 27 is cloud/package, locally and phone verified with its fixed
-Upper/Lower workflow; current-version automatic-refresh enrollment also passes, and its artifact is
-the accepted recovery/refresh copy. `lift-log.md` owns it. Body (weight, weekly measurements,
-progress photos) is a local-only module, owned by `body-log.md`. ReelVault's first version (a
-feed of Akshat's own videos with headlines) is in working source 0.9.0 (32), owned by `reelvault/`
-and not yet built or phone-verified. WHOOP stays standalone.
-Build/phone progress belongs in `cloud-build.md`, not this integration contract.
+**Status:** Active shared integration contract for one native AkshatOS hub containing Pushup
+Reminder, PageVault, Lift Log, Body and ReelVault, plus standalone WHOOP. AkshatOS owns the common
+source, permanent identity, build and full-backup registry. Feature contracts belong in their
+owning documents; build/phone progress belongs in `cloud-build.md`. The contract changes only
+when packaging, lifecycle boundaries, data ownership or shared recovery requirements change.
 
 ## Installed applications
 
@@ -107,7 +103,8 @@ into the AkshatOS target, not independent IPAs. Their own backup/activation work
 
 Working source 0.7.0 (30) adds a **Backup** row at the bottom of the hub (below the modules, not a
 module) that backs up or restores every module at once; each module's own backup still works alone.
-It is implemented and covered by hosted tests but not yet phone-verified.
+It is implemented and covered by hosted tests; Akshat accepted the full backup with Build 31.
+ReelVault joins it from Build 32, whose module and full-backup phone checks remain pending.
 
 - **Back up everything** writes one folder, `AkshatOS Backup YYYY-MM-DD`, through the system file
   mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version, and one

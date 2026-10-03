@@ -4,7 +4,8 @@ A personal, local-only video module of AkshatOS: pick videos you own, add a head
 browse a vertical reel. WHOOP remains a separate app. No store release, backend, or account.
 
 **Status:** The first iPhone version is implemented in AkshatOS working source 0.9.0 (32) and
-covered by tests; it is not yet built, installed or tried on the phone. The Android scaffold below
+cloud-tested and locally validated; it is installed with current-version automatic-refresh
+enrollment, and its phone pass is pending. The Android scaffold below
 remains unverified. It lives in the AkshatOS repository's `reelvault/` folder; the former private
 `reels` repository keeps the earlier history.
 

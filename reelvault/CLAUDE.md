@@ -4,8 +4,8 @@ Personal, local-only ReelVault module of the native AkshatOS iPhone hub: select 
 add a headline to each, and browse them as a vertical reel. The existing Kotlin/Compose Android scaffold is preserved
 as an unverified fallback. Personal sideloading only: no backend, analytics, account, or store release.
 
-**Status:** First iPhone version implemented in AkshatOS working source 0.9.0 (32), with domain,
-storage/backup and navigation tests; not yet built by CI, installed, or tried on the phone. Its source
+**Status:** First iPhone version implemented in AkshatOS 0.9.0 (32), which passed the full CI Gate
+and artifact validation (`../cloud-build.md`); installed and enrolled for current-version automatic refresh; its phone pass is pending. Its source
 is in `../ios/AkshatOS/features/reelvault/`. It becomes daily-use once Build 32 passes the phone
 checks in `../todo.md`. Android remains an unverified scaffold.
 

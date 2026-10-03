@@ -4,37 +4,24 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Working source 0.6.0 (29) adds the Body module (weight, weekly measurements,
-photos; gates in `body-log.md`) and removes Build 28's PageVault laptop inbox folder and Open
-in AkshatOS at Akshat's request, after linking the folder did nothing on the phone, and moves Pushup
-and Lift Log history onto their own screens with the full last-performance set list, and replaces the
-"quest" theme with a clean, minimal design in plain words. Build 29 passed its PR/main CI Gates and
-artifact validation and was installed; Build 31 (full backup, month dropdowns, Lift Log splits,
-PageVault read aloud) is installed over it and accepted by Akshat on the phone, including Build 29's
-redesign, Body and the notification icon after a restart. The text that follows records what Build 29 needed:
-an install over Build 28, then a phone check of the redesign and wording (notifications
-and icon included), Pushup history, Lift history (all workouts present) and the last-performance line. Version 0.4.0 (27) adds mode guidance, priority-ordered Upper/Lower templates,
-same-mode last-performance references and active-set editing to Lift Log. PR #54 merged at `ebb44d3`;
-main run `35925770220` passed the complete CI Gate and artifact `akshatos-ios-133` passed local
-checksum/IPA validation. Akshat reports that the installed Build 27 works well end-to-end. Sideloadly
-confirms the expected final identity, automatic bundle-ID mode, completed current-version enrollment,
-no error and a seven-day expiry; Build 27 is promoted to the accepted backup slot. Accepted
-0.3.0 (25) presents the legacy movement engine as Pushup Reminder and refreshes the hub/PageVault
-into the playful Homebase/quest system. Build 13 remains accepted
-evidence for the unchanged reminder lifecycle, and Build 24 for PageVault v1; neither verifies the
-Build-25 presentation beyond Akshat's focused acceptance report. Build 25's
-retained candidate passed complete macOS CI, package inspection, checksum and local IPA validation;
-its Wi-Fi install and current-version automatic-refresh enrollment are corroborated, and Akshat
-reported the installed build works perfectly. Its focused launch/presentation gate and release-cache
-promotion are complete; the broader physical and refresh items below stay open. Build evidence lives in
-`cloud-build.md`.
+**Current focus:** Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
+`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
+editable Lift Log splits and read-aloud controls; the voice sounded robotic.
+Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
+installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
+error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
+reported robotic. Working source 0.9.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. Build 33 has not passed
+cloud CI, produced an IPA or been tested on the phone.
+Wait for Akshat's named Enhanced/Premium voice result, ReelVault phone findings and silent-switch
+preference. Build 32 is not ready for promotion. Detailed build history belongs in `cloud-build.md`.
 
 ## iPhone-primary work
 
 ### Done
 
 - [x] **Lift Log MVP in local source.** The hub exposes a separate local-only strength logger
-      with one durable active session, hard-coded Upper/Lower templates in priority order,
+      with one durable active session, editable splits in priority order (from Build 31),
       plates-per-side/per-hand/stack/added/total meanings and examples, same-mode last-performance
       references, active-set edit/undo, finished history, destructive confirmations, validated JSON
       backup/restore and load-mode-preserving CSV export. Its domain, persistence and UI suites are
@@ -106,13 +93,15 @@ promotion are complete; the broader physical and refresh items below stay open. 
 
 ### Open
 
-- [ ] **Phone-check the read-aloud voice (Build 32).** Build 31's controls, tint, page turns and
-      lock-screen controls work on the phone, but the voice sounded robotic and restarted its pitch
-      as if every few words began a sentence. Build 32 gives the voice a whole page as one passage
-      and carries a sentence across the page break. Check that it now flows, that the tint still
-      follows, that skip and pause still work, and whether an Enhanced or Premium voice is installed
-      (Settings → Accessibility → Spoken Content → Voices); the basic voice stays robotic whatever
-      the app does. The cause was inferred from the code, not heard, so report how it sounds.
+- [ ] **Read-aloud voice still robotic on Build 32.** Build 31's voice sounded robotic and restarted
+      its pitch every few words; Build 32 speaks a page as one passage. Akshat reports Build 32 still
+      sounds robotic. He was told to download a Premium or Enhanced voice (Settings → Accessibility →
+      Spoken Content → Voices → English) and pick it by name under Voice in the bar's speed menu.
+      Next: hear back whether a Premium voice chosen by name fixes it; if not, get which voice and
+      what it does (odd pauses, flat tone) before changing code. The Best available locale-selection gap is fixed in local Build 33 source: the highest
+      quality across language variants wins, with the exact locale breaking a quality tie.
+      Nine synthetic domain regressions are added; cloud CI, a new IPA and a phone pass remain
+      pending. This does not establish that the reported robotic sound is resolved.
 - [ ] **Phone-check ReelVault (Build 32).** Add videos from Photos and from Files (small and
       large, portrait and landscape), write and edit headlines in the feed and the library, swipe
       through at least two full rounds (every video once a round, never twice in a row), the video

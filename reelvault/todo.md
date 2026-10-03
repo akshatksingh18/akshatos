@@ -15,7 +15,8 @@ physical acceptance details; `README.md` says what the first version does.
       zero/one/many-video shuffle and additions/deletions mid-round covered by tests.
 - [x] Full media-and-headline backup and restore, and the hub's full backup through a
       `HubBackupPart` (`../hub-plan.md` § Full backup).
-- [ ] Pass the cloud build and install it (Build 32), then the phone checks in `../todo.md`:
+- [x] Pass the cloud build: Build 32 passed PR and main CI and artifact validation.
+- [ ] Phone-check installed and enrolled Build 32 using `../todo.md`:
       Photos and Files import with small and large real videos, playback, sound, the silent switch,
       offline use, interruption, memory and stutter under fast swipes.
 - [ ] Import feedback for large videos: a copy shows only a spinner, with no percentage or cancel.

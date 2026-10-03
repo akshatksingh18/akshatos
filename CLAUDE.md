@@ -12,60 +12,18 @@ every module at once (`hub-plan.md` § Full backup). This repository evolved fro
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-**Status:** Building. Version 0.4.0 (27) adds definitions/examples for every Lift Log mode,
-hard-coded priority-ordered Upper/Lower templates, last-performance references and active-set
-editing. PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate, including
-registered domain and hosted simulator tests, simulator/device compilation and IPA inspection.
-Artifact `akshatos-ios-133` passed local checksum and IPA validation. Akshat installed Build 27 and
-reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. Sideloadly's
-database confirms version 0.4.0 at the expected final identity, automatic bundle-ID mode, completed
-current-version enrollment, no error and a seven-day expiry. Build 27 is therefore promoted to the
-accepted backup slot.
-Build 28 (0.5.0) added PageVault's OneDrive laptop inbox folder and Open in AkshatOS, passed CI and
-artifact validation, and is installed with current-version enrollment. On the phone, linking the
-inbox folder did nothing, so Akshat asked for both features to be removed. Working source 0.6.0 (29)
-removes them (keeping only the serialized import path), adds the **Body** module (daily weight,
-eight-site weekly tape, weekly reminder, Navy estimate, progress photos, backup/CSV — `body-log.md`),
-moves Pushup and Lift Log history
-off their main screens onto month-grouped history screens (Lift Log's now reaching every workout, not
-just the latest 12), shows every set of a last performance instead of "+N more", replaces the
-stale "Preview 0.3.0" footer with the installed version, and replaces the Build-25 "quest" theme
-across the hub, every module, the notifications and the icon with a clean, minimal design in plain
-words (`features.md`). Build 29 passed PR/main CI (PR #57, `2637ea1`) and local artifact validation, and is installed from `testing\`: Sideloadly records 0.6.0 at the expected identity with current-version automatic-refresh enrollment and no error. Its phone pass is pending.
-Working source 0.7.0 (30) adds the hub's full backup: one folder with every module's own backup,
-restored only after every part is checked, with every module required by CI to take part
-(`hub-plan.md` § Full backup). It also turns the Pushups, Lift Log and Body history screens into
-one dropdown per month and Pushups' Logged today into a closed-by-default dropdown. PR #59 merged at
-`10357b9`; main run `36763493014` passed and artifact `akshatos-ios-144` passed local checksum, IPA
-validation and screenshot review. Build 30 was never installed and is superseded by Build 31.
-Working source 0.8.0 (31) replaces Lift Log's fixed Upper/Lower templates with splits Akshat edits in
-the app (starting with Lower day, Back and biceps day and Chest day), adds Add exercise during any
-workout and an empty workout (`lift-log.md`), and adds PageVault **read aloud**: a headphones button
-reads the book from the page on screen with the phone's own voice, turning pages and continuing with
-the screen locked (`pagevault/features.md` § Read aloud). PR #60 merged at `46445c5`; main run
-`36877588699` passed and artifact `akshatos-ios-147` passed local checksum, IPA validation and
-screenshot review. Akshat installed Build 31 and reports everything works on the phone, including
-Build 29's redesign, Body and the notification icon after a restart, except that the read-aloud voice
-sounds robotic and broken up. Sideloadly records 0.8.0 at the expected identity in automatic mode with
-current-version enrollment and no error, so Build 31 is promoted to the accepted backup slot.
-Working source 0.9.0 (32) adds the first **ReelVault** version (`reelvault/`) and hands the read-aloud
-voice a whole page as one passage, carrying a sentence across the page break, instead of a sentence
-at a time. It is not yet built or phone-verified.
-Build 26 introduced the local-only Lift Log core and is now a reproducible superseded artifact.
-Accepted 0.3.0 (25) repurposes the movement engine as Pushup Reminder and introduces the
-playful Homebase/quest visual system across the hub, Pushups and PageVault. Retained-candidate commit
-`4253311` passed workflow-dispatch run `35678793533`, including
-domain/UI tests, simulator and device compilation, and IPA inspection; artifact `akshatos-ios-123`
-was downloaded into the local testing slot and passed checksum/IPA validation. Akshat then reported
-the Wi-Fi install reached 100%, and Sideloadly's database corroborates version 0.3.0 under the expected
-signed identity with current-version automatic-refresh enrollment, no error and seven days remaining.
-Akshat subsequently reported that Build 25 works perfectly, closing its focused launch and presentation
-pass; its artifact is now the accepted recovery/refresh copy. This does not substitute for the broader
-edge-case, refresh/recovery and multi-cycle soak matrix, which remains open. Build 13 remains the detailed
-accepted evidence for the unchanged movement lifecycle. PageVault v1 is phone-accepted through Build 24
-(`pagevault/CLAUDE.md`), and Build 25's refreshed presentation is now accepted too. `cloud-build.md` owns build evidence and the
-working source version; `todo.md` owns open gates. The full target contract below is not a claim that
-every feature is physically verified.
+**Status:** Building. Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
+`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
+editable Lift Log splits and read-aloud controls; the voice sounded robotic.
+Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
+installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
+error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
+reported robotic. Working source 0.9.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. Build 33 has not passed
+cloud CI, produced an IPA or been tested on the phone.
+PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
+baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
+`cloud-build.md` owns per-build evidence and `todo.md` owns open gates.
 
 ## Files
 
@@ -134,7 +92,8 @@ every feature is physically verified.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted, installed copy and `testing\` is empty until Build 32 is built.
+  31 is the accepted copy and `testing\` holds Build 32 (ReelVault and the reworked read-aloud
+  voice), installed and awaiting its phone pass.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -165,7 +124,7 @@ every feature is physically verified.
   cancelled — folding the rest into `staleAttempts` instead of reporting the same app twice.
 - `scripts/signing-apps.json` — exact signed bundle identities that must remain enrolled for
   automatic refresh plus each app's proven Sideloadly bundle-ID mode. The health check enforces the
-  mode (`automatic` for AkshatOS, `exact` for WHOOP), not just the final ID. Update only for a
+  mode for AkshatOS (`automatic`) and accepts `either` for WHOOP, whose installs complete in both. Update only for a
   deliberate Apple team/bundle migration; ordinary versions and source iterations must keep these
   identities unchanged.
 - `.github/workflows/ios-build.yml` — public-repository macOS-runner job that generates the Xcode
@@ -182,7 +141,7 @@ every feature is physically verified.
 - `ios/AkshatOS/shared/backup/HubBackupPart.swift` — the protocol every module implements to join the
   full backup; `hub-plan.md` § Full backup owns the contract and the add-a-module steps.
 - `ios/AkshatOS/features/*/<Module>BackupPart.swift` (`SquatsBackupPart`, `PageVaultBackupPart`,
-  `LiftLogBackupPart`, `BodyBackupPart`) — each module's conformance, reusing its own backup.
+  `LiftLogBackupPart`, `BodyBackupPart`, `ReelVaultBackupPart`) — each module's conformance, reusing its own backup.
 - `ios/scripts/check-backup-coverage.py` — fails CI when a `features/` module has no `HubBackupPart`
   or is missing from `FullBackupService(parts:)` in `AppServices`; has its own negative fixtures.
 - `ios/UnitTests/FullBackupTests.swift` — every module backed up by one phone and restored into a
@@ -276,8 +235,8 @@ every feature is physically verified.
   source version and per-build evidence owned by `cloud-build.md`. Build 13 is the last build
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
-  Build 25 is the accepted Pushup Reminder/presentation baseline; Build 27 is the current accepted
-  recovery/refresh artifact. The
+  Build 25 is the accepted Pushup Reminder/presentation baseline; Build 31 is the current accepted
+  recovery/refresh artifact; Build 32 is installed pending its phone pass. The
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
@@ -713,6 +672,15 @@ data, device state, or durable release IPAs.
   alternative. The only reason to push earlier is something Akshat needs in hand right away — a build
   he is about to install, or a fix he is waiting on to test. When in doubt, hold and say what is
   waiting.
+- **CI waits happen in the background, unprompted.** Once Akshat has approved a push and merge,
+  wait for each GitHub Actions run with a background command that wakes the session when it ends
+  (`gh run watch` with `run_in_background`), then merge, wait for the `main` build and put the
+  build in `testing\` without asking again; fix failures caused by the agent's own code or tests
+  and push again, and stop to ask only for a real decision. He asked for this instead of having to
+  ask "did it pass?".
+- **Akshat installs builds himself.** Agent sessions here cannot drive Sideloadly: there is no
+  screen-control tool, and the permission system refuses scripting its window (it holds his Apple
+  login). Give him the IPA path and steps, then confirm the install from `read-signing-state.py`.
 - **Every module joins the full backup.** A new module under `features/` needs its own
   export/restore and a `HubBackupPart` listed in `AppServices` before it merges; CI enforces this
   (`hub-plan.md` § Full backup lists the steps).
