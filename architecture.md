@@ -6,8 +6,10 @@ editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
 error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.9.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. Build 33 has not passed
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
+Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
+with nothing logged. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
 Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
@@ -208,7 +210,9 @@ background-capable services at app lifetime; load future media views/resources o
   being pushed on top of whatever was there. `HubView` is therefore a path-driven `NavigationStack`
   with `NavigationLink(value:)` cards. Routing keys on the request identifier because the 9:00 AM
   request carries no category, and navigation is limited to the default action so a background Done
-  or Pause cannot move the screen. `hub-plan.md` owns the contract.
+  or Pause cannot move the screen. Lift Log's inactivity reminder (`akshatos.liftlog.`) is the third
+  routed namespace and registers the second category, whose Finish workout action the coordinator
+  hands to `LiftLogStore` (`lift-log.md`). `hub-plan.md` owns the contract.
 - Do not use an in-process timer, background loop, unbounded list of future notifications, Web Push,
   a Shortcut/Personal Automation as the reminder engine, or a server.
 

@@ -12,8 +12,10 @@ editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
 error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.9.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. Build 33 has not passed
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
+Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
+with nothing logged. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 PageVault v1 is accepted through Build 24, and Build 13 is the detailed movement-lifecycle baseline.
 The broader edge-case, refresh/recovery and soak matrix remains open. Updates retain the permanent

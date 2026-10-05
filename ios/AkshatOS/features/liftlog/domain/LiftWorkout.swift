@@ -5,6 +5,7 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
     case perHand
     case stack
     case addedWeight
+    case weightLoaded
     case total
 
     var id: String { rawValue }
@@ -15,6 +16,7 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
         case .perHand: return "Weight per hand"
         case .stack: return "Stack setting"
         case .addedWeight: return "Added weight"
+        case .weightLoaded: return "Weight loaded"
         case .total: return "Total weight"
         }
     }
@@ -25,6 +27,7 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
         case .perHand: return "lb/hand"
         case .stack: return "lb stack"
         case .addedWeight: return "lb added"
+        case .weightLoaded: return "lb loaded"
         case .total: return "lb total"
         }
     }
@@ -39,6 +42,8 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
             return "Enter the number selected on the machine's weight stack; do not guess pulley-adjusted resistance."
         case .addedWeight:
             return "Enter only the external weight added to a bodyweight exercise; your bodyweight stays excluded."
+        case .weightLoaded:
+            return "Enter all the plates on the machine added together, as one number; the machine's own resistance stays excluded."
         case .total:
             return "Enter the complete known load, including the bar or machine base only when you actually know it."
         }
@@ -54,6 +59,8 @@ enum LiftLoadMode: String, Codable, CaseIterable, Identifiable {
             return "Example: seated cable row with the pin at 70 lb → enter 70."
         case .addedWeight:
             return "Example: weighted pull-ups with a 25 lb plate → enter 25."
+        case .weightLoaded:
+            return "Example: seated calf raise with two 45 lb plates and a 25 → enter 115."
         case .total:
             return "Example: a 45 lb bar plus 25 lb per side is 95 lb total → enter 95."
         }
@@ -134,8 +141,8 @@ struct LiftSplit: Identifiable, Codable, Equatable {
                 LiftSplitExercise("Leg press", .platesPerSide,
                                   equipmentNote: "Sled/base resistance excluded"),
                 LiftSplitExercise("Seated machine leg curl", .stack),
-                LiftSplitExercise("Seated calf raise", .platesPerSide,
-                                  equipmentNote: "Machine base resistance excluded")
+                LiftSplitExercise("Seated calf raise", .weightLoaded,
+                                  equipmentNote: Self.calfRaiseNote)
             ]),
             LiftSplit(name: "Back and biceps day", exercises: [
                 LiftSplitExercise("Weighted pull-ups", .addedWeight),
@@ -149,6 +156,31 @@ struct LiftSplit: Identifiable, Codable, Equatable {
                 LiftSplitExercise("Triceps pushdown", .stack)
             ])
         ]
+    }
+}
+
+extension LiftSplit {
+    static let calfRaiseNote = "Machine's own resistance excluded"
+
+    /// Splits saved before "Weight loaded" existed start the seated calf raise as plates per side,
+    /// which does not fit a machine loaded on one post. Only that untouched starting entry moves to
+    /// the new mode; anything Akshat set himself is left alone. Nil when nothing changes.
+    static func upgradingCalfRaise(_ splits: [LiftSplit]) -> [LiftSplit]? {
+        var changed = false
+        let upgraded = splits.map { split -> LiftSplit in
+            var split = split
+            for index in split.exercises.indices {
+                let exercise = split.exercises[index]
+                if exercise.name == "Seated calf raise", exercise.loadMode == .platesPerSide,
+                   exercise.equipmentNote == "Machine base resistance excluded" {
+                    split.exercises[index].loadMode = .weightLoaded
+                    split.exercises[index].equipmentNote = calfRaiseNote
+                    changed = true
+                }
+            }
+            return split
+        }
+        return changed ? upgraded : nil
     }
 }
 
@@ -219,6 +251,23 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     var isActive: Bool { endedAt == nil }
     var setCount: Int { exercises.reduce(0) { $0 + $1.sets.count } }
 
+    /// How long a workout can sit with nothing logged before Lift Log asks whether it is finished.
+    static let inactivityReminderDelay: TimeInterval = 60 * 60
+
+    /// When the latest set was logged, or when the workout started if nothing has been.
+    var lastActivity: Date {
+        exercises.flatMap(\.sets).map(\.completedAt).reduce(startedAt, max)
+    }
+
+    /// When to ask whether this workout is finished: an hour after `activity`, the last time
+    /// anything was logged. If that hour has already passed (the app was reopened later), an hour
+    /// from `now`, so the question still comes once instead of never. Nil for a finished workout.
+    func inactivityReminder(after activity: Date, now: Date) -> Date? {
+        guard isActive else { return nil }
+        let due = activity.addingTimeInterval(Self.inactivityReminderDelay)
+        return due > now ? due : now.addingTimeInterval(Self.inactivityReminderDelay)
+    }
+
     /// Finished workouts grouped into calendar months, newest month and newest workout first. An
     /// active workout is not history and is left out.
     static func byMonth(_ workouts: [LiftWorkoutSession],
@@ -281,6 +330,12 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
         }
         guard let removed = exercises[index].sets.popLast() else { throw LiftLogError.setNotFound }
         return removed
+    }
+
+    /// Finishes a workout that was left open, ending it when its last set was logged rather than
+    /// whenever the reminder was answered, so a forgotten workout does not record an extra hour.
+    mutating func finishForgotten() throws {
+        try finish(at: lastActivity)
     }
 
     mutating func finish(at date: Date = Date()) throws {

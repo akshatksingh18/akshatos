@@ -10,12 +10,20 @@ import SwiftUI
 
     private let repository: any LiftLogRepository
     private let splitStorage: any LiftSplitStoring
+    private let reminders: any LiftReminding
     private let now: () -> Date
+    /// When something was last logged or changed in the active workout during this launch. Adding
+    /// an exercise counts too, though only sets carry a time in the record.
+    private var lastLogged: Date?
+    /// Reminder changes run one after another, so a cancel can never be overtaken by an earlier
+    /// schedule that was still waiting on the notification settings.
+    private var reminderUpdate: Task<Void, Never>?
 
     init(repository: (any LiftLogRepository)? = nil, splits: (any LiftSplitStoring)? = nil,
-         now: @escaping () -> Date = Date.init) {
+         reminders: (any LiftReminding)? = nil, now: @escaping () -> Date = Date.init) {
         self.repository = repository ?? SwiftDataLiftLogRepository()
         self.splitStorage = splits ?? DefaultsLiftSplitStorage()
+        self.reminders = reminders ?? LiftReminderService()
         self.now = now
     }
 
@@ -42,6 +50,50 @@ import SwiftUI
             message = "Your lift history could not be read: \(error.localizedDescription)"
         }
         loadSplits()
+        updateReminder()
+    }
+
+    /// Waits for any reminder change already under way. For tests.
+    func settleReminder() async { await reminderUpdate?.value }
+
+    // MARK: - Inactivity reminder
+
+    /// Keeps one "still working out?" reminder an hour after the last thing logged in the active
+    /// workout, and none when no workout is active.
+    private func updateReminder() {
+        let previous = reminderUpdate
+        let plan = active.flatMap { workout in
+            workout.inactivityReminder(after: lastLogged ?? workout.lastActivity, now: now())
+                .map { (date: $0, id: workout.id, canFinish: workout.setCount > 0) }
+        }
+        let reminders = reminders
+        reminderUpdate = Task {
+            await previous?.value
+            if let plan {
+                await reminders.schedule(at: plan.date, workoutID: plan.id, canFinish: plan.canFinish)
+            } else {
+                reminders.cancel()
+            }
+        }
+    }
+
+    private func logged() {
+        lastLogged = now()
+        updateReminder()
+    }
+
+    /// The reminder's Finish action: ends the workout it was sent for at its last logged set. A
+    /// background launch may arrive before the hub has loaded anything, so it loads first.
+    func finishFromReminder(workoutID: UUID) {
+        if !storageAvailable { load() }
+        guard var workout = active, workout.id == workoutID else { return }
+        do {
+            try workout.finishForgotten()
+            try persistAndReplace(workout)
+        } catch {
+            message = error.localizedDescription
+        }
+        updateReminder()
     }
 
     // MARK: - Splits
@@ -51,7 +103,12 @@ import SwiftUI
     private func loadSplits() {
         do {
             if let saved = try splitStorage.load() {
-                splits = saved
+                if let upgraded = LiftSplit.upgradingCalfRaise(saved) {
+                    try splitStorage.save(upgraded)
+                    splits = upgraded
+                } else {
+                    splits = saved
+                }
             } else {
                 splits = LiftSplit.starting
                 try splitStorage.save(splits)
@@ -107,6 +164,7 @@ import SwiftUI
                                             equipmentNote: exercise.equipmentNote)
             }
             commit(workout)
+            logged()
         } catch {
             message = "\(split?.name ?? "The workout") could not be started: \(error.localizedDescription)"
         }
@@ -118,6 +176,7 @@ import SwiftUI
             _ = try workout.addExercise(name: name, loadMode: loadMode,
                                         equipmentNote: equipmentNote)
             try persistAndReplace(workout)
+            logged()
         } catch {
             message = error.localizedDescription
         }
@@ -129,6 +188,7 @@ import SwiftUI
             try workout.addSet(exerciseID: exerciseID, reps: reps, load: load,
                                completedAt: now())
             try persistAndReplace(workout)
+            logged()
         } catch {
             message = error.localizedDescription
         }
@@ -139,6 +199,7 @@ import SwiftUI
         do {
             try workout.updateSet(exerciseID: exerciseID, setID: setID, reps: reps, load: load)
             try persistAndReplace(workout)
+            logged()
         } catch {
             message = error.localizedDescription
         }
@@ -149,6 +210,7 @@ import SwiftUI
         do {
             try workout.removeLastSet(exerciseID: exerciseID)
             try persistAndReplace(workout)
+            logged()
         } catch {
             message = error.localizedDescription
         }
@@ -162,6 +224,7 @@ import SwiftUI
         } catch {
             message = error.localizedDescription
         }
+        updateReminder()
     }
 
     func deleteWorkout(_ id: UUID) {
@@ -171,6 +234,7 @@ import SwiftUI
         } catch {
             message = "The workout could not be deleted: \(error.localizedDescription)"
         }
+        updateReminder()
     }
 
     func exercise(_ id: UUID) -> LiftExerciseRecord? {
@@ -238,6 +302,8 @@ import SwiftUI
             workouts = restored.workouts
             if let restoredSplits = restored.splits { splits = restoredSplits }
             storageAvailable = true
+            lastLogged = nil
+            updateReminder()
             return true
         } catch {
             message = "That Lift Log backup is invalid and nothing was replaced: \(error.localizedDescription)"

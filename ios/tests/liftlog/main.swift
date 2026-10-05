@@ -131,3 +131,46 @@ assert(liftMonths.flatMap(\.workouts).count == 4, "Every finished workout is rea
 assert(LiftWorkoutSession.byMonth([historyActive], calendar: historyCalendar).isEmpty,
        "A history holding only the active workout is empty")
 print("PASS: 6 Lift Log history assertions (month order, year boundary, in-month order, active excluded, all reachable)")
+
+// Seated calf raise: plates loaded on one post are entered as one number.
+assert(LiftLoadMode.weightLoaded.title == "Weight loaded" && LiftLoadMode.weightLoaded.shortUnit == "lb loaded")
+assert(LiftLoadMode.weightLoaded.example.contains("seated calf raise"))
+assert(LiftLoadMode.allCases.map(\.rawValue).contains("weightLoaded"))
+let startingCalf = LiftSplit.starting.flatMap(\.exercises).first { $0.name == "Seated calf raise" }
+assert(startingCalf?.loadMode == .weightLoaded, "A new install enters the calf raise as weight loaded")
+let oldCalf = LiftSplitExercise("Seated calf raise", .platesPerSide,
+                                equipmentNote: "Machine base resistance excluded")
+let ownCalf = LiftSplitExercise("Seated calf raise", .platesPerSide, equipmentNote: "Gym B machine")
+let oldSplits = [LiftSplit(name: "Lower day", exercises: [oldCalf]),
+                 LiftSplit(name: "Legs", exercises: [ownCalf])]
+let upgradedSplits = LiftSplit.upgradingCalfRaise(oldSplits)
+assert(upgradedSplits?[0].exercises[0].loadMode == .weightLoaded
+       && upgradedSplits?[0].exercises[0].id == oldCalf.id,
+       "The untouched starting calf raise moves to weight loaded and keeps its identity")
+assert(upgradedSplits?[1].exercises[0] == ownCalf, "A calf raise Akshat set up himself is left alone")
+assert(LiftSplit.upgradingCalfRaise(upgradedSplits!) == nil, "The upgrade happens once")
+let calfJSON = try JSONEncoder().encode(LiftSplitExercise("Seated calf raise", .weightLoaded))
+assert(try JSONDecoder().decode(LiftSplitExercise.self, from: calfJSON).loadMode == .weightLoaded)
+
+// Forgotten workouts: a reminder an hour after the last thing logged, and finishing at the last set.
+var idle = LiftWorkoutSession(startedAt: now)
+assert(idle.lastActivity == now, "With nothing logged, activity is the start")
+let idleLift = try idle.addExercise(name: "Leg press", loadMode: .platesPerSide)
+try idle.addSet(exerciseID: idleLift, reps: 10, load: 90, completedAt: now.addingTimeInterval(600))
+try idle.addSet(exerciseID: idleLift, reps: 10, load: 90, completedAt: now.addingTimeInterval(1_200))
+assert(idle.lastActivity == now.addingTimeInterval(1_200), "Activity is the latest set")
+assert(idle.inactivityReminder(after: idle.lastActivity, now: now.addingTimeInterval(1_300))
+       == now.addingTimeInterval(1_200 + 3_600), "The reminder is an hour after the last set")
+assert(idle.inactivityReminder(after: idle.lastActivity, now: now.addingTimeInterval(9_000))
+       == now.addingTimeInterval(9_000 + 3_600), "Reopened after the hour, it asks an hour from now")
+try idle.finishForgotten()
+assert(idle.endedAt == now.addingTimeInterval(1_200), "A forgotten workout ends at its last set")
+assert(idle.inactivityReminder(after: now, now: now) == nil, "A finished workout gets no reminder")
+var idleEmpty = LiftWorkoutSession(startedAt: now)
+do {
+    try idleEmpty.finishForgotten()
+    assertionFailure("A workout with no sets cannot be finished from the reminder")
+} catch {
+    assert(error as? LiftLogError == .emptyWorkout)
+}
+print("PASS: Lift Log weight-loaded and inactivity-reminder assertions")

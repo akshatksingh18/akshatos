@@ -125,6 +125,13 @@ basic voice, no candidates, an absent exact locale and other language variants. 
 are already included by the registered PageVault domain suite; their execution awaits cloud CI. Real speech, the lock screen, headphones and interruptions are phone checks.
 `validate-ipa.py` also requires the audio background mode and no other.
 
+Local Build 33 also extends the registered Lift Log suites: domain assertions for the Weight loaded
+mode, the one-time upgrade of the untouched starting calf raise, the inactivity reminder time and
+finishing a forgotten workout at its last set; and hosted store tests with an in-memory reminder
+for scheduling, pushing back, reopening after the hour, Finish from the reminder (only for its own
+workout), discard cancelling it, and the saved calf-raise upgrade. Real notification delivery is a
+phone check.
+
 ReelVault is registered as its own feature suite. Its domain test covers the shuffle with a seeded
 generator (empty, one video, every video once a round over many seeds, never twice in a row across
 rounds, a video removed or added during a round), headline and file-name rules, whole-library

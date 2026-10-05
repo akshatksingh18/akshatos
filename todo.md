@@ -10,8 +10,10 @@ editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
 error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.9.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. Build 33 has not passed
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
+Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
+with nothing logged. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 Wait for Akshat's named Enhanced/Premium voice result, ReelVault phone findings and silent-switch
 preference. Build 32 is not ready for promotion. Detailed build history belongs in `cloud-build.md`.
@@ -102,6 +104,12 @@ preference. Build 32 is not ready for promotion. Detailed build history belongs 
       quality across language variants wins, with the exact locale breaking a quality tie.
       Nine synthetic domain regressions are added; cloud CI, a new IPA and a phone pass remain
       pending. This does not establish that the reported robotic sound is resolved.
+- [ ] **Phone-check Lift Log's Build 33 changes.** The seated calf raise in Lower day now shows
+      **Weight loaded** (all plates added together, machine excluded); its earlier plates-per-side
+      sets stay in history but are not offered as its last performance. Start a workout, log a set,
+      leave it an hour and confirm "Still working out?" arrives; tap it (opens Lift Log) and try
+      **Finish workout** from the notification (ends the workout at its last set). It is never
+      sent without notification permission, which the Pushup reminders already hold.
 - [ ] **Phone-check ReelVault (Build 32).** Add videos from Photos and from Files (small and
       large, portrait and landscape), write and edit headlines in the feed and the library, swipe
       through at least two full rounds (every video once a round, never twice in a row), the video

@@ -6,8 +6,10 @@ editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
 error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.9.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. Build 33 has not passed
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
+Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
+with nothing logged. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 Read the linked owning documents for feature contracts, build evidence and open gates.
 Pending documentation travels with the next real implementation change. Do not include unrelated
