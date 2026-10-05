@@ -14,7 +14,8 @@ Source: `../ios/AkshatOS/features/reelvault/`.
   by fingerprint so a restore adds what is missing and only updates headlines on what is here.
 - `ReelShuffleBag` keeps a queue of ids, the ids already played this round, and the last one shown.
   Each call takes the library's current ids: removed ids drop out, an id neither queued nor played
-  is inserted at a random place in the round, an empty queue starts a new shuffled round, and a
+  is inserted at a random place in the round, `reshuffle(after:)` drops the rest of the round so
+  the next call deals a new one not led by the video on screen, an empty queue starts a new shuffled round, and a
   first entry equal to the last one shown is swapped away. The generator is injected, so tests use a
   seeded one.
 - `data/`: `ReelVaultSchemaV1` holds one row per video with a JSON payload, in its own `ReelVault`
@@ -30,7 +31,9 @@ Source: `../ios/AkshatOS/features/reelvault/`.
   before the library changes, and rolls back anything it added if a later step fails.
   `ReelVaultBackupPart.swift` is its `HubBackupPart`.
 - `ui/`: `ReelFeedView` is a vertically paging scroll view of feed pages, each one appearance of a
-  video with its own id, extended from the shuffle two pages ahead. `ReelPlayerPool` gives the page
+  video with its own id, extended from the shuffle two pages ahead. A feed created with no pages (a
+  fresh visit) reshuffles first; `ReelVaultView`'s shuffle button bumps a counter the feed watches,
+  which reshuffles and replaces the pages. `ReelPlayerPool` gives the page
   on screen and its two neighbours an `AVQueuePlayer` with an `AVPlayerLooper`, releases the rest,
   and plays only the page on screen (unmuted); neighbours wait muted at their first frame.
   `ReelPlayerLayer` shows an `AVPlayerLayer` with no system controls. Playback stops while paused,

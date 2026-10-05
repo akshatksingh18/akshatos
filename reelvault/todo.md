@@ -1,8 +1,8 @@
 # TODO / known gaps
 
 The first iPhone version is implemented in AkshatOS working source 0.9.0 (32) and passes nothing
-on a phone yet. Working source 0.10.0 (33) adds library stills, the video screen and delete from
-the feed; CI and a phone check are pending. Android remains an unverified fallback. `iphone-plan.md` owns the plan and the
+on a phone yet. Working source 0.10.0 (33) adds library stills, the video screen, delete from
+the feed and reshuffle; CI and a phone check are pending. Android remains an unverified fallback. `iphone-plan.md` owns the plan and the
 physical acceptance details; `README.md` says what the first version does.
 
 ## iPhone gates
@@ -22,7 +22,9 @@ physical acceptance details; `README.md` says what the first version does.
       offline use, interruption, memory and stutter under fast swipes.
 - [ ] Phone-check Build 33's library and delete: every row shows a still of its video; tapping one
       plays it with sound while you type a headline, which sticks after leaving; Delete video and
-      the feed's trash button ask first, delete the right video and move to the next one.
+      the feed's trash button ask first, delete the right video and move to the next one. The
+      shuffle button starts a new order from the top; leaving to the hub and coming back gives a
+      different order, while the library round trip keeps your place.
 - [ ] Import feedback for large videos: a copy shows only a spinner, with no percentage or cancel.
 - [ ] A cloud-only Photos or Files video that has to download first, corrupt media, an unsupported
       codec and low storage are handled by refusing the import with a message, but only the
@@ -34,7 +36,7 @@ physical acceptance details; `README.md` says what the first version does.
 - [ ] Verify same-ID refresh, upgrade/migration, expiry repair, two refresh cycles and retained
       video/headline data.
 
-Not built, by the accepted scope: favorites, a manual reshuffle button, a mute toggle, auto-advance
+Not built, by the accepted scope: favorites, a mute toggle, auto-advance
 when a video ends, and remembering the position inside a video.
 
 ## Android fallback gaps (deferred)
@@ -84,4 +86,4 @@ Rough order to evaluate if Android is activated:
       `dao.delete`) would be a cheap safety net.
 
 Not planned unless you ask for them (were explicitly cut during design):
-favorites, manual reshuffle button, mute toggle.
+favorites, mute toggle. (The iPhone version has a reshuffle button from 0.10.0 (33).)

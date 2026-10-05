@@ -78,6 +78,11 @@ import SwiftUI
         bag.next(from: videos.map(\.id)).flatMap(video(id:))
     }
 
+    /// A new random order for the feed, starting with something other than `shown`.
+    func reshuffle(after shown: UUID?) {
+        bag.reshuffle(after: shown)
+    }
+
     // MARK: - Import
 
     /// Copies each picked video in. Says once at the end what was added and what was not.

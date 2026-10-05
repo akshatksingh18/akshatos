@@ -5,18 +5,30 @@ import UniformTypeIdentifiers
 /// ReelVault's home: the feed once there is a video, otherwise how to add the first one.
 struct ReelVaultView: View {
     @ObservedObject var store: ReelVaultStore
+    @State private var reshuffles = 0
 
     var body: some View {
         Group {
             if store.videos.isEmpty {
                 empty
             } else {
-                ReelFeedView(store: store)
+                ReelFeedView(store: store, reshuffles: reshuffles)
             }
         }
         .navigationTitle("ReelVault")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if store.videos.count > 1 {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        reshuffles += 1
+                    } label: {
+                        Image(systemName: "shuffle")
+                    }
+                    .accessibilityIdentifier("reshuffle-reels")
+                    .accessibilityLabel("Reshuffle")
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
                     ReelLibraryView(store: store)

@@ -39,6 +39,31 @@ var twoSeed = SeededGenerator(state: 9)
 let twoOrder = (0..<12).map { _ in twoBag.next(from: two, using: &twoSeed)! }
 assert(zip(twoOrder, twoOrder.dropFirst()).allSatisfy { $0 != $1 }, "Two videos strictly alternate")
 
+// Reshuffle: the rest of the round is dropped and a new full round starts, not led by the video on screen.
+for seed in UInt64(1)...30 {
+    var bag = ReelShuffleBag()
+    var generator = SeededGenerator(state: seed)
+    let onScreen = bag.next(from: five, using: &generator)!
+    _ = bag.next(from: five, using: &generator)
+    bag.reshuffle(after: onScreen)
+    let fresh = (0..<5).map { _ in bag.next(from: five, using: &generator)! }
+    assert(Set(fresh) == Set(five), "A reshuffle deals every video once again (seed \(seed))")
+    assert(fresh.first != onScreen, "The new order does not start with the video on screen (seed \(seed))")
+}
+var reshuffleOne = ReelShuffleBag()
+var reshuffleOneSeed = SeededGenerator(state: 3)
+_ = reshuffleOne.next(from: [only], using: &reshuffleOneSeed)
+reshuffleOne.reshuffle(after: only)
+assert(reshuffleOne.next(from: [only], using: &reshuffleOneSeed) == only, "One video still plays after a reshuffle")
+var orders = Set<[UUID]>()
+for seed in UInt64(1)...10 {
+    var bag = ReelShuffleBag()
+    var generator = SeededGenerator(state: seed)
+    bag.reshuffle(after: nil)
+    orders.insert((0..<5).map { _ in bag.next(from: five, using: &generator)! })
+}
+assert(orders.count > 1, "Reshuffles give different orders")
+
 // The library changing during a round.
 var changing = ReelShuffleBag()
 var changingSeed = SeededGenerator(state: 5)

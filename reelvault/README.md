@@ -6,7 +6,7 @@ browse a vertical reel. WHOOP remains a separate app. No store release, backend,
 **Status:** The first iPhone version is implemented in AkshatOS working source 0.9.0 (32) and
 cloud-tested and locally validated; it is installed with current-version automatic-refresh
 enrollment, and its phone pass is pending. Working source 0.10.0 (33) adds library stills, a
-video screen and delete from the feed (not yet built or phone-tested). The Android scaffold below
+video screen, delete from the feed and reshuffle (not yet built or phone-tested). The Android scaffold below
 remains unverified. It lives in the AkshatOS repository's `reelvault/` folder; the former private
 `reels` repository keeps the earlier history.
 
@@ -23,6 +23,11 @@ remains unverified. It lives in the AkshatOS repository's `reelvault/` folder; t
 - **The order:** a shuffle bag. Every video plays once before any plays again, and the last video of
   one round is never the first of the next, so nothing shows twice in a row unless it is the only
   video. A video added during a round joins that round; one removed drops out.
+- **Reshuffle:** every time ReelVault is opened from the hub it deals a fresh order, so the same
+  sequence does not come back; coming back from the library keeps your place. The shuffle button
+  in the top bar (with two or more videos) deals a new order on demand and starts it from the top,
+  never with the video that was on screen. (From 0.10.0 (33); before that the order carried on
+  across visits.)
 - **Headlines:** shown over the top of the video. Tap it to write or edit it; it is one line of up
   to 140 characters. The video screen edits them too.
 - **Delete:** a trash button at the top right of every video in the feed deletes it after asking
@@ -38,7 +43,7 @@ remains unverified. It lives in the AkshatOS repository's `reelvault/` folder; t
   checking every file against its size and checksum, so a damaged backup restores nothing. The hub's
   Backup screen includes ReelVault in Back up everything.
 - **Local only:** nothing leaves the phone. No downloader, account, analytics or social feed.
-- **Not built, on purpose:** favorites, a manual reshuffle button, a mute toggle, auto-advance,
+- **Not built, on purpose:** favorites, a mute toggle, auto-advance,
   and remembering the position inside a video.
 
 ## iPhone plan

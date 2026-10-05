@@ -9,7 +9,7 @@ error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud
 reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged, and ReelVault library stills, a video screen and delete from the feed. Build 33 has not passed
+with nothing logged, and ReelVault library stills, a video screen, delete from the feed and reshuffle. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
 Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.

@@ -12,6 +12,8 @@ struct ReelFeedPage: Identifiable, Equatable {
 /// The trash button deletes the video on screen after asking, with playback held meanwhile.
 struct ReelFeedView: View {
     @ObservedObject var store: ReelVaultStore
+    /// Bumped by the Reshuffle button; each change deals a fresh order from the top.
+    var reshuffles = 0
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var players = ReelPlayerPool()
     @State private var pages: [ReelFeedPage] = []
@@ -39,9 +41,13 @@ struct ReelFeedView: View {
         .ignoresSafeArea(edges: .bottom)
         .onAppear {
             players.activateAudio()
+            // A fresh visit to ReelVault starts a fresh order. Coming back from the library keeps
+            // the feed where it was, because its pages are still here.
+            if pages.isEmpty { store.reshuffle(after: nil) }
             extend()
             sync()
         }
+        .onChange(of: reshuffles) { _, _ in reload() }
         .onDisappear { players.releaseAll() }
         .onChange(of: current) { _, _ in
             paused = false
@@ -157,6 +163,17 @@ struct ReelFeedView: View {
         .padding(16)
         .accessibilityIdentifier("delete-reel")
         .accessibilityLabel("Delete this video")
+    }
+
+    /// Deals a new order and shows its first video, which is not the one that was on screen.
+    private func reload() {
+        let shown = pages.first { $0.id == current }?.videoID
+        store.reshuffle(after: shown)
+        pages = []
+        current = nil
+        paused = false
+        extend()
+        sync()
     }
 
     /// Keeps a couple of pages queued beyond the one on screen.

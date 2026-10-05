@@ -146,6 +146,14 @@ struct ReelShuffleBag: Equatable {
         var generator = SystemRandomNumberGenerator()
         return next(from: ids, using: &generator)
     }
+
+    /// Throws away the rest of the round and starts a new one in a fresh random order. `shown`,
+    /// the video on screen, will not be the first of the new order unless it is the only video.
+    mutating func reshuffle(after shown: UUID?) {
+        queue = []
+        played = []
+        if let shown { last = shown }
+    }
 }
 
 /// A full ReelVault backup: this manifest beside a folder holding every video file.
