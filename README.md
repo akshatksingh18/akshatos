@@ -10,13 +10,19 @@ separate app. (ReelVault shipped in Build 32 and is removed from Build 33.)
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/`; its read-aloud voice is still
-reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. Its read-aloud voice is still
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
 with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 has not passed
-cloud CI, produced an IPA or been tested on the phone.
+ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
+PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
+(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
+which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
+on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
+installed voice. Working source 0.10.1 (34) gives the voice plain sentence ends (quotation marks
+dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
+Choose voices screen; not yet built or phone-tested.
 PageVault v1 is accepted through Build 24, and Build 13 is the detailed movement-lifecycle baseline.
 The broader edge-case, refresh/recovery and soak matrix remains open. Updates retain the permanent
 bundle ID `com.akshatksingh18.akshatos` and legacy storage/notification identifiers.

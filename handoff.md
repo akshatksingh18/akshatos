@@ -5,13 +5,19 @@
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/`; its read-aloud voice is still
-reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. Its read-aloud voice is still
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
 with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 has not passed
-cloud CI, produced an IPA or been tested on the phone.
+ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
+PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
+(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
+which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
+on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
+installed voice. Working source 0.10.1 (34) gives the voice plain sentence ends (quotation marks
+dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
+Choose voices screen; not yet built or phone-tested.
 Read the linked owning documents for feature contracts, build evidence and open gates.
 Pending documentation travels with the next real implementation change. Do not include unrelated
 signing-script/setup edits or private fitness records in that change.
@@ -135,7 +141,8 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 32:** installed over the accepted Build 31 with current-version enrollment. Run its
+1. **Build 33:** installed and enrolled. Finish its checks in `todo.md`; Build 34 (read-aloud
+   punctuation, chosen voices) follows once built. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
    phone checks in `todo.md` (read-aloud voice; its ReelVault is removed in Build 33). For reference, Build 29's checks were: the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line

@@ -130,7 +130,9 @@ mode, the one-time upgrade of the untouched starting calf raise, the inactivity 
 finishing a forgotten workout at its last set; and hosted store tests with an in-memory reminder
 for scheduling, pushing back, reopening after the hour, Finish from the reminder (only for its own
 workout), discard cancelling it, and the saved calf-raise upgrade. Real notification delivery is a
-phone check.
+phone check. Local Build 34 adds PageVault domain assertions for the read-aloud punctuation
+clean-up (the `genius!” This` run-on, apostrophes, dashes, footnotes, ordinary numbers kept) and
+the chosen-voices menu (default short list, chosen list, the voice in use kept, region labels).
 
 ReelVault's domain, storage and UI suites were removed with the module in Build 33.
 `FullBackupTests` checks that its leftover videos and store are deleted on launch without touching

@@ -706,3 +706,51 @@ assert(bestSpeechVoice([
     TestSpeechVoice(id: "premium-canada", language: "fr-CA", quality: 3)
 ], code: "fr-FR") == "premium-canada", "The policy works across other language variants too")
 print("PASS: 9 read-aloud voice assertions (quality across locales, ties, fallback, other languages)")
+
+// Punctuation the voice stumbles over. Quotation marks are silent but can hide a sentence's end.
+let quoteRun = PageVaultReadAloud.segments(page: 0,
+    text: "He liked to say, apropos of nothing at all, \u{201C}You know, you\u{2019}re no genius!\u{201D} This pronouncement might come in the middle of dinner.",
+    neighbours: [])
+let quotePlan = PageVaultReadAloud.plan(segments: quoteRun, from: 0, carryIn: nil, holdOpenTail: false)
+assert(quoteRun.count == 2, "The quote's end is a sentence end")
+assert(quotePlan.text.contains("genius! This pronouncement"),
+       "The voice is handed a plain sentence end before the next sentence: \(quotePlan.text)")
+assert(!quotePlan.text.contains("\u{201C}") && !quotePlan.text.contains("\u{201D}"), "Quotation marks are not handed to the voice")
+assert(PageVaultReadAloud.spokenText("you\u{2019}re \u{2018}fine\u{2019}") == "you're 'fine'", "Curly apostrophes become plain ones")
+assert(PageVaultReadAloud.spokenText("the answer (\u{201C}No, she\u{2019}s not\u{201D}) to") == "the answer (No, she's not) to",
+       "Quotes inside brackets go without joining words")
+assert(PageVaultReadAloud.spokenText("He said\u{201C}now\u{201D}") == "He said now", "A quote that was the only gap leaves a space")
+assert(PageVaultReadAloud.spokenText("talent\u{2014}and effort") == "talent, and effort", "A long dash is a pause, not one word")
+assert(PageVaultReadAloud.spokenText("talent \u{2014} and effort") == "talent, and effort", "A spaced long dash too")
+assert(PageVaultReadAloud.spokenText("and then\u{2014}") == "and then", "A dash at the end leaves nothing dangling")
+assert(PageVaultReadAloud.spokenText("wait\u{2014}.") == "wait.", "A dash before punctuation leaves the punctuation")
+assert(PageVaultReadAloud.spokenText("May 2010\u{2013}2015") == "May 2010\u{2013}2015", "A short dash in a range is kept")
+assert(PageVaultReadAloud.spokenText("being one.12 Then") == "being one. Then", "A footnote number after a sentence is not read")
+assert(PageVaultReadAloud.spokenText("genius,\u{00B3} talent") == "genius, talent", "A superscript footnote is not read")
+assert(PageVaultReadAloud.spokenText("in 1990. Then 3.5 and page 12.") == "in 1990. Then 3.5 and page 12.",
+       "Ordinary numbers stay")
+print("PASS: read-aloud punctuation assertions (quotes, apostrophes, dashes, footnotes)")
+
+// The voice menu: short by default, Akshat's own list once chosen, the voice in use always there.
+let menuAll = [
+    PageVaultReadAloud.VoiceOption(id: "ava", name: "Ava (Premium)", language: "en-US", quality: 3),
+    PageVaultReadAloud.VoiceOption(id: "evan", name: "Evan (Enhanced)", language: "en-US", quality: 2),
+    PageVaultReadAloud.VoiceOption(id: "gma-us", name: "Grandma", language: "en-US", quality: 1),
+    PageVaultReadAloud.VoiceOption(id: "gma-gb", name: "Grandma", language: "en-GB", quality: 1),
+    PageVaultReadAloud.VoiceOption(id: "fred", name: "Fred", language: "en-US", quality: 1)
+]
+assert(PageVaultReadAloud.menuVoices(menuAll, shown: nil, selected: nil).map(\.id) == ["ava", "evan"],
+       "Before choosing, the menu lists only Enhanced and Premium voices")
+assert(PageVaultReadAloud.menuVoices(menuAll, shown: ["ava"], selected: nil).map(\.id) == ["ava"],
+       "Once chosen, only the chosen voices")
+assert(PageVaultReadAloud.menuVoices(menuAll, shown: ["ava"], selected: "fred").map(\.id) == ["ava", "fred"],
+       "The voice in use is always listed")
+assert(PageVaultReadAloud.menuVoices(menuAll, shown: [], selected: nil).isEmpty, "An empty choice leaves only Best available")
+assert(PageVaultReadAloud.menuVoices(menuAll, shown: ["gone"], selected: nil).isEmpty, "A deleted voice is not listed")
+let english = Locale(identifier: "en_US")
+assert(PageVaultReadAloud.voiceLabel(menuAll[0], among: menuAll, locale: english) == "Ava · Premium",
+       "The quality is said once")
+assert(PageVaultReadAloud.voiceLabel(menuAll[3], among: menuAll, locale: english) == "Grandma (United Kingdom) · Default",
+       "Same-named voices are told apart by region")
+assert(PageVaultReadAloud.voiceLabel(menuAll[4], among: menuAll, locale: english) == "Fred · Default")
+print("PASS: voice menu assertions (default short list, chosen list, voice in use, labels)")

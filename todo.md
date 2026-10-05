@@ -9,13 +9,19 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/`; its read-aloud voice is still
-reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. Its read-aloud voice is still
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
 with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 has not passed
-cloud CI, produced an IPA or been tested on the phone.
+ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
+PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
+(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
+which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
+on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
+installed voice. Working source 0.10.1 (34) gives the voice plain sentence ends (quotation marks
+dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
+Choose voices screen; not yet built or phone-tested.
 Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
 replaces it. Detailed build history belongs in `cloud-build.md`.
 
@@ -96,15 +102,14 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ### Open
 
-- [ ] **Read-aloud voice still robotic on Build 32.** Build 31's voice sounded robotic and restarted
-      its pitch every few words; Build 32 speaks a page as one passage. Akshat reports Build 32 still
-      sounds robotic. He was told to download a Premium or Enhanced voice (Settings → Accessibility →
-      Spoken Content → Voices → English) and pick it by name under Voice in the bar's speed menu.
-      Next: hear back whether a Premium voice chosen by name fixes it; if not, get which voice and
-      what it does (odd pauses, flat tone) before changing code. The Best available locale-selection gap is fixed in local Build 33 source: the highest
-      quality across language variants wins, with the exact locale breaking a quality tie.
-      Nine synthetic domain regressions are added; cloud CI, a new IPA and a phone pass remain
-      pending. This does not establish that the reported robotic sound is resolved.
+- [ ] **Phone-check read aloud on Build 34.** With Ava (Premium) on Build 33, Akshat found it
+      good except that `genius!” This pronouncement` ran on without a pause, and the voice menu
+      listed every installed voice. Build 34 drops quotation marks from what the voice is given
+      (so `genius! This`), makes a long dash a comma's pause, skips footnote numbers stuck to a
+      sentence's end, and lists only the voices ticked in **Choose voices…** (Enhanced and Premium
+      until he chooses). Check the Grit preface line, a passage with dashes and quotes, the
+      shortened menu, ticking/unticking a voice with its sample, and that report any other spot
+      where the voice runs on or stumbles, with the page and sentence.
 - [ ] **Phone-check Lift Log's Build 33 changes.** The seated calf raise in Lower day now shows
       **Weight loaded** (all plates added together, machine excluded); its earlier plates-per-side
       sets stay in history but are not offered as its last performance. Start a workout, log a set,

@@ -5,6 +5,7 @@ import SwiftUI
 /// speed and voice, and stop. The lock screen and headphones offer the same through the system.
 struct PageVaultReadAloudBar: View {
     @ObservedObject var narrator: PageVaultNarrator
+    @State private var choosingVoices = false
 
     var body: some View {
         HStack(spacing: 22) {
@@ -32,9 +33,11 @@ struct PageVaultReadAloudBar: View {
         .background(.black.opacity(0.7), in: Capsule())
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("read-aloud-bar")
+        .sheet(isPresented: $choosingVoices) { PageVaultVoicesView(narrator: narrator) }
     }
 
-    /// Speed, and which installed voice reads. Better voices are a free download in iOS Settings.
+    /// Speed, and which voice reads: only the voices Akshat chose to list, with Choose voices to
+    /// change that list.
     private var settings: some View {
         Menu {
             Picker("Speed", selection: $narrator.speed) {
@@ -44,11 +47,13 @@ struct PageVaultReadAloudBar: View {
             }
             Picker("Voice", selection: $narrator.voiceID) {
                 Text("Best available").tag(String?.none)
-                ForEach(PageVaultNarrator.voices(), id: \.identifier) { voice in
-                    Text("\(voice.name) · \(PageVaultNarrator.qualityLabel(voice))").tag(Optional(voice.identifier))
+                let all = PageVaultNarrator.voiceOptions()
+                ForEach(narrator.menuVoices, id: \.id) { voice in
+                    Text(PageVaultReadAloud.voiceLabel(voice, among: all)).tag(Optional(voice.id))
                 }
             }
-            Text("Download Enhanced or Premium voices in Settings → Accessibility → Spoken Content → Voices.")
+            Button("Choose voices…") { choosingVoices = true }
+                .accessibilityIdentifier("read-aloud-choose-voices")
         } label: {
             Text(Self.speedLabel(narrator.speed))
                 .font(.subheadline.weight(.semibold).monospacedDigit())

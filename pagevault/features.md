@@ -204,7 +204,9 @@ the voice sounded robotic and restarted its pitch as if every few words began a 
 spoke one sentence per utterance; working source 0.9.0 (32) hands the voice a whole page as one
 passage (see the second bullet). Build 32 passed CI and artifact validation and is installed,
 but Akshat reports the voice is still robotic. The named Enhanced/Premium voice result is pending.
-Local Build 33 fixes the automatic voice ranking; it is not yet cloud- or phone-verified.
+Build 33 (installed) fixes the automatic voice ranking. With Ava (Premium) Akshat reports it reads
+well except running on after a sentence ending in a closing quote; working source 0.10.1 (34)
+fixes that and shortens the voice menu (both bullets below); not yet built or phone-tested.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
   above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and
@@ -220,16 +222,23 @@ Local Build 33 fixes the automatic voice ranking; it is not yet cloud- or phone-
   another app's audio pauses it. Leaving the reader stops it.
 - Running headers and footers (a top or bottom line repeated on nearby pages), page numbers and
   roman numerals are skipped; words hyphenated across a line end are joined; ligatures are spelled
-  out. A line is treated as ending a paragraph or being a heading only when it is clearly short and
+  out. From 0.10.1 (34) the voice is not given quotation marks (silent anyway, and `genius!” This`
+  hid the sentence end so the voice ran on), curly apostrophes become plain ones, a long dash
+  becomes a comma's pause instead of joining two words, and a footnote number stuck to a word's
+  closing punctuation (`one.12`, or a superscript) is not read; ordinary numbers stay. A line is treated as ending a paragraph or being a heading only when it is clearly short and
   either ends its sentence or is followed by a line starting with a capital or digit, so text that
   arrives in narrow lines is not chopped into fragments. Footnotes, captions and unusual layouts are read as they come, and two-column pages may come
   out in the wrong order.
 - Speeds 0.75× to 2× and the voice are remembered. When only the basic voice is installed, the first
   play says once where the natural voices are. "Best available" picks the highest-quality voice
-  installed across the phone's language variants from local Build 33, with the exact locale
-  breaking a quality tie. Build 32 still prefers the exact locale even when its voice is basic.
-  A voice chosen by name keeps taking precedence. Enhanced and Premium voices are a free download in Settings →
-  Accessibility → Spoken Content → Voices. Novelty and Personal Voice voices are not offered.
+  installed across the phone's language variants from Build 33, with the exact locale
+  breaking a quality tie. A voice chosen by name keeps taking precedence. From 0.10.1 (34) the
+  speed menu lists Best available plus only the voices ticked in **Choose voices…** (until he
+  ticks any, the Enhanced and Premium ones); the voice in use is always listed, and unticking it
+  falls back to Best available. That screen lists every installed English voice, best first, with
+  a sample button (the book pauses for it), and names the region when two voices share a name.
+  An app cannot download or delete iPhone voices: that stays in Settings → Accessibility → Spoken
+  Content → Voices. Novelty and Personal Voice voices are not offered.
 - It never moves the book's place: only the bookmark does, as everywhere in the reader. Pausing
   leaves the page on screen, so tapping the bookmark keeps it.
 - Everything is on the phone: the system speech voice, no network, no account. A scanned book has
