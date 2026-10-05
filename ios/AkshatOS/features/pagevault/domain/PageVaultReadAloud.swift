@@ -41,6 +41,21 @@ struct PageVaultSpeechPlan: Equatable {
 /// pages or are only a number, joins lines back into sentences, and gives each sentence both its
 /// place on the page and a clean spoken form.
 enum PageVaultReadAloud {
+    /// Candidates already belong to the phone's language. Quality wins across its regional
+    /// variants; the exact locale breaks a quality tie. Keep the supplied order for other ties.
+    static func bestVoice<Voice>(in voices: [Voice], languageCode: String,
+                                 quality: (Voice) -> Int, language: (Voice) -> String) -> Voice? {
+        voices.reduce(nil as Voice?) { best, candidate in
+            guard let best else { return candidate }
+            if quality(candidate) > quality(best)
+                || (quality(candidate) == quality(best)
+                    && language(candidate) == languageCode && language(best) != languageCode) {
+                return candidate
+            }
+            return best
+        }
+    }
+
     /// How many lines at the top and at the bottom of a page can be a header, footer or number.
     static let edgeLineCount = 2
     /// Nearby pages compared for repeated edges, on each side.

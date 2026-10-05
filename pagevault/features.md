@@ -6,9 +6,9 @@ Reading streaks were removed at Akshat's request. Accepted Build 25 adds only th
 story-quest/treasure-shelf presentation; it passed the AkshatOS PR #52 macOS CI Gate, checksum/IPA
 validation, Wi-Fi installation and current-version enrollment. Akshat reports the installed build
 works perfectly, accepting that refreshed presentation. AkshatOS 0.6.0 (29) replaces that themed
-presentation with a plain, minimal one at Akshat's request (not yet phone-verified). `CLAUDE.md`
+presentation with a plain, minimal one at Akshat's request (accepted with Build 31). `CLAUDE.md`
 owns the remaining non-v1 measurement and clean-install boundaries.
-PageVault is a module in the native AkshatOS hub alongside Pushup Reminder, with ReelVault still reserved;
+PageVault is a module in the native AkshatOS hub alongside Pushup Reminder, Lift Log and Body;
 WHOOP remains a separate app. The Android concept is a later fallback, not the source of iOS
 file-access or rendering behavior. Locked target/toolchain/storage decisions: `CLAUDE.md`. Shared
 identity and lifecycle gates: `../hub-plan.md`.
@@ -202,8 +202,9 @@ Akshat's books are digital copies with a text layer, so the phone's own voice ca
 audiobook. On the phone, Build 31's button, bar, tint, page turns and lock-screen controls work, but
 the voice sounded robotic and restarted its pitch as if every few words began a sentence. Build 31
 spoke one sentence per utterance; working source 0.9.0 (32) hands the voice a whole page as one
-passage (see the second bullet), not yet built or heard. The cause was inferred from the code, not
-measured on the phone, and the basic system voice is robotic whatever the app does.
+passage (see the second bullet). Build 32 passed CI and artifact validation and is installed,
+but Akshat reports the voice is still robotic. The named Enhanced/Premium voice result is pending.
+Local Build 33 fixes the automatic voice ranking; it is not yet cloud- or phone-verified.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
   above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and
@@ -225,14 +226,15 @@ measured on the phone, and the basic system voice is robotic whatever the app do
   out in the wrong order.
 - Speeds 0.75× to 2× and the voice are remembered. When only the basic voice is installed, the first
   play says once where the natural voices are. "Best available" picks the highest-quality voice
-  installed for the phone's language; Enhanced and Premium voices are a free download in Settings →
+  installed across the phone's language variants from local Build 33, with the exact locale
+  breaking a quality tie. Build 32 still prefers the exact locale even when its voice is basic.
+  A voice chosen by name keeps taking precedence. Enhanced and Premium voices are a free download in Settings →
   Accessibility → Spoken Content → Voices. Novelty and Personal Voice voices are not offered.
 - It never moves the book's place: only the bookmark does, as everywhere in the reader. Pausing
   leaves the page on screen, so tapping the bookmark keeps it.
 - Everything is on the phone: the system speech voice, no network, no account. A scanned book has
   no text and says so instead of playing; OCR stays out of scope.
-- The app declares the audio background mode for this. Nothing else plays in the background:
-  ReelVault's videos stop when the app is not in front.
+- The app declares the audio background mode for this. Nothing else plays in the background.
 
 ## v2 / optional improvements
 

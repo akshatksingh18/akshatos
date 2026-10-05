@@ -3,8 +3,8 @@
 **State:** Accepted full Pushup Reminder feature contract inside AkshatOS. Source candidate 0.3.0
 (25) repurposes the physically proven Squats reminder engine for pushup sets and replaces visible
 Squats language with Pushup Reminder. Existing data/backup/notification identifiers remain stable,
-so this is not a reset or a new feature store. Its copy and presentation are not yet built or
-phone-verified. The first source implementation
+so this is not a reset or a new feature store. Build 25's presentation was accepted on the phone;
+Build 31 accepts its replacement minimal design, plain wording and notification icon. The first source implementation
 covers the hub picker, dashboard lifecycle/counting/snooze, local sessions, and goal/streak display.
 `architecture.md` lists exact implemented and deferred behavior; `cloud-build.md` records build
 and device evidence. Notification actions and a durable inbox passed cloud regression tests. Daily
@@ -40,7 +40,8 @@ completed-break counter into a general workout tracker.
 
 AkshatOS opens to an app-selection screen. Choose **Pushup Reminder** to open this dashboard;
 navigate back without changing its active session or reminders. PageVault and Lift Log are separate
-available destinations, ReelVault remains visibly planned, and WHOOP is not embedded.
+available destinations alongside Body; WHOOP is not embedded. (ReelVault shipped in Build 32 and
+is removed from Build 33.)
 The hub receives display metadata and injected destinations; it does not own Pushups rules or data.
 The source-boundary refactor changes no user-facing feature scope or reminder/streak behavior.
 
@@ -98,8 +99,7 @@ standard system font, and one calm accent colour used sparingly for the thing th
 screen. No game metaphors anywhere — no quests, portals, power-ups, combos, trophies or treasure —
 in the UI or in notifications; labels say plainly what things are ("Log a set", "Daily goal",
 "History", "Want to read"). State is always conveyed with text and symbols as well as colour, and
-nothing may invent completions, points or streaks. The hub is a plain list of modules; ReelVault
-stays a dimmed "Not available yet" row rather than pretending to be usable.
+nothing may invent completions, points or streaks. The hub is a plain list of modules.
 
 - A state card shows the current state, the time until the next reminder while running, and a
   plain paused/blocked/ended explanation in other states. The countdown
@@ -259,7 +259,7 @@ only a **History** row with the number of days kept; it opens its own screen wit
 month, newest first and only the newest open, each showing the month's set total; opened, it lists
 that month's days with a check mark on days whose goal was reached, and each day opens its recap
 (month dropdowns from 0.7.0 (30)). The dashboard never lists history itself, so it does not
-grow or slow down as days accumulate (implemented in 0.6.0 (29) source, not yet phone-verified).
+grow or slow down as days accumulate (implemented in Build 29 and accepted with Build 31).
 History is kept indefinitely and never pruned automatically: a day's record is estimated at a few
 kilobytes from its shape (not measured), so years of daily use stay in the low megabytes, and deleting
 completed history remains an explicit Settings action. Charts,

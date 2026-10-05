@@ -2,14 +2,14 @@
 
 Personal, local-only PDF reader module in the native AkshatOS iPhone hub for PDFs Akshat already owns. The daily-use experience
 should be Kindle-like: a cover library with progress, one page at a time on tinted paper, and a
-bookmark that holds your place. It shares the hub's private installation with Pushup Reminder and ReelVault, not an App Store
+bookmark that holds your place. It shares the hub's private installation with Pushup Reminder, Lift Log and Body, not an App Store
 product: no account, backend, analytics, advertising, cloud-sync requirement, or remote push service.
 Android may remain a later fallback, but it does not control the initial architecture.
 
 **Status:** PageVault v1 is fully accepted on the physical iPhone through Build 24, including full
 export/restore. Accepted Build 25 refreshed the library and Takeaways presentation into a themed
 AkshatOS story-quest style; at Akshat's request AkshatOS 0.6.0 (29) replaces it with a plain,
-minimal design (`features.md`), not yet phone-verified. That presentation passed the AkshatOS PR #52 macOS CI Gate, including simulator UI
+minimal design (`features.md`), accepted on the phone with Build 31. That presentation passed the AkshatOS PR #52 macOS CI Gate, including simulator UI
 tests and device compilation; its checksum/IPA validation, Wi-Fi install and current-version
 automatic-refresh enrollment pass. Akshat reports the installed Build 25 works perfectly, accepting
 the refreshed presentation; the artifact is now AkshatOS's recovery/refresh copy. This focused report
@@ -34,8 +34,10 @@ and the Started shelf, neither of which the device rounds covered. Reading strea
 **Read aloud** (from AkshatOS 0.8.0 (31)): a headphones button reads the book aloud from the page on
 screen with the phone's own voice, tinting the sentence, turning pages and continuing with the screen
 locked. On the phone its controls work but Build 31's voice sounded robotic and broken up; 0.9.0 (32)
-speaks a page as one passage and is not yet heard on the phone. `features.md` § Read aloud.
-**Being removed:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
+speaks a page as one passage and is installed, but Akshat reports it still sounds robotic.
+Local Build 33 fixes Best available to rank quality across regional language variants; CI, an IPA
+and a phone pass for that change remain pending. `features.md` § Read aloud.
+**Removed in Build 29:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
 phone, linking the folder did nothing, and Akshat asked for both to be removed; AkshatOS Build 29
 takes them out (see the laptop-to-phone decision below). PDFs still reach PageVault through the
 picker from a cloud folder his laptop syncs.
@@ -125,8 +127,8 @@ What the phone has confirmed, and what is still open:
 
 ## iPhone product and deployment decision
 
-The accepted packaging is one native SwiftUI hub containing PageVault, Pushup Reminder, and
-ReelVault, plus one standalone WHOOP app. This uses two free-signing slots; there is no pending
+The accepted packaging is one native SwiftUI hub containing PageVault, Pushup Reminder, Lift Log
+and Body, plus one standalone WHOOP app. This uses two free-signing slots; there is no pending
 fourth-slot or paid-tier requirement. `../hub-plan.md` owns the package boundary and identity/
 source-owner contract. `../` owns the hub source, which contains PageVault's
 implementation; as of Build 24 it is **verified on the phone**, v1 feature by v1 feature.
@@ -137,7 +139,8 @@ PageVault identity has been created. The hub display name is **AkshatOS**, owned
 Use the canonical `../` hub repository and its selected bundle ID; explicitly
 test any existing-container migration rather than uninstalling.
 
-PageVault itself needs no widget, extension, App Group, push, iCloud capability, or background mode.
+PageVault needs no widget, extension, App Group, push or iCloud capability. Read aloud uses the
+hub's audio background mode; this is its only declared background mode.
 The hub additionally contains Pushup Reminder' ordinary local notifications and optional Home-region services.
 Do not remove necessary hub services when enforcing the PDF module's minimal capabilities.
 
@@ -457,7 +460,7 @@ need an update.
 Before declaring the iPhone build ready for personal daily use, verify all of the following on the
 actual iPhone and current iOS release:
 
-- The native hub (PageVault, Pushup Reminder, ReelVault) coexists with standalone WHOOP using two free slots.
+- The native hub (PageVault, Pushup Reminder, Lift Log, Body) coexists with standalone WHOOP using two free slots.
   PageVault adds no extension/helper application slot. Reader navigation leaves pushup scheduling
   and actions intact, and releasing a PDF view does not tear down hub services.
 - USB initial install, Wi-Fi re-sign, Windows restart/daemon restart, phone restart, locked-phone

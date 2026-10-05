@@ -673,3 +673,36 @@ let shortMidSentence = "The committee met on a rainy Tuesday morning to discuss\
 assert(PageVaultReadAloud.segments(page: 0, text: shortMidSentence, neighbours: []).count == 1,
        "A short line in the middle of a sentence does not split it")
 print("PASS: 13 read-aloud passage assertions (one passage, carry across pages, hyphen, heading, narrow lines)")
+
+// Synthetic installed voices: quality must win even when the phone's exact locale is basic.
+struct TestSpeechVoice {
+    var id: String
+    var language: String
+    var quality: Int
+}
+func bestSpeechVoice(_ voices: [TestSpeechVoice], code: String = "en-IN") -> String? {
+    PageVaultReadAloud.bestVoice(in: voices, languageCode: code,
+                                 quality: { $0.quality }, language: { $0.language })?.id
+}
+let basicIndia = TestSpeechVoice(id: "basic-india", language: "en-IN", quality: 1)
+let enhancedBritain = TestSpeechVoice(id: "enhanced-britain", language: "en-GB", quality: 2)
+let premiumUS = TestSpeechVoice(id: "premium-us", language: "en-US", quality: 3)
+let premiumIndia = TestSpeechVoice(id: "premium-india", language: "en-IN", quality: 3)
+assert(bestSpeechVoice([basicIndia, enhancedBritain, premiumUS]) == premiumUS.id,
+       "A Premium English voice wins over the basic exact-locale voice")
+assert(bestSpeechVoice([premiumUS, enhancedBritain, basicIndia]) == premiumUS.id,
+       "Quality wins regardless of the candidate order")
+assert(bestSpeechVoice([basicIndia, enhancedBritain]) == enhancedBritain.id,
+       "Enhanced also wins over a basic exact-locale voice")
+assert(bestSpeechVoice([premiumUS, premiumIndia]) == premiumIndia.id,
+       "The phone's exact locale wins when quality is equal")
+assert(bestSpeechVoice([premiumIndia, premiumUS]) == premiumIndia.id)
+assert(bestSpeechVoice([basicIndia]) == basicIndia.id, "A sole basic voice remains usable")
+assert(bestSpeechVoice([]) == nil, "No installed candidates leaves voice choice to the system")
+assert(bestSpeechVoice([enhancedBritain, premiumUS], code: "en-AU") == premiumUS.id,
+       "An absent exact locale still selects the best quality")
+assert(bestSpeechVoice([
+    TestSpeechVoice(id: "basic-france", language: "fr-FR", quality: 1),
+    TestSpeechVoice(id: "premium-canada", language: "fr-CA", quality: 3)
+], code: "fr-FR") == "premium-canada", "The policy works across other language variants too")
+print("PASS: 9 read-aloud voice assertions (quality across locales, ties, fallback, other languages)")

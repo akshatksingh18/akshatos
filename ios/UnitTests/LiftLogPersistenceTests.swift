@@ -13,7 +13,83 @@ import XCTest
     }
 }
 
+/// Records reminder requests instead of scheduling real notifications.
+@MainActor final class MemoryLiftReminders: LiftReminding {
+    var scheduled: (date: Date, workoutID: UUID, canFinish: Bool)?
+    func schedule(at date: Date, workoutID: UUID, canFinish: Bool) async {
+        scheduled = (date, workoutID, canFinish)
+    }
+    func cancel() { scheduled = nil }
+}
+
 @MainActor final class LiftLogPersistenceTests: XCTestCase {
+    func testAnHourWithNothingLoggedAsksWhetherTheWorkoutIsFinished() async throws {
+        var clock = Date(timeIntervalSince1970: 1_790_105_400)
+        let reminders = MemoryLiftReminders()
+        let container = try makeContainer()
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: container),
+                                 splits: MemoryLiftSplits(), reminders: reminders, now: { clock })
+        store.load()
+        await store.settleReminder()
+        XCTAssertNil(reminders.scheduled, "No workout, no reminder")
+
+        store.startWorkout(split: try split(store, "Lower day"))
+        await store.settleReminder()
+        let id = try XCTUnwrap(store.active?.id)
+        XCTAssertEqual(reminders.scheduled?.date, clock.addingTimeInterval(3_600))
+        XCTAssertEqual(reminders.scheduled?.canFinish, false, "Nothing to finish before a set is logged")
+
+        clock = clock.addingTimeInterval(900)
+        let exercise = try XCTUnwrap(store.active?.exercises.first)
+        store.addSet(exerciseID: exercise.id, reps: 8, load: 45)
+        await store.settleReminder()
+        XCTAssertEqual(reminders.scheduled?.date, clock.addingTimeInterval(3_600), "Each set pushes it back an hour")
+        XCTAssertEqual(reminders.scheduled?.workoutID, id)
+        XCTAssertEqual(reminders.scheduled?.canFinish, true)
+        let lastSet = clock
+
+        clock = clock.addingTimeInterval(7_200)
+        let reopened = LiftLogStore(repository: SwiftDataLiftLogRepository(container: container),
+                                    splits: MemoryLiftSplits(), reminders: reminders, now: { clock })
+        reopened.load()
+        await reopened.settleReminder()
+        XCTAssertEqual(reminders.scheduled?.date, clock.addingTimeInterval(3_600),
+                       "Reopened after the hour, it asks again an hour later")
+
+        reopened.finishFromReminder(workoutID: UUID())
+        XCTAssertNotNil(reopened.active, "A reminder for another workout finishes nothing")
+        reopened.finishFromReminder(workoutID: id)
+        await reopened.settleReminder()
+        XCTAssertNil(reopened.active)
+        XCTAssertEqual(reopened.finished.first?.endedAt, lastSet, "It ends at the last set, not when answered")
+        XCTAssertNil(reminders.scheduled, "Finishing cancels the reminder")
+    }
+
+    func testDiscardingTheWorkoutCancelsTheReminder() async throws {
+        let reminders = MemoryLiftReminders()
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: try makeContainer()),
+                                 splits: MemoryLiftSplits(), reminders: reminders)
+        store.load()
+        store.startWorkout(split: nil)
+        await store.settleReminder()
+        XCTAssertNotNil(reminders.scheduled)
+        store.deleteWorkout(try XCTUnwrap(store.active?.id))
+        await store.settleReminder()
+        XCTAssertNil(reminders.scheduled)
+    }
+
+    func testSavedStartingCalfRaiseMovesToWeightLoaded() throws {
+        let storage = MemoryLiftSplits()
+        storage.saved = [LiftSplit(name: "Lower day", exercises: [
+            LiftSplitExercise("Seated calf raise", .platesPerSide, equipmentNote: "Machine base resistance excluded")
+        ])]
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: try makeContainer()),
+                                 splits: storage, reminders: MemoryLiftReminders())
+        store.load()
+        XCTAssertEqual(store.splits.first?.exercises.first?.loadMode, .weightLoaded)
+        XCTAssertEqual(storage.saved, store.splits, "The upgrade is saved")
+    }
+
     private func split(_ store: LiftLogStore, _ name: String) throws -> LiftSplit {
         try XCTUnwrap(store.splits.first { $0.name == name }, "\(name) is a starting split")
     }

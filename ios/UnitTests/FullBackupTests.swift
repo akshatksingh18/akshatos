@@ -269,6 +269,22 @@ import XCTest
         }
     }
 
+    /// ReelVault was removed after Build 32: its videos and records are deleted on launch, and
+    /// nothing else in Application Support is touched.
+    func testRemovedReelVaultLeavesNothingBehind() throws {
+        let support = sandbox.appendingPathComponent("Support", isDirectory: true)
+        let media = support.appendingPathComponent("ReelVault/Media", isDirectory: true)
+        try FileManager.default.createDirectory(at: media, withIntermediateDirectories: true)
+        try Data("video".utf8).write(to: media.appendingPathComponent("clip.mp4"))
+        for name in ["ReelVault.store", "ReelVault.store-wal", "LiftLog.store", "PageVault"] {
+            try Data("x".utf8).write(to: support.appendingPathComponent(name))
+        }
+        XCTAssertEqual(Set(RetiredModuleCleanup.run(in: support)), ["ReelVault", "ReelVault.store", "ReelVault.store-wal"])
+        let left = try FileManager.default.contentsOfDirectory(atPath: support.path)
+        XCTAssertEqual(Set(left), ["LiftLog.store", "PageVault"], "Other modules' data stays")
+        XCTAssertEqual(RetiredModuleCleanup.run(in: support), [], "Once clean, it does nothing")
+    }
+
     func testModuleIdsMustBeUniqueAndPartNamesPlain() throws {
         XCTAssertNoThrow(try AkshatOSBackupManifest.checkRegistry(["pushups", "body"]))
         XCTAssertThrowsError(try AkshatOSBackupManifest.checkRegistry(["body", "body"]))

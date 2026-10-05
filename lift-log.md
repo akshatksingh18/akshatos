@@ -12,14 +12,16 @@ simulator/device compilation and IPA inspection. Artifact `akshatos-ios-133` pas
 and IPA validation. Akshat installed Build 27 and reports that it works well end-to-end, closing the
 focused physical-phone behavior pass. Sideloadly confirms current-version automatic-refresh
 enrollment at the expected final identity in automatic mode, with no error and a seven-day expiry;
-Build 27 is promoted to the accepted backup slot. Build 26 implemented the core feature and is
+Build 27 was the accepted backup and is superseded by accepted Build 31. Build 26 implemented the core feature and is
 superseded. Working source 0.6.0 (29) moves history to its own screen holding every finished
-workout and shows every set of the last performance instead of "+N more"; it passed CI in Build 29 and awaits a
-phone pass. Working source 0.8.0 (31) replaces the hard-coded Upper/Lower templates with **splits
+workout and shows every set of the last performance instead of "+N more"; it passed CI in Build 29
+and Akshat accepted its phone behavior with Build 31. Working source 0.8.0 (31) replaces the hard-coded Upper/Lower templates with **splits
 Akshat edits in the app** (starting with Lower day, Back and biceps day and Chest day, since the
 old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
 and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
-reports working on the phone. No
+reports working on the phone. Working source 0.10.0 (33) adds the **Weight loaded** mode, moving the starting seated calf raise to
+it, and a **"Still working out?" reminder** an hour after the last thing logged; CI, an IPA and a
+phone pass are pending. No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
 
@@ -38,8 +40,22 @@ remote.
   UI may show `85 lb added plates`, but it never silently adds a bar, machine resistance,
   sled, lever arm or cable ratio.
 - Each exercise chooses and retains one explicit load meaning: plates per side, weight per hand,
-  stack setting, added bodyweight load, or known total weight. An optional equipment note identifies
+  stack setting, added bodyweight load, weight loaded, or known total weight. **Weight loaded** is
+  every plate on a machine added together as one number, the machine's own resistance excluded —
+  for a machine loaded on one post, such as the seated calf raise, where "per side" does not fit.
+  The starting Lower day uses it for the seated calf raise; a saved split whose calf raise is still
+  the untouched old starting entry (plates per side, "Machine base resistance excluded") is moved to
+  it once on launch, and a calf raise Akshat set up himself is left alone. Sets already logged keep
+  their mode, so the old plates-per-side calf raises stay in history but are not the new mode's
+  last performance. An optional equipment note identifies
   the actual machine or records that its base resistance is unknown.
+- **Forgotten workouts.** An hour after the last thing logged in the active workout (start, a set,
+  an edit, an added exercise), Lift Log sends one "Still working out?" notification; every new
+  entry pushes it back an hour, and finishing or discarding cancels it. If the app is reopened after
+  that hour without logging, it asks again an hour later. Tapping it opens Lift Log. Once a set is
+  logged it carries **Finish workout**, which ends that workout (never a newer one) at its last set
+  rather than when it was answered. It uses the permission the hub's other reminders already hold
+  and never asks for it, so starting a workout is not interrupted by a prompt.
 - Each working set records its load, repetitions and completion time. Any active set can be edited;
   the active session also supports undoing the most recent set per exercise, finishing after at
   least one set, or discarding the entire active workout with confirmation.
@@ -78,8 +94,11 @@ remote.
   split (with the starting splits), validation and backup contract.
 - `ios/AkshatOS/features/liftlog/data/` — feature-owned SwiftData schema and repository, and
   `LiftSplitStorage.swift` (splits as one JSON value in the app's preferences).
+- `ios/AkshatOS/features/liftlog/services/LiftReminderService.swift` — the one namespaced
+  (`akshatos.liftlog.`) inactivity notification and its Finish action category; the app's
+  notification coordinator routes taps and the action to the store.
 - `ios/AkshatOS/features/liftlog/LiftLogStore.swift` — save-before-publish commands, active-session
-  recovery, JSON backup/restore and CSV export.
+  recovery, the inactivity reminder schedule, JSON backup/restore and CSV export.
 - `ios/AkshatOS/features/liftlog/ui/` — hub destination, active workout, set entry and
   recovery controls (`LiftLogView.swift`), the month-grouped history screen with workout detail
   (`LiftLogHistoryView.swift`), and the Splits screen, split editor and the exercise form shared
@@ -95,7 +114,7 @@ remote.
 - Akshat reports the installed Build 27 works well end-to-end on the physical phone. This closes the
   focused Lift Log behavior pass without inventing a more granular checklist than was reported.
 - Current-version automatic-refresh enrollment for the expected signed identity and automatic mode
-  is confirmed; Build 27 is the accepted backup artifact.
+  was confirmed for Build 27; Build 31 is now the accepted backup artifact.
 - Until Akshat explicitly activates the source-of-truth switch, `health/fitness/data/lift-log.csv`
   remains the coaching source of truth.
   After activation, phone entries become primary for new sessions only when Akshat explicitly

@@ -1,35 +1,20 @@
 # AkshatOS and Pushups architecture
 
-**State:** The native hub and movement v1 — lifecycle with bounded automatic nudges and the idle
-9:00 AM invitation, durable actions, history, Home automation, foreground reconciliation and the
-chosen defaults — are implemented. Version 0.4.0 (27) adds mode-specific definitions/examples,
-priority-ordered Upper/Lower template creation, same-name/mode last-performance lookup and persisted
-active-set editing to Lift Log. PR #54 merged at `ebb44d3`; main run `35925770220` passed its complete
-CI Gate and artifact `akshatos-ios-133` passed local checksum/IPA validation. Akshat installed it and
-reports that Build 27 works well end-to-end on the phone. Sideloadly confirms current-version
-automatic-refresh enrollment under the expected final identity and mode, so Build 27 is the accepted
-recovery/refresh artifact. Build 26 added Lift Log as a separate local-only feature with
-versioned SwiftData sessions, explicit load modes, JSON recovery and CSV export. Accepted 0.3.0 (25)
-repurposes its presentation from
-Squats to Pushup Reminder and adds the Homebase/quest design system. Its implementation passed the
-complete macOS CI Gate, including simulator/device compilation and IPA inspection; no uploaded
-artifact was retained by that PR. Workflow-dispatch run `35678793533` subsequently produced the
-Build-25 candidate and its checksum/IPA validation passed locally. Its same-ID Wi-Fi install and
-automatic-refresh enrollment are corroborated by Sideloadly. Akshat subsequently reported that the
-installed build works perfectly, closing the focused launch/presentation pass and making Build 25
-the accepted recovery/refresh artifact. Build 13 remains the detailed accepted evidence for the
-unchanged lifecycle engine. The broader edge-case,
-refresh/recovery and soak matrix remains open. The remaining full-product contract below
-is not all implemented, and cloud checks cannot establish real device behavior. Build 28 added
-PageVault's laptop inbox folder and Open in AkshatOS; after the inbox failed to link on the phone,
-Akshat asked for both to be removed, and working source 0.6.0 (29) removes them. The same source adds
-the Body feature (`features/body/`, owned by `body-log.md`) with its own SwiftData store, photo
-files, and a weekly reminder under the `akshatos.body.` namespace routed by the app layer; it moves
-Pushup and Lift Log history onto their own month-grouped screens and builds Pushup day summaries in
-one pass instead of filtering the whole history per day, and replaces the Build-25 themed design
-system (gradients, glow, per-module colours, badges) with a minimal one in
-`shared/design-system/DesignSystem.swift`. PageVault's technical
-plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.
+**State:** Native hub modules and movement v1 are implemented. Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
+`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
+editable Lift Log splits and read-aloud controls; the voice sounded robotic.
+Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
+installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
+error. It remains in `testing/`; its read-aloud voice is still
+reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
+Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
+with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
+ReelVault left on the phone. Build 33 has not passed
+cloud CI, produced an IPA or been tested on the phone.
+Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
+Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
+PageVault's technical plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.
 
 ## Current implementation
 
@@ -37,11 +22,11 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
   history and the untouched Android fallback are preserved. Target/identity: AkshatOS,
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
   build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
-  predecessor, Build 25 is the accepted Pushup/visual baseline, and Build 27 is the current accepted
-  recovery/refresh build.
+  predecessor, Build 25 is the accepted Pushup/visual baseline, and Build 31 is the current accepted
+  recovery/refresh build; Build 32 is installed pending its phone pass.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
-  `LiftLogStore`, the sole
+  `LiftLogStore`, one `BodyLogStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation. The app declares no document types and handles no opened
   files.
@@ -51,8 +36,10 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
   `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
   choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
   the active workout and preloading the split's ordered exercises; more can be added during the
-  workout, and finishing removes exercises with no sets. ReelVault stays a noninteractive
-  planned card. WHOOP remains separate.
+  workout, and finishing removes exercises with no sets. Body opens its own injected
+  destination. ReelVault (Build 32) is removed from Build 33; `app/RetiredModuleCleanup.swift`
+  deletes the videos and store it left at launch, a no-op once they are gone. WHOOP
+  remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting
   orientation itself. The Pushups dashboard therefore keeps its verified portrait layout.
@@ -147,8 +134,6 @@ plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`
   entry/history/recovery views. Plates-per-side stores one side exactly and never converts unknown
   bar, sled or machine resistance into a fabricated total. JSON is the restorable backup; CSV is a
   review bridge that preserves the load mode. `lift-log.md` owns the full contract and acceptance.
-- Future ReelVault source belongs in a sibling `features/reelvault/` area with its own store/tests.
-  It is not created or implemented yet.
 
 All sources still compile into the existing AkshatOS module/application target. These are logical
 source boundaries, not independently compiled packages or OS security isolation.
@@ -224,7 +209,9 @@ background-capable services at app lifetime; load future media views/resources o
   being pushed on top of whatever was there. `HubView` is therefore a path-driven `NavigationStack`
   with `NavigationLink(value:)` cards. Routing keys on the request identifier because the 9:00 AM
   request carries no category, and navigation is limited to the default action so a background Done
-  or Pause cannot move the screen. `hub-plan.md` owns the contract.
+  or Pause cannot move the screen. Lift Log's inactivity reminder (`akshatos.liftlog.`) is the third
+  routed namespace and registers the second category, whose Finish workout action the coordinator
+  hands to `LiftLogStore` (`lift-log.md`). `hub-plan.md` owns the contract.
 - Do not use an in-process timer, background loop, unbounded list of future notifications, Web Push,
   a Shortcut/Personal Automation as the reminder engine, or a server.
 

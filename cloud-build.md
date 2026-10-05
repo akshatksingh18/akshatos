@@ -1,79 +1,28 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Builds come only from the GitHub Actions macOS workflow and are verified on Windows before
-handover. Build 13 is the accepted legacy Squats daily-use baseline, and **Build 20 is installed and accepted
-for PageVault's reading loop**: page fitting, bookmark restore, warm paper, paged swiping and a
-full-library export all passed on the phone. Build 21 added highlights, search, page themes and the
-page curl; the curl and highlights passed on the phone, the rest was not tested. Build 22 made the
-curl the only reader, retired warm in favour of sepia and added Takeaways; its device pass confirmed
-search page-jumps but found the highlighter stacking marks it could not then remove. **Build 23's
-reworked highlighting is accepted on the phone** — the explicit Highlight / Remove highlight choice,
-the search tint, Go to page from a Takeaways passage and the delete confirmation. It also explained
-the one mark that would not clear: it was inside the PDF file, not PageVault's. **Build 24 is
-installed and fully confirmed on the phone**: it hides the book's own markup, adds a direct page
-jump, and opens the feature that sent a notification. **Build 28 / 0.5.0 (28)** adds PageVault's
-OneDrive laptop inbox folder and Open in AkshatOS. PR #56 passed its complete CI Gate (all 11
-`PageVaultInboxTests`, 24 inbox domain assertions and the new sheet UI test ran and passed) and
-merged at `6c08c87`; main run `36328010157` passed the complete CI Gate and published
-`akshatos-ios-136`. Its SHA-256 matched locally, `validate-ipa.py` passed including the new
-document-type checks, the packaged version is 0.5.0 (28), and the inbox sheet and library screenshots
-were inspected. It sits in `..\final-ipas\akshatos\testing\akshatos-build-28-6c08c87`. Akshat
-installed it over Build 27 by Sideloadly; the database confirms version 0.5.0 at
-`com.akshatksingh18.akshatos.5564K8D4SV`, automatic bundle-ID mode, completed current-version
-enrollment, no error and expiry on 2026-10-04 at 10:16 local. **Phone finding:** linking the laptop
-inbox did nothing — in the folder picker, tapping **Open** inside the synced folder had no effect.
-Akshat asked for the inbox and Open in AkshatOS to be removed rather than fixed, so Build 28 will not
-be promoted; Build 27 stays the accepted backup. **Build 29 / 0.6.0 (29)** removes both, adds the
-Body module (with the camera usage description), gives Pushup and Lift Log history their own
-screens, and replaces the quest theme with the minimal design. PR #57's first two runs failed and
-were fixed in the PR: a main-actor fake built in a test default argument (compile error), then the
-Pushup History row only accepting taps on its text (now a full card). Run `36655530523` then passed
-the complete CI Gate (135 hosted tests and 8 UI tests, 0 failures); PR #57 merged at `2637ea1`, main
-run `36656727736` passed and published `akshatos-ios-140`. Its SHA-256 matched locally,
-`validate-ipa.py` passed (no document types, no file sharing), the packaged version is 0.6.0 (29)
-with the camera description, and the hub, Pushups, Body, Body measure and PageVault screenshots were
-reviewed. It sits in `..\final-ipas\akshatos\testing\akshatos-build-29-2637ea1`, replacing Build 28
-there. It is installed over Build 28: Sideloadly records 0.6.0 at `com.akshatksingh18.akshatos.5564K8D4SV` in automatic bundle-ID mode with completed current-version enrollment, no error and expiry on 2026-10-06. Its phone pass is pending.
-**Build 27 / 0.4.0 (27)** adds mode guidance,
-priority-ordered Upper/Lower templates, same-mode last-performance references and active-set editing.
-PR #54 merged at `ebb44d3`; main run `35925770220` passed the complete CI Gate and published
-`akshatos-ios-133`. Its SHA-256 matched locally and `validate-ipa.py` passed. Akshat installed Build
-27 and reports that it works well end-to-end, closing the focused Lift Log phone-behavior pass. The
-Sideloadly database confirms version 0.4.0 at `com.akshatksingh18.akshatos.5564K8D4SV`, automatic
-bundle-ID mode, completed current-version enrollment, no error and expiry on 2026-09-30 at 17:24
-local. Build 27 is promoted to `..\final-ipas\akshatos\backup\akshatos-build-27-ebb44d3`; Build 25's
-local backup copy was removed and remains reproducible from its recorded run. Build 26 added the
-local-only Lift Log core and is now superseded. **0.3.0 (25) is the accepted Pushup/presentation
-baseline**:
-it presents the movement feature as Pushup Reminder and introduces the playful Homebase/quest visual
-system across the hub and PageVault. Retained-candidate commit `4253311` passed workflow-dispatch run
-`35678793533`: domain tests, simulator compile, persistence/navigation UI tests, unsigned device
-compile, package inspection and artifact upload all passed. Artifact `akshatos-ios-123` was downloaded
-to `..\final-ipas\akshatos\testing\akshatos-build-25-4253311`; its checksum and the local IPA validator
-passed. Akshat reported the Wi-Fi install reached 100% at 21:39 local on 2026-09-21; Sideloadly's
-database corroborates version 0.3.0, signed ID `com.akshatksingh18.akshatos.5564K8D4SV`, automatic
-bundle-ID mode, completed current-version automatic-refresh enrollment, no error and expiry at
-2026-09-28 21:39 local. Akshat subsequently reported that Build 25 works perfectly, closing the
-focused launch/presentation pass; this does not claim the broader physical edge-case or refresh
-matrix. Its artifact is promoted to the accepted backup slot. This file
-owns build and device evidence.
+**State:** Build 31 (0.8.0, PR #60) is the accepted recovery/refresh artifact in `backup/`.
+Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI, checksum/local IPA validation and
+screenshot review and is installed with current-version enrollment in automatic mode and no error.
+It remains in `testing/`; Akshat reports the read-aloud voice is
+still robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available voice ranking across regional
+language variants and adds Lift Log's Weight loaded mode and one-hour inactivity reminder and removes ReelVault,
+deleting the videos it left on the phone; cloud CI, a new artifact and a phone pass for Build 33 remain pending.
+Build 31 accepted the redesign, Body, full backup, month dropdowns, editable splits and read-aloud
+controls. PageVault v1 is accepted through Build 24; Build 13 is the detailed movement baseline.
+Per-build evidence and historical findings live below; broader physical/refresh gates stay open.
 
 ## Current identity and artifact
 
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.9.0 (32)**, adding the first ReelVault version and reading a page aloud as one continuous passage; accepted Build 31 is 0.8.0 (PR #60: Lift Log splits, PageVault read aloud) on top of 0.7.0 (PR #59: full backup, month dropdowns); minimum iOS 17.
-  Build 28 (0.5.0) is installed and enrolled but not accepted (its inbox failed on the phone). Build
-  29 (0.6.0) passed PR/main CI, checksum and local IPA validation and is installed from
-  `testing\` with current-version enrollment; its phone pass is pending. The facts below describe the accepted Build 27.
-  Build 27 passed the complete PR and main-branch CI Gates, package inspection, checksum and local IPA
-  validation. Build 27 is installed, phone-accepted, enrolled for current-version automatic refresh
-  at the expected identity/mode, and retained in the local backup slot; `testing\` holds Build 28. Build
-  25 remains the accepted Pushup/presentation baseline and is reproducible from its recorded run.
-  Build 26's local candidate was
-  removed after Build 27 validation and remains
-  reproducible from its recorded main run.
+- Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.10.0 (33)**,
+  fixing Best available voice selection to prefer quality across language variants, then the exact
+  locale for equal quality, and adding Lift Log's Weight loaded mode and "Still working out?"
+  reminder, and removing ReelVault (its leftover videos and store are deleted at launch). This is local source only; no Build-33 CI result or artifact exists.
+  Build 32 (0.9.0, PR #61) is installed and enrolled, awaiting its phone pass in `testing/`.
+  Build 31 (0.8.0, PR #60) is the accepted backup. Build 30 (PR #59: full backup/month dropdowns)
+  was never installed and is included in Build 31. Minimum iOS 17.
   Every installable artifact gets its own build number, so a build never shares a number while
   carrying different code. Bump `CURRENT_PROJECT_VERSION` in `ios/project.yml` with the first code
   change after a build is handed over, not at build time — that is what keeps this invariant true.
@@ -84,7 +33,8 @@ owns build and device evidence.
   themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
   full-text search. Build 26 is the first verified IPA that includes Lift Log; Build 27 extends it
-  and is cloud/package and locally verified. ReelVault is a planned card only. Reading streaks shipped in Builds 14–20 and
+  and is cloud/package and locally verified. Build 29 adds Body, Build 31 adds editable
+  splits and read aloud, Build 32 added ReelVault and Build 33 removes it. Reading streaks shipped in Builds 14–20 and
   were removed in Build 21. Build 22 makes the curl the only reader and retires the warm theme in
   favour of sepia. Build 23 reworks highlighting around an explicit Highlight / Remove highlight
   choice, tints a searched phrase on arrival, reaches a page from a Takeaways passage, and confirms
@@ -136,11 +86,12 @@ accepted build's files are guaranteed to still exist, at `D:\AI Important Files\
 
 | Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
 |---|---|---|---|---|---|
-| 29 | `akshatos-build-29-2637ea1\akshatos-ios-140` | `2637ea1` (#57) | [36656727736](https://github.com/akshatksingh18/akshatos/actions/runs/36656727736) | `4c49f4e23254a272f1742b5eebb73181c6af97ba4e5d4373c4634717a36c1acb` | **Installed, superseded** — complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, phone pass pending; removed from `testing\` when Build 30 arrived and reproducible from its run |
+| 29 | `akshatos-build-29-2637ea1\akshatos-ios-140` | `2637ea1` (#57) | [36656727736](https://github.com/akshatksingh18/akshatos/actions/runs/36656727736) | `4c49f4e23254a272f1742b5eebb73181c6af97ba4e5d4373c4634717a36c1acb` | **Installed, superseded** — PR #57 fixed a main-actor fake in a test default argument and a History card tap area; successful PR run `36655530523` passed 135 hosted and 8 UI tests; complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, and its redesign/Body/history phone pass was accepted with Build 31; removed from `testing\` when Build 30 arrived and reproducible from its run |
 | 30 | `akshatos-build-30-10357b9\akshatos-ios-144` | `10357b9` (#59) | [36763493014](https://github.com/akshatksingh18/akshatos/actions/runs/36763493014) | `ee0720feeb4ec9c08f08f7d2c0f0eb598a3497b1b517df4420dddd744bde8ff7` | **Superseded, never installed** — complete PR/main CI Gates (the first PR run failed on two new test mistakes, fixed before merge), package inspection, checksum/local IPA validation (0.7.0 (30)) and screenshot review, including the Backup screen, pass; removed from `testing\` when Build 31, which contains all of it, arrived; reproducible from its run |
 | 31 | `akshatos-build-31-46445c5\akshatos-ios-147` | `46445c5` (#60) | [36877588699](https://github.com/akshatksingh18/akshatos/actions/runs/36877588699) | `900d40d66413c23707601b11e6e6e8feba66f956c75b8615fa291917826f52d1` | **Accepted, installed, in `backup\`** — complete PR/main CI Gates (the first PR run stopped on a typo in a new test sample, fixed before merge), package inspection, checksum/local IPA validation (0.8.0 (31), audio background mode only) and screenshot review, including the Lift Log workout and Splits screens, pass; installed with current-version enrollment in automatic mode, no error, expiry 2026-10-08; Akshat reports everything works on the phone (redesign, Body, notification icon after a restart, backup, dropdowns, splits, read-aloud controls) except that the read-aloud voice sounds robotic and broken up, reworked in Build 32 |
+| 32 | `akshatos-build-32-eab351e\akshatos-ios-149` | `eab351e` (#61) | [36935787070](https://github.com/akshatksingh18/akshatos/actions/runs/36935787070) | `85bbde30ee024e9009285b8cbd6add741a91a9b885e099f5d7cfe81bb2095d0a` | **Candidate in `testing\`** — complete PR/main CI Gates on the first run, package inspection, checksum/local IPA validation (0.9.0 (32), audio background mode only) and screenshot review, including the hub with ReelVault and ReelVault's empty state and library, pass; installed with current-version enrollment in automatic mode and no error; phone pass pending, with the read-aloud voice still reported robotic |
 | 28 | `akshatos-build-28-6c08c87\akshatos-ios-136` | `6c08c87` (#56) | [36328010157](https://github.com/akshatksingh18/akshatos/actions/runs/36328010157) | `544701ea48c630538f43bb48f3482ba6d393a12c20a1bb74202ec8fb7f1df324` | **Installed, not accepted** — complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, but linking the laptop inbox did nothing on the phone, so the inbox and Open in are removed in Build 29; removed from `testing\` when Build 29 arrived and reproducible from its run |
-| 27 | `akshatos-build-27-ebb44d3\akshatos-ios-133` | `ebb44d3` (#54) | [35925770220](https://github.com/akshatksingh18/akshatos/actions/runs/35925770220) | `744b7ed57d76259773f35d71b30196544bc8b58f91341f6cd676c76b17f0bb9f` | **Accepted, installed, current** — complete PR/main CI Gates, package inspection, checksum/local IPA validation, focused phone behavior and current-version automatic-refresh enrollment pass; files at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\akshatos-build-27-ebb44d3` |
+| 27 | `akshatos-build-27-ebb44d3\akshatos-ios-133` | `ebb44d3` (#54) | [35925770220](https://github.com/akshatksingh18/akshatos/actions/runs/35925770220) | `744b7ed57d76259773f35d71b30196544bc8b58f91341f6cd676c76b17f0bb9f` | **Accepted, superseded by Build 31** — complete PR/main CI Gates, package inspection, checksum/local IPA validation, focused phone behavior and current-version automatic-refresh enrollment passed; removed from the one-slot backup cache and reproducible from its run |
 | 26 | `akshatos-build-26-7a4f639\akshatos-ios-129` | `7a4f639` (#52) | [35870794873](https://github.com/akshatksingh18/akshatos/actions/runs/35870794873) | `46904f57e6dba743e083b7813dc8aa788088aff841c046c264a39d04cc617b83` | Complete CI Gate, package inspection, checksum and local IPA validation passed; superseded by Build 27 and removed from the one-slot local testing cache; reproduce from Git/run if needed |
 | 25 | `akshatos-build-25-4253311\akshatos-ios-123` | `4253311` (#52 pre-merge candidate) | [35678793533](https://github.com/akshatksingh18/akshatos/actions/runs/35678793533) | `ad5d6f2f7c626303ca9c21c9bef434c0458613b8e83879755353658733db79d5` | Accepted Pushup/presentation baseline; superseded by Build 27 and removed from the one-slot local backup cache; reproduce from Git/run if needed |
 | 24 | `akshatos-build-24\akshatos-ios-108` | `b53af3e` (#42) | [34709407596](https://github.com/akshatksingh18/akshatos/actions/runs/34709407596) | `10bd5c5fff995fc4f510f706abbcefa895578de645f1fd1111a3e105c9493b18` | Superseded by accepted Build 25; reproduce from Git history if rollback is needed |
@@ -273,8 +224,8 @@ anyway, so a real scanned book is still needed for a memory verdict.
    `IDENTITY` with mode `automatic`; a 100% one-off install does not satisfy the release gate.
 6. Open **AkshatOS**: the first screen must be the hub list. Select **Pushup Reminder**; test back
    navigation to the hub. Build 27 must also expose Lift Log and preserve its separate local store;
-   follow `lift-log.md`'s disposable-session and JSON/CSV recovery pass. ReelVault must clearly say
-   it is not available.
+   follow `lift-log.md`'s disposable-session and JSON/CSV recovery pass. Build 32 also carried
+   ReelVault, which Build 33 removes.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
    lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
    ignore another normal alert and confirm the dashboard switches to one ten-minute automatic-nudge

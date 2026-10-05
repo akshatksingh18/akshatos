@@ -5,6 +5,7 @@ import UIKit
 /// Sole owner of the process-wide delegate. Feature schedulers never replace it.
 @MainActor final class AppNotificationCoordinator: NSObject, UNUserNotificationCenterDelegate {
     private let squats: SquatStore
+    private let liftLog: LiftLogStore
     private let navigator: HubNavigator
 
     /// Which feature owns a notification, by the namespace its request identifier starts with.
@@ -19,16 +20,19 @@ import UIKit
     /// the hub stays where it was, which is the behaviour this replaced.
     static let featureNamespaces: [(namespace: String, route: HubRoute)] = [
         (ReminderService.namespace, .squats),
-        (BodyReminderService.namespace, .body)
+        (BodyReminderService.namespace, .body),
+        (LiftReminderService.namespace, .liftLog)
     ]
 
-    init(squats: SquatStore, navigator: HubNavigator) {
+    init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator) {
         self.squats = squats
+        self.liftLog = liftLog
         self.navigator = navigator
         super.init()
         UNUserNotificationCenter.current().delegate = self
         // This is the hub's complete category registry; add future feature categories here.
-        UNUserNotificationCenter.current().setNotificationCategories([ReminderService.category()])
+        UNUserNotificationCenter.current().setNotificationCategories([ReminderService.category(),
+                                                                      LiftReminderService.category()])
     }
 
     /// The feature a tapped notification belongs to, or nil when nothing claims it.
@@ -62,6 +66,10 @@ import UIKit
             if Self.shouldNavigate(actionIdentifier: response.actionIdentifier),
                let route = Self.route(forNotification: notification.request.identifier) {
                 navigator.request(route)
+            }
+            if response.actionIdentifier == LiftReminderService.finishAction,
+               let workout = LiftReminderService.workoutID(of: notification.request) {
+                liftLog.finishFromReminder(workoutID: workout)
             }
             if let action = Self.action(request: notification.request, delivered: notification.date,
                                         identifier: response.actionIdentifier) {

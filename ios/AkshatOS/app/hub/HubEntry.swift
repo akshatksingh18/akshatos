@@ -1,6 +1,6 @@
 /// Hub metadata contains no feature stores, persistence models, or business commands.
 enum HubRoute: String {
-    case squats, pageVault, liftLog, body, reelVault
+    case squats, pageVault, liftLog, body
     /// Not a module: the one screen that backs up and restores all of them.
     case backup
 }
