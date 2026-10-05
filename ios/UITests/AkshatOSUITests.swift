@@ -19,7 +19,7 @@ final class AkshatOSUITests: XCTestCase {
         XCTAssertTrue(app.buttons["open-pageVault"].exists, "PageVault is an available module")
         XCTAssertTrue(app.buttons["open-liftLog"].exists, "Lift Log is an available module")
         XCTAssertTrue(app.buttons["open-body"].exists, "Body is an available module")
-        XCTAssertTrue(app.buttons["open-reelVault"].exists, "ReelVault is an available module")
+        XCTAssertFalse(app.buttons["open-reelVault"].exists, "ReelVault was removed")
         app.buttons["open-squats"].tap()
         XCTAssertTrue(app.buttons["log-set"].waitForExistence(timeout: 5))
         app.buttons["Pushup settings"].tap()

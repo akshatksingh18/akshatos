@@ -9,7 +9,7 @@ presentation only, which 0.6.0 (29) replaces with a plain, minimal one; persiste
 behavior and the deliberate removal of reading streaks are unchanged by either. The presentation passed the AkshatOS PR #52 macOS CI Gate,
 checksum/IPA validation, installation and current-version enrollment. Akshat reports the installed
 Build 25 works perfectly, accepting that focused presentation pass; broader unmeasured edge cases
-remain unchanged. PageVault is a module in the Pushup/PDF/Reels native hub; WHOOP
+remain unchanged. PageVault is a module in the AkshatOS native hub; WHOOP
 stays standalone.
 `../hub-plan.md` owns shared identity/build/lifecycle gates, `CLAUDE.md` owns module deployment
 and recovery, and `features.md` owns product scope.

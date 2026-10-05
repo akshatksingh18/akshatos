@@ -130,23 +130,12 @@ mode, the one-time upgrade of the untouched starting calf raise, the inactivity 
 finishing a forgotten workout at its last set; and hosted store tests with an in-memory reminder
 for scheduling, pushing back, reopening after the hour, Finish from the reminder (only for its own
 workout), discard cancelling it, and the saved calf-raise upgrade. Real notification delivery is a
-phone check. The ReelVault real-video test also checks that a library still is made, is at most
-240 px, is cached, and that a file that is not a video gets none. The ReelVault domain suite checks
-that a reshuffle deals every video again, never leads with the one on screen, and varies.
+phone check.
 
-ReelVault is registered as its own feature suite. Its domain test covers the shuffle with a seeded
-generator (empty, one video, every video once a round over many seeds, never twice in a row across
-rounds, a video removed or added during a round), headline and file-name rules, whole-library
-validation, the backup manifest (round trip, newer version, garbage, invalid content) and the
-restore plan (additions by fingerprint, headline updates, a blank headline never overwriting).
-Hosted tests use real files and a real store per simulated phone: copy-on-import surviving the
-original's deletion and a reopen, the same video refused even when two imports arrive at once, a
-non-video refused by the real inspector with nothing left behind, a real H.264 file generated in the
-test accepted with its length, headline clean-up and persistence, removal deleting only the app's
-copy, the feed's rounds, a backup restored into a fresh library byte-for-byte, a damaged or missing
-video restoring nothing, restoring onto a video already present only updating its headline, and the
-hub's full backup carrying ReelVault. The UI test opens ReelVault and its library from the hub.
-Picking from Photos or Files, real playback, sound and memory under large videos are phone checks.
+ReelVault's domain, storage and UI suites were removed with the module in Build 33.
+`FullBackupTests` checks that its leftover videos and store are deleted on launch without touching
+other modules' files, and that a full-backup part from it is refused as an unknown module; the hub
+UI test asserts its entry is gone.
 
 Lift Log is registered as its own feature suite. Its Foundation-only domain test covers explicit
 per-side load semantics, the starting splits and split validation (trimming, names, case-insensitive

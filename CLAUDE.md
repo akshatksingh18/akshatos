@@ -4,9 +4,9 @@ Personal native iPhone hub: the home screen selects a feature, starting with Pus
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
-weekly-measurement and progress-photo module, owned by `body-log.md`; ReelVault is the local-only
-feed of Akshat's own videos with a headline each, owned by `reelvault/`, with its source in
-`ios/AkshatOS/features/reelvault/`; WHOOP stays standalone. Everything for
+weekly-measurement and progress-photo module, owned by `body-log.md`; WHOOP stays standalone.
+ReelVault, a feed of Akshat's own videos, shipped in Build 32 and is removed from Build 33 at his
+request, with its folder and source. Everything for
 the hub lives in this one folder and repository. The hub's **Backup** screen backs up or restores
 every module at once (`hub-plan.md` § Full backup). This repository evolved from Squat Reminder and now presents that
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
@@ -17,11 +17,12 @@ Squats fallback.
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. It remains in `testing/`; its read-aloud voice is still
+reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged, and ReelVault library stills, a video screen, delete from the feed and reshuffle. Build 33 has not passed
+with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
+ReelVault left on the phone. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
 baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
@@ -32,10 +33,6 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 - `pagevault/` — PageVault's product scope, deployment plan, phases, device findings and fixture
   generator; routed through `pagevault/CLAUDE.md`. Its source is in `ios/AkshatOS/features/pagevault/`.
   Merged in from the former private `book-reader` repository, which keeps the earlier history.
-- `reelvault/` — ReelVault's product scope, iPhone plan, architecture, open gates and the unverified
-  Android draft app; routed through `reelvault/CLAUDE.md`. Its source is in
-  `ios/AkshatOS/features/reelvault/`. Merged in from the former private `reels` repository, which keeps the
-  earlier history.
 - `lift-log.md` — Lift Log product, plate-per-side data contract, privacy boundary, source layout
   and acceptance gates; read before changing the strength logger.
 - `body-log.md` — Body module product contract (weigh-ins, the eight tape sites, estimates, photos,
@@ -94,8 +91,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 32 (ReelVault and the reworked read-aloud
-  voice), installed and awaiting its phone pass.
+  31 is the accepted copy and `testing\` holds Build 32 (the reworked read-aloud voice and
+  ReelVault, removed in Build 33), installed.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -143,7 +140,7 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 - `ios/AkshatOS/shared/backup/HubBackupPart.swift` — the protocol every module implements to join the
   full backup; `hub-plan.md` § Full backup owns the contract and the add-a-module steps.
 - `ios/AkshatOS/features/*/<Module>BackupPart.swift` (`SquatsBackupPart`, `PageVaultBackupPart`,
-  `LiftLogBackupPart`, `BodyBackupPart`, `ReelVaultBackupPart`) — each module's conformance, reusing its own backup.
+  `LiftLogBackupPart`, `BodyBackupPart`) — each module's conformance, reusing its own backup.
 - `ios/scripts/check-backup-coverage.py` — fails CI when a `features/` module has no `HubBackupPart`
   or is missing from `FullBackupService(parts:)` in `AppServices`; has its own negative fixtures.
 - `ios/UnitTests/FullBackupTests.swift` — every module backed up by one phone and restored into a
@@ -169,17 +166,9 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   because identity compared captured text rather than the page area covered; it now offers Highlight
   and Remove highlight explicitly and compares line bands, and that awaits a device pass.
 - `ios/tests/pagevault/main.swift` — executable PageVault domain assertions run by the cloud workflow.
-- `ios/AkshatOS/features/reelvault/` — ReelVault: `domain/ReelVault.swift` (the video record,
-  headline and file-name rules, the shuffle bag, the backup manifest and restore plan;
-  Foundation-only), `data/` (versioned SwiftData store and streamed copy-on-import file storage with
-  backup staging), `services/ReelVideoInspector.swift` (is it a playable video, and how long),
-  `services/ReelThumbnailer.swift` (the library's stills),
-  `ReelVaultStore.swift`, `ReelVaultBackupPart.swift`, and `ui/` (the feed, its small player pool,
-  the library, the per-video screen with playback, headline and delete, and the add-from-Photos/Files
-  buttons). `reelvault/` owns scope and gates.
-- `ios/tests/reelvault/main.swift`, `ios/UnitTests/ReelVaultPersistenceTests.swift`, and
-  `ios/UITests/ReelVaultUITests.swift` — registered ReelVault domain, storage/backup and navigation
-  coverage.
+- `ios/AkshatOS/app/RetiredModuleCleanup.swift` — deletes what the removed ReelVault left on the
+  phone (`Application Support/ReelVault/` and the `ReelVault.store` files) at launch; a no-op once
+  they are gone. Covered by `FullBackupTests`.
 - `ios/AkshatOS/features/liftlog/` — local-only workout domain, versioned SwiftData repository,
   splits Akshat edits in the app (`data/LiftSplitStorage.swift`, `ui/LiftSplitsView.swift`, which
   also holds the Add exercise form), store, entry/edit UI, the month-grouped history screen
@@ -245,7 +234,7 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, Body, or ReelVault
+- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, or Body
   for its own destination. Returning to the picker must not stop reminders.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
 
@@ -460,11 +449,11 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 
 ### Accepted free-account app-slot portfolio
 
-- Install one native hub for Pushups, PageVault, Lift Log, Body, and ReelVault, plus standalone WHOOP: two free slots.
+- Install one native hub for Pushups, PageVault, Lift Log, and Body, plus standalone WHOOP: two free slots.
   One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
   installation identity per module is required. Packaging is accepted; implementation is pending.
 - The hub's notification/geofence handlers belong to the application lifecycle, not the Pushups
-  screen. Reading PDFs or playing reels must not stop scheduling or action processing. Show
+  screen. Reading PDFs must not stop scheduling or action processing. Show
   foreground notifications appropriately; namespace requests/categories/actions and cancel only
   Pushups-owned requests. Never let navigation disable Home monitoring.
 - OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
@@ -638,7 +627,7 @@ The iPhone path can be described as working only when all of the following are t
   USB recovery has been rehearsed;
 - the common hub IPA can be signed by a fallback path without source changes, coexists with
   standalone WHOOP in two free slots, and preserves every module across refresh/upgrade;
-- Pushups actions and Home events work without opening its section, including while PageVault/Reels
+- Pushups actions and Home events work without opening its section, including while PageVault
   is visible, and their module transitions cannot cancel requests or delay durable action handling;
 - Android remains buildable as a fallback or is still explicitly documented as unverified—do not
   silently imply parity between the platforms.

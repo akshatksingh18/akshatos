@@ -2,20 +2,20 @@
 
 A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for its movement dashboard,
 **PageVault** for its PDF library, **Lift Log** to record strength sessions, or **Body** for daily
-weight, weekly measurements and progress photos ([body-log.md](body-log.md)), or **ReelVault** for a
-feed of your own videos with a headline each ([reelvault/](reelvault/README.md)). WHOOP stays a
-separate app.
+weight, weekly measurements and progress photos ([body-log.md](body-log.md)). WHOOP stays a
+separate app. (ReelVault shipped in Build 32 and is removed from Build 33.)
 
 **Current state:** Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
 `../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. It remains in `testing/`; its read-aloud voice is still
+reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged, and ReelVault library stills, a video screen, delete from the feed and reshuffle. Build 33 has not passed
+with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
+ReelVault left on the phone. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 PageVault v1 is accepted through Build 24, and Build 13 is the detailed movement-lifecycle baseline.
 The broader edge-case, refresh/recovery and soak matrix remains open. Updates retain the permanent
@@ -35,7 +35,7 @@ build skipping, and the server-enforced `main` protection. Green CI is not physi
 App composition, display-only hub, shared styling and the Pushup Reminder feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- A plain hub listing Pushup Reminder, PageVault, Lift Log, Body and ReelVault, with a Backup row
+- A plain hub listing Pushup Reminder, PageVault, Lift Log and Body, with a Backup row
   for all of them; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
 - Lift Log asks Upper or Lower at workout start, preloads the confirmed exercises in priority order,
   shows the last finished performance for the same exercise/mode, and edits active sets. It
@@ -159,7 +159,7 @@ safe.
 
 The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Pushups, PageVault, Lift Log, Body, and ReelVault plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
+Pushups, PageVault, Lift Log, and Body plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates

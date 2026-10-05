@@ -9,14 +9,15 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. It remains in `testing/`; its read-aloud voice is still
+reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged, and ReelVault library stills, a video screen, delete from the feed and reshuffle. Build 33 has not passed
+with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
+ReelVault left on the phone. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
-Wait for Akshat's named Enhanced/Premium voice result, ReelVault phone findings and silent-switch
-preference. Build 32 is not ready for promotion. Detailed build history belongs in `cloud-build.md`.
+Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
+replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ## iPhone-primary work
 
@@ -110,17 +111,9 @@ preference. Build 32 is not ready for promotion. Detailed build history belongs 
       leave it an hour and confirm "Still working out?" arrives; tap it (opens Lift Log) and try
       **Finish workout** from the notification (ends the workout at its last set). It is never
       sent without notification permission, which the Pushup reminders already hold.
-- [ ] **Phone-check ReelVault's Build 33 library and delete.** Library rows show a still of each
-      video; tapping one plays it while you type its headline; Delete video there and the trash
-      button on every feed video ask first and delete the right one; the shuffle button and a fresh
-      visit give a new order (`reelvault/todo.md`).
-- [ ] **Phone-check ReelVault (Build 32).** Add videos from Photos and from Files (small and
-      large, portrait and landscape), write and edit headlines in the feed and the library, swipe
-      through at least two full rounds (every video once a round, never twice in a row), the video
-      looping until swiped, tap to pause and resume, sound only from the video on screen and how it
-      behaves with the ring switch on silent, leaving and returning to the app, removing a video,
-      airplane mode after import, a ReelVault backup and restore, and Back up everything including
-      it. Note memory or stutter with large videos and fast swipes.
+- [ ] **Confirm ReelVault is gone (Build 33).** The hub no longer lists ReelVault, and the space its
+      videos used is freed on first launch (Settings → General → iPhone Storage → AkshatOS gets
+      smaller). Pushups, PageVault, Lift Log and Body data stay as they were.
 - [ ] **Watch the daemon restart path once.** The false startup warning came from the health task's
       logon run checking before the daemon had started (it starts about 40 seconds after sign-in);
       the logon trigger now waits two minutes. If the daemon is found stopped, the check now starts it

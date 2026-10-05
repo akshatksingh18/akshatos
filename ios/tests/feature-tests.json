@@ -63,17 +63,5 @@
     "ui_tests": [
       "UITests/LiftLogUITests.swift"
     ]
-  },
-  "reelvault": {
-    "domain_sources": [
-      "AkshatOS/features/reelvault/domain/ReelVault.swift"
-    ],
-    "domain_test": "tests/reelvault/main.swift",
-    "integration_tests": [
-      "UnitTests/ReelVaultPersistenceTests.swift"
-    ],
-    "ui_tests": [
-      "UITests/ReelVaultUITests.swift"
-    ]
   }
 }

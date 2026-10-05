@@ -8,7 +8,7 @@ validation, Wi-Fi installation and current-version enrollment. Akshat reports th
 works perfectly, accepting that refreshed presentation. AkshatOS 0.6.0 (29) replaces that themed
 presentation with a plain, minimal one at Akshat's request (accepted with Build 31). `CLAUDE.md`
 owns the remaining non-v1 measurement and clean-install boundaries.
-PageVault is a module in the native AkshatOS hub alongside Pushup Reminder, Lift Log, Body and ReelVault;
+PageVault is a module in the native AkshatOS hub alongside Pushup Reminder, Lift Log and Body;
 WHOOP remains a separate app. The Android concept is a later fallback, not the source of iOS
 file-access or rendering behavior. Locked target/toolchain/storage decisions: `CLAUDE.md`. Shared
 identity and lifecycle gates: `../hub-plan.md`.
@@ -234,8 +234,7 @@ Local Build 33 fixes the automatic voice ranking; it is not yet cloud- or phone-
   leaves the page on screen, so tapping the bookmark keeps it.
 - Everything is on the phone: the system speech voice, no network, no account. A scanned book has
   no text and says so instead of playing; OCR stays out of scope.
-- The app declares the audio background mode for this. Nothing else plays in the background:
-  ReelVault's videos stop when the app is not in front.
+- The app declares the audio background mode for this. Nothing else plays in the background.
 
 ## v2 / optional improvements
 

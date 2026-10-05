@@ -5,11 +5,12 @@
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. It remains in `testing/`; its read-aloud voice is still
+reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged, and ReelVault library stills, a video screen, delete from the feed and reshuffle. Build 33 has not passed
+with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
+ReelVault left on the phone. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
 Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
@@ -25,7 +26,7 @@ PageVault's technical plan is owned by `pagevault/architecture.md`; build eviden
   recovery/refresh build; Build 32 is installed pending its phone pass.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
-  `LiftLogStore`, one `BodyLogStore`, one `ReelVaultStore`, the sole
+  `LiftLogStore`, one `BodyLogStore`, the sole
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation. The app declares no document types and handles no opened
   files.
@@ -35,8 +36,9 @@ PageVault's technical plan is owned by `pagevault/architecture.md`; build eviden
   `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
   choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
   the active workout and preloading the split's ordered exercises; more can be added during the
-  workout, and finishing removes exercises with no sets. Body and ReelVault open their own
-  injected destinations; ReelVault owns its store, video files and bounded player pool. WHOOP
+  workout, and finishing removes exercises with no sets. Body opens its own injected
+  destination. ReelVault (Build 32) is removed from Build 33; `app/RetiredModuleCleanup.swift`
+  deletes the videos and store it left at launch, a no-op once they are gone. WHOOP
   remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
   everywhere except an open PDF reader, which reports its own presence rather than setting
@@ -132,9 +134,6 @@ PageVault's technical plan is owned by `pagevault/architecture.md`; build eviden
   entry/history/recovery views. Plates-per-side stores one side exactly and never converts unknown
   bar, sled or machine resistance into a fabricated total. JSON is the restorable backup; CSV is a
   review bridge that preserves the load mode. `lift-log.md` owns the full contract and acceptance.
-- `ios/AkshatOS/features/reelvault/` owns the shuffle/playback domain, separate versioned
-  store, copied videos, bounded player pool and its registered tests. `reelvault/architecture.md`
-  owns the design; Build 32's phone pass remains pending.
 
 All sources still compile into the existing AkshatOS module/application target. These are logical
 source boundaries, not independently compiled packages or OS security isolation.

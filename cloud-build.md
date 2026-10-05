@@ -3,10 +3,10 @@
 **State:** Build 31 (0.8.0, PR #60) is the accepted recovery/refresh artifact in `backup/`.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI, checksum/local IPA validation and
 screenshot review and is installed with current-version enrollment in automatic mode and no error.
-It remains in `testing/` pending its ReelVault phone pass; Akshat reports the read-aloud voice is
-still robotic. Working source 0.10.0 (33) fixes Best available voice ranking across regional
-language variants and adds Lift Log's Weight loaded mode and one-hour inactivity reminder and ReelVault's library
-stills, video screen, feed delete and reshuffle; cloud CI, a new artifact and a phone pass for Build 33 remain pending.
+It remains in `testing/`; Akshat reports the read-aloud voice is
+still robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available voice ranking across regional
+language variants and adds Lift Log's Weight loaded mode and one-hour inactivity reminder and removes ReelVault,
+deleting the videos it left on the phone; cloud CI, a new artifact and a phone pass for Build 33 remain pending.
 Build 31 accepted the redesign, Body, full backup, month dropdowns, editable splits and read-aloud
 controls. PageVault v1 is accepted through Build 24; Build 13 is the detailed movement baseline.
 Per-build evidence and historical findings live below; broader physical/refresh gates stay open.
@@ -19,7 +19,7 @@ Per-build evidence and historical findings live below; broader physical/refresh 
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.10.0 (33)**,
   fixing Best available voice selection to prefer quality across language variants, then the exact
   locale for equal quality, and adding Lift Log's Weight loaded mode and "Still working out?"
-  reminder, and ReelVault library stills, a video screen, delete from the feed and reshuffle. This is local source only; no Build-33 CI result or artifact exists.
+  reminder, and removing ReelVault (its leftover videos and store are deleted at launch). This is local source only; no Build-33 CI result or artifact exists.
   Build 32 (0.9.0, PR #61) is installed and enrolled, awaiting its phone pass in `testing/`.
   Build 31 (0.8.0, PR #60) is the accepted backup. Build 30 (PR #59: full backup/month dropdowns)
   was never installed and is included in Build 31. Minimum iOS 17.
@@ -34,7 +34,7 @@ Per-build evidence and historical findings live below; broader physical/refresh 
   export/restore, pages cropped to their measured text, highlights with their own PDF export, and
   full-text search. Build 26 is the first verified IPA that includes Lift Log; Build 27 extends it
   and is cloud/package and locally verified. Build 29 adds Body, Build 31 adds editable
-  splits and read aloud, and Build 32 adds ReelVault; only Build 32's phone pass is pending. Reading streaks shipped in Builds 14–20 and
+  splits and read aloud, Build 32 added ReelVault and Build 33 removes it. Reading streaks shipped in Builds 14–20 and
   were removed in Build 21. Build 22 makes the curl the only reader and retires the warm theme in
   favour of sepia. Build 23 reworks highlighting around an explicit Highlight / Remove highlight
   choice, tints a searched phrase on arrival, reaches a page from a Takeaways passage, and confirms
@@ -224,8 +224,8 @@ anyway, so a real scanned book is still needed for a memory verdict.
    `IDENTITY` with mode `automatic`; a 100% one-off install does not satisfy the release gate.
 6. Open **AkshatOS**: the first screen must be the hub list. Select **Pushup Reminder**; test back
    navigation to the hub. Build 27 must also expose Lift Log and preserve its separate local store;
-   follow `lift-log.md`'s disposable-session and JSON/CSV recovery pass. From Build 32, ReelVault
-   must open its own feed and library; run its phone checks in `todo.md`.
+   follow `lift-log.md`'s disposable-session and JSON/CSV recovery pass. Build 32 also carried
+   ReelVault, which Build 33 removes.
 7. Use disposable sessions: set a one-minute interval, start/allow notifications, return to hub,
    lock the phone and receive an alert. Use notification Done, confirm one set in Squats and Undo;
    ignore another normal alert and confirm the dashboard switches to one ten-minute automatic-nudge

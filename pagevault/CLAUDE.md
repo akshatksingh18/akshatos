@@ -2,7 +2,7 @@
 
 Personal, local-only PDF reader module in the native AkshatOS iPhone hub for PDFs Akshat already owns. The daily-use experience
 should be Kindle-like: a cover library with progress, one page at a time on tinted paper, and a
-bookmark that holds your place. It shares the hub's private installation with Pushup Reminder and ReelVault, not an App Store
+bookmark that holds your place. It shares the hub's private installation with Pushup Reminder, Lift Log and Body, not an App Store
 product: no account, backend, analytics, advertising, cloud-sync requirement, or remote push service.
 Android may remain a later fallback, but it does not control the initial architecture.
 
@@ -127,8 +127,8 @@ What the phone has confirmed, and what is still open:
 
 ## iPhone product and deployment decision
 
-The accepted packaging is one native SwiftUI hub containing PageVault, Pushup Reminder, and
-ReelVault, plus one standalone WHOOP app. This uses two free-signing slots; there is no pending
+The accepted packaging is one native SwiftUI hub containing PageVault, Pushup Reminder, Lift Log
+and Body, plus one standalone WHOOP app. This uses two free-signing slots; there is no pending
 fourth-slot or paid-tier requirement. `../hub-plan.md` owns the package boundary and identity/
 source-owner contract. `../` owns the hub source, which contains PageVault's
 implementation; as of Build 24 it is **verified on the phone**, v1 feature by v1 feature.
@@ -460,7 +460,7 @@ need an update.
 Before declaring the iPhone build ready for personal daily use, verify all of the following on the
 actual iPhone and current iOS release:
 
-- The native hub (PageVault, Pushup Reminder, ReelVault) coexists with standalone WHOOP using two free slots.
+- The native hub (PageVault, Pushup Reminder, Lift Log, Body) coexists with standalone WHOOP using two free slots.
   PageVault adds no extension/helper application slot. Reader navigation leaves pushup scheduling
   and actions intact, and releasing a PDF view does not tear down hub services.
 - USB initial install, Wi-Fi re-sign, Windows restart/daemon restart, phone restart, locked-phone

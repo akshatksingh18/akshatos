@@ -40,7 +40,8 @@ completed-break counter into a general workout tracker.
 
 AkshatOS opens to an app-selection screen. Choose **Pushup Reminder** to open this dashboard;
 navigate back without changing its active session or reminders. PageVault and Lift Log are separate
-available destinations alongside Body and ReelVault (from Build 32); WHOOP is not embedded.
+available destinations alongside Body; WHOOP is not embedded. (ReelVault shipped in Build 32 and
+is removed from Build 33.)
 The hub receives display metadata and injected destinations; it does not own Pushups rules or data.
 The source-boundary refactor changes no user-facing feature scope or reminder/streak behavior.
 
@@ -98,8 +99,7 @@ standard system font, and one calm accent colour used sparingly for the thing th
 screen. No game metaphors anywhere — no quests, portals, power-ups, combos, trophies or treasure —
 in the UI or in notifications; labels say plainly what things are ("Log a set", "Daily goal",
 "History", "Want to read"). State is always conveyed with text and symbols as well as colour, and
-nothing may invent completions, points or streaks. The hub is a plain list of modules;
-ReelVault opens its implemented video feed from Build 32, pending its physical-device pass.
+nothing may invent completions, points or streaks. The hub is a plain list of modules.
 
 - A state card shows the current state, the time until the next reminder while running, and a
   plain paused/blocked/ended explanation in other states. The countdown
