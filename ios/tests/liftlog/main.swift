@@ -150,7 +150,8 @@ assert(upgradedSplits?[0].exercises[0].loadMode == .weightLoaded
 assert(upgradedSplits?[1].exercises[0] == ownCalf, "A calf raise Akshat set up himself is left alone")
 assert(LiftSplit.upgradingCalfRaise(upgradedSplits!) == nil, "The upgrade happens once")
 let calfJSON = try JSONEncoder().encode(LiftSplitExercise("Seated calf raise", .weightLoaded))
-assert(try JSONDecoder().decode(LiftSplitExercise.self, from: calfJSON).loadMode == .weightLoaded)
+let calfDecoded = try JSONDecoder().decode(LiftSplitExercise.self, from: calfJSON)
+assert(calfDecoded.loadMode == .weightLoaded, "Weight loaded survives a round trip")
 
 // Forgotten workouts: a reminder an hour after the last thing logged, and finishing at the last set.
 var idle = LiftWorkoutSession(startedAt: now)
