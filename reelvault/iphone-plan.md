@@ -39,8 +39,8 @@ Bring the existing personal reel concept to iPhone, retaining the accepted behav
 - Keep media and metadata local after import. No account, backend, analytics, advertising,
   social feed, Instagram/TikTok downloader, or mandatory media-sync service.
 - Preserve prior cuts: favorites, manual reshuffle, and a mute toggle are not planned unless
-  requested. Auto-advance, per-video playback-position resume, and library thumbnails remain
-  optional later work, not requirements silently added to the iPhone MVP.
+  requested. Auto-advance and per-video playback-position resume remain optional later work
+  (library stills arrived in 0.10.0 (33) at Akshat's request), not requirements silently added to the iPhone MVP.
 - Add versioned export/restore as a daily-driver gate because app-private media is lost on uninstall.
 
 ## Accepted two-app packaging

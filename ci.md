@@ -130,7 +130,8 @@ mode, the one-time upgrade of the untouched starting calf raise, the inactivity 
 finishing a forgotten workout at its last set; and hosted store tests with an in-memory reminder
 for scheduling, pushing back, reopening after the hour, Finish from the reminder (only for its own
 workout), discard cancelling it, and the saved calf-raise upgrade. Real notification delivery is a
-phone check.
+phone check. The ReelVault real-video test also checks that a library still is made, is at most
+240 px, is cached, and that a file that is not a video gets none.
 
 ReelVault is registered as its own feature suite. Its domain test covers the shuffle with a seeded
 generator (empty, one video, every video once a round over many seeds, never twice in a row across

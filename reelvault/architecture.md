@@ -36,7 +36,13 @@ Source: `../ios/AkshatOS/features/reelvault/`.
   `ReelPlayerLayer` shows an `AVPlayerLayer` with no system controls. Playback stops while paused,
   while the headline is being edited, and while the scene is not active. The pool sets the audio
   session to `.playback`/`.moviePlayback` on appear and deactivates it on leaving. No delegate is
-  used anywhere in the module.
+  used anywhere in the module. Each feed page carries a trash button; playback holds while its
+  confirmation is up, and after a deletion the page that moves into its place is shown rather than
+  the first page. `ReelLibraryView` rows push `ReelVideoDetailView`, which uses its own one-page
+  `ReelPlayerPool` to loop the video with sound, edits the headline (saved on Done or leaving)
+  and deletes after confirmation. `ReelThumbnail` shows a still from
+  `services/ReelThumbnailer.swift`, which takes a frame up to a second in (the first is often
+  black), at most 240 px, cached in memory for the run.
 
 ## Earlier iPhone plan notes
 

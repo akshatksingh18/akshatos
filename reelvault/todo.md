@@ -1,7 +1,8 @@
 # TODO / known gaps
 
 The first iPhone version is implemented in AkshatOS working source 0.9.0 (32) and passes nothing
-on a phone yet. Android remains an unverified fallback. `iphone-plan.md` owns the plan and the
+on a phone yet. Working source 0.10.0 (33) adds library stills, the video screen and delete from
+the feed; CI and a phone check are pending. Android remains an unverified fallback. `iphone-plan.md` owns the plan and the
 physical acceptance details; `README.md` says what the first version does.
 
 ## iPhone gates
@@ -19,6 +20,9 @@ physical acceptance details; `README.md` says what the first version does.
 - [ ] Phone-check installed and enrolled Build 32 using `../todo.md`:
       Photos and Files import with small and large real videos, playback, sound, the silent switch,
       offline use, interruption, memory and stutter under fast swipes.
+- [ ] Phone-check Build 33's library and delete: every row shows a still of its video; tapping one
+      plays it with sound while you type a headline, which sticks after leaving; Delete video and
+      the feed's trash button ask first, delete the right video and move to the next one.
 - [ ] Import feedback for large videos: a copy shows only a spinner, with no percentage or cancel.
 - [ ] A cloud-only Photos or Files video that has to download first, corrupt media, an unsupported
       codec and low storage are handled by refusing the import with a message, but only the
@@ -31,7 +35,7 @@ physical acceptance details; `README.md` says what the first version does.
       video/headline data.
 
 Not built, by the accepted scope: favorites, a manual reshuffle button, a mute toggle, auto-advance
-when a video ends, remembering the position inside a video, and thumbnails in the library.
+when a video ends, and remembering the position inside a video.
 
 ## Android fallback gaps (deferred)
 

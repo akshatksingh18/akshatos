@@ -7,7 +7,8 @@ as an unverified fallback. Personal sideloading only: no backend, analytics, acc
 **Status:** First iPhone version implemented in AkshatOS 0.9.0 (32), which passed the full CI Gate
 and artifact validation (`../cloud-build.md`); installed and enrolled for current-version automatic refresh; its phone pass is pending. Its source
 is in `../ios/AkshatOS/features/reelvault/`. It becomes daily-use once Build 32 passes the phone
-checks in `../todo.md`. Android remains an unverified scaffold.
+checks in `../todo.md`. Working source 0.10.0 (33) adds library stills, a video screen and delete
+from the feed, pending CI and a phone check (`todo.md`). Android remains an unverified scaffold.
 
 ## Files
 

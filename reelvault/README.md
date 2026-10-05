@@ -5,7 +5,8 @@ browse a vertical reel. WHOOP remains a separate app. No store release, backend,
 
 **Status:** The first iPhone version is implemented in AkshatOS working source 0.9.0 (32) and
 cloud-tested and locally validated; it is installed with current-version automatic-refresh
-enrollment, and its phone pass is pending. The Android scaffold below
+enrollment, and its phone pass is pending. Working source 0.10.0 (33) adds library stills, a
+video screen and delete from the feed (not yet built or phone-tested). The Android scaffold below
 remains unverified. It lives in the AkshatOS repository's `reelvault/` folder; the former private
 `reels` repository keeps the earlier history.
 
@@ -23,16 +24,22 @@ remains unverified. It lives in the AkshatOS repository's `reelvault/` folder; t
   one round is never the first of the next, so nothing shows twice in a row unless it is the only
   video. A video added during a round joins that round; one removed drops out.
 - **Headlines:** shown over the top of the video. Tap it to write or edit it; it is one line of up
-  to 140 characters. The library edits them too.
-- **Library:** every video with its headline, length, size and date; tap to edit the headline, swipe
-  to remove. Removing deletes only the app's copy, never the original.
+  to 140 characters. The video screen edits them too.
+- **Delete:** a trash button at the top right of every video in the feed deletes it after asking
+  (naming its headline), with playback held while asking; the next video takes its place.
+  Deleting removes only the app's copy, never the original. (From 0.10.0 (33).)
+- **Library:** every video with a still from it, its headline, length, size and date. Tapping one
+  opens its video screen: the video plays, looping, with tap to pause, so you can see what it is
+  while typing its headline (saved on Done or on leaving), and Delete video asks before deleting.
+  Swiping left on a row also deletes after asking. (Stills and the video screen from 0.10.0 (33);
+  before that a row showed only text and tapping it opened a headline box.)
 - **Backup:** Export backup writes a folder with every video and `reelvault.json`; Restore backup
   adds the videos that are missing and gives videos already here the backup's headline, after
   checking every file against its size and checksum, so a damaged backup restores nothing. The hub's
   Backup screen includes ReelVault in Back up everything.
 - **Local only:** nothing leaves the phone. No downloader, account, analytics or social feed.
 - **Not built, on purpose:** favorites, a manual reshuffle button, a mute toggle, auto-advance,
-  remembering the position inside a video, and thumbnails in the library.
+  and remembering the position inside a video.
 
 ## iPhone plan
 

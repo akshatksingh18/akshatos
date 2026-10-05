@@ -9,6 +9,7 @@ struct ReelFeedPage: Identifiable, Equatable {
 
 /// The reel: one video a page, swiped vertically. The video on screen loops until you swipe; tap it
 /// to pause or resume. The order is the store's shuffle, extended as you go, so it never runs out.
+/// The trash button deletes the video on screen after asking, with playback held meanwhile.
 struct ReelFeedView: View {
     @ObservedObject var store: ReelVaultStore
     @Environment(\.scenePhase) private var scenePhase
@@ -18,6 +19,7 @@ struct ReelFeedView: View {
     @State private var paused = false
     @State private var editing: ReelVideo?
     @State private var draft = ""
+    @State private var pendingDeletion: ReelVideo?
 
     var body: some View {
         ScrollView(.vertical) {
@@ -49,9 +51,14 @@ struct ReelFeedView: View {
         .onChange(of: paused) { _, _ in sync() }
         .onChange(of: scenePhase) { _, _ in sync() }
         .onChange(of: store.videos.map(\.id)) { _, ids in
-            // A removed video leaves the feed; a first or newly added one can enter it.
+            // A removed video leaves the feed; a first or newly added one can enter it. If the one on
+            // screen goes, the page that took its place shows next rather than jumping to the start.
+            let position = pages.firstIndex { $0.id == current } ?? 0
+            let before = pages.prefix(position).filter { !ids.contains($0.videoID) }.count
             pages.removeAll { !ids.contains($0.videoID) }
-            if let current, !pages.contains(where: { $0.id == current }) { self.current = pages.first?.id }
+            if let current, !pages.contains(where: { $0.id == current }) {
+                self.current = pages.isEmpty ? nil : pages[min(position - before, pages.count - 1)].id
+            }
             extend()
             sync()
         }
@@ -68,6 +75,21 @@ struct ReelFeedView: View {
                 editing = nil
                 sync()
             }
+        }
+        .alert(ReelLibraryView.deleteTitle(pendingDeletion),
+               isPresented: Binding(get: { pendingDeletion != nil },
+                                    set: { if !$0 { pendingDeletion = nil; sync() } })) {
+            Button("Delete", role: .destructive) {
+                if let pendingDeletion { store.remove(pendingDeletion.id) }
+                pendingDeletion = nil
+            }
+            .accessibilityIdentifier("confirm-delete-reel")
+            Button("Cancel", role: .cancel) {
+                pendingDeletion = nil
+                sync()
+            }
+        } message: {
+            Text("The copy in AkshatOS is deleted. The original in Photos or Files is not touched.")
         }
     }
 
@@ -91,6 +113,7 @@ struct ReelFeedView: View {
             .contentShape(Rectangle())
             .onTapGesture { paused.toggle() }
             .overlay(alignment: .topLeading) { headline(video) }
+            .overlay(alignment: .topTrailing) { deleteButton(video) }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("reel-page")
         } else {
@@ -114,8 +137,26 @@ struct ReelFeedView: View {
         }
         .buttonStyle(.plain)
         .padding(16)
+        .padding(.trailing, 60) // Clear of the trash button.
         .accessibilityIdentifier("reel-headline")
         .accessibilityLabel(video.headline.isEmpty ? "Add a headline" : "Headline: \(video.headline). Edit")
+    }
+
+    private func deleteButton(_ video: ReelVideo) -> some View {
+        Button {
+            pendingDeletion = video
+            sync()
+        } label: {
+            Image(systemName: "trash")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .background(.black.opacity(0.45), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .padding(16)
+        .accessibilityIdentifier("delete-reel")
+        .accessibilityLabel("Delete this video")
     }
 
     /// Keeps a couple of pages queued beyond the one on screen.
@@ -128,7 +169,8 @@ struct ReelFeedView: View {
     }
 
     /// Gives the page on screen and its neighbours a player, and plays only the one on screen:
-    /// not while paused, while its headline is being edited, or while the app is not in front.
+    /// not while paused, while its headline is being edited or its deletion is being confirmed, or
+    /// while the app is not in front.
     private func sync() {
         guard let position = pages.firstIndex(where: { $0.id == current }) else {
             players.prepare([])
@@ -138,6 +180,7 @@ struct ReelFeedView: View {
         players.prepare(window.compactMap { page in
             store.video(id: page.videoID).flatMap(store.mediaURL(for:)).map { (page: page.id, url: $0) }
         })
-        players.show(current, playing: !paused && editing == nil && scenePhase == .active)
+        players.show(current, playing: !paused && editing == nil && pendingDeletion == nil
+                                            && scenePhase == .active)
     }
 }

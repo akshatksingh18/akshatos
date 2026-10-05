@@ -111,7 +111,16 @@ private struct MarkerInspector: ReelVideoInspecting {
             return XCTFail("A real H.264 video must be accepted")
         }
         XCTAssertEqual(video.duration, 1.2, accuracy: 0.3)
-        XCTAssertNotNil(store.mediaURL(for: video))
+        let copy = try XCTUnwrap(store.mediaURL(for: video))
+
+        let thumbnails = ReelThumbnailer()
+        let still = await thumbnails.thumbnail(for: copy)
+        XCTAssertNotNil(still, "The library shows a still of the video")
+        XCTAssertLessThanOrEqual(max(still?.width ?? 0, still?.height ?? 0), 240, "Stills stay small")
+        XCTAssertNotNil(thumbnails.cached(copy), "A still is made once and reused")
+        let notVideo = try makeClip("not-a-video")
+        let missing = await thumbnails.thumbnail(for: notVideo)
+        XCTAssertNil(missing, "A file that is not a video gets the placeholder")
     }
 
     func testHeadlineIsCleanedSavedAndReloaded() async throws {

@@ -13,7 +13,7 @@ error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud
 reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged. Build 33 has not passed
+with nothing logged, and ReelVault library stills, a video screen and delete from the feed. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 Wait for Akshat's named Enhanced/Premium voice result, ReelVault phone findings and silent-switch
 preference. Build 32 is not ready for promotion. Detailed build history belongs in `cloud-build.md`.
@@ -110,6 +110,9 @@ preference. Build 32 is not ready for promotion. Detailed build history belongs 
       leave it an hour and confirm "Still working out?" arrives; tap it (opens Lift Log) and try
       **Finish workout** from the notification (ends the workout at its last set). It is never
       sent without notification permission, which the Pushup reminders already hold.
+- [ ] **Phone-check ReelVault's Build 33 library and delete.** Library rows show a still of each
+      video; tapping one plays it while you type its headline; Delete video there and the trash
+      button on every feed video ask first and delete the right one (`reelvault/todo.md`).
 - [ ] **Phone-check ReelVault (Build 32).** Add videos from Photos and from Files (small and
       large, portrait and landscape), write and edit headlines in the feed and the library, swipe
       through at least two full rounds (every video once a round, never twice in a row), the video

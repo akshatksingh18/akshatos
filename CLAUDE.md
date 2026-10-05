@@ -21,7 +21,7 @@ error. It remains in `testing/` pending the ReelVault phone pass; its read-aloud
 reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged. Build 33 has not passed
+with nothing logged, and ReelVault library stills, a video screen and delete from the feed. Build 33 has not passed
 cloud CI, produced an IPA or been tested on the phone.
 PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
 baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
@@ -173,8 +173,10 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   headline and file-name rules, the shuffle bag, the backup manifest and restore plan;
   Foundation-only), `data/` (versioned SwiftData store and streamed copy-on-import file storage with
   backup staging), `services/ReelVideoInspector.swift` (is it a playable video, and how long),
+  `services/ReelThumbnailer.swift` (the library's stills),
   `ReelVaultStore.swift`, `ReelVaultBackupPart.swift`, and `ui/` (the feed, its small player pool,
-  the library, and the add-from-Photos/Files buttons). `reelvault/` owns scope and gates.
+  the library, the per-video screen with playback, headline and delete, and the add-from-Photos/Files
+  buttons). `reelvault/` owns scope and gates.
 - `ios/tests/reelvault/main.swift`, `ios/UnitTests/ReelVaultPersistenceTests.swift`, and
   `ios/UITests/ReelVaultUITests.swift` — registered ReelVault domain, storage/backup and navigation
   coverage.
@@ -182,7 +184,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   splits Akshat edits in the app (`data/LiftSplitStorage.swift`, `ui/LiftSplitsView.swift`, which
   also holds the Add exercise form), store, entry/edit UI, the month-grouped history screen
   (`ui/LiftLogHistoryView.swift`), last-performance lookup with every set shown, JSON recovery and
-  CSV export. `lift-log.md` owns the contract.
+  CSV export, and `services/LiftReminderService.swift` (the one-hour "Still working out?"
+  notification with its Finish workout action). `lift-log.md` owns the contract.
 - `ios/tests/liftlog/main.swift`, `ios/UnitTests/LiftLogPersistenceTests.swift`, and
   `ios/UITests/LiftLogUITests.swift` — registered Lift Log domain, persistence and hub-navigation
   coverage. Build 27's expanded scenarios passed the complete PR and clean-main macOS CI gates.

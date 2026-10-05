@@ -5,7 +5,8 @@ Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI, checksum/local IPA vali
 screenshot review and is installed with current-version enrollment in automatic mode and no error.
 It remains in `testing/` pending its ReelVault phone pass; Akshat reports the read-aloud voice is
 still robotic. Working source 0.10.0 (33) fixes Best available voice ranking across regional
-language variants and adds Lift Log's Weight loaded mode and one-hour inactivity reminder; cloud CI, a new artifact and a phone pass for Build 33 remain pending.
+language variants and adds Lift Log's Weight loaded mode and one-hour inactivity reminder and ReelVault's library
+stills, video screen and feed delete; cloud CI, a new artifact and a phone pass for Build 33 remain pending.
 Build 31 accepted the redesign, Body, full backup, month dropdowns, editable splits and read-aloud
 controls. PageVault v1 is accepted through Build 24; Build 13 is the detailed movement baseline.
 Per-build evidence and historical findings live below; broader physical/refresh gates stay open.
@@ -18,7 +19,7 @@ Per-build evidence and historical findings live below; broader physical/refresh 
 - Bundle ID: `com.akshatksingh18.akshatos`; working source version/build: **0.10.0 (33)**,
   fixing Best available voice selection to prefer quality across language variants, then the exact
   locale for equal quality, and adding Lift Log's Weight loaded mode and "Still working out?"
-  reminder. This is local source only; no Build-33 CI result or artifact exists.
+  reminder, and ReelVault library stills, a video screen and delete from the feed. This is local source only; no Build-33 CI result or artifact exists.
   Build 32 (0.9.0, PR #61) is installed and enrolled, awaiting its phone pass in `testing/`.
   Build 31 (0.8.0, PR #60) is the accepted backup. Build 30 (PR #59: full backup/month dropdowns)
   was never installed and is included in Build 31. Minimum iOS 17.

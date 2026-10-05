@@ -1,11 +1,10 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Every video in ReelVault: add more, edit a headline, remove one, and back the library up.
+/// Every video in ReelVault, each with a still so you can tell them apart: add more, open one to
+/// watch it, give it a headline or delete it, and back the library up.
 struct ReelLibraryView: View {
     @ObservedObject var store: ReelVaultStore
-    @State private var editing: ReelVideo?
-    @State private var draft = ""
     @State private var pendingRemoval: ReelVideo?
     @State private var staged: URL?
     @State private var showMover = false
@@ -25,25 +24,28 @@ struct ReelLibraryView: View {
                         .accessibilityIdentifier("reel-library-empty")
                 }
                 ForEach(store.videos) { video in
-                    Button {
-                        draft = video.headline
-                        editing = video
+                    NavigationLink {
+                        ReelVideoDetailView(store: store, videoID: video.id)
                     } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(video.headline.isEmpty ? "No headline" : video.headline)
-                                .foregroundStyle(video.headline.isEmpty ? Palette.muted : Color.primary)
-                            Text(Self.detail(video)).font(.caption).foregroundStyle(Palette.muted)
+                        HStack(spacing: 12) {
+                            ReelThumbnail(url: store.mediaURL(for: video))
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(video.headline.isEmpty ? "No headline" : video.headline)
+                                    .foregroundStyle(video.headline.isEmpty ? Palette.muted : Color.primary)
+                                Text(Self.detail(video)).font(.caption).foregroundStyle(Palette.muted)
+                            }
                         }
                     }
+                    .accessibilityIdentifier("reel-library-row")
                     .swipeActions {
-                        Button("Remove", role: .destructive) { pendingRemoval = video }
+                        Button("Delete", role: .destructive) { pendingRemoval = video }
                     }
                 }
             } header: {
                 Text(store.videos.count == 1 ? "1 video" : "\(store.videos.count) videos")
             } footer: {
                 if !store.videos.isEmpty {
-                    Text("Tap a video to edit its headline. Swipe to remove it. \(Self.size(store.totalBytes)) on this iPhone.")
+                    Text("Tap a video to watch it, give it a headline or delete it. You can also swipe left to delete. \(Self.size(store.totalBytes)) on this iPhone.")
                 }
             }
             Section {
@@ -71,17 +73,9 @@ struct ReelLibraryView: View {
         .background(AppBackdrop())
         .navigationTitle("Library")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Headline", isPresented: Binding(get: { editing != nil }, set: { if !$0 { editing = nil } })) {
-            TextField("What is this video?", text: $draft)
-            Button("Save") {
-                if let editing { store.setHeadline(draft, for: editing.id) }
-                editing = nil
-            }
-            Button("Cancel", role: .cancel) { editing = nil }
-        }
-        .alert("Remove this video?", isPresented: Binding(get: { pendingRemoval != nil },
+        .alert(Self.deleteTitle(pendingRemoval), isPresented: Binding(get: { pendingRemoval != nil },
                                                           set: { if !$0 { pendingRemoval = nil } })) {
-            Button("Remove", role: .destructive) {
+            Button("Delete", role: .destructive) {
                 if let pendingRemoval { store.remove(pendingRemoval.id) }
                 pendingRemoval = nil
             }
@@ -117,6 +111,12 @@ struct ReelLibraryView: View {
 
     static func detail(_ video: ReelVideo) -> String {
         "\(ReelVault.durationText(video.duration)) · \(size(video.byteCount)) · \(video.importedAt.formatted(date: .abbreviated, time: .omitted))"
+    }
+
+    /// Names the video by its headline when it has one, so the right one is deleted.
+    static func deleteTitle(_ video: ReelVideo?) -> String {
+        guard let video, !video.headline.isEmpty else { return "Delete this video?" }
+        return "Delete \u{201C}\(video.headline)\u{201D}?"
     }
 
     static func size(_ bytes: Int64) -> String {
