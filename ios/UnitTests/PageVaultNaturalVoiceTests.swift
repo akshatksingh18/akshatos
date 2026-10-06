@@ -25,7 +25,7 @@ import XCTest
         try FileManager.default.createDirectory(at: folder.appendingPathComponent("espeak-ng-data/voices"),
                                                 withIntermediateDirectories: true)
         try Data("phonemes".utf8).write(to: folder.appendingPathComponent("espeak-ng-data/voices/en"))
-        for name in ["model.onnx", "voices.bin", "tokens.txt", "lexicon-us-en.txt", "README.md"] where name != out {
+        for name in ["model.int8.onnx", "voices.bin", "tokens.txt", "lexicon-us-en.txt", "README.md"] where name != out {
             try Data(name.utf8).write(to: folder.appendingPathComponent(name))
         }
         if out == "espeak-ng-data" {

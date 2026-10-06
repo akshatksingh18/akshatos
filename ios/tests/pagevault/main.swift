@@ -778,7 +778,14 @@ assert(PageVaultNaturalVoiceRules.speaker(26)?.label == "George · British, male
 assert(PageVaultNaturalVoiceRules.speaker(99) == nil)
 assert(PageVaultNaturalVoiceRules.missing(from: ["model.onnx", "voices.bin"]) == ["tokens.txt", "lexicon-us-en.txt", "espeak-ng-data"],
        "Import names what a folder lacks")
-assert(PageVaultNaturalVoiceRules.missing(from: Set(PageVaultNaturalVoiceRules.requiredItems + ["dict"])).isEmpty)
+assert(PageVaultNaturalVoiceRules.missing(from: ["voices.bin", "tokens.txt", "lexicon-us-en.txt", "espeak-ng-data"]) == ["model.int8.onnx"],
+       "A folder without a model is refused")
+let kokoroDownload: Set<String> = ["model.int8.onnx", "voices.bin", "tokens.txt", "lexicon-us-en.txt", "lexicon-gb-en.txt",
+                                   "lexicon-zh.txt", "espeak-ng-data", "dict", "README.md", "LICENSE"]
+assert(PageVaultNaturalVoiceRules.missing(from: kokoroDownload).isEmpty, "The int8 download as unpacked is accepted")
+assert(PageVaultNaturalVoiceRules.modelFile(in: kokoroDownload) == "model.int8.onnx")
+assert(PageVaultNaturalVoiceRules.modelFile(in: kokoroDownload.union(["model.onnx"])) == "model.int8.onnx",
+       "The compressed model is preferred when both are present")
 assert(PageVaultNaturalVoiceRules.seconds(ofSamples: 48_000) == 2)
 assert(PageVaultNaturalVoiceRules.speedSummary(audio: 12, render: 2, firstPiece: 0.5).contains("6.0× real time")
        && PageVaultNaturalVoiceRules.speedSummary(audio: 12, render: 2, firstPiece: 0.5).contains("fast enough"))

@@ -247,7 +247,8 @@ fixes that and shortens the voice menu (both bullets below); Build 34 is install
   no text and says so instead of playing; OCR stays out of scope.
 - The app declares the audio background mode for this. Nothing else plays in the background.
 - **Natural voice (test, from 0.12.0 (35)).** Choose voices… has a Natural voice section: import the
-  unpacked Kokoro folder (`kokoro-int8-multi-lang-v1_0`, about 350 MB once copied) from Files once,
+  unpacked Kokoro folder (`kokoro-int8-multi-lang-v1_0`, about 180 MB; its model file is
+  `model.int8.onnx`, and a full `model.onnx` is accepted too) from Files once,
   pick one of its 28 English speakers (Heart by default), play a sample, run a speed test, or remove
   it. With **Read with the natural voice** on (also a switch in the speed menu), Kokoro reads on the
   phone, offline, sentence by sentence, with the same tint, skip, page turns, speed and lock screen.

@@ -4,8 +4,16 @@ import Foundation
 /// tested anywhere: which files an imported voice folder needs, which voices it holds, how a page's
 /// passage is cut into pieces for the engine, and how a speed test reads.
 enum PageVaultNaturalVoiceRules {
-    /// What a Kokoro folder from sherpa-onnx (`kokoro-int8-multi-lang-v1_0`) must contain.
-    static let requiredItems = ["model.onnx", "voices.bin", "tokens.txt", "lexicon-us-en.txt", "espeak-ng-data"]
+    /// What a Kokoro folder from sherpa-onnx (`kokoro-int8-multi-lang-v1_0`) must contain, besides
+    /// the model itself.
+    static let requiredItems = ["voices.bin", "tokens.txt", "lexicon-us-en.txt", "espeak-ng-data"]
+    /// The model file: the compressed (int8) download names it `model.int8.onnx`, the full one
+    /// `model.onnx`. Either works; the compressed one is used when both are there.
+    static let modelNames = ["model.int8.onnx", "model.onnx"]
+
+    static func modelFile(in present: Set<String>) -> String? {
+        modelNames.first { present.contains($0) }
+    }
     /// The voice offered until Akshat picks another: Heart, the one Kokoro's authors rate best.
     static let defaultSpeaker = 3
     /// Audio the engine produces, in samples per second.
@@ -41,7 +49,7 @@ enum PageVaultNaturalVoiceRules {
 
     /// Which required items an imported folder lacks, by name.
     static func missing(from present: Set<String>) -> [String] {
-        requiredItems.filter { !present.contains($0) }
+        (modelFile(in: present) == nil ? ["model.int8.onnx"] : []) + requiredItems.filter { !present.contains($0) }
     }
 
     /// One piece of a passage for the engine, and where it starts in the passage (UTF-16), which is

@@ -110,7 +110,7 @@ struct PageVaultVoicesView: View {
             if naturalInstalled {
                 Text("Kokoro, running on this iPhone. \(ByteCountFormatter.string(fromByteCount: PageVaultNaturalVoice.shared.installedBytes, countStyle: .file)) used. It uses more battery than the iPhone voices.")
             } else {
-                Text("A far more natural voice that runs on this iPhone, offline. On a computer, download kokoro-int8-multi-lang-v1_0.tar.bz2 from the sherpa-onnx releases page (about 130 MB), unpack it, put the folder somewhere Files can reach, such as OneDrive, and pick that folder here.")
+                Text("A far more natural voice that runs on this iPhone, offline. Pick the unpacked kokoro-int8-multi-lang-v1_0 folder (about 180 MB) in Files; it comes from the sherpa-onnx tts-models release.")
             }
         }
     }

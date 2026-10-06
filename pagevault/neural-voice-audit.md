@@ -64,6 +64,10 @@ text clean-up changes. A different-sounding voice means a different engine.
   page break joined to the first), rendered up to three ahead on a background thread and played
   back to back with `AVAudioEngine`; the tint moves as each sentence starts. The speed menu has a
   Natural voice switch once a voice is installed; off, or with no voice, the iPhone voice reads.
+- **Where the voice is:** the unpacked `kokoro-int8-multi-lang-v1_0` folder (182 MB; model file
+  `model.int8.onnx`) is in Akshat's OneDrive at `Backups\AkshatOS Voice\`, beside but outside the two
+  backup-sync pairs (`personal-project/` is excluded from sync, so it could not live there). Re-download
+  from sherpa-onnx's `tts-models` release if lost; it is public model data, not personal data.
 - Known gap to measure: the first sentence of each new page is rendered only when the page before
   ends, so a short pause at page turns is expected; prefetching the next page is the fix if it
   shows.

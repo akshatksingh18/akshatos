@@ -4,7 +4,7 @@ import SherpaOnnx
 
 /// The natural voice: a Kokoro model Akshat imports once from Files, run on the phone by
 /// sherpa-onnx. Nothing is downloaded by the app and nothing leaves the phone. The model is large
-/// (about 350 MB unpacked), so it is loaded on first use and kept while the app runs.
+/// (about 180 MB unpacked), so it is loaded on first use and kept while the app runs.
 ///
 /// Every engine call runs on one serial queue: the engine is not thread-safe, and rendering a
 /// sentence takes long enough that it must stay off the main thread.
@@ -127,15 +127,15 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
     /// Loads the model the first time it is needed. Only on `queue`.
     private func loadedEngine() -> SherpaOnnxOfflineTtsWrapper? {
         if let engine { return engine }
-        guard isInstalled else { return nil }
-        let directory = folder.path
         let has = present(in: folder)
+        guard isInstalled, let modelName = PageVaultNaturalVoiceRules.modelFile(in: has) else { return nil }
+        let directory = folder.path
         let lexicons = ["lexicon-us-en.txt", "lexicon-gb-en.txt", "lexicon-zh.txt"]
             .filter { has.contains($0) }
             .map { "\(directory)/\($0)" }
             .joined(separator: ",")
         let kokoro = sherpaOnnxOfflineTtsKokoroModelConfig(
-            model: "\(directory)/model.onnx",
+            model: "\(directory)/\(modelName)",
             voices: "\(directory)/voices.bin",
             tokens: "\(directory)/tokens.txt",
             dataDir: "\(directory)/espeak-ng-data",

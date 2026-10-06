@@ -110,9 +110,10 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 ### Open
 
 - [ ] **Test the natural voice (Build 35).** Akshat chose Kokoro after listening. On a computer,
-      download `kokoro-int8-multi-lang-v1_0.tar.bz2` (about 130 MB) from the sherpa-onnx `tts-models`
-      release, unpack it into a OneDrive folder, then in PageVault's speed menu → Choose voices… →
-      Import voice folder… pick it. Run **Speed test** and report the line it prints; play a sample;
+      The unpacked voice is already in OneDrive at `Backups\AkshatOS Voice\kokoro-int8-multi-lang-v1_0`
+      (182 MB, from sherpa-onnx's `tts-models` release; outside both backup-sync pairs, so the sync
+      engine leaves it alone). In PageVault's speed menu → Choose voices… → Import voice folder…,
+      pick that folder in Files → OneDrive. Run **Speed test** and report the line it prints; play a sample;
       turn on **Read with the natural voice** and read a few pages: gaps between sentences, page
       turns, skip, pause, speed changes, the lock screen, battery and heat over 30 minutes. Also
       say which iPhone model it is. If it keeps up, the next step is polishing it into the default
