@@ -20,6 +20,8 @@ import PDFKit
         static let voice = "pagevault.readAloud.voice"
         static let voiceTip = "pagevault.readAloud.voiceTipShown"
         static let shownVoices = "pagevault.readAloud.shownVoices"
+        static let natural = "pagevault.readAloud.natural"
+        static let naturalSpeaker = "pagevault.readAloud.naturalSpeaker"
     }
 
     @Published private(set) var state: State = .stopped
@@ -46,6 +48,22 @@ import PDFKit
     /// lists the Enhanced and Premium ones). Removing the voice in use falls back to Best available.
     @Published private(set) var shownVoiceIDs: Set<String>?
 
+    /// Read with the imported natural (Kokoro) voice instead of the iPhone's own, when one is
+    /// installed. Off by default, and ignored while no voice is installed.
+    @Published var naturalVoiceOn: Bool {
+        didSet {
+            defaults.set(naturalVoiceOn, forKey: Keys.natural)
+            restartSentence()
+        }
+    }
+    /// Which of the natural voice's speakers reads.
+    @Published var naturalSpeaker: Int {
+        didSet {
+            defaults.set(naturalSpeaker, forKey: Keys.naturalSpeaker)
+            restartSentence()
+        }
+    }
+
     /// Asked to show a page when reading moves onto it.
     var onPageTurn: ((Int) -> Void)?
 
@@ -54,6 +72,8 @@ import PDFKit
     private let pageCount: Int
     private let defaults: UserDefaults
     private let synthesizer = AVSpeechSynthesizer()
+    private let natural: PageVaultNaturalSpeaker
+    private let naturalVoice: PageVaultNaturalVoice
     private let relay = PageVaultSpeechRelay()
     private var document: PDFDocument?
     private var texts: [Int: String] = [:]
@@ -72,11 +92,18 @@ import PDFKit
     private var commands: [(MPRemoteCommand, Any)] = []
     private var interruption: NSObjectProtocol?
 
-    init(url: URL, title: String, pageCount: Int, defaults: UserDefaults = .standard) {
+    init(url: URL, title: String, pageCount: Int, defaults: UserDefaults = .standard,
+         naturalVoice: PageVaultNaturalVoice = .shared) {
         self.url = url
         self.title = title
         self.pageCount = pageCount
         self.defaults = defaults
+        self.naturalVoice = naturalVoice
+        natural = PageVaultNaturalSpeaker(voice: naturalVoice)
+        naturalVoiceOn = defaults.bool(forKey: Keys.natural)
+        let savedSpeaker = defaults.object(forKey: Keys.naturalSpeaker) as? Int
+        naturalSpeaker = savedSpeaker.flatMap(PageVaultNaturalVoiceRules.speaker)?.id
+            ?? PageVaultNaturalVoiceRules.defaultSpeaker
         let saved = defaults.double(forKey: Keys.speed)
         speed = Self.speeds.contains(saved) ? saved : 1
         voiceID = defaults.string(forKey: Keys.voice)
@@ -88,6 +115,11 @@ import PDFKit
         }
         relay.reached = { [weak self] location, utterance in
             Task { @MainActor in self?.reached(location, in: utterance) }
+        }
+        natural.reached = { [weak self] location in self?.advance(toUTF16: location) }
+        natural.finished = { [weak self] in
+            guard let self, self.state == .playing else { return }
+            self.moveOn(carry: self.plan?.carry)
         }
     }
 
@@ -130,7 +162,7 @@ import PDFKit
 
     func pause() {
         guard state == .playing else { return }
-        synthesizer.pauseSpeaking(at: .word)
+        if natural.isSpeaking { natural.pause() } else { synthesizer.pauseSpeaking(at: .word) }
         state = .paused
         updateNowPlaying()
     }
@@ -139,7 +171,9 @@ import PDFKit
         guard state == .paused else { return }
         state = .playing
         begin()
-        if synthesizer.isPaused {
+        if natural.isPaused {
+            natural.resume()
+        } else if synthesizer.isPaused {
             synthesizer.continueSpeaking()
         } else {
             speakCurrent()
@@ -265,6 +299,14 @@ import PDFKit
         index = first ?? -1
         setSegment(first.map { segments[$0] })
         speaking = made.text
+        state = .playing
+        if usesNaturalVoice {
+            current = nil
+            natural.speak(PageVaultNaturalVoiceRules.pieces(of: made), speaker: naturalSpeaker,
+                          speed: Float(speed))
+            updateNowPlaying()
+            return
+        }
         let utterance = AVSpeechUtterance(string: made.text)
         utterance.voice = voice
         utterance.rate = min(AVSpeechUtteranceMaximumSpeechRate,
@@ -289,9 +331,17 @@ import PDFKit
         moveOn(carry: plan?.carry)
     }
 
+    /// Whether reading uses the natural voice: chosen, and a voice is installed.
+    var usesNaturalVoice: Bool { naturalVoiceOn && naturalVoice.isInstalled }
+
     /// The voice has reached a position in the passage: the tint follows to that sentence.
     private func reached(_ location: Int, in utterance: AVSpeechUtterance) {
-        guard utterance === current, let start = plan?.start(atUTF16: location) else { return }
+        guard utterance === current else { return }
+        advance(toUTF16: location)
+    }
+
+    private func advance(toUTF16 location: Int) {
+        guard let start = plan?.start(atUTF16: location) else { return }
         let reachedIndex = start.segment ?? -1
         guard reachedIndex != index else { return }
         index = reachedIndex
@@ -319,6 +369,7 @@ import PDFKit
 
     private func cancelSpeech() {
         current = nil
+        natural.stop()
         if synthesizer.isSpeaking || synthesizer.isPaused { synthesizer.stopSpeaking(at: .immediate) }
     }
 

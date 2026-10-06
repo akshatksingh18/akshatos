@@ -17,18 +17,28 @@ settings:
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1"
 
+packages:
+  # On-device neural speech for PageVault's natural voice (Kokoro). Pinned to a release; the package
+  # pins its prebuilt binaries by checksum. The voice model itself is imported on the phone, not bundled.
+  SherpaOnnx:
+    url: https://github.com/k2-fsa/sherpa-onnx
+    exactVersion: 1.13.8
+
 targets:
   AkshatOS:
     type: application
     platform: iOS
     sources:
       - path: AkshatOS
+    dependencies:
+      - package: SherpaOnnx
+        product: sherpa-onnx
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos
         PRODUCT_NAME: AkshatOS
-        MARKETING_VERSION: "0.11.0"
-        CURRENT_PROJECT_VERSION: "34"
+        MARKETING_VERSION: "0.12.0"
+        CURRENT_PROJECT_VERSION: "35"
         GENERATE_INFOPLIST_FILE: "YES"
         # Merged with the generated keys: holds only the audio background mode (PageVault read-aloud).
         INFOPLIST_FILE: Support/AkshatOS-Info.plist

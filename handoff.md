@@ -19,7 +19,12 @@ installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends 
 dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
 Choose voices screen. It also makes Lift Log
 flexible: the split and an open workout stay in step, logged exercises move up in the order done,
-and the workout screen gains search, reorder and swipe-to-remove. Not yet built or phone-tested.
+and the workout screen gains search, reorder and swipe-to-remove. Build 34 (PR #63 at `a93c48d`) passed PR/main CI (after a UI-test scrolling fix) and local
+checksum/IPA validation and is installed (0.11.0,
+automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
+after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
+PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
+sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
 Read the linked owning documents for feature contracts, build evidence and open gates.
 Pending documentation travels with the next real implementation change. Do not include unrelated
 signing-script/setup edits or private fitness records in that change.
@@ -143,8 +148,8 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 33:** installed and enrolled. Finish its checks in `todo.md`; Build 34 (read-aloud
-   punctuation, chosen voices) follows once built. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
+1. **Build 34:** installed and enrolled. Run the Build 33 and 34 checks in `todo.md`; the voice
+   question moves to `pagevault/neural-voice-audit.md`. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
    phone checks in `todo.md` (read-aloud voice; its ReelVault is removed in Build 33). For reference, Build 29's checks were: the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line

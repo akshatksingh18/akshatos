@@ -48,6 +48,15 @@ book first. `spokenText` also strips quotation marks, plains apostrophes, turns 
 comma's pause and drops footnote numbers, so sentence ends stay clear to the voice; page offsets
 for the tint are unaffected because they come from the page text, not the spoken text.
 
+From 0.12.0 (35) there is a second engine. `services/PageVaultNaturalVoice.swift` holds
+`PageVaultNaturalVoice` (the imported Kokoro folder in `Application Support/PageVaultVoice`, its
+import and removal, and a sherpa-onnx `SherpaOnnxOfflineTtsWrapper` loaded on first use, all engine
+calls on one serial queue) and `PageVaultNaturalSpeaker` (renders a passage's pieces up to three
+ahead, plays them on an `AVAudioPlayerNode`, reports each piece's start and the end, and drops stale
+work on stop). `domain/PageVaultNaturalVoiceRules.swift` (`PageVaultNaturalVoiceRules`) cuts a page plan
+into pieces, lists the speakers and required files, and words the speed test. The narrator picks the
+engine per passage (`usesNaturalVoice`); everything above it is shared.
+
 ## Storage and import ownership
 
 The v1 default is **copy on import**:

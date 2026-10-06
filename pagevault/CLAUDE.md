@@ -37,7 +37,8 @@ locked. On the phone its controls work but Build 31's voice sounded robotic and 
 speaks a page as one passage and is installed, but Akshat reports it still sounds robotic.
 Build 33 (installed) fixes Best available's ranking; with Ava (Premium) it reads well except a run-on
 after a closing quote. 0.11.0 (34) gives the voice plain sentence ends and lists only chosen voices
-in the menu; not yet built or phone-tested. `features.md` § Read aloud.
+in the menu; Build 34 is installed and Akshat still finds every system voice robotic, so a neural
+voice is audited in `neural-voice-audit.md` (not built). `features.md` § Read aloud.
 **Removed in Build 29:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
 phone, linking the folder did nothing, and Akshat asked for both to be removed; AkshatOS Build 29
 takes them out (see the laptop-to-phone decision below). PDFs still reach PageVault through the
@@ -114,6 +115,9 @@ What the phone has confirmed, and what is still open:
 
 ## Files
 
+- `neural-voice-audit.md` — audit of free on-device neural voices (Kokoro via sherpa-onnx
+  recommended, Piper fallback, XTTS and cloud ruled out) and how one would fit read aloud; read before
+  any voice-engine work.
 - `.gitignore` — Android plus iOS/Xcode/SwiftPM build output, local configuration, signing material,
   packaged-app, and `*.pdf` exclusions; never commit credentials, profiles, certificates, personal
   PDFs, or IPAs. The hub repository's own `.gitignore` carries the same PDF rule, which matters more

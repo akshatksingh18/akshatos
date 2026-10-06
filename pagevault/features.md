@@ -206,7 +206,9 @@ passage (see the second bullet). Build 32 passed CI and artifact validation and 
 but Akshat reports the voice is still robotic. The named Enhanced/Premium voice result is pending.
 Build 33 (installed) fixes the automatic voice ranking. With Ava (Premium) Akshat reports it reads
 well except running on after a sentence ending in a closing quote; working source 0.11.0 (34)
-fixes that and shortens the voice menu (both bullets below); not yet built or phone-tested.
+fixes that and shortens the voice menu (both bullets below); Build 34 is installed, and Akshat still finds the system voices robotic
+(neural options: `neural-voice-audit.md`). He chose Kokoro; working source 0.12.0 (35) adds it as a
+**natural voice (test)** (last bullet), not yet built or phone-tested.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
   above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and
@@ -244,6 +246,14 @@ fixes that and shortens the voice menu (both bullets below); not yet built or ph
 - Everything is on the phone: the system speech voice, no network, no account. A scanned book has
   no text and says so instead of playing; OCR stays out of scope.
 - The app declares the audio background mode for this. Nothing else plays in the background.
+- **Natural voice (test, from 0.12.0 (35)).** Choose voices… has a Natural voice section: import the
+  unpacked Kokoro folder (`kokoro-int8-multi-lang-v1_0`, about 180 MB; its model file is
+  `model.int8.onnx`, and a full `model.onnx` is accepted too) from Files once,
+  pick one of its 28 English speakers (Heart by default), play a sample, run a speed test, or remove
+  it. With **Read with the natural voice** on (also a switch in the speed menu), Kokoro reads on the
+  phone, offline, sentence by sentence, with the same tint, skip, page turns, speed and lock screen.
+  It uses more battery than the iPhone voices. Without an imported voice the iPhone voice reads.
+  `neural-voice-audit.md` owns the design and what the test must show.
 
 ## v2 / optional improvements
 

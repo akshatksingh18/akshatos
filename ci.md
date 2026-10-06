@@ -136,7 +136,12 @@ the chosen-voices menu (default short list, chosen list, the voice in use kept, 
 Lift Log assertions for flexible workouts: done order on a first set, reorder, deleting a set, split
 sync both ways (added, removed, renamed, skipped today, legacy name matching), finished workouts
 untouched and unlogged exercises not saved; hosted store tests for the same through the store and a
-reopen; and a UI test that the workout search narrows to matching exercises.
+reopen; and a UI test that the workout search narrows to matching exercises. Local Build 35 adds
+PageVault natural-voice domain assertions (pieces per sentence, carry-over joined, speakers,
+required files, speed wording) and `PageVaultNaturalVoiceTests` (an incomplete folder refused by
+name, a complete one copied whole and kept out of backup, replaced and removed, and the iPhone voice
+used while none is installed). CI has no Kokoro model, so rendering is a phone check; the build
+now resolves the sherpa-onnx Swift package.
 
 ReelVault's domain, storage and UI suites were removed with the module in Build 33.
 `FullBackupTests` checks that its leftover videos and store are deleted on launch without touching

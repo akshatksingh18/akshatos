@@ -19,8 +19,8 @@ and Akshat accepted its phone behavior with Build 31. Working source 0.8.0 (31) 
 Akshat edits in the app** (starting with Lower day, Back and biceps day and Chest day, since the
 old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
 and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
-reports working on the phone. Working source 0.11.0 (34) makes workouts flexible (see **Flexible workouts** below); not yet built
-or phone-tested. Build 33 (installed) adds the **Weight loaded** mode, moving the starting seated calf raise to
+reports working on the phone. Build 34 (0.11.0, PR #63) makes workouts flexible (see **Flexible workouts** below); it passed
+CI and local validation and is in `testing/`, not yet installed or phone-tested. Build 33 (installed) adds the **Weight loaded** mode, moving the starting seated calf raise to
 it, and a **"Still working out?" reminder** an hour after the last thing logged; CI, an IPA and a
 phone pass are pending. No
 private workout history is bundled in source or authorized for the repository's current public
