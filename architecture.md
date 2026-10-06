@@ -15,9 +15,11 @@ PR/main CI (after a fix to a new test) and local checksum/IPA validation and is 
 (Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
 which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
 on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.10.1 (34) gives the voice plain sentence ends (quotation marks
+installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
 dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen; not yet built or phone-tested.
+Choose voices screen. It also makes Lift Log
+flexible: the split and an open workout stay in step, logged exercises move up in the order done,
+and the workout screen gains search, reorder and swipe-to-remove. Not yet built or phone-tested.
 Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
 Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
 PageVault's technical plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.
@@ -42,7 +44,10 @@ PageVault's technical plan is owned by `pagevault/architecture.md`; build eviden
   `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
   choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
   the active workout and preloading the split's ordered exercises; more can be added during the
-  workout, and finishing removes exercises with no sets. Body opens its own injected
+  workout, and finishing removes exercises with no sets. From 0.11.0 (34) the workout keeps its
+  split's id and each exercise its split exercise's id, `LiftWorkoutSession.sync(with:)` applies a
+  saved split to the open workout, `LiftLogStore.addExercise` adds to both, and the main screen is a
+  `List` (swipe actions, edit-mode reorder, `.searchable`); `lift-log.md` owns the rules. Body opens its own injected
   destination. ReelVault (Build 32) is removed from Build 33; `app/RetiredModuleCleanup.swift`
   deletes the videos and store it left at launch, a no-op once they are gone. WHOOP
   remains separate.

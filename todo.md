@@ -19,9 +19,11 @@ PR/main CI (after a fix to a new test) and local checksum/IPA validation and is 
 (Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
 which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
 on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.10.1 (34) gives the voice plain sentence ends (quotation marks
+installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
 dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen; not yet built or phone-tested.
+Choose voices screen. It also makes Lift Log
+flexible: the split and an open workout stay in step, logged exercises move up in the order done,
+and the workout screen gains search, reorder and swipe-to-remove. Not yet built or phone-tested.
 Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
 replaces it. Detailed build history belongs in `cloud-build.md`.
 
@@ -110,6 +112,12 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
       until he chooses). Check the Grit preface line, a passage with dashes and quotes, the
       shortened menu, ticking/unticking a voice with its sample, and that report any other spot
       where the voice runs on or stumbles, with the page and sentence.
+- [ ] **Phone-check flexible Lift Log workouts (Build 34).** Start a split; Add exercise and
+      confirm it appears in that split; add one on the Splits screen and confirm it appears in the
+      open workout; log exercises out of order and confirm each moves up in the order done; Reorder
+      and drag; swipe an exercise both ways and try Remove from today versus from the split; delete
+      a set from its editor; search for an exercise and log it; finish and confirm unlogged
+      exercises are not saved.
 - [ ] **Phone-check Lift Log's Build 33 changes.** The seated calf raise in Lower day now shows
       **Weight loaded** (all plates added together, machine excluded); its earlier plates-per-side
       sets stay in history but are not offered as its last performance. Start a workout, log a set,

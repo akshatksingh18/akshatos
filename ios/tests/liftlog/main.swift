@@ -175,3 +175,71 @@ do {
     assert(error as? LiftLogError == .emptyWorkout)
 }
 print("PASS: Lift Log weight-loaded and inactivity-reminder assertions")
+
+// Flexible workouts: logged exercises move up in the order they are done; the split and the open
+// workout stay in step.
+let rowA = LiftSplitExercise("Bench", .perHand)
+let rowB = LiftSplitExercise("Incline press", .perHand)
+let rowC = LiftSplitExercise("Pec deck", .stack)
+let rowD = LiftSplitExercise("Cable fly", .stack)
+var rotating = LiftSplit(name: "Chest day", exercises: [rowA, rowB, rowC, rowD])
+var flex = LiftWorkoutSession(startedAt: now, splitName: rotating.name, splitID: rotating.id)
+flex.sync(with: rotating)
+assert(flex.exercises.map(\.name) == ["Bench", "Incline press", "Pec deck", "Cable fly"]
+       && flex.exercises.map(\.splitExerciseID) == [rowA.id, rowB.id, rowC.id, rowD.id],
+       "A workout starts with its split's exercises, each linked")
+let pecID = flex.exercises[2].id
+try flex.addSet(exerciseID: pecID, reps: 10, load: 90, completedAt: now)
+assert(flex.exercises.first?.name == "Pec deck", "The first exercise logged moves to first place")
+let flyID = flex.exercises.first { $0.name == "Cable fly" }!.id
+try flex.addSet(exerciseID: flyID, reps: 12, load: 40, completedAt: now)
+assert(flex.exercises.map(\.name) == ["Pec deck", "Cable fly", "Bench", "Incline press"],
+       "The second one logged sits second; the rest keep the split's order")
+try flex.addSet(exerciseID: pecID, reps: 9, load: 90, completedAt: now)
+assert(flex.exercises.first?.sets.count == 2 && flex.exercises[1].name == "Cable fly",
+       "More sets on an exercise already done do not move it")
+
+try flex.moveExercises(from: IndexSet(integer: 3), to: 2)
+assert(flex.exercises.map(\.name) == ["Pec deck", "Cable fly", "Incline press", "Bench"], "Today's order can be rearranged")
+try flex.moveExercises(from: IndexSet(integer: 0), to: 4)
+assert(flex.exercises.last?.name == "Pec deck", "Moving to the end works like a list drag")
+
+let flySet = flex.exercises.first { $0.id == flyID }!.sets[0].id
+try flex.removeSet(exerciseID: flyID, setID: flySet)
+assert(flex.exercises.first { $0.id == flyID }!.sets.isEmpty, "A single set can be deleted")
+
+// The split changes while the workout is open.
+let rowE = LiftSplitExercise("Dips", .addedWeight)
+rotating.exercises = [rowE, rowA, rowB, rowD]
+rotating.exercises[1].name = "Flat bench"
+flex.sync(with: rotating)
+assert(flex.exercises.contains { $0.name == "Pec deck" && $0.splitExerciseID == nil },
+       "An exercise removed from the split stays in the workout once logged, no longer linked")
+assert(flex.exercises.contains { $0.name == "Flat bench" }, "A renamed exercise with nothing logged takes the new name")
+assert(flex.exercises.contains { $0.name == "Dips" && $0.splitExerciseID == rowE.id }, "A new split exercise joins the workout")
+let unstartedOrder = flex.exercises.filter { $0.sets.isEmpty }.compactMap(\.splitExerciseID)
+assert(unstartedOrder == [rowE.id, rowA.id, rowB.id, rowD.id], "Exercises not started follow the split's order")
+
+rotating.exercises.removeAll { $0.id == rowB.id }
+flex.sync(with: rotating)
+assert(!flex.exercises.contains { $0.name == "Incline press" }, "A removed exercise with nothing logged leaves the workout")
+
+let dipsID = flex.exercises.first { $0.name == "Dips" }!.id
+try flex.removeExercise(dipsID)
+flex.skippedSplitExercises = [rowE.id]
+flex.sync(with: rotating)
+assert(!flex.exercises.contains { $0.name == "Dips" }, "One taken off today only does not come back")
+
+var legacy = LiftWorkoutSession(startedAt: now, splitName: "Chest day")
+_ = try legacy.addExercise(name: "flat bench", loadMode: .perHand)
+legacy.sync(with: rotating)
+assert(legacy.exercises.filter { LiftSplit.sameName($0.name, "Flat bench") }.count == 1
+       && legacy.splitID == rotating.id,
+       "An older workout is matched to its split by name, without duplicates")
+try flex.finish(at: now.addingTimeInterval(60))
+assert(flex.exercises.allSatisfy { !$0.sets.isEmpty }, "Exercises never logged are not saved with the workout")
+let beforeSync = flex
+flex.sync(with: LiftSplit(name: "Chest day"))
+assert(flex == beforeSync, "A finished workout never changes with its split")
+assert(LiftSplit.maxExercises == 40, "A split holds alternates to rotate between")
+print("PASS: flexible workout assertions (done order, reorder, delete set, split sync both ways, rotation)")

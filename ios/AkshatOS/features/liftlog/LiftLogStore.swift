@@ -28,6 +28,15 @@ import SwiftUI
     }
 
     var active: LiftWorkoutSession? { workouts.first(where: \.isActive) }
+
+    /// The split the open workout was started from, if it still exists. A workout from before
+    /// workouts remembered their split's id is matched by the split's name.
+    var activeSplit: LiftSplit? {
+        guard let workout = active else { return nil }
+        if let id = workout.splitID { return splits.first { $0.id == id } }
+        guard let name = workout.splitName else { return nil }
+        return splits.first { $0.name == name }
+    }
     var finished: [LiftWorkoutSession] { workouts.filter { !$0.isActive } }
     var totalSetCount: Int { workouts.reduce(0) { $0 + $1.setCount } }
 
@@ -129,6 +138,19 @@ import SwiftUI
             updated.append(split)
         }
         try replaceSplits(updated)
+        syncActiveWorkout()
+    }
+
+    /// After a split is edited, the open workout started from it takes the change: new exercises
+    /// join it, removed ones that were not logged leave, and renamed ones update.
+    private func syncActiveWorkout() {
+        guard var workout = active, let split = activeSplit else { return }
+        let before = workout
+        workout.sync(with: split)
+        guard workout != before else { return }
+        do { try persistAndReplace(workout) } catch {
+            message = "The open workout could not take the split's change: \(error.localizedDescription)"
+        }
     }
 
     func deleteSplit(_ id: UUID) {
@@ -157,24 +179,85 @@ import SwiftUI
             message = LiftLogError.activeWorkoutExists.localizedDescription
             return
         }
-        var workout = LiftWorkoutSession(startedAt: now(), splitName: split?.name)
+        var workout = LiftWorkoutSession(startedAt: now(), splitName: split?.name, splitID: split?.id)
+        if let split { workout.sync(with: split) }
+        commit(workout)
+        logged()
+    }
+
+    /// Adds an exercise to the open workout and, when it was started from a split, to that split
+    /// too, so it is there next time without a trip to the Splits screen. An exercise the split
+    /// already has (by name) is linked rather than added twice, and one already in the workout is
+    /// not added again.
+    func addExercise(name: String, loadMode: LiftLoadMode, equipmentNote: String) {
+        guard var workout = active else { return }
+        if workout.exercises.contains(where: { LiftSplit.sameName($0.name, name) }) {
+            message = "\(name.trimmingCharacters(in: .whitespacesAndNewlines)) is already in this workout."
+            return
+        }
         do {
-            for exercise in split?.exercises ?? [] {
-                _ = try workout.addExercise(name: exercise.name, loadMode: exercise.loadMode,
-                                            equipmentNote: exercise.equipmentNote)
+            var link: UUID?
+            if var split = activeSplit {
+                if let existing = split.exercises.first(where: { LiftSplit.sameName($0.name, name) }) {
+                    link = existing.id
+                } else if split.exercises.count < LiftSplit.maxExercises {
+                    let added = LiftSplitExercise(name, loadMode, equipmentNote: equipmentNote)
+                    split.exercises.append(added)
+                    var updated = splits
+                    if let index = updated.firstIndex(where: { $0.id == split.id }) { updated[index] = split }
+                    try replaceSplits(updated)
+                    link = added.id
+                }
+                workout.splitID = split.id
+                if let link { workout.skippedSplitExercises?.removeAll { $0 == link } }
             }
-            commit(workout)
+            _ = try workout.addExercise(name: name, loadMode: loadMode,
+                                        equipmentNote: equipmentNote, splitExerciseID: link)
+            try persistAndReplace(workout)
             logged()
         } catch {
-            message = "\(split?.name ?? "The workout") could not be started: \(error.localizedDescription)"
+            message = error.localizedDescription
         }
     }
 
-    func addExercise(name: String, loadMode: LiftLoadMode, equipmentNote: String) {
+    /// Takes an exercise off the open workout, with any sets logged for it. `fromSplit` also takes
+    /// it out of the split; otherwise it stays in the split for next time and only today skips it.
+    func removeExercise(_ exerciseID: UUID, fromSplit: Bool) {
         guard var workout = active else { return }
         do {
-            _ = try workout.addExercise(name: name, loadMode: loadMode,
-                                        equipmentNote: equipmentNote)
+            let removed = try workout.removeExercise(exerciseID)
+            if let link = removed.splitExerciseID, var split = activeSplit {
+                if fromSplit {
+                    split.exercises.removeAll { $0.id == link }
+                    var updated = splits
+                    if let index = updated.firstIndex(where: { $0.id == split.id }) { updated[index] = split }
+                    try replaceSplits(updated)
+                } else {
+                    workout.skippedSplitExercises = (workout.skippedSplitExercises ?? []) + [link]
+                }
+            }
+            try persistAndReplace(workout)
+            logged()
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    /// Today's order only; the split keeps its own.
+    func moveExercises(from offsets: IndexSet, to destination: Int) {
+        guard var workout = active else { return }
+        do {
+            try workout.moveExercises(from: offsets, to: destination)
+            try persistAndReplace(workout)
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    func removeSet(exerciseID: UUID, setID: UUID) {
+        guard var workout = active else { return }
+        do {
+            try workout.removeSet(exerciseID: exerciseID, setID: setID)
             try persistAndReplace(workout)
             logged()
         } catch {

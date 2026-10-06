@@ -40,7 +40,7 @@ An explicit saved voice identifier takes precedence. From Build 33, the Foundati
 `PageVaultReadAloud.bestVoice` ranks automatic candidates by quality across regional variants,
 then exact locale for equal quality, retaining the supplied order for other ties. The narrator
 maps AVFoundation voices into that policy; synthetic domain cases need no downloaded voice.
-From 0.10.1 (34), `PageVaultReadAloud.menuVoices` decides which voices the speed menu lists from the
+From 0.11.0 (34), `PageVaultReadAloud.menuVoices` decides which voices the speed menu lists from the
 saved `pagevault.readAloud.shownVoices` set (nil until first chosen: Enhanced and Premium only), always
 keeping the voice in use, and `voiceLabel` adds a region only to same-named voices.
 `ui/PageVaultVoicesView.swift` edits that set and plays samples on its own synthesizer, pausing the

@@ -205,7 +205,7 @@ spoke one sentence per utterance; working source 0.9.0 (32) hands the voice a wh
 passage (see the second bullet). Build 32 passed CI and artifact validation and is installed,
 but Akshat reports the voice is still robotic. The named Enhanced/Premium voice result is pending.
 Build 33 (installed) fixes the automatic voice ranking. With Ava (Premium) Akshat reports it reads
-well except running on after a sentence ending in a closing quote; working source 0.10.1 (34)
+well except running on after a sentence ending in a closing quote; working source 0.11.0 (34)
 fixes that and shortens the voice menu (both bullets below); not yet built or phone-tested.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
@@ -222,7 +222,7 @@ fixes that and shortens the voice menu (both bullets below); not yet built or ph
   another app's audio pauses it. Leaving the reader stops it.
 - Running headers and footers (a top or bottom line repeated on nearby pages), page numbers and
   roman numerals are skipped; words hyphenated across a line end are joined; ligatures are spelled
-  out. From 0.10.1 (34) the voice is not given quotation marks (silent anyway, and `genius!” This`
+  out. From 0.11.0 (34) the voice is not given quotation marks (silent anyway, and `genius!” This`
   hid the sentence end so the voice ran on), curly apostrophes become plain ones, a long dash
   becomes a comma's pause instead of joining two words, and a footnote number stuck to a word's
   closing punctuation (`one.12`, or a superscript) is not read; ordinary numbers stay. A line is treated as ending a paragraph or being a heading only when it is clearly short and
@@ -232,7 +232,7 @@ fixes that and shortens the voice menu (both bullets below); not yet built or ph
 - Speeds 0.75× to 2× and the voice are remembered. When only the basic voice is installed, the first
   play says once where the natural voices are. "Best available" picks the highest-quality voice
   installed across the phone's language variants from Build 33, with the exact locale
-  breaking a quality tie. A voice chosen by name keeps taking precedence. From 0.10.1 (34) the
+  breaking a quality tie. A voice chosen by name keeps taking precedence. From 0.11.0 (34) the
   speed menu lists Best available plus only the voices ticked in **Choose voices…** (until he
   ticks any, the Enhanced and Premium ones); the voice in use is always listed, and unticking it
   falls back to Best available. That screen lists every installed English voice, best first, with

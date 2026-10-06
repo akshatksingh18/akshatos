@@ -1,6 +1,11 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// The Lift Log screen: today's workout, then history, splits and backup. The workout is a list,
+/// so an exercise can be swiped away (either direction) or dragged into a new place, and the
+/// search field finds any exercise in it to log. Logged exercises sit at the top in the order they
+/// were done; the rest wait below as compact rows and are left out of the saved workout if never
+/// logged, which is how a split can carry alternates that rotate.
 struct LiftLogView: View {
     @ObservedObject var store: LiftLogStore
     @State private var showingTemplatePicker = false
@@ -10,41 +15,65 @@ struct LiftLogView: View {
     @State private var confirmingDiscard = false
     @State private var confirmingRestore = false
     @State private var pendingRestore: Data?
+    @State private var pendingRemoval: LiftExerciseRecord?
     @State private var exportDocument: LiftLogDocument?
     @State private var exportType: UTType = .json
     @State private var exportName = "akshatos-lift-log"
     @State private var exporting = false
     @State private var importing = false
+    @State private var search = ""
+    @State private var reordering = false
+    @State private var showingHistory = false
+    @State private var showingSplits = false
 
     var body: some View {
-        ZStack {
-            AppBackdrop()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    header
-                    if let active = store.active { activeWorkout(active) }
-                    else { startCard }
-                    history
-                    splitsRow
-                    backupControls
-                }
-                .padding(20)
+        List {
+            Section { header.liftRow() }
+            if let active = store.active {
+                activeWorkout(active)
+            } else {
+                Section { startCard.liftRow() }
+            }
+            Section {
+                history.liftRow()
+                splitsRow.liftRow()
+                backupControls.liftRow()
             }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(AppBackdrop())
+        .environment(\.editMode, .constant(reordering ? .active : .inactive))
+        .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: "Find an exercise")
         .navigationTitle("Lift Log")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showingHistory) { LiftLogHistoryView(store: store) }
+        .navigationDestination(isPresented: $showingSplits) { LiftSplitsView(store: store) }
+        .toolbar {
+            if store.active != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(reordering ? "Done" : "Reorder") { reordering.toggle() }
+                        .accessibilityIdentifier("reorder-workout")
+                }
+            }
+        }
+        .onChange(of: store.active == nil) { _, ended in if ended { reordering = false } }
         .sheet(item: $setEditor) { selection in
             if let exercise = store.exercise(selection.exerciseID) {
                 let existingSet = selection.setID.flatMap { setID in
                     exercise.sets.first { $0.id == setID }
                 }
                 LiftSetEntryView(exercise: exercise, existingSet: existingSet,
-                                 reference: store.lastPerformance(for: exercise)) { reps, load in
+                                 reference: store.lastPerformance(for: exercise),
+                                 onDelete: deleteAction(selection, existingSet)) { reps, load in
                     if let setID = selection.setID {
                         store.updateSet(exerciseID: selection.exerciseID, setID: setID,
                                         reps: reps, load: load)
                     } else {
                         store.addSet(exerciseID: selection.exerciseID, reps: reps, load: load)
+                        // Found by searching: back to the whole workout, where it now sits in order.
+                        search = ""
                     }
                 }
             }
@@ -53,6 +82,7 @@ struct LiftLogView: View {
             LiftExerciseForm(draft: draft, suggestions: store.recentExercises) { saved in
                 store.addExercise(name: saved.name, loadMode: saved.loadMode,
                                   equipmentNote: saved.equipmentNote)
+                search = ""
             }
         }
         .confirmationDialog("Choose workout", isPresented: $showingTemplatePicker,
@@ -64,13 +94,34 @@ struct LiftLogView: View {
                 .accessibilityIdentifier("start-empty-workout")
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("A split loads its exercises in order; leave the last ones empty when time is short. You can add exercises during any workout.")
+            Text("A split loads its exercises in order. Log the ones you do; the rest are not saved with the workout. Exercises you add are added to the split too.")
+        }
+        .confirmationDialog(removalTitle, isPresented: Binding(get: { pendingRemoval != nil },
+                                                               set: { if !$0 { pendingRemoval = nil } }),
+                            titleVisibility: .visible) {
+            if let exercise = pendingRemoval {
+                if exercise.splitExerciseID != nil, let split = store.activeSplit {
+                    Button("Remove from today") { store.removeExercise(exercise.id, fromSplit: false) }
+                        .accessibilityIdentifier("remove-exercise-today")
+                    Button("Remove from today and \(split.name)", role: .destructive) {
+                        store.removeExercise(exercise.id, fromSplit: true)
+                    }
+                } else {
+                    Button("Remove", role: .destructive) { store.removeExercise(exercise.id, fromSplit: false) }
+                        .accessibilityIdentifier("remove-exercise-today")
+                }
+            }
+            Button("Cancel", role: .cancel) { pendingRemoval = nil }
+        } message: {
+            if let exercise = pendingRemoval, !exercise.sets.isEmpty {
+                Text(exercise.sets.count == 1 ? "Its logged set is deleted." : "Its \(exercise.sets.count) logged sets are deleted.")
+            }
         }
         .alert("Finish this workout?", isPresented: $confirmingFinish) {
             Button("Finish workout") { store.finishWorkout() }
             Button("Keep logging", role: .cancel) {}
         } message: {
-            Text("You can review the session afterward, but it will no longer accept sets.")
+            Text("Exercises you did not log are left out. You can review the session afterward, but it will no longer accept sets.")
         }
         .alert("Discard this workout?", isPresented: $confirmingDiscard) {
             Button("Discard", role: .destructive) {
@@ -78,7 +129,7 @@ struct LiftLogView: View {
             }
             Button("Keep workout", role: .cancel) {}
         } message: {
-            Text("Every set in the active workout will be deleted.")
+            Text("Every set in the active workout will be deleted. The split is not changed.")
         }
         .alert("Replace Lift Log data?", isPresented: $confirmingRestore) {
             Button("Replace", role: .destructive) {
@@ -110,6 +161,21 @@ struct LiftLogView: View {
         }
     }
 
+    /// Dragging only while the whole workout is shown; with a search the rows are a subset.
+    private var moveAction: ((IndexSet, Int) -> Void)? {
+        guard search.isEmpty else { return nil }
+        return { store.moveExercises(from: $0, to: $1) }
+    }
+
+    private func deleteAction(_ selection: LiftSetEditorSelection, _ set: LiftSetRecord?) -> (() -> Void)? {
+        guard let set else { return nil }
+        return { store.removeSet(exerciseID: selection.exerciseID, setID: set.id) }
+    }
+
+    private var removalTitle: String {
+        "Remove \(pendingRemoval?.name ?? "this exercise")?"
+    }
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(Date(), format: .dateTime.weekday(.wide).month(.wide).day())
@@ -133,8 +199,26 @@ struct LiftLogView: View {
         }
     }
 
+    /// The exercises the list shows: all of them, or the ones whose name matches the search.
+    private func shown(_ workout: LiftWorkoutSession) -> [LiftExerciseRecord] {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return workout.exercises }
+        return workout.exercises.filter { $0.name.localizedCaseInsensitiveContains(query) }
+    }
+
+    /// Exercises logged before that match the search and are not in this workout, to add in a tap.
+    private func addable(_ workout: LiftWorkoutSession) -> [LiftExerciseSuggestion] {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return [] }
+        return store.recentExercises.filter { suggestion in
+            suggestion.name.localizedCaseInsensitiveContains(query)
+                && !workout.exercises.contains { LiftSplit.sameName($0.name, suggestion.name) }
+        }
+    }
+
+    @ViewBuilder
     private func activeWorkout(_ workout: LiftWorkoutSession) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
+        Section {
             Surface {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -148,26 +232,134 @@ struct LiftLogView: View {
                 }
                 Text(workout.exercises.isEmpty
                      ? "Add the exercises you do today."
-                     : "Exercises are ordered from highest to lowest priority. Skip from the bottom when time is short; exercises without sets are dropped when you finish.")
+                     : "Logged exercises move up in the order you do them. The rest wait below and are not saved unless you log them. Swipe one away, or tap Reorder to drag.")
                     .font(.caption).foregroundStyle(Palette.muted)
             }
-
-            ForEach(workout.exercises) { exercise in exerciseCard(exercise) }
-
-            Button {
-                addingExercise = LiftExerciseDraft()
-            } label: {
-                Label("Add exercise", systemImage: "plus")
+            .liftRow()
+        }
+        Section {
+            ForEach(shown(workout)) { exercise in
+                Group {
+                    if reordering {
+                        reorderRow(exercise)
+                    } else if exercise.sets.isEmpty {
+                        waitingCard(exercise)
+                    } else {
+                        exerciseCard(exercise)
+                    }
+                }
+                .liftRow()
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) { removeButton(exercise) }
+                .swipeActions(edge: .leading, allowsFullSwipe: false) { removeButton(exercise) }
             }
-            .buttonStyle(ActionStyle())
-            .accessibilityIdentifier("add-workout-exercise")
+            .onMove(perform: moveAction)
+            if !search.trimmingCharacters(in: .whitespaces).isEmpty {
+                searchExtras(workout).liftRow()
+            }
+        }
+        Section {
+            VStack(spacing: 12) {
+                Button {
+                    addingExercise = LiftExerciseDraft()
+                } label: {
+                    Label("Add exercise", systemImage: "plus")
+                }
+                .buttonStyle(ActionStyle())
+                .accessibilityIdentifier("add-workout-exercise")
 
-            Button("Finish workout") { confirmingFinish = true }
+                Button("Finish workout") { confirmingFinish = true }
+                    .buttonStyle(ActionStyle())
+                    .accessibilityIdentifier("finish-lift-workout")
+                    .disabled(workout.setCount == 0)
+                Button("Discard workout", role: .destructive) { confirmingDiscard = true }
+                    .buttonStyle(ActionStyle())
+            }
+            .liftRow()
+        }
+    }
+
+    private func removeButton(_ exercise: LiftExerciseRecord) -> some View {
+        Button(role: .destructive) {
+            pendingRemoval = exercise
+        } label: {
+            Label("Remove", systemImage: "trash")
+        }
+        .accessibilityIdentifier("remove-exercise-\(exercise.id.uuidString)")
+    }
+
+    /// What the search adds below its matches: exercises logged before that are not in today's
+    /// workout, and a new exercise by the typed name.
+    @ViewBuilder
+    private func searchExtras(_ workout: LiftWorkoutSession) -> some View {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        let matches = shown(workout)
+        let suggestions = addable(workout)
+        VStack(alignment: .leading, spacing: 10) {
+            if matches.isEmpty {
+                Text("Not in today's workout.").font(.caption).foregroundStyle(Palette.muted)
+            }
+            ForEach(suggestions) { suggestion in
+                Button {
+                    store.addExercise(name: suggestion.name, loadMode: suggestion.loadMode,
+                                      equipmentNote: suggestion.equipmentNote)
+                } label: {
+                    Label("Add \(suggestion.name)", systemImage: "plus")
+                }
                 .buttonStyle(ActionStyle())
-                .accessibilityIdentifier("finish-lift-workout")
-                .disabled(workout.setCount == 0)
-            Button("Discard workout", role: .destructive) { confirmingDiscard = true }
+            }
+            if !matches.contains(where: { LiftSplit.sameName($0.name, query) })
+                && !suggestions.contains(where: { LiftSplit.sameName($0.name, query) }) {
+                Button {
+                    var draft = LiftExerciseDraft()
+                    draft.name = query
+                    addingExercise = draft
+                } label: {
+                    Label("Add \u{201C}\(query)\u{201D}", systemImage: "plus")
+                }
                 .buttonStyle(ActionStyle())
+                .accessibilityIdentifier("add-searched-exercise")
+            }
+        }
+    }
+
+    /// A compact row while reordering, so many exercises fit for dragging.
+    private func reorderRow(_ exercise: LiftExerciseRecord) -> some View {
+        HStack {
+            Text(exercise.name).font(.headline)
+            Spacer()
+            Text(exercise.sets.isEmpty ? "Not started" : "\(exercise.sets.count) sets")
+                .font(.caption.monospacedDigit()).foregroundStyle(Palette.muted)
+        }
+        .padding(.vertical, 6)
+    }
+
+    /// An exercise not logged yet today: its name, how its weight is entered, what you did last
+    /// time and a button to log the first set.
+    private func waitingCard(_ exercise: LiftExerciseRecord) -> some View {
+        Surface {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(exercise.name).font(.headline)
+                    Text(exercise.equipmentNote.isEmpty ? exercise.loadMode.title
+                         : "\(exercise.loadMode.title) · \(exercise.equipmentNote)")
+                        .font(.caption).foregroundStyle(Palette.accent)
+                    if let reference = store.lastPerformance(for: exercise) {
+                        Text("Last: \(LiftLogStore.performanceSummary(reference.exercise))")
+                            .font(.caption.monospacedDigit()).foregroundStyle(Palette.muted)
+                            .lineLimit(2)
+                    } else {
+                        Text("Last performance: none yet for this exercise and measurement mode.")
+                            .font(.caption).foregroundStyle(Palette.muted)
+                    }
+                }
+                Spacer(minLength: 0)
+                Button("Log set") {
+                    setEditor = LiftSetEditorSelection(exerciseID: exercise.id, setID: nil)
+                }
+                .buttonStyle(ActionStyle(primary: true))
+                .frame(width: 104)
+                .accessibilityIdentifier("log-lift-set-\(exercise.id.uuidString)")
+            }
         }
     }
 
@@ -193,26 +385,21 @@ struct LiftLogView: View {
                     .font(.caption).foregroundStyle(Palette.muted)
             }
 
-            if exercise.sets.isEmpty {
-                Text("No sets yet").foregroundStyle(Palette.muted)
-            } else {
-                ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
-                    AdaptiveRow {
-                        Text("Set \(index + 1)").font(.subheadline.weight(.semibold))
-                    } trailing: {
-                        HStack(spacing: 10) {
-                            Text("\(LiftLogStore.weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)")
-                                .font(.subheadline.monospacedDigit()).foregroundStyle(Palette.muted)
-                            Button {
-                                setEditor = LiftSetEditorSelection(exerciseID: exercise.id,
-                                                                   setID: set.id)
-                            } label: {
-                                Image(systemName: "pencil")
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Edit set \(index + 1) for \(exercise.name)")
-                            .accessibilityIdentifier("edit-lift-set-\(set.id.uuidString)")
+            ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
+                AdaptiveRow {
+                    Text("Set \(index + 1)").font(.subheadline.weight(.semibold))
+                } trailing: {
+                    HStack(spacing: 10) {
+                        Text("\(LiftLogStore.weightText(set.load)) \(exercise.loadMode.shortUnit) × \(set.reps)")
+                            .font(.subheadline.monospacedDigit()).foregroundStyle(Palette.muted)
+                        Button {
+                            setEditor = LiftSetEditorSelection(exerciseID: exercise.id, setID: set.id)
+                        } label: {
+                            Image(systemName: "pencil")
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Edit or delete set \(index + 1) for \(exercise.name)")
+                        .accessibilityIdentifier("edit-lift-set-\(set.id.uuidString)")
                     }
                 }
             }
@@ -221,21 +408,18 @@ struct LiftLogView: View {
                 Button("Log set") {
                     setEditor = LiftSetEditorSelection(exerciseID: exercise.id, setID: nil)
                 }
-                    .buttonStyle(ActionStyle(primary: true))
-                    .accessibilityIdentifier("log-lift-set-\(exercise.id.uuidString)")
-                if !exercise.sets.isEmpty {
-                    Button("Undo last") { store.removeLastSet(exerciseID: exercise.id) }
-                        .buttonStyle(ActionStyle())
-                }
+                .buttonStyle(ActionStyle(primary: true))
+                .accessibilityIdentifier("log-lift-set-\(exercise.id.uuidString)")
+                Button("Undo last") { store.removeLastSet(exerciseID: exercise.id) }
+                    .buttonStyle(ActionStyle())
             }
         }
     }
 
-    /// One row into the full history. The main screen used to list only the latest 12 workouts,
-    /// which left every older one unreachable; the history screen shows them all.
+    /// One row into the full history.
     private var history: some View {
-        NavigationLink {
-            LiftLogHistoryView(store: store)
+        Button {
+            showingHistory = true
         } label: {
             Surface {
                 HStack {
@@ -248,6 +432,7 @@ struct LiftLogView: View {
                     Image(systemName: "chevron.right").foregroundStyle(Palette.accent)
                 }
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("open-lift-history")
@@ -255,8 +440,8 @@ struct LiftLogView: View {
 
     /// Your workout days, edited on their own screen.
     private var splitsRow: some View {
-        NavigationLink {
-            LiftSplitsView(store: store)
+        Button {
+            showingSplits = true
         } label: {
             Surface {
                 HStack {
@@ -301,10 +486,21 @@ struct LiftLogView: View {
     }
 }
 
+private extension View {
+    /// A card sitting in the list on the screen's own background, without list chrome.
+    func liftRow() -> some View {
+        listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 7, leading: 20, bottom: 7, trailing: 20))
+    }
+}
+
 private struct LiftSetEntryView: View {
     let exercise: LiftExerciseRecord
     let existingSet: LiftSetRecord?
     let reference: LiftPerformanceReference?
+    /// Deletes the set being edited; nil when logging a new one.
+    let onDelete: (() -> Void)?
     let onSave: (Int, Double) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var reps: Int
@@ -312,10 +508,12 @@ private struct LiftSetEntryView: View {
     @State private var validation: String?
 
     init(exercise: LiftExerciseRecord, existingSet: LiftSetRecord?,
-         reference: LiftPerformanceReference?, onSave: @escaping (Int, Double) -> Void) {
+         reference: LiftPerformanceReference?, onDelete: (() -> Void)? = nil,
+         onSave: @escaping (Int, Double) -> Void) {
         self.exercise = exercise
         self.existingSet = existingSet
         self.reference = reference
+        self.onDelete = onDelete
         self.onSave = onSave
         _reps = State(initialValue: existingSet?.reps ?? exercise.latestSet?.reps ?? 8)
         let startingLoad = existingSet?.load ?? exercise.latestSet?.load
@@ -342,6 +540,15 @@ private struct LiftSetEntryView: View {
                             .font(.caption).foregroundStyle(.secondary)
                     }
                     if let validation { Text(validation).foregroundStyle(.red) }
+                }
+                if let onDelete {
+                    Section {
+                        Button("Delete set", role: .destructive) {
+                            onDelete()
+                            dismiss()
+                        }
+                        .accessibilityIdentifier("delete-lift-set")
+                    }
                 }
                 Section("Last performance") {
                     if let reference {

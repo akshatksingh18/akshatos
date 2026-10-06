@@ -27,7 +27,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos
         PRODUCT_NAME: AkshatOS
-        MARKETING_VERSION: "0.10.1"
+        MARKETING_VERSION: "0.11.0"
         CURRENT_PROJECT_VERSION: "34"
         GENERATE_INFOPLIST_FILE: "YES"
         # Merged with the generated keys: holds only the audio background mode (PageVault read-aloud).

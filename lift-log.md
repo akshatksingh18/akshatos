@@ -19,7 +19,8 @@ and Akshat accepted its phone behavior with Build 31. Working source 0.8.0 (31) 
 Akshat edits in the app** (starting with Lower day, Back and biceps day and Chest day, since the
 old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
 and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
-reports working on the phone. Working source 0.10.0 (33) adds the **Weight loaded** mode, moving the starting seated calf raise to
+reports working on the phone. Working source 0.11.0 (34) makes workouts flexible (see **Flexible workouts** below); not yet built
+or phone-tested. Build 33 (installed) adds the **Weight loaded** mode, moving the starting seated calf raise to
 it, and a **"Still working out?" reminder** an hour after the last thing logged; CI, an IPA and a
 phone pass are pending. No
 private workout history is bundled in source or authorized for the repository's current public
@@ -56,9 +57,30 @@ remote.
   logged it carries **Finish workout**, which ends that workout (never a newer one) at its last set
   rather than when it was answered. It uses the permission the hub's other reminders already hold
   and never asks for it, so starting a workout is not interrupted by a prompt.
-- Each working set records its load, repetitions and completion time. Any active set can be edited;
-  the active session also supports undoing the most recent set per exercise, finishing after at
-  least one set, or discarding the entire active workout with confirmation.
+- Each working set records its load, repetitions and completion time. Any active set can be edited
+  or deleted (Delete set in its editor, from 0.11.0 (34)); the active session also supports undoing
+  the most recent set per exercise, finishing after at least one set, or discarding the entire
+  active workout with confirmation (the split is not changed).
+- **Flexible workouts (from 0.11.0 (34)).** A workout remembers the split it came from and each
+  exercise remembers its split exercise, so the two stay in step while the workout is open:
+  - **Add exercise** during a workout also adds it to that split (an exercise the split already has
+    by name is linked, not duplicated; one already in the workout is not added twice).
+  - Saving the split on the Splits screen updates the open workout: new exercises join it, removed
+    ones leave unless sets were logged (those stay, unlinked), renamed or changed ones update while
+    nothing is logged on them, and the exercises not started follow the split's order.
+  - Swiping an exercise either way offers **Remove from today** (it stays in the split for next
+    time and does not come back today) or **Remove from today and <split>**; logged sets go with it.
+  - Logging an exercise's first set moves it up to sit after the ones already done, so the third
+    exercise done sits third. Exercises not started wait below as compact rows with last time's
+    sets and a Log set button. **Reorder** in the top bar drags today's order; it never changes the
+    split's order, which only the Splits screen sets.
+  - **Rotating exercises:** a split holds up to 40 exercises, so alternates can stay in it; any
+    exercise not logged is left out of the saved workout and its history, as before.
+  - **Search** (always shown at the top) narrows the workout to matching exercises to log one
+    directly; it also offers exercises logged before that are not in today's workout, and a new
+    one by the typed name. Logging from a search clears it, showing the whole workout in order.
+  - The Splits screen's splits and a split's exercises can be swiped away in either direction.
+  - Workouts from before 0.11.0 are matched to their split by name, and their exercises by name.
 - Finished history shows every exercise and set using its original measurement meaning. Deleting a
   finished workout requires confirmation. The Lift Log screen carries one **History** row with the
   session count; it opens its own screen listing **every** finished workout in one dropdown per month,
@@ -69,7 +91,7 @@ remote.
 - **Splits** are edited on their own screen (a Splits row on the Lift Log screen): add, rename,
   delete (past workouts are kept), reorder, and edit each split's exercises — name, load mode and
   optional note, in priority order. Limits: a name under 40 characters, unique ignoring case, at
-  most 20 exercises a split and 20 splits; deleting every split is allowed, since an empty workout
+  most 40 exercises a split (20 before 0.11.0) and 20 splits; deleting every split is allowed, since an empty workout
   still works. They are saved in the app's preferences (`liftlog.splits`) and carried in the JSON
   backup. A new install, or an existing one updating from 0.7.0, starts with Lower day (unchanged
   from the old Lower template), Back and biceps day (weighted pull-ups, seated cable row, dumbbell

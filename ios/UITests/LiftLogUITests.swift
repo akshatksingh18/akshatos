@@ -37,6 +37,14 @@ final class LiftLogUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Hammer curl"].waitForExistence(timeout: 5),
                       "An exercise added during the workout appears in it")
         capture("Lift Log workout")
+
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5), "The workout has a search field")
+        search.tap()
+        search.typeText("pull")
+        XCTAssertTrue(app.staticTexts["Weighted pull-ups"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Hammer curl"].exists, "Search shows only matching exercises")
+        capture("Lift Log search")
     }
 
     /// Splits are their own screen: the starting three are listed and each opens its editor.

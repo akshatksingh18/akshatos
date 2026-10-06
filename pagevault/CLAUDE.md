@@ -36,7 +36,7 @@ screen with the phone's own voice, tinting the sentence, turning pages and conti
 locked. On the phone its controls work but Build 31's voice sounded robotic and broken up; 0.9.0 (32)
 speaks a page as one passage and is installed, but Akshat reports it still sounds robotic.
 Build 33 (installed) fixes Best available's ranking; with Ava (Premium) it reads well except a run-on
-after a closing quote. 0.10.1 (34) gives the voice plain sentence ends and lists only chosen voices
+after a closing quote. 0.11.0 (34) gives the voice plain sentence ends and lists only chosen voices
 in the menu; not yet built or phone-tested. `features.md` § Read aloud.
 **Removed in Build 29:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
 phone, linking the folder did nothing, and Akshat asked for both to be removed; AkshatOS Build 29

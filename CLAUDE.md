@@ -27,9 +27,11 @@ PR/main CI (after a fix to a new test) and local checksum/IPA validation and is 
 (Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
 which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
 on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.10.1 (34) gives the voice plain sentence ends (quotation marks
+installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
 dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen; not yet built or phone-tested.
+Choose voices screen. It also makes Lift Log
+flexible: the split and an open workout stay in step, logged exercises move up in the order done,
+and the workout screen gains search, reorder and swipe-to-remove. Not yet built or phone-tested.
 PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
 baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
 `cloud-build.md` owns per-build evidence and `todo.md` owns open gates.
