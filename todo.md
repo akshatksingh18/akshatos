@@ -23,7 +23,12 @@ installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends 
 dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
 Choose voices screen. It also makes Lift Log
 flexible: the split and an open workout stay in step, logged exercises move up in the order done,
-and the workout screen gains search, reorder and swipe-to-remove. Not yet built or phone-tested.
+and the workout screen gains search, reorder and swipe-to-remove. Build 34 (PR #63 at `a93c48d`) passed PR/main CI (after a UI-test scrolling fix) and local
+checksum/IPA validation and is installed (0.11.0,
+automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
+after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
+PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
+sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
 Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
 replaces it. Detailed build history belongs in `cloud-build.md`.
 
@@ -104,6 +109,14 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ### Open
 
+- [ ] **Test the natural voice (Build 35).** Akshat chose Kokoro after listening. On a computer,
+      download `kokoro-int8-multi-lang-v1_0.tar.bz2` (about 130 MB) from the sherpa-onnx `tts-models`
+      release, unpack it into a OneDrive folder, then in PageVault's speed menu → Choose voices… →
+      Import voice folder… pick it. Run **Speed test** and report the line it prints; play a sample;
+      turn on **Read with the natural voice** and read a few pages: gaps between sentences, page
+      turns, skip, pause, speed changes, the lock screen, battery and heat over 30 minutes. Also
+      say which iPhone model it is. If it keeps up, the next step is polishing it into the default
+      engine (`pagevault/neural-voice-audit.md` § Recommended path).
 - [ ] **Phone-check read aloud on Build 34.** With Ava (Premium) on Build 33, Akshat found it
       good except that `genius!” This pronouncement` ran on without a pause, and the voice menu
       listed every installed voice. Build 34 drops quotation marks from what the voice is given

@@ -754,3 +754,34 @@ assert(PageVaultReadAloud.voiceLabel(menuAll[3], among: menuAll, locale: english
        "Same-named voices are told apart by region")
 assert(PageVaultReadAloud.voiceLabel(menuAll[4], among: menuAll, locale: english) == "Fred · Default")
 print("PASS: voice menu assertions (default short list, chosen list, voice in use, labels)")
+
+// Natural voice: a page's passage cut into one piece per sentence for the neural engine.
+let naturalSegments = [spokenOnly("The first sentence ends here."), spokenOnly("The second one too.")]
+let naturalPlan = PageVaultReadAloud.plan(segments: naturalSegments, from: 0, carryIn: nil, holdOpenTail: false)
+let naturalPieces = PageVaultNaturalVoiceRules.pieces(of: naturalPlan)
+assert(naturalPieces.map(\.text) == ["The first sentence ends here.", "The second one too."],
+       "One piece per sentence: \(naturalPieces)")
+assert(naturalPieces.map(\.utf16) == naturalPlan.starts.map(\.utf16), "Each piece reports where its sentence starts")
+let carriedPlan = PageVaultReadAloud.plan(segments: naturalSegments, from: 0, carryIn: "and so it ran over",
+                                          holdOpenTail: false)
+let carriedPieces = PageVaultNaturalVoiceRules.pieces(of: carriedPlan)
+assert(carriedPieces.count == 2 && carriedPieces[0].text.hasPrefix("and so it ran over")
+       && carriedPieces[0].text.hasSuffix("ends here."),
+       "Words carried over a page break are said together with the first sentence")
+assert(carriedPieces[0].utf16 == carriedPlan.starts[1].utf16, "and that piece tints the first sentence")
+assert(PageVaultNaturalVoiceRules.pieces(of: PageVaultSpeechPlan(text: "", starts: [], carry: nil)).isEmpty)
+
+assert(PageVaultNaturalVoiceRules.speakers.count == 28, "Kokoro v1.0 has 28 English voices")
+assert(PageVaultNaturalVoiceRules.speaker(3)?.label == "Heart · American, female", "Heart is speaker 3")
+assert(PageVaultNaturalVoiceRules.speaker(16)?.label == "Michael · American, male")
+assert(PageVaultNaturalVoiceRules.speaker(26)?.label == "George · British, male")
+assert(PageVaultNaturalVoiceRules.speaker(99) == nil)
+assert(PageVaultNaturalVoiceRules.missing(from: ["model.onnx", "voices.bin"]) == ["tokens.txt", "lexicon-us-en.txt", "espeak-ng-data"],
+       "Import names what a folder lacks")
+assert(PageVaultNaturalVoiceRules.missing(from: Set(PageVaultNaturalVoiceRules.requiredItems + ["dict"])).isEmpty)
+assert(PageVaultNaturalVoiceRules.seconds(ofSamples: 48_000) == 2)
+assert(PageVaultNaturalVoiceRules.speedSummary(audio: 12, render: 2, firstPiece: 0.5).contains("6.0× real time")
+       && PageVaultNaturalVoiceRules.speedSummary(audio: 12, render: 2, firstPiece: 0.5).contains("fast enough"))
+assert(PageVaultNaturalVoiceRules.speedSummary(audio: 5, render: 10, firstPiece: 3).contains("too slow"))
+assert(PageVaultNaturalVoiceRules.speedSummary(audio: 0, render: 1, firstPiece: 0) == "The test produced no audio.")
+print("PASS: natural voice assertions (pieces, carry-over, speakers, import check, speed summary)")

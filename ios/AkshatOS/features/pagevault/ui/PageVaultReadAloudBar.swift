@@ -45,6 +45,10 @@ struct PageVaultReadAloudBar: View {
                     Text(Self.speedLabel(speed)).tag(speed)
                 }
             }
+            if PageVaultNaturalVoice.shared.isInstalled {
+                Toggle("Natural voice", isOn: $narrator.naturalVoiceOn)
+                    .accessibilityIdentifier("read-aloud-natural")
+            }
             Picker("Voice", selection: $narrator.voiceID) {
                 Text("Best available").tag(String?.none)
                 let all = PageVaultNarrator.voiceOptions()
