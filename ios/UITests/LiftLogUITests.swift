@@ -55,9 +55,10 @@ final class LiftLogUITests: XCTestCase {
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         for _ in 0..<4 where !entry.isHittable { app.scrollViews.firstMatch.swipeUp() }
         entry.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["lift-log-header"].waitForExistence(timeout: 10))
         let splits = app.buttons["open-lift-splits"]
-        XCTAssertTrue(splits.waitForExistence(timeout: 10))
-        for _ in 0..<6 where !splits.isHittable { app.swipeUp() }
+        reveal(app, splits)
+        XCTAssertTrue(splits.isHittable)
         splits.tap()
         XCTAssertTrue(app.navigationBars["Splits"].waitForExistence(timeout: 5))
         for day in ["Lower day", "Back and biceps day", "Chest day"] {
@@ -71,6 +72,12 @@ final class LiftLogUITests: XCTestCase {
         XCTAssertTrue(app.buttons["add-split-exercise"].exists)
         app.navigationBars["Edit split"].buttons["Cancel"].tap()
         XCTAssertTrue(app.navigationBars["Splits"].waitForExistence(timeout: 5))
+    }
+
+    /// The Lift Log screen is a list, which only creates rows as they scroll into view; an open
+    /// workout left by another test pushes these rows below the fold.
+    private func reveal(_ app: XCUIApplication, _ element: XCUIElement) {
+        for _ in 0..<12 where !(element.exists && element.isHittable) { app.swipeUp() }
     }
 
     /// A list row that is a button reads as one element, labelled with all of its text.
@@ -93,9 +100,10 @@ final class LiftLogUITests: XCTestCase {
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         for _ in 0..<4 where !entry.isHittable { app.scrollViews.firstMatch.swipeUp() }
         entry.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["lift-log-header"].waitForExistence(timeout: 10))
         let history = app.buttons["open-lift-history"]
-        XCTAssertTrue(history.waitForExistence(timeout: 10))
-        for _ in 0..<4 where !history.isHittable { app.swipeUp() }
+        reveal(app, history)
+        XCTAssertTrue(history.isHittable)
         history.tap()
         XCTAssertTrue(app.navigationBars["Lift history"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["lift-history-empty"].exists,
