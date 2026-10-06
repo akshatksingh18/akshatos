@@ -56,6 +56,42 @@ enum PageVaultReadAloud {
         }
     }
 
+    /// One installed voice, as the voice menu needs it. `quality` is 1 for the basic voices, 2 for
+    /// Enhanced and 3 for Premium, as iOS numbers them.
+    struct VoiceOption: Equatable {
+        var id: String
+        var name: String
+        var language: String
+        var quality: Int
+    }
+
+    /// The voices the speed menu lists, in the order given. `shown` is Akshat's own choice from the
+    /// Choose voices screen; until he makes one (nil), only the Enhanced and Premium voices are
+    /// listed, so the phone's long list of basic and novelty voices stays out of the way. The voice
+    /// in use is always listed, so the menu never hides what is reading.
+    static func menuVoices(_ all: [VoiceOption], shown: Set<String>?, selected: String?) -> [VoiceOption] {
+        all.filter { voice in
+            voice.id == selected || (shown.map { $0.contains(voice.id) } ?? (voice.quality > 1))
+        }
+    }
+
+    /// "Ava · Premium", with the region added only when another voice has the same name, so the
+    /// two Grandma voices read "Grandma (United Kingdom)" and "Grandma (United States)".
+    static func voiceLabel(_ voice: VoiceOption, among all: [VoiceOption], locale: Locale = .current) -> String {
+        let quality = voice.quality >= 3 ? "Premium" : voice.quality == 2 ? "Enhanced" : "Default"
+        // iOS already puts the quality in some names: "Ava (Premium)".
+        var name = voice.name
+        for suffix in [" (Premium)", " (Enhanced)"] where name.hasSuffix(suffix) {
+            name.removeLast(suffix.count)
+        }
+        if all.contains(where: { $0.id != voice.id && $0.name == voice.name }),
+           let code = voice.language.split(separator: "-").last, code.count == 2,
+           let region = locale.localizedString(forRegionCode: String(code)) {
+            name += " (\(region))"
+        }
+        return "\(name) · \(quality)"
+    }
+
     /// How many lines at the top and at the bottom of a page can be a header, footer or number.
     static let edgeLineCount = 2
     /// Nearby pages compared for repeated edges, on each side.
@@ -226,8 +262,21 @@ enum PageVaultReadAloud {
         "\u{FB00}": "ff", "\u{FB01}": "fi", "\u{FB02}": "fl", "\u{FB03}": "ffi", "\u{FB04}": "ffl"
     ]
 
+    /// Double quotation marks are silent when read, and left in they can hide a sentence's end from
+    /// the voice: `genius!” This` ran on without a pause, as if one sentence.
+    private static let doubleQuotes: Set<Character> = ["\u{201C}", "\u{201D}", "\u{201E}", "\u{201F}",
+                                                       "\u{00AB}", "\u{00BB}", "\""]
+    private static let singleQuotes: Set<Character> = ["\u{2018}", "\u{2019}", "\u{201B}"]
+    private static let longDashes: Set<Character> = ["\u{2014}", "\u{2015}"]
+    private static let superscriptDigits: Set<Character> = ["\u{2070}", "\u{00B9}", "\u{00B2}", "\u{00B3}",
+                                                            "\u{2074}", "\u{2075}", "\u{2076}", "\u{2077}",
+                                                            "\u{2078}", "\u{2079}"]
+
     /// What the voice says: words hyphenated across a line end joined again, ligatures spelled out,
-    /// soft hyphens dropped and every run of space or line break made one space.
+    /// soft hyphens dropped and every run of space or line break made one space. Quotation marks
+    /// go, so a sentence ending inside a quote still ends for the voice; curly apostrophes become
+    /// plain ones; a long dash becomes a comma's pause instead of running two words together; and a
+    /// footnote number stuck to the end of a sentence ("genius.12") is not read out.
     static func spokenText(_ original: String) -> String {
         var output = ""
         let characters = Array(original)
@@ -241,16 +290,58 @@ enum PageVaultReadAloud {
                 index += 2
                 continue
             }
-            if character == "\u{00AD}" { index += 1; continue }
+            if character == "\u{00AD}" || superscriptDigits.contains(character) { index += 1; continue }
+            if doubleQuotes.contains(character) {
+                // Only keep words apart where the quote was all that separated them.
+                if output.last?.isLetter == true, index + 1 < characters.count, characters[index + 1].isLetter {
+                    output.append(" ")
+                }
+                index += 1
+                continue
+            }
+            if longDashes.contains(character) {
+                while output.last == " " { output.removeLast() }
+                if let last = output.last, last.isLetter || last.isNumber || last == ")" {
+                    output += ", "
+                } else if !output.isEmpty {
+                    output.append(" ")
+                }
+                index += 1
+                continue
+            }
+            if character.isNumber, let end = footnoteEnd(characters, from: index, after: output) {
+                index = end
+                continue
+            }
             if let spelled = ligatures[character] {
                 output += spelled
+            } else if singleQuotes.contains(character) {
+                output.append("'")
             } else if character.isWhitespace {
                 if output.last != " " { output.append(" ") }
             } else {
+                if ",.!?;:".contains(character), output.hasSuffix(", ") {
+                    // A dash right before punctuation leaves just the punctuation.
+                    output.removeLast(2)
+                }
                 output.append(character)
             }
             index += 1
         }
-        return output.trimmingCharacters(in: .whitespaces)
+        var trimmed = output.trimmingCharacters(in: .whitespaces)
+        if trimmed.hasSuffix(",") { trimmed.removeLast() }
+        return trimmed
+    }
+
+    /// Where a footnote number ends, if the digits starting at `start` are one: at most three of
+    /// them, straight after a word's closing punctuation, and followed by a space or the end.
+    /// "genius.12 Then" drops the 12; "in 1990. Then", "3.5" and "page 12." keep theirs.
+    private static func footnoteEnd(_ characters: [Character], from start: Int, after output: String) -> Int? {
+        guard let mark = output.last, ".!?,;:".contains(mark),
+              output.dropLast().last?.isLetter == true || output.dropLast().last == ")" else { return nil }
+        var end = start
+        while end < characters.count, characters[end].isNumber { end += 1 }
+        guard end - start <= 3, end == characters.count || characters[end].isWhitespace else { return nil }
+        return end
     }
 }

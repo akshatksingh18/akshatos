@@ -65,6 +65,79 @@ import XCTest
         XCTAssertNil(reminders.scheduled, "Finishing cancels the reminder")
     }
 
+    /// Adding on the main screen reaches the split; editing the split reaches the open workout.
+    func testTheSplitAndTheOpenWorkoutStayInStep() throws {
+        let storage = MemoryLiftSplits()
+        let container = try makeContainer()
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: container),
+                                 splits: storage, reminders: MemoryLiftReminders())
+        store.load()
+        store.startWorkout(split: try split(store, "Chest day"))
+        XCTAssertEqual(store.activeSplit?.name, "Chest day")
+
+        store.addExercise(name: "Cable crossover", loadMode: .stack, equipmentNote: "")
+        XCTAssertEqual(try split(store, "Chest day").exercises.last?.name, "Cable crossover",
+                       "An exercise added during the workout is added to its split")
+        XCTAssertEqual(storage.saved?.first { $0.name == "Chest day" }?.exercises.last?.name, "Cable crossover")
+        store.addExercise(name: "cable CROSSOVER ", loadMode: .stack, equipmentNote: "")
+        XCTAssertEqual(store.active?.exercises.filter { LiftSplit.sameName($0.name, "Cable crossover") }.count, 1,
+                       "The same exercise is not added twice")
+        store.message = nil
+
+        var chest = try split(store, "Chest day")
+        chest.exercises.append(LiftSplitExercise("Push-ups", .addedWeight))
+        chest.exercises.removeAll { $0.name == "Pec-deck fly" }
+        try store.saveSplit(chest)
+        XCTAssertTrue(store.active?.exercises.contains { $0.name == "Push-ups" } == true,
+                      "An exercise added on the Splits screen appears in the open workout")
+        XCTAssertFalse(store.active?.exercises.contains { $0.name == "Pec-deck fly" } == true,
+                       "One removed there leaves the open workout when nothing was logged on it")
+
+        let crossover = try XCTUnwrap(store.active?.exercises.first { $0.name == "Cable crossover" })
+        store.addSet(exerciseID: crossover.id, reps: 12, load: 40)
+        XCTAssertEqual(store.active?.exercises.first?.name, "Cable crossover", "Logged first, so it is first")
+
+        let pushups = try XCTUnwrap(store.active?.exercises.first { $0.name == "Push-ups" })
+        store.removeExercise(pushups.id, fromSplit: false)
+        XCTAssertTrue(try split(store, "Chest day").exercises.contains { $0.name == "Push-ups" },
+                      "Removed from today only, it stays in the split")
+        try store.saveSplit(try split(store, "Chest day"))
+        XCTAssertFalse(store.active?.exercises.contains { $0.name == "Push-ups" } == true,
+                       "and does not come back when the split is saved again")
+
+        let triceps = try XCTUnwrap(store.active?.exercises.first { $0.name == "Triceps pushdown" })
+        store.removeExercise(triceps.id, fromSplit: true)
+        XCTAssertFalse(try split(store, "Chest day").exercises.contains { $0.name == "Triceps pushdown" },
+                       "Removed from today and the split, it is gone from both")
+
+        let reopened = LiftLogStore(repository: SwiftDataLiftLogRepository(container: container),
+                                    splits: storage, reminders: MemoryLiftReminders())
+        reopened.load()
+        XCTAssertEqual(reopened.active?.exercises.map(\.name), store.active?.exercises.map(\.name),
+                       "The arrangement survives reopening")
+        reopened.finishWorkout()
+        XCTAssertEqual(reopened.finished.first?.exercises.map(\.name), ["Cable crossover"],
+                       "Exercises never logged are not saved with the workout")
+    }
+
+    func testDeletingASetAndReorderingToday() throws {
+        let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: try makeContainer()),
+                                 splits: MemoryLiftSplits(), reminders: MemoryLiftReminders())
+        store.load()
+        store.startWorkout(split: try split(store, "Back and biceps day"))
+        let order = try XCTUnwrap(store.active?.exercises.map(\.name))
+        store.moveExercises(from: IndexSet(integer: 2), to: 0)
+        XCTAssertEqual(store.active?.exercises.first?.name, order[2])
+        XCTAssertEqual(try split(store, "Back and biceps day").exercises.map(\.name), order,
+                       "Rearranging today leaves the split's order alone")
+        let curl = try XCTUnwrap(store.active?.exercises.first)
+        store.addSet(exerciseID: curl.id, reps: 10, load: 25)
+        store.addSet(exerciseID: curl.id, reps: 9, load: 25)
+        let firstSet = try XCTUnwrap(store.active?.exercises.first?.sets.first)
+        store.removeSet(exerciseID: curl.id, setID: firstSet.id)
+        XCTAssertEqual(store.active?.exercises.first?.sets.map(\.reps), [9], "Only that set is deleted")
+    }
+
     func testDiscardingTheWorkoutCancelsTheReminder() async throws {
         let reminders = MemoryLiftReminders()
         let store = LiftLogStore(repository: SwiftDataLiftLogRepository(container: try makeContainer()),

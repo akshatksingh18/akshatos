@@ -17,13 +17,21 @@ Squats fallback.
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
 Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
 installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. It remains in `testing/`; its read-aloud voice is still
-reported robotic, and the ReelVault it carries is removed in Build 33. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
+error. Its read-aloud voice is still
+reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
 regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
 Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
 with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 has not passed
-cloud CI, produced an IPA or been tested on the phone.
+ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
+PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
+(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
+which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
+on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
+installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
+dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
+Choose voices screen. It also makes Lift Log
+flexible: the split and an open workout stay in step, logged exercises move up in the order done,
+and the workout screen gains search, reorder and swipe-to-remove. Not yet built or phone-tested.
 PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
 baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
 `cloud-build.md` owns per-build evidence and `todo.md` owns open gates.
@@ -91,8 +99,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 32 (the reworked read-aloud voice and
-  ReelVault, removed in Build 33), installed.
+  31 is the accepted copy and `testing\` holds Build 33 (voice ranking, Lift Log Weight loaded
+  and reminder, ReelVault removed), installed.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -158,7 +166,7 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   streamed copy-on-import storage, export staging, disposable cover and page-measurement caches),
   `services/` (import-time PDFKit inspection, cover rendering, whole-book ink measurement, selection
   capture and the highlights PDF, page-text search, the read-aloud narrator), `ui/` (library grid,
-  the page-curl reader with its fitting screen and read-aloud bar, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
+  the page-curl reader with its fitting screen, read-aloud bar and Choose voices screen, book sheet, backup sheet, the per-book takeaways list, the Takeaways surface,
   search sheet, the page-jump picker). Product scope and
   gates are owned by `pagevault/`. Its reading loop, the page curl, drawing highlights and
   jumping to a page from a search result are phone-confirmed; search itself, the page themes and the

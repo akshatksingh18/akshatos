@@ -25,7 +25,10 @@ struct LiftSplitsView: View {
                                 .foregroundStyle(Palette.muted)
                         }
                     }
-                    .swipeActions {
+                    .swipeActions(edge: .trailing) {
+                        Button("Delete", role: .destructive) { pendingDelete = split }
+                    }
+                    .swipeActions(edge: .leading) {
                         Button("Delete", role: .destructive) { pendingDelete = split }
                     }
                 }
@@ -97,6 +100,8 @@ struct LiftSplitEditor: View {
                                 Text(exercise.loadMode.title).font(.caption).foregroundStyle(Palette.muted)
                             }
                         }
+                        .swipeActions(edge: .trailing) { removeButton(exercise) }
+                        .swipeActions(edge: .leading) { removeButton(exercise) }
                     }
                     .onDelete { draft.exercises.remove(atOffsets: $0) }
                     .onMove { draft.exercises.move(fromOffsets: $0, toOffset: $1) }
@@ -109,7 +114,7 @@ struct LiftSplitEditor: View {
                 } header: {
                     Text("Exercises, most important first")
                 } footer: {
-                    Text("They load in this order when you start this split. Hold and drag to reorder, swipe to remove.")
+                    Text("They load in this order when you start this split; keep alternates here too, since only the ones you log are saved with a workout. Saving also updates a workout open from this split. Hold and drag to reorder, swipe either way to remove.")
                 }
                 if let problem {
                     Text(problem).foregroundStyle(.red)
@@ -142,6 +147,12 @@ struct LiftSplitEditor: View {
                 }
             }
         }
+    }
+}
+
+extension LiftSplitEditor {
+    fileprivate func removeButton(_ exercise: LiftSplitExercise) -> some View {
+        Button("Remove", role: .destructive) { draft.exercises.removeAll { $0.id == exercise.id } }
     }
 }
 

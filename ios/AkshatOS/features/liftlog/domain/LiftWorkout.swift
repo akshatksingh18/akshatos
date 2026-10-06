@@ -86,7 +86,9 @@ struct LiftSplitExercise: Identifiable, Codable, Equatable {
 /// loads its exercises in order; lower entries can be left empty when time is short.
 struct LiftSplit: Identifiable, Codable, Equatable {
     static let maxNameLength = 40
-    static let maxExercises = 20
+    /// Room for alternates: a split can hold the exercises you rotate between, and only the ones
+    /// you log are saved with a workout.
+    static let maxExercises = 40
     static let maxSplits = 20
 
     var id: UUID
@@ -99,7 +101,7 @@ struct LiftSplit: Identifiable, Codable, Equatable {
         self.exercises = exercises
     }
 
-    /// Trimmed and checked: a name, at most 20 exercises, each with a name.
+    /// Trimmed and checked: a name, at most 40 exercises, each with a name.
     func validated() throws -> LiftSplit {
         var checked = self
         checked.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -127,6 +129,12 @@ struct LiftSplit: Identifiable, Codable, Equatable {
             throw LiftLogError.duplicateSplitName
         }
         return checked
+    }
+
+    /// Names compare ignoring case and surrounding spaces, so "Hammer curl" is one exercise.
+    static func sameName(_ a: String, _ b: String) -> Bool {
+        a.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            == b.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
     /// What a new install starts with: Lower as before, and the old Upper day split into two.
@@ -207,14 +215,18 @@ struct LiftExerciseRecord: Identifiable, Codable, Equatable {
     /// Optional human context such as "Gym A plate-loaded machine". It is not converted into load.
     var equipmentNote: String
     var sets: [LiftSetRecord]
+    /// The split exercise this one came from or was added to, so the split and the open workout
+    /// stay in step. Nil for an exercise with no split, and in workouts logged before this existed.
+    var splitExerciseID: UUID?
 
     init(id: UUID = UUID(), name: String, loadMode: LiftLoadMode = .platesPerSide,
-         equipmentNote: String = "", sets: [LiftSetRecord] = []) {
+         equipmentNote: String = "", sets: [LiftSetRecord] = [], splitExerciseID: UUID? = nil) {
         self.id = id
         self.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         self.loadMode = loadMode
         self.equipmentNote = equipmentNote.trimmingCharacters(in: .whitespacesAndNewlines)
         self.sets = sets
+        self.splitExerciseID = splitExerciseID
     }
 
     var latestSet: LiftSetRecord? { sets.last }
@@ -237,15 +249,23 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     /// The split it was started from, kept as text so renaming or deleting the split later never
     /// rewrites history. Nil for an empty workout and for workouts logged before splits existed.
     var splitName: String?
+    /// The split it was started from, so editing that split updates the open workout and adding an
+    /// exercise to the workout adds it to the split. Nil for an empty workout and older workouts.
+    var splitID: UUID?
+    /// Split exercises taken off today's workout only, so keeping the workout in step with the
+    /// split does not bring them back.
+    var skippedSplitExercises: [UUID]?
 
     init(id: UUID = UUID(), startedAt: Date = Date(), endedAt: Date? = nil,
-         exercises: [LiftExerciseRecord] = [], notes: String = "", splitName: String? = nil) {
+         exercises: [LiftExerciseRecord] = [], notes: String = "", splitName: String? = nil,
+         splitID: UUID? = nil) {
         self.id = id
         self.startedAt = startedAt
         self.endedAt = endedAt
         self.exercises = exercises
         self.notes = notes
         self.splitName = splitName
+        self.splitID = splitID
     }
 
     var isActive: Bool { endedAt == nil }
@@ -287,9 +307,9 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
     }
 
     mutating func addExercise(name: String, loadMode: LiftLoadMode,
-                              equipmentNote: String = "") throws -> UUID {
+                              equipmentNote: String = "", splitExerciseID: UUID? = nil) throws -> UUID {
         let exercise = LiftExerciseRecord(name: name, loadMode: loadMode,
-                                          equipmentNote: equipmentNote)
+                                          equipmentNote: equipmentNote, splitExerciseID: splitExerciseID)
         guard isActive else { throw LiftLogError.finishedWorkout }
         guard !exercise.name.isEmpty else { throw LiftLogError.emptyExerciseName }
         exercises.append(exercise)
@@ -301,11 +321,102 @@ struct LiftWorkoutSession: Identifiable, Codable, Equatable {
         guard isActive else { throw LiftLogError.finishedWorkout }
         guard reps > 0 else { throw LiftLogError.invalidReps }
         guard load.isFinite, load >= 0 else { throw LiftLogError.invalidLoad }
-        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else {
+        guard var index = exercises.firstIndex(where: { $0.id == exerciseID }) else {
             throw LiftLogError.exerciseNotFound
+        }
+        if exercises[index].sets.isEmpty {
+            // Its first set: it joins the exercises already done, in the order they were done, so
+            // the third exercise you do sits third whatever its place in the split.
+            let done = exercises.filter { !$0.sets.isEmpty }.count
+            let exercise = exercises.remove(at: index)
+            index = min(done, exercises.count)
+            exercises.insert(exercise, at: index)
         }
         exercises[index].sets.append(LiftSetRecord(reps: reps, load: load,
                                                     completedAt: completedAt))
+    }
+
+    /// Takes an exercise, and any sets logged for it, off the open workout.
+    @discardableResult
+    mutating func removeExercise(_ exerciseID: UUID) throws -> LiftExerciseRecord {
+        guard isActive else { throw LiftLogError.finishedWorkout }
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else {
+            throw LiftLogError.exerciseNotFound
+        }
+        return exercises.remove(at: index)
+    }
+
+    /// Moves exercises as a list drag does: `offsets` are taken out and put back before
+    /// `destination`, counted in the order before the move.
+    mutating func moveExercises(from offsets: IndexSet, to destination: Int) throws {
+        guard isActive else { throw LiftLogError.finishedWorkout }
+        let valid = offsets.filter { exercises.indices.contains($0) }
+        let moving = valid.map { exercises[$0] }
+        let target = destination - valid.filter { $0 < destination }.count
+        for offset in valid.sorted(by: >) { exercises.remove(at: offset) }
+        exercises.insert(contentsOf: moving, at: min(max(0, target), exercises.count))
+    }
+
+    mutating func removeSet(exerciseID: UUID, setID: UUID) throws {
+        guard isActive else { throw LiftLogError.finishedWorkout }
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else {
+            throw LiftLogError.exerciseNotFound
+        }
+        guard let setIndex = exercises[index].sets.firstIndex(where: { $0.id == setID }) else {
+            throw LiftLogError.setNotFound
+        }
+        exercises[index].sets.remove(at: setIndex)
+    }
+
+    /// Brings the open workout in step with its split after the split was edited: exercises added
+    /// to the split join the end of the workout, ones removed from it go unless sets were logged
+    /// (those stay, no longer linked), renamed or changed ones update while nothing is logged on
+    /// them, and the exercises not started yet follow the split's order. Ones taken off today only
+    /// stay off. Exercises from before links existed are matched to the split by name.
+    mutating func sync(with split: LiftSplit) {
+        guard isActive else { return }
+        splitID = split.id
+        splitName = split.name
+        let skipped = Set(skippedSplitExercises ?? [])
+        for index in exercises.indices where exercises[index].splitExerciseID == nil {
+            let taken = Set(exercises.compactMap(\.splitExerciseID))
+            if let match = split.exercises.first(where: {
+                !taken.contains($0.id) && LiftSplit.sameName($0.name, exercises[index].name)
+            }) {
+                exercises[index].splitExerciseID = match.id
+            }
+        }
+        exercises = exercises.compactMap { record in
+            guard let link = record.splitExerciseID else { return record }
+            var updated = record
+            guard let source = split.exercises.first(where: { $0.id == link }) else {
+                if record.sets.isEmpty { return nil }
+                updated.splitExerciseID = nil
+                return updated
+            }
+            if record.sets.isEmpty {
+                updated.name = source.name
+                updated.loadMode = source.loadMode
+                updated.equipmentNote = source.equipmentNote
+            }
+            return updated
+        }
+        let linked = Set(exercises.compactMap(\.splitExerciseID))
+        for source in split.exercises where !linked.contains(source.id) && !skipped.contains(source.id) {
+            exercises.append(LiftExerciseRecord(name: source.name, loadMode: source.loadMode,
+                                                equipmentNote: source.equipmentNote,
+                                                splitExerciseID: source.id))
+        }
+        let order = Dictionary(uniqueKeysWithValues: split.exercises.enumerated().map { ($1.id, $0) })
+        let slots = exercises.indices.filter { index in
+            exercises[index].sets.isEmpty && exercises[index].splitExerciseID.flatMap { order[$0] } != nil
+        }
+        let arranged = slots.map { exercises[$0] }.sorted {
+            order[$0.splitExerciseID!]! < order[$1.splitExerciseID!]!
+        }
+        for (slot, record) in zip(slots, arranged) { exercises[slot] = record }
+        let remaining = skipped.intersection(split.exercises.map(\.id))
+        skippedSplitExercises = remaining.isEmpty ? nil : Array(remaining)
     }
 
     mutating func updateSet(exerciseID: UUID, setID: UUID, reps: Int, load: Double) throws {
@@ -405,7 +516,7 @@ enum LiftLogError: LocalizedError, Equatable {
         case .duplicateActiveWorkout: return "Only one workout can be active at a time."
         case .emptySplitName: return "Give the split a name."
         case .duplicateSplitName: return "Another split already has that name."
-        case .splitTooLarge: return "Keep a split name under 40 characters, at most 20 exercises a split and 20 splits."
+        case .splitTooLarge: return "Keep a split name under 40 characters, at most 40 exercises a split and 20 splits."
         }
     }
 }

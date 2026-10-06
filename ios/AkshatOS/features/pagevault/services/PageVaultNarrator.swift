@@ -19,6 +19,7 @@ import PDFKit
         static let speed = "pagevault.readAloud.speed"
         static let voice = "pagevault.readAloud.voice"
         static let voiceTip = "pagevault.readAloud.voiceTipShown"
+        static let shownVoices = "pagevault.readAloud.shownVoices"
     }
 
     @Published private(set) var state: State = .stopped
@@ -40,6 +41,10 @@ import PDFKit
             restartSentence()
         }
     }
+
+    /// The voices Akshat chose to list in the speed menu, or nil until he chooses (the menu then
+    /// lists the Enhanced and Premium ones). Removing the voice in use falls back to Best available.
+    @Published private(set) var shownVoiceIDs: Set<String>?
 
     /// Asked to show a page when reading moves onto it.
     var onPageTurn: ((Int) -> Void)?
@@ -75,6 +80,7 @@ import PDFKit
         let saved = defaults.double(forKey: Keys.speed)
         speed = Self.speeds.contains(saved) ? saved : 1
         voiceID = defaults.string(forKey: Keys.voice)
+        shownVoiceIDs = (defaults.array(forKey: Keys.shownVoices) as? [String]).map(Set.init)
         // The synthesizer belongs to this reader alone, not the process; see check-boundaries.py.
         synthesizer.delegate = relay
         relay.finished = { [weak self] utterance in
@@ -200,12 +206,31 @@ import PDFKit
             }
     }
 
-    static func qualityLabel(_ voice: AVSpeechSynthesisVoice) -> String {
-        switch voice.quality {
-        case .premium: return "Premium"
-        case .enhanced: return "Enhanced"
-        default: return "Default"
-        }
+    static func option(_ voice: AVSpeechSynthesisVoice) -> PageVaultReadAloud.VoiceOption {
+        PageVaultReadAloud.VoiceOption(id: voice.identifier, name: voice.name, language: voice.language,
+                                       quality: voice.quality.rawValue)
+    }
+
+    /// Every installed voice the Choose voices screen offers.
+    static func voiceOptions() -> [PageVaultReadAloud.VoiceOption] { voices().map(option) }
+
+    /// The short list in the speed menu.
+    var menuVoices: [PageVaultReadAloud.VoiceOption] {
+        PageVaultReadAloud.menuVoices(Self.voiceOptions(), shown: shownVoiceIDs, selected: voiceID)
+    }
+
+    func isShown(_ id: String) -> Bool {
+        menuVoices.contains { $0.id == id }
+    }
+
+    /// Adds a voice to the speed menu or takes it off. The first change starts from what the menu
+    /// was showing, so the Enhanced and Premium voices it listed are kept unless removed.
+    func setShown(_ id: String, _ shown: Bool) {
+        var ids = Set(menuVoices.map(\.id))
+        if shown { ids.insert(id) } else { ids.remove(id) }
+        shownVoiceIDs = ids
+        defaults.set(Array(ids).sorted(), forKey: Keys.shownVoices)
+        if !shown, voiceID == id { voiceID = nil }
     }
 
     private var voice: AVSpeechSynthesisVoice? {

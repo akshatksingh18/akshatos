@@ -36,12 +36,17 @@ and recovery, and `features.md` owns product scope.
 ## Read-aloud voice selection
 
 The narrator offers installed non-novelty, non-personal voices for the phone's language.
-An explicit saved voice identifier takes precedence. In local Build 33, the Foundation-only
+An explicit saved voice identifier takes precedence. From Build 33, the Foundation-only
 `PageVaultReadAloud.bestVoice` ranks automatic candidates by quality across regional variants,
 then exact locale for equal quality, retaining the supplied order for other ties. The narrator
 maps AVFoundation voices into that policy; synthetic domain cases need no downloaded voice.
-Build 32's exact-locale-first selection is superseded only in source; Build 33 CI and device
-verification remain pending. Passage construction, speed, storage and audio lifecycle are unchanged.
+From 0.11.0 (34), `PageVaultReadAloud.menuVoices` decides which voices the speed menu lists from the
+saved `pagevault.readAloud.shownVoices` set (nil until first chosen: Enhanced and Premium only), always
+keeping the voice in use, and `voiceLabel` adds a region only to same-named voices.
+`ui/PageVaultVoicesView.swift` edits that set and plays samples on its own synthesizer, pausing the
+book first. `spokenText` also strips quotation marks, plains apostrophes, turns long dashes into a
+comma's pause and drops footnote numbers, so sentence ends stay clear to the voice; page offsets
+for the tint are unaffected because they come from the page text, not the spoken text.
 
 ## Storage and import ownership
 
