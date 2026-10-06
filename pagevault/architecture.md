@@ -53,7 +53,7 @@ From 0.12.0 (35) there is a second engine. `services/PageVaultNaturalVoice.swift
 import and removal, and a sherpa-onnx `SherpaOnnxOfflineTtsWrapper` loaded on first use, all engine
 calls on one serial queue) and `PageVaultNaturalSpeaker` (renders a passage's pieces up to three
 ahead, plays them on an `AVAudioPlayerNode`, reports each piece's start and the end, and drops stale
-work on stop). `domain/PageVaultNaturalVoice.swift` (`PageVaultNaturalVoiceRules`) cuts a page plan
+work on stop). `domain/PageVaultNaturalVoiceRules.swift` (`PageVaultNaturalVoiceRules`) cuts a page plan
 into pieces, lists the speakers and required files, and words the speed test. The narrator picks the
 engine per passage (`usesNaturalVoice`); everything above it is shared.
 

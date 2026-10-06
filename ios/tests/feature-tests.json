@@ -26,7 +26,7 @@
       "AkshatOS/features/pagevault/domain/PageVaultReading.swift",
       "AkshatOS/features/pagevault/domain/PageVaultLayout.swift",
       "AkshatOS/features/pagevault/domain/PageVaultBackup.swift",
-      "AkshatOS/features/pagevault/domain/PageVaultNaturalVoice.swift"
+      "AkshatOS/features/pagevault/domain/PageVaultNaturalVoiceRules.swift"
     ],
     "domain_test": "tests/pagevault/main.swift",
     "integration_tests": [
