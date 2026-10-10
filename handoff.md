@@ -24,7 +24,12 @@ checksum/IPA validation and is installed (0.11.0,
 automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
 after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
+sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
+and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
+voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
+of at every redraw, measures the voice's size off the main thread, loads the model when the book
+opens and renders the next page's first sentence ahead of the page turn
+(`pagevault/neural-voice-audit.md`).
 Read the linked owning documents for feature contracts, build evidence and open gates.
 Pending documentation travels with the next real implementation change. Do not include unrelated
 signing-script/setup edits or private fitness records in that change.
@@ -148,8 +153,11 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 34:** installed and enrolled. Run the Build 33 and 34 checks in `todo.md`; the voice
-   question moves to `pagevault/neural-voice-audit.md`. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
+1. **Build 36:** once built, install it from `..\final-ipas\akshatos\testing\` over Build 34 (Build 35 was
+   never installed),
+   confirm enrollment with `python scripts/read-signing-state.py`, then run the natural-voice test in
+   `todo.md` (the voice folder is in OneDrive at `Backups\AkshatOS Voice`). Build 34 is installed
+   and enrolled; its Lift Log and read-aloud checks are also in `todo.md`. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
    phone checks in `todo.md` (read-aloud voice; its ReelVault is removed in Build 33). For reference, Build 29's checks were: the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
    notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
    history open on their own screens with every day/workout present, that the last-performance line

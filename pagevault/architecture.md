@@ -52,8 +52,10 @@ From 0.12.0 (35) there is a second engine. `services/PageVaultNaturalVoice.swift
 `PageVaultNaturalVoice` (the imported Kokoro folder in `Application Support/PageVaultVoice`, its
 import and removal, and a sherpa-onnx `SherpaOnnxOfflineTtsWrapper` loaded on first use, all engine
 calls on one serial queue) and `PageVaultNaturalSpeaker` (renders a passage's pieces up to three
-ahead, plays them on an `AVAudioPlayerNode`, reports each piece's start and the end, and drops stale
-work on stop). `domain/PageVaultNaturalVoiceRules.swift` (`PageVaultNaturalVoiceRules`) cuts a page plan
+ahead, plays them on an `AVAudioPlayerNode`, reports each piece's start and the end, drops stale
+work on stop, and from 0.12.1 (36) pre-renders the next passage's opening that the narrator names).
+The narrator caches the iPhone voice list (`voices()`), refreshed on
+`availableVoicesDidChangeNotification`, because asking iOS for it is slow. `domain/PageVaultNaturalVoiceRules.swift` (`PageVaultNaturalVoiceRules`) cuts a page plan
 into pieces, lists the speakers and required files, and words the speed test. The narrator picks the
 engine per passage (`usesNaturalVoice`); everything above it is shared.
 

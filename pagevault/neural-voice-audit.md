@@ -1,7 +1,7 @@
 # Neural read-aloud voice — audit
 
-**Status:** Step 2 (the test build) is implemented in working source 0.12.0 (35), not yet built or
-phone-tested. Akshat finds every iPhone system voice robotic, including Ava (Premium) on Build 34;
+**Status:** Step 2 (the test build) is working source 0.12.1 (36), after Build 35 (0.12.0, PR #64)
+passed CI but was never installed; not yet phone-tested. Akshat finds every iPhone system voice robotic, including Ava (Premium) on Build 34;
 after listening to Kokoro demos he found them not robotic at all and asked for the test build and
 then the PageVault integration. This file compares the options, records the choice and the path.
 Sources checked 2026-10-05.
@@ -68,9 +68,14 @@ text clean-up changes. A different-sounding voice means a different engine.
   `model.int8.onnx`) is in Akshat's OneDrive at `Backups\AkshatOS Voice\`, beside but outside the two
   backup-sync pairs (`personal-project/` is excluded from sync, so it could not live there). Re-download
   from sherpa-onnx's `tts-models` release if lost; it is public model data, not personal data.
-- Known gap to measure: the first sentence of each new page is rendered only when the page before
-  ends, so a short pause at page turns is expected; prefetching the next page is the fix if it
-  shows.
+- **Page turns and start-up (0.12.1 (36)):** once a page's sentences are all rendered, the next
+  page's first sentence (with any carried-over words) is rendered and kept, so the turn starts at
+  once; the model loads when a book opens with the natural voice on. A skip or speed change still
+  waits for one sentence to render. Rendering runs on the voice's own queue without holding a
+  Swift task thread.
+- **Menus (0.12.1 (36)):** the iPhone's voice list is read once and refreshed only when iOS reports
+  a change; Build 34 and 35 asked iOS for it at every redraw (once per voice row on Choose voices…),
+  which made the speed menu and that screen hang.
 
 ## Recommended path
 

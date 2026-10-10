@@ -9,9 +9,12 @@ import UniformTypeIdentifiers
 struct PageVaultVoicesView: View {
     @ObservedObject var narrator: PageVaultNarrator
     @Environment(\.dismiss) private var dismiss
-    /// Plays the samples; separate from the narrator so a sample never moves the reading.
-    @State private var sampler = AVSpeechSynthesizer()
-    @State private var naturalSampler = PageVaultNaturalSpeaker()
+    /// Play the samples; separate from the narrator so a sample never moves the reading. Made on
+    /// first use, because SwiftUI evaluates a state's starting value at every redraw.
+    @State private var sampler: AVSpeechSynthesizer?
+    @State private var naturalSampler: PageVaultNaturalSpeaker?
+    /// Disk space the voice takes, measured off the main thread (it has hundreds of small files).
+    @State private var naturalBytes: Int64?
     @State private var importingNatural = false
     @State private var naturalBusy: String?
     @State private var naturalResult: String?
@@ -20,11 +23,12 @@ struct PageVaultVoicesView: View {
 
     var body: some View {
         let all = PageVaultNarrator.voiceOptions()
+        let shown = Set(narrator.menuVoices.map(\.id))
         NavigationStack {
             List {
                 naturalSection
-                section("Enhanced and Premium", all.filter { $0.quality > 1 }, all: all)
-                section("Basic", all.filter { $0.quality <= 1 }, all: all)
+                section("Enhanced and Premium", all.filter { $0.quality > 1 }, all: all, shown: shown)
+                section("Basic", all.filter { $0.quality <= 1 }, all: all, shown: shown)
                 Section {
                 } footer: {
                     Text("Ticked voices appear in the speed menu. To download or delete voices on this iPhone, go to Settings → Accessibility → Spoken Content → Voices → English; an app cannot do that.")
@@ -37,8 +41,15 @@ struct PageVaultVoicesView: View {
             }
         }
         .onDisappear {
-            sampler.stopSpeaking(at: .immediate)
-            naturalSampler.stop()
+            sampler?.stopSpeaking(at: .immediate)
+            naturalSampler?.stop()
+        }
+        .task(id: naturalInstalled) {
+            naturalBytes = nil
+            guard naturalInstalled else { return }
+            naturalBytes = await Task.detached(priority: .utility) {
+                PageVaultNaturalVoice.shared.installedBytes
+            }.value
         }
         .fileImporter(isPresented: $importingNatural, allowedContentTypes: [.folder]) { result in
             guard case .success(let url) = result else { return }
@@ -74,8 +85,10 @@ struct PageVaultVoicesView: View {
                 }
                 Button {
                     if narrator.state == .playing { narrator.pause() }
-                    naturalSampler.speak([.init(text: "This is how this voice reads your book.", utf16: 0)],
-                                         speaker: narrator.naturalSpeaker, speed: 1)
+                    let speaker = naturalSampler ?? PageVaultNaturalSpeaker()
+                    naturalSampler = speaker
+                    speaker.speak([.init(text: "This is how this voice reads your book.", utf16: 0)],
+                                  speaker: narrator.naturalSpeaker, speed: 1)
                 } label: {
                     Label("Play a sample", systemImage: "speaker.wave.2")
                 }
@@ -108,7 +121,8 @@ struct PageVaultVoicesView: View {
             Text("Natural voice (test)")
         } footer: {
             if naturalInstalled {
-                Text("Kokoro, running on this iPhone. \(ByteCountFormatter.string(fromByteCount: PageVaultNaturalVoice.shared.installedBytes, countStyle: .file)) used. It uses more battery than the iPhone voices.")
+                let size = naturalBytes.map { " \(ByteCountFormatter.string(fromByteCount: $0, countStyle: .file)) used." } ?? ""
+                Text("Kokoro, running on this iPhone.\(size) It uses more battery than the iPhone voices.")
             } else {
                 Text("A far more natural voice that runs on this iPhone, offline. Pick the unpacked kokoro-int8-multi-lang-v1_0 folder (about 180 MB) in Files; it comes from the sherpa-onnx tts-models release.")
             }
@@ -132,23 +146,24 @@ struct PageVaultVoicesView: View {
 
     @ViewBuilder
     private func section(_ title: String, _ voices: [PageVaultReadAloud.VoiceOption],
-                         all: [PageVaultReadAloud.VoiceOption]) -> some View {
+                         all: [PageVaultReadAloud.VoiceOption], shown: Set<String>) -> some View {
         if !voices.isEmpty {
             Section(title) {
                 ForEach(voices, id: \.id) { voice in
+                    let isShown = shown.contains(voice.id)
                     HStack {
                         Button {
-                            narrator.setShown(voice.id, !narrator.isShown(voice.id))
+                            narrator.setShown(voice.id, !isShown)
                         } label: {
                             HStack {
-                                Image(systemName: narrator.isShown(voice.id) ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(narrator.isShown(voice.id) ? Palette.accent : Palette.muted)
+                                Image(systemName: isShown ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(isShown ? Palette.accent : Palette.muted)
                                 Text(PageVaultReadAloud.voiceLabel(voice, among: all))
                                     .foregroundStyle(Color.primary)
                             }
                         }
                         .buttonStyle(.plain)
-                        .accessibilityAddTraits(narrator.isShown(voice.id) ? .isSelected : [])
+                        .accessibilityAddTraits(isShown ? .isSelected : [])
                         Spacer()
                         Button { sample(voice) } label: { Image(systemName: "speaker.wave.2") }
                             .buttonStyle(.plain)
@@ -162,9 +177,11 @@ struct PageVaultVoicesView: View {
     private func sample(_ voice: PageVaultReadAloud.VoiceOption) {
         // The book pauses rather than talking over the sample; play resumes it.
         if narrator.state == .playing { narrator.pause() }
-        sampler.stopSpeaking(at: .immediate)
+        let synthesizer = sampler ?? AVSpeechSynthesizer()
+        sampler = synthesizer
+        synthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: "This is how this voice reads your book.")
         utterance.voice = AVSpeechSynthesisVoice(identifier: voice.id)
-        sampler.speak(utterance)
+        synthesizer.speak(utterance)
     }
 }

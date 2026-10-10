@@ -36,7 +36,12 @@ checksum/IPA validation and is installed (0.11.0,
 automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
 after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
+sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
+and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
+voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
+of at every redraw, measures the voice's size off the main thread, loads the model when the book
+opens and renders the next page's first sentence ahead of the page turn
+(`pagevault/neural-voice-audit.md`).
 PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
 baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
 `cloud-build.md` owns per-build evidence and `todo.md` owns open gates.
@@ -104,8 +109,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 34 (read-aloud sentence ends, chosen voices,
-  flexible Lift Log workouts), installed.
+  31 is the accepted copy and `testing\` holds Build 35 (the PageVault natural voice test), not
+  installed; Build 36 replaces it once built. Build 34 is on the phone.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by

@@ -29,7 +29,12 @@ checksum/IPA validation and is installed (0.11.0,
 automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
 after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
+sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
+and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
+voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
+of at every redraw, measures the voice's size off the main thread, loads the model when the book
+opens and renders the next page's first sentence ahead of the page turn
+(`pagevault/neural-voice-audit.md`).
 PageVault v1 is accepted through Build 24, and Build 13 is the detailed movement-lifecycle baseline.
 The broader edge-case, refresh/recovery and soak matrix remains open. Updates retain the permanent
 bundle ID `com.akshatksingh18.akshatos` and legacy storage/notification identifiers.
