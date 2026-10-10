@@ -36,10 +36,9 @@ This document owns Pushup Reminder only. Lift Log is a separate local feature wh
 persistence, recovery and acceptance gates are owned by `lift-log.md`; it does not turn Pushups'
 completed-break counter into a general workout tracker.
 
-`hub-plan.md` records requested Pushup Reminder exploration inside WHOOP. Its placement,
-notification budget/coordinator, Home permission, local import/recovery and cutover decisions
-remain open; this feature contract, installed source, daily goal/streak and reminders are
-unchanged. WHOOP rest protection is not a retroactive change to Pushups qualification.
+`hub-plan.md` records the Pushup Reminder port inside WHOOP build-86 source (approved, Home
+auto-pause included). Cutover and stopping AkshatOS's reminders remain separate decisions; this
+feature contract, installed source, daily goal/streak and reminders are unchanged. WHOOP rest protection is not a retroactive change to Pushups qualification.
 
 ## Hub entry
 

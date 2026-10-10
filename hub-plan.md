@@ -45,13 +45,13 @@ reviewed weight/height conflicts and missing photos, both apps' recovery proof a
 acceptance before any removal or cutover. Private coaching ownership is also unchanged; a local
 import is not a promise of ongoing two-app synchronization.
 
-## Pushup Reminder In WHOOP: Exploration Only
+## Pushup Reminder In WHOOP: Ported In Build-86 Source, No Cutover
 
-Akshat requested an exploration of Pushup Reminder alongside the planned WHOOP fitness
-integration. WHOOP's `build-86-audit.md`, `fitness-app-plan.md` and `todo.md` own proposed
-placement, implementation risks and approval gates; `features.md` remains the full Pushups
-parity contract. This request is not a port, notification-owner switch or module-removal go.
-AkshatOS's current installed data, SwiftUI feature, schedules, Home and backup registry are intact.
+Akshat approved the port, including Always location for Home auto-pause. WHOOP build-86 source
+implements it (WHOOP `todo.md` section 7 owns what was built and its phone checks); `features.md`
+remains the parity contract. This is not a notification-owner switch or a module-removal go:
+AkshatOS's installed data, SwiftUI feature, schedules, Home and backup registry are intact, the
+two apps do not sync, and running both means two sets of reminders until Akshat stops one.
 
 Proposed WHOOP entry: Train -> Movement breaks / Pushups and compact Today Start/Done access,
 with its own daily goal/streak/history and reviewed contribution to general activity. A Done
@@ -65,9 +65,8 @@ Before a port or cutover:
   delegate. Namespaced cancellation and one pending-request budget must accommodate existing
   critical WHOOP alerts, rest timers and Body reminders. AkshatOS's 60-active-request batch
   cannot simply be copied alongside them or promise unlimited ignored nudges.
-- Resolve optional Home auto-pause separately. It needs Always location in AkshatOS; WHOOP's
-  personal build currently excludes that permission. Do not silently remove Home or weaken
-  WHOOP's capability contract, and do not add Always merely for ordinary walking workouts.
+- Home auto-pause: resolved. WHOOP build-86 source asks for Always only for this one Home
+  region (Akshat's approval); routes still use While-In-Use.
 - Preview/idempotently import local JSON with recovery proof and synthetic fixtures; do not
   automatically restore an active day, schedule or Home coordinate as part of history import.
   Preserve source backups and exclude sensitive Home coordinates from ordinary exported data.

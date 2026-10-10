@@ -12,7 +12,7 @@ every module at once (`hub-plan.md` § Full backup). This repository evolved fro
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-`hub-plan.md` owns the unchanged WHOOP boundary and requested Pushups exploration alongside
+`hub-plan.md` owns the unchanged WHOOP boundary and the Pushups port in WHOOP source alongside
 planned Lift Log/Body integration. Read it before a cross-app port, notification ownership,
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
