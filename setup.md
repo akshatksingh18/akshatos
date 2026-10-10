@@ -33,6 +33,11 @@ promotion, while a later daemon refresh remains separate ongoing-cycle evidence.
 
 ## The two halves, and why they are separate
 
+The researched [SideStore alternative](sidestore-evaluation.md) is not active. This procedure
+and its Windows health check apply to Sideloadly only; they cannot verify phone-owned SideStore
+renewals. Do not disable or repurpose them until a migration and replacement monitoring plan
+are explicitly approved and verified.
+
 - **Sideloadly's daemon refreshes.** It is installed, starts at logon through the `Sideloadly
   Daemon` entry in `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run`, and its own
   `refresh_at_hours` is 96 — it intends to act with three days left, which is the buffer the
@@ -188,8 +193,8 @@ then on. Two things from Sideloadly's own FAQ (<https://sideloadly.io/faq.html>,
 
 `installations.db` currently has completed `one_off: 0` automatic-refresh registrations for both
 AkshatOS and WHOOP. Manual same-ID overwrites advanced both apps' signing times and expiries. WHOOP
-requires automatic bundle-ID rewriting **off** and its exact final signed ID entered; the base ID
-plus Sideloadly's automatic transformation stalls at 0%. Confirm the database and Sideloadly UI
+may be registered in either bundle-ID mode (`signing-apps.json` says `either`): its install stalls
+happen in both modes and are not caused by the mode (`../whoop/guides/IOS_SIDELOAD.md`). Confirm the database and Sideloadly UI
 after every recovery rather than equating enrollment with a successful cycle. The health check above
 is what tells you whether a recorded refresh happened; silence from the phone is not evidence.
 
@@ -208,7 +213,7 @@ weekly re-signing uses the new cached version automatically. For every AkshatOS 
    - **AkshatOS:** keep **Use automatic bundle ID** enabled; the IPA/source ID is
      `com.akshatksingh18.akshatos`, and the expected final ID is
      `com.akshatksingh18.akshatos.5564K8D4SV`.
-   - **WHOOP:** turn **Use automatic bundle ID** off and enter exact final ID
+   - **WHOOP:** either mode works; both produce
      `com.akshat.personal.whoop.5564K8D4SV`.
    Keep the separate automatic-refresh control enabled for both.
 3. Require all five device gates: installation reaches 100%, the app launches with its data intact,
@@ -273,7 +278,8 @@ reinstall from `D:\AI Important Files\personal-project\final-ipas\<project>\back
 **A stalled or cancelled install leaves debris in Sideloadly's own database, and the reader handles
 it.** The scheduled-app list was later cleared during recovery, removing both apps' old registrations
 and debris. Both apps now have completed scheduled rows. WHOOP reached that state through a clean
-install after backup/delete. Automatic bundle-ID rewriting then caused its manual refresh to stall;
+install after backup/delete. Its manual refresh then stalled, which was attributed to automatic bundle-ID
+rewriting at the time; later stalls in both modes showed the mode is not the cause;
 using the exact final signed ID succeeded and preserved the working container. A scheduled row is
 still enrollment, not by itself proof that replacement works. The reader must continue
 folding zero-date attempts into `staleAttempts`; they are not completed refreshes.

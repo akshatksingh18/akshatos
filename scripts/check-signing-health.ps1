@@ -140,8 +140,8 @@ try {
         if (-not $expected.name -or -not $expected.sourceBundleID -or -not $expected.finalBundleID) {
             throw 'Every expected app must define name, sourceBundleID and finalBundleID.'
         }
-        if ($expected.bundleIDMode -notin @('automatic', 'exact')) {
-            throw 'Every expected app must define bundleIDMode as automatic or exact.'
+        if ($expected.bundleIDMode -notin @('automatic', 'exact', 'either')) {
+            throw 'Every expected app must define bundleIDMode as automatic, exact or either.'
         }
     }
 }
@@ -352,12 +352,16 @@ foreach ($expected in $expectedConfig.apps) {
         }
     }
 
-    # The final bundle ID alone did not distinguish WHOOP's broken and working registrations:
-    # Sideloadly's automatic rewrite produced the same final string but stalled on overwrite. Its
-    # info_props does distinguish them. Enforce the proven per-app path so a future upgrade cannot
-    # silently recreate the session's failure while still looking correctly enrolled.
+    # Two registrations can share a final bundle ID and differ only in how Sideloadly reached it
+    # (info_props carries the difference). An app pins one mode when only that mode is proven for
+    # it. 'either' is for an app where both modes have completed on the phone: WHOOP's stalls were
+    # once blamed on the automatic rewrite, then seen in both modes, so its mode is not enforced.
     $actual = $matches[0]
-    if ($actual.bundleIDMode -ne $expected.bundleIDMode) {
+    if ($expected.bundleIDMode -eq 'either') {
+        Write-Line 'IDENTITY' ("{0} is registered in '{1}' bundle-ID mode; either mode is accepted." -f `
+            $expected.name, $actual.bundleIDMode)
+    }
+    elseif ($actual.bundleIDMode -ne $expected.bundleIDMode) {
         $worst = 2
         $headlines += "$($expected.name) uses the wrong Sideloadly bundle-ID mode"
         Write-Line 'CRITICAL' ("{0} must use bundle-ID mode '{1}', but the active registration uses '{2}'." -f `

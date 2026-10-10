@@ -12,6 +12,10 @@ every module at once (`hub-plan.md` § Full backup). This repository evolved fro
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
+`hub-plan.md` owns the unchanged WHOOP boundary and requested Pushups exploration alongside
+planned Lift Log/Body integration. Read it before a cross-app port, notification ownership,
+Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
+
 **Status:** Building. Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
 `../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
@@ -117,6 +121,9 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   re-running its workflow, not by restoring this folder.
 - `apple-account-switch.md` — the planned one-time move of AkshatOS and WHOOP signing to a
   separate Apple Account: what changes, data restore per module, app-slot order and the steps.
+- `sidestore-evaluation.md` — research-only alternative to PC-owned signing refresh for both apps;
+  current release caveats, preservation gates and the approved step-by-step pilot (not started;
+  Sideloadly stays the refresher until it passes).
 - `setup.md` — keeping an installed build signed: the split between Sideloadly's refreshing daemon
   and the health check that proves it happened, what counts as success, the installed task and its
   paths, and the refresh/recovery gates still open. Read before changing anything about weekly
@@ -477,8 +484,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 - OS permissions, icon/notification identity, update, profile expiry, process failure, and uninstall
   apply to the hub as a whole. Keep module stores/export logically separate and test cross-section
   behavior. Deleting the hub removes every module's local data, so full recovery is mandatory.
-- Use Windows Sideloadly, no phone-side host. Another signer is an explicit workflow choice; the
-  spare slot is not automatic permission to add it. Free seven-day expiry/early refresh still apply.
+- Use Windows Sideloadly, no phone-side host. Akshat approved a SideStore pilot that uses the
+  spare slot (`sidestore-evaluation.md`); Sideloadly stays the refresher until it passes. Free seven-day expiry/early refresh still apply.
 - `hub-plan.md` owns source/build ownership and identity reconciliation before coding.
   The hub target/workflow now live here; the old downloaded smoke IPA remains a separate historical artifact.
 

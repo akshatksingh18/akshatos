@@ -5,6 +5,16 @@ A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for i
 weight, weekly measurements and progress photos ([body-log.md](body-log.md)). WHOOP stays a
 separate app. (ReelVault shipped in Build 32 and is removed from Build 33.)
 
+Adding Lift Log and Body features to WHOOP is accepted planned direction, not a module move or
+ownership change ([hub-plan.md](hub-plan.md), [WHOOP fitness plan](../whoop/fitness-app-plan.md)).
+The planned unified Progress page centers on recomposition; implementation is explicitly deferred,
+and this hub and its stores remain intact
+until explicit migration/recovery and phone-acceptance gates pass.
+Pushup Reminder inside WHOOP is also requested exploration, not an approved move: its
+notification/action durability, shared request budget and optional Home permission need review
+([shared boundary](hub-plan.md#pushup-reminder-in-whoop-exploration-only)). Current Pushups and
+its own goal/streak/reminders are unchanged.
+
 **Current state:** Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
 `../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
@@ -55,11 +65,14 @@ App composition, display-only hub, shared styling and the Pushup Reminder featur
 
 - A plain hub listing Pushup Reminder, PageVault, Lift Log and Body, with a Backup row
   for all of them; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
-- Lift Log asks Upper or Lower at workout start, preloads the confirmed exercises in priority order,
-  shows the last finished performance for the same exercise/mode, and edits active sets. It
-  preserves per-side/per-hand/stack/added/total meanings, saves after every mutation, recovers
+- Lift Log starts from an editable split or Empty workout, keeps split edits and an open workout
+  linked, and supports search, reorder and today-only removal. It shows every set of the last
+  finished performance for the same exercise/mode, and edits/deletes active sets. It
+  preserves per-side/per-hand/stack/added/weight-loaded/total meanings, saves after every mutation, recovers
   unfinished sessions, and exports restorable JSON or reviewable CSV. It never guesses bar, sled or
-  machine resistance; [lift-log.md](lift-log.md) owns the contract and gates.
+  machine resistance; [lift-log.md](lift-log.md) owns the contract and gates. Its proposed addition
+  to WHOOP is accepted planned direction, with implementation deferred ([hub-plan.md](hub-plan.md));
+  this hub module remains intact.
 - Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
 - Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
   minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,

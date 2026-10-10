@@ -152,6 +152,17 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
       and logs `WARN` instead of alerting. The daemon has since refreshed WHOOP unattended. Still open:
       see one real `WARN` restart in the health log, and why it stopped around 2026-09-18 is unknown.
       `setup.md` owns the detail.
+- [ ] **Verify Body media completeness before authoritative migration.** `body-log.md` owns the
+      current export/restore exception: unreadable JPEGs can be omitted/skipped, and the full-hub
+      adapter does not forward the standalone skipped-photo warning. Confirm changed-library
+      recovery and explicit missing-media handling; do not treat hub success as all photos recovered.
+      The proposed WHOOP import must preview/block or obtain partial-import approval. This records
+      a recovery gate, not authorization to change AkshatOS or remove Body.
+- [ ] **Review Pushup Reminder exploration inside WHOOP.** `hub-plan.md` owns cross-project
+      approval/ownership gates; WHOOP's audit/fitness plan/TODO own proposed Train/Today placement,
+      protected action inbox parity, one notification coordinator/shared budget, Home/Always
+      permission decision, local import/recovery and phone tests. Keep this hub's module/streak/
+      schedules intact; no port, reminder-owner cutover or module removal is authorized yet.
 - [ ] **Move signing to a separate Apple Account.** Planned in
       `apple-account-switch.md`: new account (Akshat creates it), backups of every module and WHOOP,
       one app at a time into the new team with restore before removing the old install, then the

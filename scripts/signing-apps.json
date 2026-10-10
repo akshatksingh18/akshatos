@@ -12,7 +12,7 @@
       "name": "WHOOP",
       "sourceBundleID": "com.akshat.personal.whoop",
       "finalBundleID": "com.akshat.personal.whoop.5564K8D4SV",
-      "bundleIDMode": "exact",
+      "bundleIDMode": "either",
       "automaticRefreshRequired": true
     }
   ]

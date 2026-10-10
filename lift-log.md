@@ -20,11 +20,21 @@ Akshat edits in the app** (starting with Lower day, Back and biceps day and Ches
 old Upper day is now two days), adds **Add exercise** during any workout and an **empty workout**,
 and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
 reports working on the phone. Build 34 (0.11.0, PR #63) makes workouts flexible (see **Flexible workouts** below); it passed
-CI and local validation and is in `testing/`, not yet installed or phone-tested. Build 33 (installed) adds the **Weight loaded** mode, moving the starting seated calf raise to
-it, and a **"Still working out?" reminder** an hour after the last thing logged; CI, an IPA and a
-phone pass are pending. No
+CI and local validation and is installed with current-version refresh enrollment; its focused
+phone checks remain open in `todo.md`. Build 35 is the hub's current testing artifact and does
+not replace those Lift Log acceptance gates. Build 33 adds the **Weight loaded** mode, moving
+the starting seated calf raise to it, and a **"Still working out?" reminder** an hour after the
+last thing logged; its CI, IPA validation and installation passed, while the focused phone pass
+remains open (`cloud-build.md`, `todo.md`). No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
+
+**Accepted integration plan, not a cutover:** Akshat accepted these features inside one
+existing WHOOP workout as future direction; repeat entry, rest timer, comparable records and
+workout times are selected for WHOOP, not added to this module. Implementation is deferred.
+`hub-plan.md` records the unchanged installed boundary and links the
+WHOOP-owned design. This module, its history/splits, notification behavior and full-backup part
+remain implemented here; no removal, live cross-app sync or coaching-source change is approved.
 
 ## Product contract
 

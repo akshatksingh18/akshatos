@@ -34,6 +34,12 @@ Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is ac
 Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
 PageVault's technical plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.
 
+`hub-plan.md` owns requested WHOOP Pushups exploration, not an implemented architecture change.
+Any Flutter port must preserve durable cold/locked action receipts and use WHOOP's one early
+notification coordinator with a shared request budget, rather than replacing its delegate or
+copying the 60-request batch unmodified. Optional Home/Always permission requires an explicit
+WHOOP capability decision. This hub's native routing, services, stores and recovery stay intact.
+
 ## Current implementation
 
 - Canonical owner: `personal-project/akshatos`, temporarily public `akshatksingh18/akshatos`; repository

@@ -21,6 +21,63 @@ without rotation or paid membership: Akshat's body-measurement tracker was added
 rather than a separate app for exactly this reason. This is source-level feature composition, not guest
 IPAs, a PWA, LiveContainer, or an iOS extension workaround. No Flutter embedding is required.
 
+## Lift Log And Body In WHOOP: Accepted Plan, No Cutover
+
+Akshat accepted Lift Log features inside the existing WHOOP workout as planned product direction.
+`../whoop/lift-log-integration-plan.md` owns the source-reviewed plan, and WHOOP `todo.md`
+lists it for Build 86. The planned destination is one session-owned set
+log in WHOOP, not WHOOP embedded in this hub or two synchronized active workouts.
+He also wants Body and a single overall progress page, prioritizing recomposition: leaner while
+getting stronger, and accepted that direction. `../whoop/fitness-app-plan.md` owns the whole-app plan,
+including unified weight/profile data, Body parity, HR/set timing, comparison coverage and
+photo-inclusive encrypted recovery. Repeat last set, rest timer, comparable records, independent
+photo selection, workout times, historical entry and screenshot-based local import are selected.
+Implementation/import-file generation are explicitly deferred. Actual source data/media remain
+private and outside both public app repositories.
+The expanded WHOOP plan explicitly joins daily diet, seven-day weights and weekly/monthly body/
+strength/activity/recovery reviews. It does not change private coaching ownership or claim
+measured muscle growth. Those reviews remain owned by `../whoop/fitness-app-plan.md`.
+The accepted packaging and installed data ownership above remain unchanged. No AkshatOS module,
+store, notification or backup part is removed. A later move requires explicit scope/timing and
+source-of-truth decisions, validated local import/linking without duplicate workout expenditure,
+reviewed weight/height conflicts and missing photos, both apps' recovery proof and physical
+acceptance before any removal or cutover. Private coaching ownership is also unchanged; a local
+import is not a promise of ongoing two-app synchronization.
+
+## Pushup Reminder In WHOOP: Exploration Only
+
+Akshat requested an exploration of Pushup Reminder alongside the planned WHOOP fitness
+integration. WHOOP's `build-86-audit.md`, `fitness-app-plan.md` and `todo.md` own proposed
+placement, implementation risks and approval gates; `features.md` remains the full Pushups
+parity contract. This request is not a port, notification-owner switch or module-removal go.
+AkshatOS's current installed data, SwiftUI feature, schedules, Home and backup registry are intact.
+
+Proposed WHOOP entry: Train -> Movement breaks / Pushups and compact Today Start/Done access,
+with its own daily goal/streak/history and reviewed contribution to general activity. A Done
+tap records a break-set completion, not measured reps, duration, workout HR or added calories.
+Keep one WHOOP workout clock and preserve Pushups' separate Start/Pause/End day lifecycle.
+
+Before a port or cutover:
+- Preserve stable legacy IDs/goal snapshots/history, protected durable action receipts,
+  idempotent locked/cold Done/Pause, reminder intervals/nudges and explicit tap routing.
+- WHOOP must have one early notification coordinator, not a competing UNUserNotificationCenter
+  delegate. Namespaced cancellation and one pending-request budget must accommodate existing
+  critical WHOOP alerts, rest timers and Body reminders. AkshatOS's 60-active-request batch
+  cannot simply be copied alongside them or promise unlimited ignored nudges.
+- Resolve optional Home auto-pause separately. It needs Always location in AkshatOS; WHOOP's
+  personal build currently excludes that permission. Do not silently remove Home or weaken
+  WHOOP's capability contract, and do not add Always merely for ordinary walking workouts.
+- Preview/idempotently import local JSON with recovery proof and synthetic fixtures; do not
+  automatically restore an active day, schedule or Home coordinate as part of history import.
+  Preserve source backups and exclude sensitive Home coordinates from ordinary exported data.
+- Obtain explicit source-of-truth/feature/capability/cutover approval, pass physical action/
+  lock/relaunch/recovery and combined WHOOP background tests, and deliberately stop the old
+  reminder batch before opting into the new one. No simultaneous two-app reminder owner or
+  recurring two-app data synchronization is promised. PageVault remains an AkshatOS module.
+
+Streak grace/protected-rest rules are WHOOP proposals, not a change to AkshatOS's accepted
+Pushups daily-goal contract. Keep the two streaks separate and never fabricate completed sets.
+
 ## Native hub boundaries
 
 App composition/navigation lives under `ios/AkshatOS/app/`, reusable UI under `shared/`, and each
@@ -123,6 +180,12 @@ refused as an unknown module (Akshat made no Build 32 backups).
 - Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
   of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.
 
+**Current Body media exception:** its export can omit uncopyable JPEGs and its restore can skip
+missing JPEGs. The standalone screen reports skipped photos, but the hub adapter currently returns
+success without forwarding that warning. Full-backup success is therefore not proof of complete
+Body photo recovery. `body-log.md` owns the limitation; missing-media acceptance and explicit
+review must be resolved before an authoritative migration. No backup code has changed here.
+
 ### How modules take part (the contract for every future module)
 
 - `shared/backup/HubBackupPart.swift` defines the protocol every module implements: a stable
@@ -144,6 +207,12 @@ lists its id, and update this section's part list and `ci.md`. CI blocks the mer
 two are done. Large media goes inside its part, as PageVault's PDFs do.
 
 ## Refresh and recovery
+
+SideStore is an approved pilot, not yet started and not the selected refresh owner. Read
+[the evaluation](sidestore-evaluation.md) before proposing a switch: it uses the third app slot,
+needs identity/certificate and recovery checks, and does not fix WHOOP sensor synchronization.
+The pilot moves AkshatOS first; no installer migration happens until it passes. WHOOP Build 86
+is approved separately and does not depend on it.
 
 - Sign one hub IPA and one WHOOP IPA using stable respective identities and the same chosen
   Apple Account/team across refreshes. Both remain standard artifacts, not Sideloadly-dependent code.
