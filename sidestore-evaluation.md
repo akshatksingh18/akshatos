@@ -83,17 +83,23 @@ These are our acceptance requirements, not completed migration steps:
 
 Approved, not started. Each step is done by Akshat on the PC/phone; nothing is automated.
 
-1. **Timing:** run it on the current unchanged IPAs (WHOOP 85, AkshatOS 34), before WHOOP
-   Build 86 is installed, so a signing problem and a new-build problem cannot be confused.
+1. **Timing (Akshat: alongside WHOOP Build 86):** set up SideStore and move AkshatOS first,
+   install WHOOP Build 86 with Sideloadly (the proven path), and move WHOOP to SideStore only
+   after Build 86 has worked for a day or two. A signing problem and a new-build problem then
+   stay distinguishable while both happen in the same window.
 2. **Backups first:** WHOOP encrypted export copied to Windows; AkshatOS Back up everything with
    the Body photo count checked against the library. Record each app's final bundle ID and expiry.
 3. **Install SideStore** from its official release after checking which version the Stable
-   button installs. Stop at any certificate-revocation prompt and decide before accepting it:
+   button installs. Checked: iloader's Install SideStore (Stable) fetches GitHub's latest
+   release, currently 0.7.0-alpha (the 503 sign-in fix; 0.6.4 is marked do-not-use). Use that
+   option, not the LiveContainer+SideStore one. iloader v2.3.6 for Windows is downloaded at
+   `../installers/iloader-2.3.6/iloader-windows-x64.msi`, SHA-256
+   `6f0d038f74f60e2e036efa17dd45b7cebd3a4c61b226ff0f03cc8668bb5e3b2d` (matches GitHub's record). Stop at any certificate-revocation prompt and decide before accepting it:
    revoking the certificate Sideloadly used can stop both installed apps from opening.
 4. **Move one app first.** Recommended: AkshatOS (simpler, no BLE). Add the cached IPA in
    SideStore, confirm the same final bundle ID and that data survived. Then turn that app's
    Sideloadly automatic refresh off, so there is one refresh owner per app.
-5. **WHOOP second**, with the same checks plus: band still paired, automatic-backup passphrase
+5. **WHOOP second, on Build 86** (already installed by Sideloadly and working), with the same checks plus: band still paired, automatic-backup passphrase
    still readable, Status shows the new expiry, and a short background sync works.
 6. **Monitoring:** the Windows health check reads only Sideloadly records, so it will report a
    moved app as stale. Mark it as SideStore-managed there rather than ignoring the alert. WHOOP's
