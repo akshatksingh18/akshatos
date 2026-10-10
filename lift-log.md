@@ -31,7 +31,8 @@ remote.
 
 **Accepted integration plan, not a cutover:** Akshat accepted these features inside one
 existing WHOOP workout as future direction; repeat entry, rest timer, comparable records and
-workout times are selected for WHOOP, not added to this module. Implementation is deferred.
+workout times are selected for WHOOP, not added to this module. WHOOP build-86 source implements
+them (not built or installed); its importer reads this module's `lift-log.json`.
 `hub-plan.md` records the unchanged installed boundary and links the
 WHOOP-owned design. This module, its history/splits, notification behavior and full-backup part
 remain implemented here; no removal, live cross-app sync or coaching-source change is approved.

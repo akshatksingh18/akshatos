@@ -32,7 +32,8 @@ getting stronger, and accepted that direction. `../whoop/fitness-app-plan.md` ow
 including unified weight/profile data, Body parity, HR/set timing, comparison coverage and
 photo-inclusive encrypted recovery. Repeat last set, rest timer, comparable records, independent
 photo selection, workout times, historical entry and screenshot-based local import are selected.
-Implementation/import-file generation are explicitly deferred. Actual source data/media remain
+WHOOP build-86 source implements them (not built or installed); the private history import file
+is generated. Actual source data/media remain
 private and outside both public app repositories.
 The expanded WHOOP plan explicitly joins daily diet, seven-day weights and weekly/monthly body/
 strength/activity/recovery reviews. It does not change private coaching ownership or claim

@@ -17,9 +17,9 @@ He accepted that product direction and selected independent photo comparison, pa
 measurement/range filters and a later screenshot-based local weight import. Actual readings and
 photo-day associations stay in the private health source, not this public repository.
 `../whoop/fitness-app-plan.md` owns the plan and WHOOP `todo.md` lists it
-for Build 86; `hub-plan.md` owns the unchanged installed boundary. Implementation and import-file
-generation are explicitly deferred. This is not
-implementation, module removal or a switch of entry ownership. Preserve the current Body
+for Build 86; `hub-plan.md` owns the unchanged installed boundary. WHOOP build-86 source implements it
+(not built or installed) and imports this module's `body-log.json` plus photos; the private
+MyFitnessPal history file is generated. It is not a module removal or a switch of entry ownership. Preserve the current Body
 contract below, explicit weight/height conflict review, original records/units, media recovery
 and private coaching ownership until migration and phone acceptance are separately approved.
 
