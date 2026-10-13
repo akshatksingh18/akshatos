@@ -1,10 +1,14 @@
 # SideStore evaluation
 
-**Status:** Pilot approved by Akshat, not started; Sideloadly remains the active
-installer/refresher until it passes. Akshat runs the steps below on the PC and phone, alongside
+**Status:** Pilot approved; Akshat reports setting up SideStore on the laptop. On-phone installation,
+self-refresh, app handover and unattended renewals are not yet confirmed. Sideloadly's local
+records still enroll both apps; no signing ownership or certificate setting was changed in this
+check. Akshat runs the steps below on the PC and phone, alongside
 WHOOP Build 86's implementation (WHOOP `todo.md` section 10). LocalDevVPN is allowed on the phone
 as SideStore's installer helper; it is never a WHOOP or AkshatOS dependency.
-Sources checked 2026-10-09. No installer, credentials, certificates, tasks or app code changed.
+Public sources checked 2026-10-09; release claims are from that research, not a fresh release check.
+The cached iloader MSI is present locally; registry/process probes did not establish an installed
+or running iloader in this session, which does not contradict Akshat's setup report.
 
 ## Recommendation
 
@@ -81,7 +85,8 @@ These are our acceptance requirements, not completed migration steps:
 
 ## Pilot sequence
 
-Approved, not started. Each step is done by Akshat on the PC/phone; nothing is automated.
+Approved; laptop setup reported, phone steps unconfirmed. Each step is done by Akshat on the
+PC/phone; nothing is automated by the agent.
 
 1. **Timing (Akshat: alongside WHOOP Build 86):** set up SideStore and move AkshatOS first,
    install WHOOP Build 86 with Sideloadly (the proven path), and move WHOOP to SideStore only

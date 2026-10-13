@@ -208,7 +208,7 @@ two are done. Large media goes inside its part, as PageVault's PDFs do.
 
 ## Refresh and recovery
 
-SideStore is an approved pilot, not yet started and not the selected refresh owner. Read
+SideStore is an approved pilot with laptop setup reported, not yet a verified refresh owner. Read
 [the evaluation](sidestore-evaluation.md) before proposing a switch: it uses the third app slot,
 needs identity/certificate and recovery checks, and does not fix WHOOP sensor synchronization.
 The pilot moves AkshatOS first; no installer migration happens until it passes. WHOOP Build 86
