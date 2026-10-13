@@ -114,7 +114,7 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ### Open
 
-- [ ] **Test the natural voice (Build 36).** Akshat chose Kokoro after listening. On a computer,
+- [ ] **Test the natural voice (Build 36).** Akshat chose Kokoro after listening.
       The unpacked voice is already in OneDrive at `Backups\AkshatOS Voice\kokoro-int8-multi-lang-v1_0`
       (182 MB, from sherpa-onnx's `tts-models` release; outside both backup-sync pairs, so the sync
       engine leaves it alone). In PageVault's speed menu → Choose voices… → Import voice folder…,
