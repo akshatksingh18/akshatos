@@ -53,6 +53,7 @@ import PDFKit
     @Published var naturalVoiceOn: Bool {
         didSet {
             defaults.set(naturalVoiceOn, forKey: Keys.natural)
+            if usesNaturalVoice { naturalVoice.warmUp() }
             restartSentence()
         }
     }
@@ -91,6 +92,7 @@ import PDFKit
     private var current: AVSpeechUtterance?
     private var commands: [(MPRemoteCommand, Any)] = []
     private var interruption: NSObjectProtocol?
+    private var voicesChanged: NSObjectProtocol?
 
     init(url: URL, title: String, pageCount: Int, defaults: UserDefaults = .standard,
          naturalVoice: PageVaultNaturalVoice = .shared) {
@@ -116,11 +118,26 @@ import PDFKit
         relay.reached = { [weak self] location, utterance in
             Task { @MainActor in self?.reached(location, in: utterance) }
         }
+        // Voices downloaded or deleted in Settings while the app runs refresh the cached list.
+        voicesChanged = NotificationCenter.default.addObserver(
+            forName: AVSpeechSynthesizer.availableVoicesDidChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                Self.cachedVoices = nil
+                self?.objectWillChange.send()
+            }
+        }
         natural.reached = { [weak self] location in self?.advance(toUTF16: location) }
         natural.finished = { [weak self] in
             guard let self, self.state == .playing else { return }
             self.moveOn(carry: self.plan?.carry)
         }
+        // Loading the model takes a few seconds; do it while the book opens, not after play.
+        if usesNaturalVoice { naturalVoice.warmUp() }
+    }
+
+    deinit {
+        if let voicesChanged { NotificationCenter.default.removeObserver(voicesChanged) }
     }
 
     // MARK: - Controls
@@ -227,17 +244,25 @@ import PDFKit
 
     // MARK: - Voices
 
+    /// Asking iOS for its voices is slow (a round trip to the speech service), and the speed menu
+    /// and Voices screen are redrawn at every sentence, so the list is read once and kept until
+    /// iOS says the installed voices changed.
+    private static var cachedVoices: [AVSpeechSynthesisVoice]?
+
     /// Installed voices for the phone's language, best quality first. Novelty and personal voices
     /// are left out.
     static func voices() -> [AVSpeechSynthesisVoice] {
+        if let cachedVoices { return cachedVoices }
         let language = String(AVSpeechSynthesisVoice.currentLanguageCode().prefix(2))
-        return AVSpeechSynthesisVoice.speechVoices()
+        let found = AVSpeechSynthesisVoice.speechVoices()
             .filter { $0.language.hasPrefix(language) }
             .filter { !$0.voiceTraits.contains(.isNoveltyVoice) && !$0.voiceTraits.contains(.isPersonalVoice) }
             .sorted {
                 if $0.quality.rawValue != $1.quality.rawValue { return $0.quality.rawValue > $1.quality.rawValue }
                 return $0.name < $1.name
             }
+        cachedVoices = found
+        return found
     }
 
     static func option(_ voice: AVSpeechSynthesisVoice) -> PageVaultReadAloud.VoiceOption {
@@ -304,6 +329,7 @@ import PDFKit
             current = nil
             natural.speak(PageVaultNaturalVoiceRules.pieces(of: made), speaker: naturalSpeaker,
                           speed: Float(speed))
+            natural.expect(next: hasNext ? nextOpening(after: made) : nil)
             updateNowPlaying()
             return
         }
@@ -333,6 +359,14 @@ import PDFKit
 
     /// Whether reading uses the natural voice: chosen, and a voice is installed.
     var usesNaturalVoice: Bool { naturalVoiceOn && naturalVoice.isInstalled }
+
+    /// What the natural voice will say first on the next page, so it can be ready before the turn.
+    private func nextOpening(after made: PageVaultSpeechPlan) -> String? {
+        guard let next = nextReadablePage(after: page) else { return nil }
+        let upcoming = PageVaultReadAloud.plan(segments: sentences(on: next), from: 0, carryIn: made.carry,
+                                               holdOpenTail: nextReadablePage(after: next) != nil)
+        return PageVaultNaturalVoiceRules.pieces(of: upcoming).first?.text
+    }
 
     /// The voice has reached a position in the passage: the tint follows to that sentence.
     private func reached(_ location: Int, in utterance: AVSpeechUtterance) {

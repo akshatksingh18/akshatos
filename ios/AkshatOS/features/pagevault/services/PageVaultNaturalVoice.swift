@@ -117,11 +117,22 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
     /// Speech for `text` as 24 kHz mono samples, or nil when no voice is installed. Blocks the
     /// calling thread while the engine works, so call it off the main thread.
     func render(_ text: String, speaker: Int, speed: Float) -> [Float]? {
-        queue.sync {
-            guard let engine = loadedEngine() else { return nil }
-            let audio = engine.generate(text: text, sid: speaker, speed: speed)
-            return audio.samples
-        }
+        queue.sync { renderOnQueue(text, speaker: speaker, speed: speed) }
+    }
+
+    /// The same without holding a thread: `done` runs on the voice's queue once the speech is ready.
+    func render(_ text: String, speaker: Int, speed: Float, done: @escaping @Sendable ([Float]?) -> Void) {
+        queue.async { done(self.renderOnQueue(text, speaker: speaker, speed: speed)) }
+    }
+
+    /// Loads the model in the background, so the first sentence does not wait for it.
+    func warmUp() {
+        queue.async { _ = self.loadedEngine() }
+    }
+
+    private func renderOnQueue(_ text: String, speaker: Int, speed: Float) -> [Float]? {
+        guard let engine = loadedEngine() else { return nil }
+        return engine.generate(text: text, sid: speaker, speed: speed).samples
     }
 
     /// Loads the model the first time it is needed. Only on `queue`.
@@ -175,6 +186,9 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
 /// Plays a passage in the natural voice: renders its pieces a few ahead on a background thread and
 /// plays them back to back, saying when each piece starts (so the tint can follow) and when the
 /// last one ends. Any call to `speak` or `stop` makes earlier work stale, and stale work is dropped.
+///
+/// Once a passage is fully rendered, the next passage's opening (the next page's first sentence)
+/// is rendered too and kept, so a page turn starts at once instead of waiting for the voice.
 @MainActor final class PageVaultNaturalSpeaker {
     var reached: ((Int) -> Void)?
     var finished: (() -> Void)?
@@ -194,6 +208,12 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
     private var nextToRender = 0
     private var playing = 0
     private var rendering = false
+    /// The next passage's opening, its rendered speech, the one being rendered, and whether a
+    /// passage that just started is waiting for that render instead of starting its own.
+    private var nextOpening: String?
+    private var prefetched: (key: String, samples: [Float])?
+    private var prefetching: String?
+    private var awaitingPrefetch = false
 
     init(voice: PageVaultNaturalVoice = .shared) {
         self.voice = voice
@@ -209,6 +229,22 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
         self.speed = speed
         isSpeaking = true
         startEngine()
+        let opening = key(pieces[0].text)
+        if let ready = prefetched, ready.key == opening {
+            prefetched = nil
+            rendering = true
+            rendered(ready.samples, index: 0, token: generation)
+        } else if prefetching == opening {
+            rendering = true
+            awaitingPrefetch = true
+        } else {
+            renderAhead()
+        }
+    }
+
+    /// The text the next passage will open with, rendered once this one is, or nil at the end.
+    func expect(next text: String?) {
+        nextOpening = text
         renderAhead()
     }
 
@@ -232,6 +268,8 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
         nextToRender = 0
         playing = 0
         rendering = false
+        awaitingPrefetch = false
+        nextOpening = nil
         isSpeaking = false
         isPaused = false
     }
@@ -241,20 +279,41 @@ final class PageVaultNaturalVoice: @unchecked Sendable {
         player.play()
     }
 
-    /// Renders the next piece if it is within the lookahead, then schedules it.
+    /// Renders the next piece if it is within the lookahead, then schedules it. With every piece
+    /// rendered, it renders the next passage's opening instead.
     private func renderAhead() {
-        guard isSpeaking, !rendering, nextToRender < pieces.count,
-              nextToRender - playing < PageVaultNaturalVoiceRules.lookahead else { return }
+        guard isSpeaking, !rendering else { return }
+        guard nextToRender < pieces.count else { prefetchNextOpening(); return }
+        guard nextToRender - playing < PageVaultNaturalVoiceRules.lookahead else { return }
         rendering = true
         let index = nextToRender
-        let piece = pieces[index]
         let token = generation
-        let voice = voice
-        let speaker = speaker
-        let speed = speed
-        Task.detached(priority: .userInitiated) {
-            let samples = voice.render(piece.text, speaker: speaker, speed: speed) ?? []
-            await MainActor.run { self.rendered(samples, index: index, token: token) }
+        voice.render(pieces[index].text, speaker: speaker, speed: speed) { samples in
+            Task { @MainActor [weak self] in self?.rendered(samples ?? [], index: index, token: token) }
+        }
+    }
+
+    /// Speech is the same only for the same words, speaker and speed.
+    private func key(_ text: String) -> String { "\(speaker)|\(speed)|\(text)" }
+
+    private func prefetchNextOpening() {
+        guard let text = nextOpening, prefetching == nil else { return }
+        let wanted = key(text)
+        guard prefetched?.key != wanted else { return }
+        prefetching = wanted
+        voice.render(text, speaker: speaker, speed: speed) { samples in
+            Task { @MainActor [weak self] in self?.prefetchDone(samples ?? [], key: wanted) }
+        }
+    }
+
+    private func prefetchDone(_ samples: [Float], key wanted: String) {
+        prefetching = nil
+        if awaitingPrefetch, isSpeaking, !pieces.isEmpty, key(pieces[0].text) == wanted {
+            awaitingPrefetch = false
+            rendered(samples, index: 0, token: generation)
+        } else {
+            prefetched = (wanted, samples)
+            renderAhead()
         }
     }
 

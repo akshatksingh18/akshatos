@@ -5,6 +5,16 @@ A native personal iPhone hub. Open AkshatOS and select **Pushup Reminder** for i
 weight, weekly measurements and progress photos ([body-log.md](body-log.md)). WHOOP stays a
 separate app. (ReelVault shipped in Build 32 and is removed from Build 33.)
 
+Adding Lift Log and Body features to WHOOP is accepted planned direction, not a module move or
+ownership change ([hub-plan.md](hub-plan.md), [WHOOP fitness plan](../whoop/fitness-app-plan.md)).
+The planned unified Progress page centers on recomposition; implementation is explicitly deferred,
+and this hub and its stores remain intact
+until explicit migration/recovery and phone-acceptance gates pass.
+Pushup Reminder inside WHOOP is also requested exploration, not an approved move: its
+notification/action durability, shared request budget and optional Home permission need review
+([shared boundary](hub-plan.md#pushup-reminder-in-whoop-exploration-only)). Current Pushups and
+its own goal/streak/reminders are unchanged.
+
 **Current state:** Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
 `../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
 editable Lift Log splits and read-aloud controls; the voice sounded robotic.
@@ -29,7 +39,12 @@ checksum/IPA validation and is installed (0.11.0,
 automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
 after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
+sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
+and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
+voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
+of at every redraw, measures the voice's size off the main thread, loads the model when the book
+opens and renders the next page's first sentence ahead of the page turn
+(`pagevault/neural-voice-audit.md`).
 PageVault v1 is accepted through Build 24, and Build 13 is the detailed movement-lifecycle baseline.
 The broader edge-case, refresh/recovery and soak matrix remains open. Updates retain the permanent
 bundle ID `com.akshatksingh18.akshatos` and legacy storage/notification identifiers.
@@ -50,11 +65,14 @@ App composition, display-only hub, shared styling and the Pushup Reminder featur
 
 - A plain hub listing Pushup Reminder, PageVault, Lift Log and Body, with a Backup row
   for all of them; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
-- Lift Log asks Upper or Lower at workout start, preloads the confirmed exercises in priority order,
-  shows the last finished performance for the same exercise/mode, and edits active sets. It
-  preserves per-side/per-hand/stack/added/total meanings, saves after every mutation, recovers
+- Lift Log starts from an editable split or Empty workout, keeps split edits and an open workout
+  linked, and supports search, reorder and today-only removal. It shows every set of the last
+  finished performance for the same exercise/mode, and edits/deletes active sets. It
+  preserves per-side/per-hand/stack/added/weight-loaded/total meanings, saves after every mutation, recovers
   unfinished sessions, and exports restorable JSON or reviewable CSV. It never guesses bar, sled or
-  machine resistance; [lift-log.md](lift-log.md) owns the contract and gates.
+  machine resistance; [lift-log.md](lift-log.md) owns the contract and gates. Its proposed addition
+  to WHOOP is accepted planned direction, with implementation deferred ([hub-plan.md](hub-plan.md));
+  this hub module remains intact.
 - Start/Pause/Resume/End and Done +1/Undo from dashboard or notification.
 - Notification actions ordered Done then Pause; ignored reminders automatically nudge every ten
   minutes within a bounded pre-scheduled horizon; durable inbox, replay protection after Undo,

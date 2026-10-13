@@ -28,7 +28,12 @@ checksum/IPA validation and is installed (0.11.0,
 automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
 after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Not yet built or phone-tested (`pagevault/neural-voice-audit.md`).
+sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
+and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
+voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
+of at every redraw, measures the voice's size off the main thread, loads the model when the book
+opens and renders the next page's first sentence ahead of the page turn
+(`pagevault/neural-voice-audit.md`).
 Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
 replaces it. Detailed build history belongs in `cloud-build.md`.
 
@@ -109,7 +114,7 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ### Open
 
-- [ ] **Test the natural voice (Build 35).** Akshat chose Kokoro after listening. On a computer,
+- [ ] **Test the natural voice (Build 36).** Akshat chose Kokoro after listening.
       The unpacked voice is already in OneDrive at `Backups\AkshatOS Voice\kokoro-int8-multi-lang-v1_0`
       (182 MB, from sherpa-onnx's `tts-models` release; outside both backup-sync pairs, so the sync
       engine leaves it alone). In PageVault's speed menu → Choose voices… → Import voice folder…,
@@ -147,6 +152,17 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
       and logs `WARN` instead of alerting. The daemon has since refreshed WHOOP unattended. Still open:
       see one real `WARN` restart in the health log, and why it stopped around 2026-09-18 is unknown.
       `setup.md` owns the detail.
+- [ ] **Verify Body media completeness before authoritative migration.** `body-log.md` owns the
+      current export/restore exception: unreadable JPEGs can be omitted/skipped, and the full-hub
+      adapter does not forward the standalone skipped-photo warning. Confirm changed-library
+      recovery and explicit missing-media handling; do not treat hub success as all photos recovered.
+      The proposed WHOOP import must preview/block or obtain partial-import approval. This records
+      a recovery gate, not authorization to change AkshatOS or remove Body.
+- [ ] **Review Pushup Reminder exploration inside WHOOP.** `hub-plan.md` owns cross-project
+      approval/ownership gates; WHOOP's audit/fitness plan/TODO own proposed Train/Today placement,
+      protected action inbox parity, one notification coordinator/shared budget, Home/Always
+      permission decision, local import/recovery and phone tests. Keep this hub's module/streak/
+      schedules intact; no port, reminder-owner cutover or module removal is authorized yet.
 - [ ] **Move signing to a separate Apple Account.** Planned in
       `apple-account-switch.md`: new account (Akshat creates it), backups of every module and WHOOP,
       one app at a time into the new team with restore before removing the old install, then the

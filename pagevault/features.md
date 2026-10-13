@@ -208,7 +208,8 @@ Build 33 (installed) fixes the automatic voice ranking. With Ava (Premium) Aksha
 well except running on after a sentence ending in a closing quote; working source 0.11.0 (34)
 fixes that and shortens the voice menu (both bullets below); Build 34 is installed, and Akshat still finds the system voices robotic
 (neural options: `neural-voice-audit.md`). He chose Kokoro; working source 0.12.0 (35) adds it as a
-**natural voice (test)** (last bullet), not yet built or phone-tested.
+**natural voice (test)** (last bullet); Build 35 passed CI but was never installed, and 0.12.1 (36)
+fixes the slow speed menu and Choose voices… screen and the pause at page turns.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
   above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and

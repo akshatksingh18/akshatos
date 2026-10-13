@@ -9,6 +9,20 @@ private coaching logs in the workspace's `health/fitness/` project remain the so
 Akshat explicitly switches entry to the phone (see Acceptance gates). No personal measurement,
 height, weight or photo is bundled in source or belongs in this public repository.
 
+## WHOOP Integration: Accepted Plan, No Cutover
+
+Akshat wants Body's features beside Lift Log, food and wearable context in WHOOP, with one
+Progress page for his confirmed goal of recomposition: leaner while getting stronger.
+He accepted that product direction and selected independent photo comparison, past-date entry,
+measurement/range filters and a later screenshot-based local weight import. Actual readings and
+photo-day associations stay in the private health source, not this public repository.
+`../whoop/fitness-app-plan.md` owns the plan and WHOOP `todo.md` lists it
+for Build 86; `hub-plan.md` owns the unchanged installed boundary. WHOOP build-86 source implements it
+(not built or installed) and imports this module's `body-log.json` plus photos; the private
+MyFitnessPal history file is generated. It is not a module removal or a switch of entry ownership. Preserve the current Body
+contract below, explicit weight/height conflict review, original records/units, media recovery
+and private coaching ownership until migration and phone acceptance are separately approved.
+
 ## Product contract
 
 - **Weight:** one entry per day in pounds, logged in the morning after the bathroom and before food
@@ -40,9 +54,15 @@ height, weight or photo is bundled in source or belongs in this public repositor
   hour. It uses the `akshatos.body.` notification namespace, which the app layer routes to this
   module, and never touches Pushup Reminder's requests. Without notification permission the toggle
   stays off and says why.
-- **Backup and CSV:** the backup is a plain folder, `body-log.json` plus `photos/`, validated in full
-  (version, unique records, one weigh-in per day, real dates, value ranges) before a confirmed restore
-  replaces everything; a failed restore changes nothing, photos included. From 0.7.0 it also carries
+- **Backup and CSV:** the backup is a plain folder, `body-log.json` plus `photos/`. The manifest is
+  validated (version, unique records, one weigh-in per day, real dates, value ranges) before a
+  confirmed restore replaces the library. Current `BodyLogStore.stageBackup` omits photos whose
+  files cannot be copied; standalone restore skips unavailable photo files and reports their count.
+  The full-hub adapter currently returns success without forwarding that skipped-photo message. Manifest
+  success alone does not prove complete photo recovery. Restore stages the copied photos and
+  rolls the file swap back if saving the records fails; physical changed-library recovery remains
+  an acceptance gate. A WHOOP migration must preview missing media and block or obtain explicit
+  partial-import approval, never silently treat it as a complete move. From 0.7.0 the backup also carries
   height and measurement day (optional, so older backups still read and leave them as they are); the
   reminder setting is not carried, since it needs permission on the phone. The hub's Backup screen
   includes this folder as `body/` (`hub-plan.md` § Full backup). CSV export is one row per
