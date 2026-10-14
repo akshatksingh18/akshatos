@@ -90,7 +90,9 @@ have left, and the app again declares no document types (`validate-ipa.py` check
 
 - `Book`: stable UUID, private PDF filename, source/display metadata, page count, streamed content
   fingerprint, added/opened timestamps, reading status (`wantToRead` / `reading` / `finished`,
-  default `wantToRead`) with a change timestamp, and its place.
+  default `wantToRead`) with a change timestamp, its place, and from 0.13.0 (37) an optional
+  `queueRank` (Akshat's Want to read order; `PageVaultLibrary.unstarted` lists ranked books first,
+  then unranked newest first, and `moveUnstarted` renumbers the shelf after a drag).
   The single-Reading-book rule is enforced in `PageVaultLibrary.setStatus` at the data layer, not
   only in the UI, and the repository refuses to load a store claiming two Reading books.
 - **Your place**: one zero-based page per book plus the time it was set, held on the book itself.

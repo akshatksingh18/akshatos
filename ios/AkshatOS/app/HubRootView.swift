@@ -6,6 +6,7 @@ struct HubRootView: View {
     @ObservedObject var pageVault: PageVaultStore
     @ObservedObject var liftLog: LiftLogStore
     @ObservedObject var bodyLog: BodyLogStore
+    @ObservedObject var studyLog: StudyLogStore
     let backup: FullBackupService
     @ObservedObject var navigator: HubNavigator
     let orientation: OrientationGate
@@ -29,7 +30,11 @@ struct HubRootView: View {
             HubEntry(id: .body, title: "Body", subtitle: "Weight and measurements",
                      icon: "ruler", isAvailable: true,
                      status: bodyLog.todayWeight.map { String(format: "%.1f lb today", $0.pounds) } ?? "Not weighed today",
-                     detail: bodyLog.thisWeekMeasurement == nil ? "Measure this week" : "Measured this week")
+                     detail: bodyLog.thisWeekMeasurement == nil ? "Measure this week" : "Measured this week"),
+            HubEntry(id: .studyLog, title: "Study Log", subtitle: "Real study time",
+                     icon: "timer", isAvailable: true,
+                     status: studyLog.isRunning ? "Studying" : "Ready",
+                     detail: "\(StudyTime.short(studyLog.studiedToday(at: Date()))) today")
         ], path: $path) { route in
             switch route {
             case .squats:
@@ -42,6 +47,8 @@ struct HubRootView: View {
                 LiftLogView(store: liftLog)
             case .body:
                 BodyLogView(store: bodyLog)
+            case .studyLog:
+                StudyLogView(store: studyLog)
             case .backup:
                 FullBackupView(service: backup)
             }
@@ -50,6 +57,7 @@ struct HubRootView: View {
             await squats.refresh()
             liftLog.load()
             bodyLog.load()
+            studyLog.load()
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await squats.refresh() } }

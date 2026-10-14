@@ -75,4 +75,42 @@ import XCTest
         XCTAssertTrue(reopened.naturalVoiceOn, "The choice is remembered")
         XCTAssertEqual(reopened.naturalSpeaker, 16)
     }
+
+    func testOneVoiceListPicksEitherANaturalSpeakerOrAnIPhoneVoice() throws {
+        let voice = PageVaultNaturalVoice(folder: sandbox.appendingPathComponent("installed"))
+        let narrator = PageVaultNarrator(url: sandbox.appendingPathComponent("book.pdf"), title: "Book",
+                                         pageCount: 1, defaults: UserDefaults(suiteName: suite)!,
+                                         naturalVoice: voice)
+        XCTAssertTrue(narrator.menuNaturalSpeakers.isEmpty, "No natural speakers before a voice is imported")
+        XCTAssertEqual(narrator.voiceChoice, .system(nil))
+
+        try voice.importVoice(from: try makeVoiceFolder())
+        narrator.refreshNaturalInstalled(justImported: true)
+        XCTAssertEqual(narrator.voiceChoice, .natural(PageVaultNaturalVoiceRules.defaultSpeaker),
+                       "A fresh import reads with Heart")
+        XCTAssertEqual(narrator.menuNaturalSpeakers.map(\.id), [PageVaultNaturalVoiceRules.defaultSpeaker])
+
+        narrator.choose(.system("ava"))
+        XCTAssertFalse(narrator.naturalVoiceOn, "Picking an iPhone voice turns the natural voice off")
+        XCTAssertEqual(narrator.voiceChoice, .system("ava"))
+
+        narrator.setNaturalShown(16, true)
+        narrator.choose(.natural(16))
+        XCTAssertEqual(narrator.voiceChoice, .natural(16))
+        XCTAssertEqual(narrator.naturalSpeaker, 16)
+        XCTAssertEqual(narrator.voiceID, "ava", "The iPhone choice is kept for when it is picked again")
+
+        narrator.setNaturalShown(16, false)
+        XCTAssertEqual(narrator.voiceChoice, .system("ava"),
+                       "Taking the reading speaker out of the menu falls back to the iPhone voice")
+        let reopened = PageVaultNarrator(url: sandbox.appendingPathComponent("book.pdf"), title: "Book",
+                                         pageCount: 1, defaults: UserDefaults(suiteName: suite)!,
+                                         naturalVoice: voice)
+        XCTAssertEqual(reopened.menuNaturalSpeakers.map(\.id), [PageVaultNaturalVoiceRules.defaultSpeaker],
+                       "The ticked speakers are remembered")
+
+        voice.remove()
+        narrator.refreshNaturalInstalled()
+        XCTAssertTrue(narrator.menuNaturalSpeakers.isEmpty, "Removing the voice takes its speakers out of the menu")
+    }
 }

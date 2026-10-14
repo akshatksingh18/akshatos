@@ -65,6 +65,20 @@ enum PageVaultReadAloud {
         var quality: Int
     }
 
+    /// Which voice reads: one of the natural (Kokoro) speakers, or an iPhone voice, where nil
+    /// follows the best installed iPhone voice. The speed menu shows exactly one of these ticked.
+    enum VoiceChoice: Hashable {
+        case natural(Int)
+        case system(String?)
+    }
+
+    /// The choice the saved settings describe. A natural voice that is chosen but not installed
+    /// falls back to the iPhone voice, which is what actually reads then.
+    static func voiceChoice(naturalOn: Bool, naturalInstalled: Bool, speaker: Int,
+                            systemVoice: String?) -> VoiceChoice {
+        naturalOn && naturalInstalled ? .natural(speaker) : .system(systemVoice)
+    }
+
     /// The voices the speed menu lists, in the order given. `shown` is Akshat's own choice from the
     /// Choose voices screen; until he makes one (nil), only the Enhanced and Premium voices are
     /// listed, so the phone's long list of basic and novelty voices stays out of the way. The voice

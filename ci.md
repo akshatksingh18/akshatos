@@ -141,7 +141,14 @@ PageVault natural-voice domain assertions (pieces per sentence, carry-over joine
 required files, speed wording) and `PageVaultNaturalVoiceTests` (an incomplete folder refused by
 name, a complete one copied whole and kept out of backup, replaced and removed, and the iPhone voice
 used while none is installed). CI has no Kokoro model, so rendering is a phone check; the build
-now resolves the sherpa-onnx Swift package.
+now resolves the sherpa-onnx Swift package. Local Build 37 registers the **studylog** suite
+(domain: the 3:00 AM day, weeks, idempotent Start/Pause, short taps, clock set back, a block split
+at 3:00 AM including the daylight-saving night, per-day targets, validation and backup round trip;
+`StudyLogPersistenceTests`: a running block surviving a relaunch, backup into another phone and a
+damaged or overlapping backup changing nothing; `StudyLogUITests`: Start, Pause and history),
+extends `FullBackupTests` with the `studyLog` part, and adds PageVault assertions for the Want to
+read order (drag up/down, to bottom, new imports, saved rank, reload) and the one voice list
+(natural menu speakers, single choice, import/remove).
 
 ReelVault's domain, storage and UI suites were removed with the module in Build 33.
 `FullBackupTests` checks that its leftover videos and store are deleted on launch without touching

@@ -41,10 +41,16 @@ after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
 sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
 and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
-of at every redraw, measures the voice's size off the main thread, loads the model when the book
-opens and renders the next page's first sentence ahead of the page turn
-(`pagevault/neural-voice-audit.md`).
+voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
+once instead of at every redraw, measures the voice's size off the main thread, loads the model
+when the book opens and renders the next page's first sentence ahead of the page turn; it passed
+PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
+current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
+it is the next check (`pagevault/neural-voice-audit.md`).
+Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
+real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
+list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
+dragging covers. Not yet built by CI or phone-tested.
 PageVault v1 is accepted through Build 24, and Build 13 is the detailed movement-lifecycle baseline.
 The broader edge-case, refresh/recovery and soak matrix remains open. Updates retain the permanent
 bundle ID `com.akshatksingh18.akshatos` and legacy storage/notification identifiers.
@@ -63,7 +69,7 @@ build skipping, and the server-enforced `main` protection. Green CI is not physi
 App composition, display-only hub, shared styling and the Pushup Reminder feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- A plain hub listing Pushup Reminder, PageVault, Lift Log and Body, with a Backup row
+- A plain hub listing Pushup Reminder, PageVault, Lift Log, Body and Study Log, with a Backup row
   for all of them; every screen uses the same minimal design (neutral dark surfaces, one accent, plain labels).
 - Lift Log starts from an editable split or Empty workout, keeps split edits and an open workout
   linked, and supports search, reorder and today-only removal. It shows every set of the last
@@ -190,7 +196,7 @@ safe.
 
 The AkshatOS build/download/install procedure is in [`cloud-build.md`](cloud-build.md). The broader
 build/signing/refresh/recovery plan is in `CLAUDE.md`. The selected package is one native hub for
-Pushups, PageVault, Lift Log, and Body plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
+Pushups, PageVault, Lift Log, Body and Study Log plus standalone WHOOP (two slots), detailed in `hub-plan.md`.
 The current target is AkshatOS; old downloaded standalone smoke files are not hub builds. In short:
 
 - source is authored on Windows and a public-repository GitHub Actions macOS/Xcode runner generates

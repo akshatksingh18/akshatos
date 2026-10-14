@@ -37,8 +37,10 @@ locked. On the phone its controls work but Build 31's voice sounded robotic and 
 speaks a page as one passage and is installed, but Akshat reports it still sounds robotic.
 Build 33 (installed) fixes Best available's ranking; with Ava (Premium) it reads well except a run-on
 after a closing quote. 0.11.0 (34) gives the voice plain sentence ends and lists only chosen voices
-in the menu; Build 34 is installed and Akshat still finds every system voice robotic, so a neural
-voice is audited in `neural-voice-audit.md` (not built). `features.md` § Read aloud.
+in the menu; Akshat still found every system voice robotic, so he chose Kokoro from
+`neural-voice-audit.md`. Build 36 (installed) adds it as a natural voice (test) run on the phone; he
+finds the samples good. Working source 0.13.0 (37) merges its switch and the iPhone voice list into
+one Voice list and lets the Want to read shelf be ordered by dragging (`features.md`). `features.md` § Read aloud.
 **Removed in Build 29:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
 phone, linking the folder did nothing, and Akshat asked for both to be removed; AkshatOS Build 29
 takes them out (see the laptop-to-phone decision below). PDFs still reach PageVault through the

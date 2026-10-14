@@ -129,6 +129,38 @@ assert(shelves.started.isEmpty && shelves.unstarted.count == 2,
        "Clearing a place moves the book back to Want to read")
 print("PASS: 14 status assertions (default, single Reading book, demotion, shelves, started shelf)")
 
+// Want to read follows Akshat's own order once he drags a cover; unplaced books follow, newest first.
+var queue = PageVaultLibrary()
+for (offset, name) in ["A", "B", "C", "D"].enumerated() {
+    var queued = book(fingerprint: "queue-\(name)", title: name)
+    queued.addedAt = day(offset + 1)
+    try queue.insert(queued)
+}
+func queueID(_ title: String) -> UUID { queue.books.first { $0.title == title }!.id }
+assert(queue.unstarted.map(\.title) == ["D", "C", "B", "A"], "Before any drag the shelf is newest first")
+let firstMove = queue.moveUnstarted(queueID("A"), to: queueID("D"))
+assert(queue.unstarted.map(\.title) == ["A", "D", "C", "B"], "Dragging up lands before the target")
+assert(firstMove.count == 4, "The first drag numbers the whole shelf so its order is kept")
+queue.moveUnstarted(queueID("D"), to: queueID("B"))
+assert(queue.unstarted.map(\.title) == ["A", "C", "B", "D"], "Dragging down lands after the target")
+queue.moveUnstarted(queueID("A"), to: nil)
+assert(queue.unstarted.map(\.title) == ["C", "B", "D", "A"], "Move to bottom sends a book last")
+assert(queue.moveUnstarted(queueID("C"), to: queueID("C")).isEmpty, "Dropping a book on itself changes nothing")
+assert(queue.moveUnstarted(UUID(), to: queueID("C")).isEmpty, "An unknown book cannot move")
+var arrival = book(fingerprint: "queue-E", title: "E")
+arrival.addedAt = day(9)
+try queue.insert(arrival)
+assert(queue.unstarted.map(\.title) == ["C", "B", "D", "A", "E"], "A new import waits at the end until placed")
+queue.setPlace(page: 3, for: queueID("B"), at: day(10))
+assert(queue.unstarted.map(\.title) == ["C", "D", "A", "E"] && queue.started.map(\.title) == ["B"],
+       "A bookmarked book leaves the ordered shelf")
+let rankedBook = try JSONDecoder().decode(PageVaultBook.self,
+                                          from: try JSONEncoder().encode(queue.books.first { $0.title == "C" }!))
+assert(rankedBook.queueRank == 0, "The order is saved with the book")
+let unrankedBook = try JSONDecoder().decode(PageVaultBook.self, from: try JSONEncoder().encode(book(fingerprint: "old")))
+assert(unrankedBook.queueRank == nil, "A record from before ordering existed still loads, unplaced")
+print("PASS: Want to read order assertions (drag up/down, to bottom, new import, saved rank)")
+
 // Records written by earlier builds must keep loading, including ones with fields since removed.
 let legacy = Data("""
 {"id":"5B8C1B16-5F2E-44B6-9A0E-4E3B0F6A11AA","fingerprint":"old","title":"Legacy Book",
@@ -792,3 +824,19 @@ assert(PageVaultNaturalVoiceRules.speedSummary(audio: 12, render: 2, firstPiece:
 assert(PageVaultNaturalVoiceRules.speedSummary(audio: 5, render: 10, firstPiece: 3).contains("too slow"))
 assert(PageVaultNaturalVoiceRules.speedSummary(audio: 0, render: 1, firstPiece: 0) == "The test produced no audio.")
 print("PASS: natural voice assertions (pieces, carry-over, speakers, import check, speed summary)")
+
+// One voice list: natural speakers and iPhone voices share the speed menu, with one tick.
+assert(PageVaultNaturalVoiceRules.menuSpeakers(shown: nil, selected: nil).map(\.id) == [3],
+       "Until Akshat ticks any, the menu offers Heart")
+assert(PageVaultNaturalVoiceRules.menuSpeakers(shown: [16, 0], selected: nil).map(\.id) == [0, 16],
+       "Ticked speakers are listed in Kokoro's order")
+assert(PageVaultNaturalVoiceRules.menuSpeakers(shown: [0], selected: 20).map(\.id) == [0, 20],
+       "The speaker reading is always listed")
+assert(PageVaultNaturalVoiceRules.menuSpeakers(shown: [], selected: nil).isEmpty)
+assert(PageVaultNaturalVoiceRules.menuLabel(PageVaultNaturalVoiceRules.speaker(3)!) == "Heart · natural")
+assert(PageVaultReadAloud.voiceChoice(naturalOn: true, naturalInstalled: true, speaker: 5, systemVoice: "ava") == .natural(5),
+       "With the natural voice on, only its speaker is ticked")
+assert(PageVaultReadAloud.voiceChoice(naturalOn: false, naturalInstalled: true, speaker: 5, systemVoice: "ava") == .system("ava"))
+assert(PageVaultReadAloud.voiceChoice(naturalOn: true, naturalInstalled: false, speaker: 5, systemVoice: nil) == .system(nil),
+       "Chosen but not installed: the iPhone voice is what reads, so it is what is ticked")
+print("PASS: one voice list assertions (natural menu speakers, labels, single choice)")

@@ -22,6 +22,7 @@ import PDFKit
         static let shownVoices = "pagevault.readAloud.shownVoices"
         static let natural = "pagevault.readAloud.natural"
         static let naturalSpeaker = "pagevault.readAloud.naturalSpeaker"
+        static let shownNaturalSpeakers = "pagevault.readAloud.shownNaturalSpeakers"
     }
 
     @Published private(set) var state: State = .stopped
@@ -64,6 +65,11 @@ import PDFKit
             restartSentence()
         }
     }
+    /// The natural speakers Akshat ticked for the speed menu, or nil until he ticks any.
+    @Published private(set) var shownNaturalSpeakers: Set<Int>?
+    /// Whether a natural voice is imported. Kept here rather than asked at every redraw, and
+    /// refreshed when the Voices screen imports or removes one.
+    @Published private(set) var naturalInstalled: Bool
 
     /// Asked to show a page when reading moves onto it.
     var onPageTurn: ((Int) -> Void)?
@@ -90,6 +96,8 @@ import PDFKit
     /// The one utterance whose end should move reading on. Anything else finishing — a passage
     /// cut short by skip, stop or a speed change — is ignored.
     private var current: AVSpeechUtterance?
+    /// Set while one choice changes several settings, so reading restarts once, not per setting.
+    private var holdingRestart = false
     private var commands: [(MPRemoteCommand, Any)] = []
     private var interruption: NSObjectProtocol?
     private var voicesChanged: NSObjectProtocol?
@@ -110,6 +118,8 @@ import PDFKit
         speed = Self.speeds.contains(saved) ? saved : 1
         voiceID = defaults.string(forKey: Keys.voice)
         shownVoiceIDs = (defaults.array(forKey: Keys.shownVoices) as? [String]).map(Set.init)
+        shownNaturalSpeakers = (defaults.array(forKey: Keys.shownNaturalSpeakers) as? [Int]).map(Set.init)
+        naturalInstalled = naturalVoice.isInstalled
         // The synthesizer belongs to this reader alone, not the process; see check-boundaries.py.
         synthesizer.delegate = relay
         relay.finished = { [weak self] utterance in
@@ -292,6 +302,60 @@ import PDFKit
         if !shown, voiceID == id { voiceID = nil }
     }
 
+    // MARK: - The one voice choice
+
+    /// What the speed menu ticks: a natural speaker or an iPhone voice, never both.
+    var voiceChoice: PageVaultReadAloud.VoiceChoice {
+        PageVaultReadAloud.voiceChoice(naturalOn: naturalVoiceOn, naturalInstalled: naturalInstalled,
+                                       speaker: naturalSpeaker, systemVoice: voiceID)
+    }
+
+    /// Picks the voice that reads. A natural speaker turns the natural voice on; an iPhone voice
+    /// turns it off. Reading carries on from the sentence it was on, restarted once.
+    func choose(_ choice: PageVaultReadAloud.VoiceChoice) {
+        guard choice != voiceChoice else { return }
+        holdingRestart = true
+        switch choice {
+        case .natural(let speaker):
+            naturalSpeaker = speaker
+            naturalVoiceOn = true
+        case .system(let id):
+            voiceID = id
+            naturalVoiceOn = false
+        }
+        holdingRestart = false
+        restartSentence()
+    }
+
+    /// The natural speakers in the speed menu; none while no natural voice is imported.
+    var menuNaturalSpeakers: [PageVaultNaturalVoiceRules.Speaker] {
+        guard naturalInstalled else { return [] }
+        return PageVaultNaturalVoiceRules.menuSpeakers(shown: shownNaturalSpeakers,
+                                                       selected: naturalVoiceOn ? naturalSpeaker : nil)
+    }
+
+    func isNaturalShown(_ id: Int) -> Bool { menuNaturalSpeakers.contains { $0.id == id } }
+
+    /// Ticks a natural speaker into the speed menu or out of it. Taking out the one reading switches
+    /// reading to the iPhone voice, as taking out an iPhone voice falls back to the best one.
+    func setNaturalShown(_ id: Int, _ shown: Bool) {
+        var ids = Set(menuNaturalSpeakers.map(\.id))
+        if shown { ids.insert(id) } else { ids.remove(id) }
+        shownNaturalSpeakers = ids
+        defaults.set(Array(ids).sorted(), forKey: Keys.shownNaturalSpeakers)
+        if !shown, naturalVoiceOn, naturalSpeaker == id { choose(.system(voiceID)) }
+    }
+
+    /// Re-reads whether a natural voice is imported, after the Voices screen imports or removes one.
+    /// A fresh import starts reading with it, which is why it was imported.
+    func refreshNaturalInstalled(justImported: Bool = false) {
+        naturalInstalled = naturalVoice.isInstalled
+        if justImported, naturalInstalled {
+            choose(.natural(naturalSpeaker))
+            naturalVoice.warmUp()
+        }
+    }
+
     private var voice: AVSpeechSynthesisVoice? {
         if let voiceID, let chosen = AVSpeechSynthesisVoice(identifier: voiceID) { return chosen }
         let code = AVSpeechSynthesisVoice.currentLanguageCode()
@@ -396,7 +460,7 @@ import PDFKit
 
     /// Starts again from the sentence being read, as after a speed or voice change.
     private func restartSentence() {
-        guard state == .playing else { return }
+        guard state == .playing, !holdingRestart else { return }
         cancelSpeech()
         speakCurrent()
     }

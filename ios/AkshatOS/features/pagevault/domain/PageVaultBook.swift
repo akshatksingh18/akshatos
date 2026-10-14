@@ -22,6 +22,9 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
     var statusChangedAt: Date? = nil
     /// Highlighted passages. Stored on the book so they travel with an export and are removed with it.
     var highlights: [PageVaultHighlight] = []
+    /// Place in Akshat's own Want to read order (0 first), set by dragging. Nil until he orders the
+    /// shelf; such books follow the ordered ones, newest first.
+    var queueRank: Int? = nil
 
     init(id: UUID = UUID(), fingerprint: String, title: String, pageCount: Int, byteCount: Int64,
          addedAt: Date, lastOpenedAt: Date? = nil, currentPage: Int = 0, placeSetAt: Date? = nil,
@@ -41,7 +44,7 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case id, fingerprint, title, pageCount, byteCount, addedAt, lastOpenedAt, currentPage
-        case placeSetAt, status, statusChangedAt, highlights
+        case placeSetAt, status, statusChangedAt, highlights, queueRank
     }
 
     /// Decoded field by field rather than by the synthesized initializer, which ignores property
@@ -62,6 +65,7 @@ struct PageVaultBook: Codable, Identifiable, Equatable {
             ?? .wantToRead
         statusChangedAt = try container.decodeIfPresent(Date.self, forKey: .statusChangedAt)
         highlights = try container.decodeIfPresent([PageVaultHighlight].self, forKey: .highlights) ?? []
+        queueRank = try container.decodeIfPresent(Int.self, forKey: .queueRank)
     }
 
     /// A persisted page can outlive the page count it was valid for, so every read clamps.
@@ -214,8 +218,34 @@ struct PageVaultLibrary: Codable, Equatable {
                       > ($1.highlights.map(\.createdAt).max() ?? $1.addedAt) }
     }
 
-    /// Want to Read books that have never been bookmarked.
-    var unstarted: [PageVaultBook] { recent.filter { $0.status == .wantToRead && !$0.hasPlace } }
+    /// Want to Read books that have never been bookmarked, in Akshat's order: the ones he has placed
+    /// by rank, then any he has not placed yet (a new import, say), newest first.
+    var unstarted: [PageVaultBook] {
+        let shelf = recent.filter { $0.status == .wantToRead && !$0.hasPlace }
+        let placed = shelf.filter { $0.queueRank != nil }
+            .sorted { ($0.queueRank ?? 0, $0.addedAt) < ($1.queueRank ?? 0, $1.addedAt) }
+        return placed + shelf.filter { $0.queueRank == nil }
+    }
+
+    /// Moves a Want to read book to where `target` stands on that shelf (after it when moving down,
+    /// before it when moving up, like any drag), or to the end when `target` is nil, then numbers the
+    /// whole shelf in its new order. Returns every book whose rank changed so callers can persist them.
+    @discardableResult
+    mutating func moveUnstarted(_ id: UUID, to target: UUID?) -> [PageVaultBook] {
+        var order = unstarted.map(\.id)
+        guard let from = order.firstIndex(of: id), id != target else { return [] }
+        let to = target.flatMap { order.firstIndex(of: $0) } ?? order.count - 1
+        order.remove(at: from)
+        order.insert(id, at: min(to, order.count))
+        var changed: [PageVaultBook] = []
+        for (rank, bookID) in order.enumerated() {
+            guard let index = books.firstIndex(where: { $0.id == bookID }),
+                  books[index].queueRank != rank else { continue }
+            books[index].queueRank = rank
+            changed.append(books[index])
+        }
+        return changed
+    }
 
     func existing(fingerprint: String) -> PageVaultBook? {
         books.first { $0.fingerprint == fingerprint }

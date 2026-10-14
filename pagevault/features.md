@@ -45,6 +45,11 @@ font resizing. The page image itself is never re-laid out.
   books are still Want to Read. Progress reflects your bookmarked place, not
   the last page you happened to look at, so browsing never moves the bar. Books with no bookmark
   read as "Not started". Thumbnails are a disposable cache; metadata and the copied PDF are durable.
+- **Want to read order (from 0.13.0 (37)):** hold a cover on the Want to read shelf and drag it onto
+  another to put it in that place (after it when moving down, before it when moving up); the menu
+  also has Move to top and Move to bottom. The order is saved on each book and travels in exports.
+  Until Akshat moves a book the shelf is newest first, and a new import waits at the end. Only Want
+  to read is ordered; the other shelves keep their own order.
 - **Reading status:** every book has exactly one status — Want to Read, Reading, or Finished. New
   imports default to Want to Read. **Bookmarking a page claims that book as the one being read**, so
   the common case needs no explicit action: if you are bookmarking it, you are reading it. Status can
@@ -208,8 +213,9 @@ Build 33 (installed) fixes the automatic voice ranking. With Ava (Premium) Aksha
 well except running on after a sentence ending in a closing quote; working source 0.11.0 (34)
 fixes that and shortens the voice menu (both bullets below); Build 34 is installed, and Akshat still finds the system voices robotic
 (neural options: `neural-voice-audit.md`). He chose Kokoro; working source 0.12.0 (35) adds it as a
-**natural voice (test)** (last bullet); Build 35 passed CI but was never installed, and 0.12.1 (36)
-fixes the slow speed menu and Choose voices… screen and the pause at page turns.
+**natural voice (test)** (last bullet); Build 35 was never installed, and Build 36 (0.12.1), in
+`testing/` and installed, fixes the slow speed menu and Choose voices… screen and the pause at page
+turns.
 
 - A headphones button in the reader starts reading at the top of the page on screen. A bar appears
   above the page number with back a sentence, play/pause, forward a sentence, speed and voice, and
@@ -250,8 +256,11 @@ fixes the slow speed menu and Choose voices… screen and the pause at page turn
 - **Natural voice (test, from 0.12.0 (35)).** Choose voices… has a Natural voice section: import the
   unpacked Kokoro folder (`kokoro-int8-multi-lang-v1_0`, about 180 MB; its model file is
   `model.int8.onnx`, and a full `model.onnx` is accepted too) from Files once,
-  pick one of its 28 English speakers (Heart by default), play a sample, run a speed test, or remove
-  it. With **Read with the natural voice** on (also a switch in the speed menu), Kokoro reads on the
+  tick its 28 English speakers into the speed menu (Heart until others are ticked), play a sample of
+  each, run a speed test, or remove it. From 0.13.0 (37) the speed menu has **one Voice list with one
+  tick**: the ticked natural speakers ("Heart · natural"), then the chosen iPhone voices, then Best
+  iPhone voice; picking a natural speaker is what turns Kokoro on, and a fresh import starts reading
+  with Heart. Kokoro reads on the
   phone, offline, sentence by sentence, with the same tint, skip, page turns, speed and lock screen.
   It uses more battery than the iPhone voices. Without an imported voice the iPhone voice reads.
   `neural-voice-audit.md` owns the design and what the test must show.

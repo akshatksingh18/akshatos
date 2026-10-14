@@ -21,7 +21,7 @@ old Upper day is now two days), adds **Add exercise** during any workout and an 
 and keeps each workout's split name in history; it shipped in Build 31, which Akshat installed and
 reports working on the phone. Build 34 (0.11.0, PR #63) makes workouts flexible (see **Flexible workouts** below); it passed
 CI and local validation and is installed with current-version refresh enrollment; its focused
-phone checks remain open in `todo.md`. Build 36 (PR #65, the read-aloud speed fix) is the hub's testing candidate and does
+phone checks remain open in `todo.md`. Build 36 (PR #65 at `5826e40`, the read-aloud speed fix) is the hub's installed testing candidate in `testing/` and does
 not replace those Lift Log acceptance gates. Build 33 adds the **Weight loaded** mode, moving
 the starting seated calf raise to it, and a **"Still working out?" reminder** an hour after the
 last thing logged; its CI, IPA validation and installation passed, while the focused phone pass

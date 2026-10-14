@@ -263,6 +263,7 @@ struct PageVaultRestorePlan: Equatable {
                 book.currentPage = match.backup.currentPage
                 book.placeSetAt = match.backup.placeSetAt
                 book.lastOpenedAt = match.backup.lastOpenedAt
+                book.queueRank = match.backup.queueRank
                 // Reading is claimed below through the library, which keeps the single-Reading rule.
                 if match.backup.status != .reading {
                     book.status = match.backup.status

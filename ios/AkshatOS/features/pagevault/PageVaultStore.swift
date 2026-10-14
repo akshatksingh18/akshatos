@@ -268,6 +268,11 @@ import SwiftUI
         return true
     }
 
+    /// Drag on the Want to read shelf: `book` takes `target`'s place, or the last place when nil.
+    func moveWantToRead(_ book: UUID, to target: UUID?) {
+        for updated in library.moveUnstarted(book, to: target) { persist(updated) }
+    }
+
     func book(id: UUID) -> PageVaultBook? {
         library.books.first { $0.id == id }
     }

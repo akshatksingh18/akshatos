@@ -10,6 +10,7 @@ struct AkshatOSApp: App {
                         pageVault: delegate.services.pageVault,
                         liftLog: delegate.services.liftLog,
                         bodyLog: delegate.services.bodyLog,
+                        studyLog: delegate.services.studyLog,
                         backup: delegate.services.backup,
                         navigator: delegate.services.navigator,
                         orientation: delegate.services.orientation)
@@ -27,6 +28,7 @@ struct AkshatOSApp: App {
     let pageVault: PageVaultStore
     let liftLog: LiftLogStore
     let bodyLog: BodyLogStore
+    let studyLog: StudyLogStore
     let backup: FullBackupService
     let notifications: AppNotificationCoordinator
     /// App-lifetime, like the stores: a notification can be tapped before any hub screen exists,
@@ -42,9 +44,10 @@ struct AkshatOSApp: App {
         pageVault = PageVaultStore()
         liftLog = LiftLogStore()
         bodyLog = BodyLogStore()
+        studyLog = StudyLogStore()
         // Every module takes part in the full backup, in hub order. check-backup-coverage.py fails
         // CI if a module in features/ is missing from this list.
-        backup = FullBackupService(parts: [squats, pageVault, liftLog, bodyLog])
+        backup = FullBackupService(parts: [squats, pageVault, liftLog, bodyLog, studyLog])
         notifications = AppNotificationCoordinator(squats: squats, liftLog: liftLog, navigator: navigator)
     }
 }
