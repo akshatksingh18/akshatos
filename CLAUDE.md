@@ -4,7 +4,8 @@ Personal native iPhone hub: the home screen selects a feature, starting with Pus
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
-weekly-measurement and progress-photo module, owned by `body-log.md`; WHOOP stays standalone.
+weekly-measurement and progress-photo module, owned by `body-log.md`; Study Log is the local-only
+study timer and record, owned by `study-log.md`; WHOOP stays standalone.
 ReelVault, a feed of Akshat's own videos, shipped in Build 32 and is removed from Build 33 at his
 request, with its folder and source. Everything for
 the hub lives in this one folder and repository. The hub's **Backup** screen backs up or restores
@@ -42,10 +43,16 @@ after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
 sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
 and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
-of at every redraw, measures the voice's size off the main thread, loads the model when the book
-opens and renders the next page's first sentence ahead of the page turn
-(`pagevault/neural-voice-audit.md`).
+voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
+once instead of at every redraw, measures the voice's size off the main thread, loads the model
+when the book opens and renders the next page's first sentence ahead of the page turn; it passed
+PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
+current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
+it is the next check (`pagevault/neural-voice-audit.md`).
+Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
+real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
+list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
+dragging covers. Not yet built by CI or phone-tested.
 PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
 baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
 `cloud-build.md` owns per-build evidence and `todo.md` owns open gates.
@@ -59,6 +66,15 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   and acceptance gates; read before changing the strength logger.
 - `body-log.md` — Body module product contract (weigh-ins, the eight tape sites, estimates, photos,
   reminder, backup/CSV), privacy boundary, source layout and acceptance gates; read before changing it.
+- `study-log.md` — Study Log module contract: a countdown study timer that records real study time,
+  replacing the Windows Clock countdown Akshat uses; decisions, builds, data rules and gates. Read
+  before changing it.
+- `ios/AkshatOS/features/studylog/` — Study Log: `domain/StudyLog.swift` (blocks, the 3:00 AM day,
+  totals, validation, backup), `data/` (SwiftData store), `StudyLogStore.swift`,
+  `StudyLogBackupPart.swift` and `ui/` (Today, history, export document).
+- `ios/tests/studylog/main.swift`, `ios/UnitTests/StudyLogPersistenceTests.swift`, and
+  `ios/UITests/StudyLogUITests.swift` — registered Study Log domain, persistence/backup and
+  navigation coverage.
 - `ios/AkshatOS/features/body/` — Body module: `domain/BodyLog.swift`, `data/` (SwiftData store and
   photo files), `services/BodyReminderService.swift`, `BodyLogStore.swift`, and `ui/`.
 - `ios/tests/body/main.swift`, `ios/UnitTests/BodyLogPersistenceTests.swift`, and
@@ -113,8 +129,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 35 (the PageVault natural voice test), not
-  installed; Build 36 replaces it once built. Build 34 is on the phone.
+  31 is the accepted copy and `testing\` holds Build 36 (the natural voice test with the
+  read-aloud speed fix), installed and enrolled, pending its phone pass.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -165,7 +181,7 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 - `ios/AkshatOS/shared/backup/HubBackupPart.swift` — the protocol every module implements to join the
   full backup; `hub-plan.md` § Full backup owns the contract and the add-a-module steps.
 - `ios/AkshatOS/features/*/<Module>BackupPart.swift` (`SquatsBackupPart`, `PageVaultBackupPart`,
-  `LiftLogBackupPart`, `BodyBackupPart`) — each module's conformance, reusing its own backup.
+  `LiftLogBackupPart`, `BodyBackupPart`, `StudyLogBackupPart`) — each module's conformance, reusing its own backup.
 - `ios/scripts/check-backup-coverage.py` — fails CI when a `features/` module has no `HubBackupPart`
   or is missing from `FullBackupService(parts:)` in `AppServices`; has its own negative fixtures.
 - `ios/UnitTests/FullBackupTests.swift` — every module backed up by one phone and restored into a
@@ -474,7 +490,7 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 
 ### Accepted free-account app-slot portfolio
 
-- Install one native hub for Pushups, PageVault, Lift Log, and Body, plus standalone WHOOP: two free slots.
+- Install one native hub for Pushups, PageVault, Lift Log, Body and Study Log, plus standalone WHOOP: two free slots.
   One slot remains unallocated. No paid membership, rotation, on-device app launcher, or extra
   installation identity per module is required. Packaging is accepted; implementation is pending.
 - The hub's notification/geofence handlers belong to the application lifecycle, not the Pushups

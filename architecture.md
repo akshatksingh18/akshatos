@@ -26,10 +26,16 @@ after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
 sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
 and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
-of at every redraw, measures the voice's size off the main thread, loads the model when the book
-opens and renders the next page's first sentence ahead of the page turn
-(`pagevault/neural-voice-audit.md`).
+voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
+once instead of at every redraw, measures the voice's size off the main thread, loads the model
+when the book opens and renders the next page's first sentence ahead of the page turn; it passed
+PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
+current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
+it is the next check (`pagevault/neural-voice-audit.md`).
+Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
+real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
+list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
+dragging covers. Not yet built by CI or phone-tested.
 Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
 Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
 PageVault's technical plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.

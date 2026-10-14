@@ -43,6 +43,7 @@ import XCTest
         let pageVault: PageVaultStore
         let liftLog: LiftLogStore
         let body: BodyLogStore
+        let studyLog: StudyLogStore
         let backup: FullBackupService
     }
 
@@ -103,10 +104,16 @@ import XCTest
             photos: try BodyPhotoStorage(root: root.appendingPathComponent("Photos")),
             reminders: SilentBodyReminders(), defaults: defaults, now: { clock }, calendar: calendar)
         body.load()
-        let backup = FullBackupService(parts: [squats, pageVault, liftLog, body],
+        let studyLog = StudyLogStore(
+            repository: SwiftDataStudyLogRepository(
+                container: try container(StudyLogSchemaV1.self, StudyLogMigration.self, name: "\(name)-studylog")),
+            defaults: defaults, now: { clock }, calendar: calendar)
+        studyLog.load()
+        let backup = FullBackupService(parts: [squats, pageVault, liftLog, body, studyLog],
                                        now: { clock }, calendar: calendar, appVersion: "test",
                                        scratch: root.appendingPathComponent("Outgoing"))
-        return Phone(squats: squats, pageVault: pageVault, liftLog: liftLog, body: body, backup: backup)
+        return Phone(squats: squats, pageVault: pageVault, liftLog: liftLog, body: body, studyLog: studyLog,
+                     backup: backup)
     }
 
     private func finishedDay(sets: Int) -> SquatSession {
@@ -153,6 +160,9 @@ import XCTest
         await phone.pageVault.importBook(from: try makePDF(pages: 12, title: "Alpha"))
         let alpha = try XCTUnwrap(phone.pageVault.books.first)
         phone.pageVault.setPlace(alpha, page: 5)
+        // The clock is fixed, so this block is the one running at backup time.
+        phone.studyLog.start()
+        XCTAssertTrue(phone.studyLog.isRunning)
         XCTAssertNil(phone.liftLog.message)
         XCTAssertNil(phone.body.message)
         XCTAssertNil(phone.pageVault.message)
@@ -166,8 +176,9 @@ import XCTest
         XCTAssertTrue(folder.lastPathComponent.hasPrefix("AkshatOS Backup 2026-09-19"))
         let manifest = try AkshatOSBackupManifest.decode(
             Data(contentsOf: folder.appendingPathComponent(AkshatOSBackupManifest.fileName)))
-        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "pageVault", "liftLog", "body"])
-        XCTAssertEqual(manifest.parts.map(\.path), ["pushups.json", "pagevault", "lift-log.json", "body"])
+        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "pageVault", "liftLog", "body", "studyLog"])
+        XCTAssertEqual(manifest.parts.map(\.path), ["pushups.json", "pagevault", "lift-log.json", "body",
+                                                    "study-log.json"])
         for part in manifest.parts {
             XCTAssertTrue(FileManager.default.fileExists(atPath: folder.appendingPathComponent(part.path).path),
                           "\(part.title) is in the folder")
@@ -175,9 +186,9 @@ import XCTest
 
         let fresh = try await makePhone("PhoneB")
         let prepared = try await fresh.backup.prepareRestore(from: folder)
-        XCTAssertEqual(prepared.titles, ["Pushups", "PageVault", "Lift Log", "Body"])
+        XCTAssertEqual(prepared.titles, ["Pushups", "PageVault", "Lift Log", "Body", "Study Log"])
         let summary = await fresh.backup.restore(prepared)
-        XCTAssertTrue(summary.hasPrefix("Restored: Pushups, PageVault, Lift Log, Body."), summary)
+        XCTAssertTrue(summary.hasPrefix("Restored: Pushups, PageVault, Lift Log, Body, Study Log."), summary)
         XCTAssertFalse(summary.contains("Not restored"), summary)
         XCTAssertTrue(summary.contains("resume any open day"), "A module's note follows the summary")
         XCTAssertNil(fresh.squats.notice, "The summary replaces the module's own alert")
@@ -190,6 +201,9 @@ import XCTest
         XCTAssertEqual(fresh.body.heightInches, 70, "Height comes back with Body")
         XCTAssertEqual(fresh.pageVault.books.map(\.title), ["Alpha"], "PageVault books come back with their PDF")
         XCTAssertEqual(fresh.pageVault.books.first?.openingPage, 5)
+        XCTAssertTrue(fresh.studyLog.isRunning, "Study Log comes back, with its running block")
+        XCTAssertEqual(fresh.studyLog.log.segments.count, 1)
+        XCTAssertNil(fresh.studyLog.message, "The hub's summary replaces Study Log's own restore message")
         XCTAssertNil(fresh.body.message, "The hub's summary replaces each module's own restore message")
 
         original.backup.finishExport()
@@ -241,7 +255,8 @@ import XCTest
         let folder = try await phone.backup.prepareExport()
         let manifest = try AkshatOSBackupManifest.decode(
             Data(contentsOf: folder.appendingPathComponent(AkshatOSBackupManifest.fileName)))
-        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "liftLog", "body"], "An empty PageVault has nothing to export")
+        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "liftLog", "body", "studyLog"],
+                       "An empty PageVault has nothing to export")
 
         try FileManager.default.removeItem(at: folder.appendingPathComponent("body"))
         do {

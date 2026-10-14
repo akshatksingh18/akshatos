@@ -242,6 +242,25 @@ import XCTest
                        "The previous Reading book is demoted, not finished")
     }
 
+    func testWantToReadOrderSurvivesReload() async throws {
+        let container = try makeContainer()
+        let store = try makeStore(container: container)
+        await store.load()
+        for title in ["Alpha", "Beta", "Gamma"] {
+            await store.importBook(from: try makePDF(pages: 4, title: title))
+        }
+        let shelf = store.unstartedBooks
+        XCTAssertEqual(shelf.count, 3)
+        let last = try XCTUnwrap(shelf.last)
+        store.moveWantToRead(last.id, to: shelf.first?.id)
+        let ordered = store.unstartedBooks.map(\.title)
+        XCTAssertEqual(ordered.first, last.title, "The dragged book takes the first place")
+
+        let reopened = try makeStore(container: container)
+        await reopened.load()
+        XCTAssertEqual(reopened.unstartedBooks.map(\.title), ordered, "The order is saved, not kept in memory")
+    }
+
     func testBookmarkingReplacesThePreviousPlace() async throws {
         let container = try makeContainer()
         let store = try makeStore(container: container)

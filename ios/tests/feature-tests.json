@@ -65,5 +65,17 @@
     "ui_tests": [
       "UITests/LiftLogUITests.swift"
     ]
+  },
+  "studylog": {
+    "domain_sources": [
+      "AkshatOS/features/studylog/domain/StudyLog.swift"
+    ],
+    "domain_test": "tests/studylog/main.swift",
+    "integration_tests": [
+      "UnitTests/StudyLogPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/StudyLogUITests.swift"
+    ]
   }
 }

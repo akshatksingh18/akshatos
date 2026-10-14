@@ -30,10 +30,16 @@ after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
 sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
 and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
-of at every redraw, measures the voice's size off the main thread, loads the model when the book
-opens and renders the next page's first sentence ahead of the page turn
-(`pagevault/neural-voice-audit.md`).
+voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
+once instead of at every redraw, measures the voice's size off the main thread, loads the model
+when the book opens and renders the next page's first sentence ahead of the page turn; it passed
+PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
+current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
+it is the next check (`pagevault/neural-voice-audit.md`).
+Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
+real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
+list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
+dragging covers. Not yet built by CI or phone-tested.
 Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
 replaces it. Detailed build history belongs in `cloud-build.md`.
 
@@ -114,6 +120,16 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ### Open
 
+- [ ] **Phone-check 0.13.0 (37) once built.** (1) Speed menu: one Voice list, one tick; picking a
+      natural speaker reads with Kokoro, picking an iPhone voice switches back; Choose voices…
+      ticks natural speakers into the menu and plays their samples. (2) PageVault: hold a Want to
+      read cover and drag it onto another; Move to top/bottom; the order survives relaunch.
+      (3) Study Log Build 1: a real study block with Pause/Resume, the countdown and studied time,
+      force-quit while running and reopen (time kept), the week view and a day's blocks, a day
+      rollover at 3:00 AM, and its backup in the hub's Back up everything.
+- [ ] **Study Log Build 2 (planned).** The repeating "Still studying?" nudge with Keep going,
+      Pause and I stopped earlier, the open-app check, add/edit/delete blocks, editable target and
+      marks, optional notes and CSV export (`study-log.md` § Builds).
 - [ ] **Test the natural voice (Build 36).** Akshat chose Kokoro after listening.
       The unpacked voice is already in OneDrive at `Backups\AkshatOS Voice\kokoro-int8-multi-lang-v1_0`
       (182 MB, from sherpa-onnx's `tts-models` release; outside both backup-sync pairs, so the sync

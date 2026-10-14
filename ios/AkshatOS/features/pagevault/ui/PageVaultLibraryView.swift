@@ -9,6 +9,8 @@ struct PageVaultLibraryView: View {
     @State private var showBackup = false
     @State private var pendingRemoval: PageVaultBook?
     @State private var detail: PageVaultBook?
+    /// The cover a dragged book is hovering over, outlined so the drop place is clear.
+    @State private var dropTarget: UUID?
 
     private let columns = [GridItem(.adaptive(minimum: 104), spacing: 16)]
 
@@ -22,7 +24,7 @@ struct PageVaultLibraryView: View {
                     continueReading
                     // Half-read books get their own shelf rather than sitting among unopened ones.
                     shelf("In progress", books: store.startedBooks)
-                    shelf("Want to read", books: store.unstartedBooks)
+                    shelf("Want to read", books: store.unstartedBooks, reorderable: true)
                     shelf("Finished", books: store.books(with: .finished))
                 }
                 if let summary = store.lastImportSummary {
@@ -148,7 +150,10 @@ struct PageVaultLibraryView: View {
         }
     }
 
-    @ViewBuilder private func shelf(_ title: String, books: [PageVaultBook]) -> some View {
+    /// A shelf of covers. Want to read is `reorderable`: hold a cover and drag it onto another to put
+    /// it in that place, so the shelf reads in Akshat's order of what to read next.
+    @ViewBuilder private func shelf(_ title: String, books: [PageVaultBook],
+                                    reorderable: Bool = false) -> some View {
         if !books.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -157,27 +162,54 @@ struct PageVaultLibraryView: View {
                     Text("\(books.count)").font(.subheadline.monospacedDigit())
                         .foregroundStyle(Palette.muted)
                 }
+                if reorderable && books.count > 1 {
+                    Text("Hold a cover and drag it to change the order.")
+                        .font(.caption).foregroundStyle(Palette.muted)
+                }
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
                     ForEach(books) { book in
-                        NavigationLink { reader(for: book) } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                PageVaultCoverView(url: store.coverURL(for: book),
-                                                   revision: store.coverRevision)
-                                    .frame(height: 138)
-                                Text(book.title).font(.caption.weight(.semibold)).lineLimit(2)
-                                Text(book.progressLabel)
-                                    .font(.caption2.monospacedDigit()).foregroundStyle(Palette.muted)
-                            }
-                            .padding(10)
-                            .background(Palette.card, in: RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.06)))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("open-book-\(book.id.uuidString)")
-                        .contextMenu { menu(for: book) }
+                        tile(for: book, reorderable: reorderable, shelf: books)
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder private func tile(for book: PageVaultBook, reorderable: Bool,
+                                   shelf books: [PageVaultBook]) -> some View {
+        let link = NavigationLink { reader(for: book) } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                PageVaultCoverView(url: store.coverURL(for: book), revision: store.coverRevision)
+                    .frame(height: 138)
+                Text(book.title).font(.caption.weight(.semibold)).lineLimit(2)
+                Text(book.progressLabel)
+                    .font(.caption2.monospacedDigit()).foregroundStyle(Palette.muted)
+            }
+            .padding(10)
+            .background(Palette.card, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12)
+                .stroke(dropTarget == book.id ? Palette.accent : .white.opacity(0.06),
+                        lineWidth: dropTarget == book.id ? 2 : 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("open-book-\(book.id.uuidString)")
+        if reorderable {
+            link
+                .contextMenu { menu(for: book, orderIn: books) }
+                .draggable(book.id.uuidString) {
+                    PageVaultCoverView(url: store.coverURL(for: book), revision: store.coverRevision)
+                        .frame(width: 90, height: 120)
+                }
+                .dropDestination(for: String.self) { items, _ in
+                    guard let moved = items.first.flatMap(UUID.init(uuidString:)) else { return false }
+                    dropTarget = nil
+                    store.moveWantToRead(moved, to: book.id)
+                    return true
+                } isTargeted: { over in
+                    if over { dropTarget = book.id } else if dropTarget == book.id { dropTarget = nil }
+                }
+        } else {
+            link.contextMenu { menu(for: book) }
         }
     }
 
@@ -185,8 +217,16 @@ struct PageVaultLibraryView: View {
         store.books.reduce(0) { $0 + $1.highlights.count }
     }
 
-    @ViewBuilder private func menu(for book: PageVaultBook) -> some View {
+    @ViewBuilder private func menu(for book: PageVaultBook, orderIn shelf: [PageVaultBook] = []) -> some View {
         Button("Book details") { detail = book }
+        if shelf.count > 1 {
+            if shelf.first?.id != book.id {
+                Button("Move to top") { store.moveWantToRead(book.id, to: shelf.first?.id) }
+            }
+            if shelf.last?.id != book.id {
+                Button("Move to bottom") { store.moveWantToRead(book.id, to: nil) }
+            }
+        }
         ForEach(PageVaultReadingStatus.allCases, id: \.self) { status in
             if status != book.status {
                 Button("Mark as \(status.label.lowercased())") {

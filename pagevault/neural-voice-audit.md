@@ -1,7 +1,8 @@
 # Neural read-aloud voice — audit
 
-**Status:** Step 2 (the test build) is working source 0.12.1 (36), after Build 35 (0.12.0, PR #64)
-passed CI but was never installed; not yet phone-tested. Akshat finds every iPhone system voice robotic, including Ava (Premium) on Build 34;
+**Status:** Step 2 (the test build) is Build 36 (0.12.1, PR #65): installed and enrolled; Akshat finds
+the samples good, while reading a book with it, the speed test and battery/heat remain to check. Build 35 (0.12.0, PR #64) was never
+installed. Akshat finds every iPhone system voice robotic, including Ava (Premium) on Build 34;
 after listening to Kokoro demos he found them not robotic at all and asked for the test build and
 then the PageVault integration. This file compares the options, records the choice and the path.
 Sources checked 2026-10-05.
@@ -76,6 +77,25 @@ text clean-up changes. A different-sounding voice means a different engine.
 - **Menus (0.12.1 (36)):** the iPhone's voice list is read once and refreshed only when iOS reports
   a change; Build 34 and 35 asked iOS for it at every redraw (once per voice row on Choose voices…),
   which made the speed menu and that screen hang.
+
+## One voice list (working source 0.13.0 (37), not yet phone-tested)
+
+On Build 36 the speed menu shows a **Natural voice** switch beside the iPhone **Voice** list, so two
+voices look ticked at once (for example Ava · Premium and Natural voice) while only Kokoro is
+heard. Akshat found that confusing. The fix, implemented in 0.13.0 (37)
+(`PageVaultReadAloud.VoiceChoice`, `PageVaultNarrator.choose`):
+
+- One **Voice** list with exactly one tick: the Kokoro speakers Akshat chose (labelled
+  "Heart · natural" and so on) first, then his chosen iPhone voices, then "Best iPhone voice". The
+  separate Natural voice switch goes away; picking a Kokoro speaker turns it on.
+- Choose voices… lists Kokoro speakers with the same tick-to-show and sample buttons as the iPhone
+  voices, under the import, speed test and remove controls.
+- The choice reads as one value (a Kokoro speaker or an iPhone voice) built from the existing saved
+  settings (`natural`, `naturalSpeaker`, `voice`), so nothing changes on update; the ticked speakers
+  are saved as `pagevault.readAloud.shownNaturalSpeakers`. A fresh import starts reading with Heart.
+- Without an imported voice, the Kokoro rows are absent and reading uses the iPhone voice, as now.
+- Once Akshat's book-reading check passes, Kokoro (Heart) becomes the default and the "(test)" label
+  goes.
 
 ## Recommended path
 

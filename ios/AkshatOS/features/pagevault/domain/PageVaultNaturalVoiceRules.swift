@@ -47,6 +47,17 @@ enum PageVaultNaturalVoiceRules {
 
     static func speaker(_ id: Int) -> Speaker? { speakers.first { $0.id == id } }
 
+    /// How a speaker reads in the speed menu, beside the iPhone voices: "Heart · natural".
+    static func menuLabel(_ speaker: Speaker) -> String { "\(speaker.name) · natural" }
+
+    /// The speakers the speed menu lists, in Kokoro's order. `shown` is Akshat's tick list from the
+    /// Choose voices screen; until he ticks any (nil) only Heart is listed. The speaker reading is
+    /// always listed, so the menu never hides what is reading.
+    static func menuSpeakers(shown: Set<Int>?, selected: Int?) -> [Speaker] {
+        let ids = (shown ?? [defaultSpeaker]).union(selected.map { [$0] } ?? [])
+        return speakers.filter { ids.contains($0.id) }
+    }
+
     /// Which required items an imported folder lacks, by name.
     static func missing(from present: Set<String>) -> [String] {
         (modelFile(in: present) == nil ? ["model.int8.onnx"] : []) + requiredItems.filter { !present.contains($0) }

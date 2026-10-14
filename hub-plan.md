@@ -1,7 +1,7 @@
 # AkshatOS — shared integration contract
 
 **Status:** Active shared integration contract for one native AkshatOS hub containing Pushup
-Reminder, PageVault, Lift Log and Body, plus standalone WHOOP. (ReelVault shipped in Build 32 and is
+Reminder, PageVault, Lift Log, Body and Study Log, plus standalone WHOOP. (ReelVault shipped in Build 32 and is
 removed from Build 33.) AkshatOS owns the common
 source, permanent identity, build and full-backup registry. Feature contracts belong in their
 owning documents; build/phone progress belongs in `cloud-build.md`. The contract changes only
@@ -10,7 +10,7 @@ when packaging, lifecycle boundaries, data ownership or shared recovery requirem
 ## Installed applications
 
 - **AkshatOS (accepted hub display name):** one SwiftUI application with Pushup Reminder,
-  PDF Reader/PageVault, Lift Log, and Body sections, one entry point, bundle ID, profile,
+  PDF Reader/PageVault, Lift Log, Body, and Study Log sections, one entry point, bundle ID, profile,
   and IPA.
 - **WHOOP:** its existing Flutter app remains independently built, installed, refreshed, and tested.
   Keep its native BLE restoration, database, and encrypted export/recovery separate from the hub.
@@ -169,13 +169,14 @@ refused as an unknown module (Akshat made no Build 32 backups).
   mover: `akshatos-backup.json` (format `akshatos-full-backup`, version, date, app version, and one
   entry per part: the module's id, name and item) beside each module's own, unchanged backup —
   today `pushups.json`, `pagevault/` (manifest and every PDF; left out when the library is empty),
-  `lift-log.json` and `body/` (records, photos, height and measurement day). A part lifted out of
+  `lift-log.json`, `body/` (records, photos, height and measurement day) and, from 0.13.0 (37),
+  `study-log.json` (Study Log's blocks and settings, id `studyLog`). A part lifted out of
   the folder still restores from inside its own module. A module that cannot be read stops the
   backup rather than leaving a silently incomplete folder.
 - **Restore everything** takes that folder, reads the index, and checks every listed part with the
   module's own validation before anything changes; one missing, damaged or unknown part (from a
   module this build does not have) stops the whole restore. After confirmation each part applies:
-  Pushups, Lift Log and Body are replaced by the backup; PageVault adds missing books and gives the
+  Pushups, Lift Log, Body and Study Log are replaced by the backup; PageVault adds missing books and gives the
   rest the backup's place and status. The result names what was restored and anything that was not.
 - Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
   of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.
@@ -230,7 +231,7 @@ is approved separately and does not depend on it.
 
 Pushup Reminder is AkshatOS's first completed feature and its daily loop is accepted in ongoing phone
 use. PageVault is the activated media module and is phone-accepted through Build 24. Akshat's later
-explicit decisions added Lift Log and Body as narrow local utilities (ReelVault's first version
+explicit decisions added Lift Log, Body and (from 0.13.0 (37)) Study Log as narrow local utilities (ReelVault's first version
 shipped in Build 32 and was removed in Build 33 at Akshat's request). Pushups' open
 physical edge-case, refresh/recovery, and soak items remain owned by `todo.md` and `cloud-build.md`
 and must not be dropped because PageVault started. Source/build ownership and the permanent bundle

@@ -26,10 +26,16 @@ after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
 PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
 sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
 and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Working source 0.12.1 (36) reads the iPhone's voice list once instead
-of at every redraw, measures the voice's size off the main thread, loads the model when the book
-opens and renders the next page's first sentence ahead of the page turn
-(`pagevault/neural-voice-audit.md`).
+voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
+once instead of at every redraw, measures the voice's size off the main thread, loads the model
+when the book opens and renders the next page's first sentence ahead of the page turn; it passed
+PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
+current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
+it is the next check (`pagevault/neural-voice-audit.md`).
+Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
+real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
+list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
+dragging covers. Not yet built by CI or phone-tested.
 Read the linked owning documents for feature contracts, build evidence and open gates.
 Pending documentation travels with the next real implementation change. Do not include unrelated
 signing-script/setup edits or private fitness records in that change.
@@ -153,9 +159,8 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 36:** once built, install it from `..\final-ipas\akshatos\testing\` over Build 34 (Build 35 was
-   never installed),
-   confirm enrollment with `python scripts/read-signing-state.py`, then run the natural-voice test in
+1. **Build 36:** installed over Build 34 and enrolled (0.12.1, automatic mode; Build 35 was never
+   installed). Akshat finds the Kokoro samples good; run the rest of the natural-voice test in
    `todo.md` (the voice folder is in OneDrive at `Backups\AkshatOS Voice`). Build 34 is installed
    and enrolled; its Lift Log and read-aloud checks are also in `todo.md`. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
    phone checks in `todo.md` (read-aloud voice; its ReelVault is removed in Build 33). For reference, Build 29's checks were: the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,

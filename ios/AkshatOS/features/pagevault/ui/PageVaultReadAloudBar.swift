@@ -36,8 +36,8 @@ struct PageVaultReadAloudBar: View {
         .sheet(isPresented: $choosingVoices) { PageVaultVoicesView(narrator: narrator) }
     }
 
-    /// Speed, and which voice reads: only the voices Akshat chose to list, with Choose voices to
-    /// change that list.
+    /// Speed, and which voice reads: one list with one tick, the natural speakers Akshat chose first,
+    /// then his chosen iPhone voices, with Choose voices to change those lists.
     private var settings: some View {
         Menu {
             Picker("Speed", selection: $narrator.speed) {
@@ -45,17 +45,20 @@ struct PageVaultReadAloudBar: View {
                     Text(Self.speedLabel(speed)).tag(speed)
                 }
             }
-            if PageVaultNaturalVoice.shared.isInstalled {
-                Toggle("Natural voice", isOn: $narrator.naturalVoiceOn)
-                    .accessibilityIdentifier("read-aloud-natural")
-            }
-            Picker("Voice", selection: $narrator.voiceID) {
-                Text("Best available").tag(String?.none)
+            Picker("Voice", selection: Binding(get: { narrator.voiceChoice },
+                                               set: { narrator.choose($0) })) {
+                ForEach(narrator.menuNaturalSpeakers) { speaker in
+                    Text(PageVaultNaturalVoiceRules.menuLabel(speaker))
+                        .tag(PageVaultReadAloud.VoiceChoice.natural(speaker.id))
+                }
                 let all = PageVaultNarrator.voiceOptions()
                 ForEach(narrator.menuVoices, id: \.id) { voice in
-                    Text(PageVaultReadAloud.voiceLabel(voice, among: all)).tag(Optional(voice.id))
+                    Text(PageVaultReadAloud.voiceLabel(voice, among: all))
+                        .tag(PageVaultReadAloud.VoiceChoice.system(voice.id))
                 }
+                Text("Best iPhone voice").tag(PageVaultReadAloud.VoiceChoice.system(nil))
             }
+            .accessibilityIdentifier("read-aloud-voice")
             Button("Choose voices…") { choosingVoices = true }
                 .accessibilityIdentifier("read-aloud-choose-voices")
         } label: {
