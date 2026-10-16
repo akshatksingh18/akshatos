@@ -6,6 +6,7 @@ final class PageVaultUITests: XCTestCase {
     func testHubOpensPageVaultLibraryAndReturns() {
         let app = XCUIApplication()
         app.launch()
+        app.openApps()
         XCTAssertTrue(app.buttons["open-pageVault"].waitForExistence(timeout: 10))
         app.buttons["open-pageVault"].tap()
 
@@ -25,6 +26,7 @@ final class PageVaultUITests: XCTestCase {
     func testBackupSheetOffersExportAndRestore() {
         let app = XCUIApplication()
         app.launch()
+        app.openApps()
         XCTAssertTrue(app.buttons["open-pageVault"].waitForExistence(timeout: 10))
         app.buttons["open-pageVault"].tap()
 
@@ -48,6 +50,7 @@ final class PageVaultUITests: XCTestCase {
     func testTakeawaysIsReachableAndEmptyUntilSomethingIsKept() {
         let app = XCUIApplication()
         app.launch()
+        app.openApps()
         XCTAssertTrue(app.buttons["open-pageVault"].waitForExistence(timeout: 10))
         app.buttons["open-pageVault"].tap()
 

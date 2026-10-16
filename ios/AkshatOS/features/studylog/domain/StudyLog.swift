@@ -16,15 +16,23 @@ struct StudySegment: Codable, Identifiable, Equatable {
     /// The day's target in force when this block began, in seconds. The first block of a day sets
     /// that day's target, so changing the target later never rewrites an earlier day.
     var dayTarget: Int
+    var dayFloor: Int?
+    var dayGoal: Int?
+    var topic: String?
+    var timeZoneID: String?
 
     init(id: UUID = UUID(), start: Date, end: Date? = nil, source: Source = .timer,
-         note: String? = nil, dayTarget: Int) {
+         note: String? = nil, dayTarget: Int, topic: String? = nil, timeZoneID: String? = nil, dayFloor: Int? = nil, dayGoal: Int? = nil) {
         self.id = id
         self.start = start
         self.end = end
         self.source = source
         self.note = note
         self.dayTarget = dayTarget
+        self.dayFloor = dayFloor
+        self.dayGoal = dayGoal
+        self.topic = topic
+        self.timeZoneID = timeZoneID
     }
 
     var isRunning: Bool { end == nil }
@@ -98,12 +106,14 @@ struct StudyDayClock {
     /// The parts of one block that fall in each study day: a block running past 3:00 AM counts
     /// up to 3:00 AM for its first day and the rest for the next.
     func pieces(of segment: StudySegment, now: Date) -> [StudyBlock] {
+        var attributed = self
+        if let name = segment.timeZoneID, let zone = TimeZone(identifier: name) { attributed.calendar.timeZone = zone }
         let end = segment.end ?? max(now, segment.start)
         var result: [StudyBlock] = []
         var cursor = segment.start
         while cursor < end {
-            let day = key(for: cursor)
-            guard let following = next(day), let boundary = start(of: following), boundary > cursor else { break }
+            let day = attributed.key(for: cursor)
+            guard let following = attributed.next(day), let boundary = attributed.start(of: following), boundary > cursor else { break }
             let pieceEnd = min(end, boundary)
             result.append(StudyBlock(segmentID: segment.id, day: day, start: cursor, end: pieceEnd,
                                      isRunning: segment.isRunning && pieceEnd == end, note: segment.note))
@@ -194,11 +204,11 @@ struct StudyLog: Equatable {
     /// Starts a block at `date` unless one is already running. Returns the new block, or nil when
     /// nothing changed, so a double tap or a repeated callback starts only one.
     @discardableResult
-    mutating func start(at date: Date, target: Int, id: UUID = UUID()) -> StudySegment? {
+    mutating func start(at date: Date, target: Int, id: UUID = UUID(), topic: String? = nil, timeZoneID: String? = nil, dayFloor: Int? = nil, dayGoal: Int? = nil) -> StudySegment? {
         guard running == nil else { return nil }
         // Never start inside an earlier block, even if the clock was set back.
         let latestEnd = segments.compactMap(\.end).max() ?? .distantPast
-        let segment = StudySegment(id: id, start: max(date, latestEnd), dayTarget: target)
+        let segment = StudySegment(id: id, start: max(date, latestEnd), dayTarget: target, topic: topic, timeZoneID: timeZoneID, dayFloor: dayFloor, dayGoal: dayGoal)
         segments.append(segment)
         return segment
     }
@@ -239,8 +249,16 @@ struct StudyLog: Equatable {
     }
 
     /// The target the day's first block recorded, or nil for a day without study.
-    func target(for day: String, clock: StudyDayClock) -> Int? {
-        segments.sorted { $0.start < $1.start }.first { clock.key(for: $0.start) == day }?.dayTarget
+    func target(for day: String, clock: StudyDayClock) -> Int? { settings(for: day, clock: clock)?.target }
+    func settings(for day: String, clock: StudyDayClock) -> StudySettings? {
+        let first = segments.sorted { $0.start < $1.start }.first { segment in
+            var attributed = clock
+            if let name = segment.timeZoneID, let zone = TimeZone(identifier: name) { attributed.calendar.timeZone = zone }
+            guard let start = attributed.start(of: day), let next = attributed.next(day), let end = attributed.start(of: next) else { return false }
+            return segment.start < end && (segment.end ?? .distantFuture) > start
+        }
+        return first.map { StudySettings(target: $0.dayTarget, floor: $0.dayFloor ?? StudySettings.standard.floor,
+            goal: $0.dayGoal ?? StudySettings.standard.goal).validated() }
     }
 
     /// Checks a set of blocks as a whole before it is saved or restored: real durations, unique ids,
@@ -250,7 +268,12 @@ struct StudyLog: Equatable {
         let sorted = segments.sorted { $0.start < $1.start }
         for segment in sorted {
             if let end = segment.end, end < segment.start { throw StudyLogError.invalidSegment }
-            guard segment.dayTarget > 0 else { throw StudyLogError.invalidSegment }
+            guard segment.dayTarget > 0, segment.dayTarget <= 24 * 3600,
+                  segment.dayFloor == nil || (0...segment.dayTarget).contains(segment.dayFloor!),
+                  segment.dayGoal == nil || (0...segment.dayTarget).contains(segment.dayGoal!),
+                  segment.dayFloor == nil || segment.dayGoal == nil || segment.dayFloor! <= segment.dayGoal!,
+                  (segment.topic?.count ?? 0) <= 200, (segment.note?.count ?? 0) <= 100_000,
+                  segment.timeZoneID == nil || TimeZone(identifier: segment.timeZoneID!) != nil else { throw StudyLogError.invalidSegment }
         }
         let runningCount = sorted.filter(\.isRunning).count
         guard runningCount <= 1 else { throw StudyLogError.moreThanOneRunning }

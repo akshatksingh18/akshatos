@@ -7,6 +7,7 @@ import UIKit
     private let squats: SquatStore
     private let liftLog: LiftLogStore
     private let navigator: HubNavigator
+    private let personal: PersonalNotifications?
 
     /// Which feature owns a notification, by the namespace its request identifier starts with.
     ///
@@ -21,18 +22,23 @@ import UIKit
     static let featureNamespaces: [(namespace: String, route: HubRoute)] = [
         (ReminderService.namespace, .squats),
         (BodyReminderService.namespace, .body),
-        (LiftReminderService.namespace, .liftLog)
+        (LiftReminderService.namespace, .liftLog),
+        (PersonalNotifications.namespace + "todo.", .todo),
+        (PersonalNotifications.namespace + "journal", .journal),
+        (PersonalNotifications.namespace + "study", .studyLog),
+        (PersonalNotifications.namespace + "break", .studyLog)
     ]
 
-    init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator) {
+    init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator, personal: PersonalNotifications? = nil) {
         self.squats = squats
         self.liftLog = liftLog
         self.navigator = navigator
+        self.personal = personal
         super.init()
         UNUserNotificationCenter.current().delegate = self
         // This is the hub's complete category registry; add future feature categories here.
         UNUserNotificationCenter.current().setNotificationCategories([ReminderService.category(),
-                                                                      LiftReminderService.category()])
+                                                                      LiftReminderService.category(), PersonalNotifications.category()])
     }
 
     /// The feature a tapped notification belongs to, or nil when nothing claims it.
@@ -61,6 +67,11 @@ import UIKit
         Task { @MainActor in
             defer { completion() }
             let notification = response.notification
+            if notification.request.identifier == PersonalNotifications.namespace + "study",
+               notification.request.content.categoryIdentifier == PersonalNotifications.categoryID {
+                personal?.respond(response.actionIdentifier)
+                if response.actionIdentifier == PersonalNotifications.pauseAction || response.actionIdentifier == PersonalNotifications.keepGoingAction { navigator.request(.studyLog) }
+            }
             // Routing is requested before the await, so opening a notification lands on its feature
             // even if persisting the action takes a moment or the store is briefly unavailable.
             if Self.shouldNavigate(actionIdentifier: response.actionIdentifier),
@@ -105,11 +116,14 @@ import UIKit
     private let manager = CLLocationManager()
     private var authorizationContinuation: CheckedContinuation<HomeAuthorization, Never>?
     private var locationContinuation: CheckedContinuation<(latitude: Double, longitude: Double), Error>?
+    private let enabled: () -> Bool
 
-    override init() {
+    init(enabled: @escaping () -> Bool = { true }) {
+        self.enabled = enabled
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        if !enabled() { stopMonitoring() }
     }
 
     func requestWhenInUse() async -> HomeAuthorization {
@@ -152,6 +166,7 @@ import UIKit
     }
 
     func startMonitoring(_ boundary: HomeBoundary) throws {
+        guard enabled() else { throw PersonalDataError.invalid("Home reminders have moved to WHOOP.") }
         let valid = try boundary.validated()
         let status = snapshot()
         guard status.authorization == .always else { throw HomeAutomationError.alwaysAccessRequired }
@@ -205,6 +220,7 @@ import UIKit
     }
 
     private func emit(_ kind: HomeBoundaryEvent.Kind, region: CLRegion) {
+        guard enabled() else { return }
         guard region.identifier == HomeAutomationState.regionIdentifier else { return }
         eventHandler?(HomeBoundaryEvent(kind: kind, date: Date(), regionIdentifier: region.identifier))
     }

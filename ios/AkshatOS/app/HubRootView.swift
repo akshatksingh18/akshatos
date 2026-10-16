@@ -1,74 +1,98 @@
 import SwiftUI
 
-/// Adapts feature state to the hub's display-only contract and injects destinations locally.
 struct HubRootView: View {
-    @ObservedObject var squats: SquatStore
-    @ObservedObject var pageVault: PageVaultStore
-    @ObservedObject var liftLog: LiftLogStore
-    @ObservedObject var bodyLog: BodyLogStore
-    @ObservedObject var studyLog: StudyLogStore
-    let backup: FullBackupService
-    @ObservedObject var navigator: HubNavigator
-    let orientation: OrientationGate
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var path: [HubRoute] = []
-
+    let services: AppServices
+    @ObservedObject private var navigator: HubNavigator
+    @ObservedObject private var study: StudyLogStore
+    @Environment(\.scenePhase) private var phase
+    @State private var tab = PersonalHubTab.today
+    @State private var appPath: [HubRoute] = []
+    @State private var tomorrowPlan = false
+    @State private var legacyRoute: HubRoute?
+    init(services: AppServices) { self.services = services; _navigator = ObservedObject(wrappedValue: services.navigator); _study = ObservedObject(wrappedValue: services.studyLog) }
     var body: some View {
-        HubView(entries: [
-            HubEntry(id: .squats, title: "Pushup Reminder", subtitle: "Reminders for pushup sets",
-                     icon: "figure.strengthtraining.functional", isAvailable: true,
-                     status: squats.operational,
-                     detail: squats.todayCount == 1 ? "1 set today" : "\(squats.todayCount) sets today"),
-            HubEntry(id: .pageVault, title: "PageVault", subtitle: "PDF library",
-                     icon: "book.closed", isAvailable: true,
-                     status: pageVault.books.isEmpty ? "No books yet"
-                        : pageVault.books.count == 1 ? "1 book" : "\(pageVault.books.count) books"),
-            HubEntry(id: .liftLog, title: "Lift Log", subtitle: "Strength sessions",
-                     icon: "dumbbell", isAvailable: true,
-                     status: liftLog.active == nil ? "Ready" : "Workout in progress",
-                     detail: liftLog.finished.count == 1 ? "1 session" : "\(liftLog.finished.count) sessions"),
-            HubEntry(id: .body, title: "Body", subtitle: "Weight and measurements",
-                     icon: "ruler", isAvailable: true,
-                     status: bodyLog.todayWeight.map { String(format: "%.1f lb today", $0.pounds) } ?? "Not weighed today",
-                     detail: bodyLog.thisWeekMeasurement == nil ? "Measure this week" : "Measured this week"),
-            HubEntry(id: .studyLog, title: "Study Log", subtitle: "Real study time",
-                     icon: "timer", isAvailable: true,
-                     status: studyLog.isRunning ? "Studying" : "Ready",
-                     detail: "\(StudyTime.short(studyLog.studiedToday(at: Date()))) today")
-        ], path: $path) { route in
-            switch route {
-            case .squats:
-                SquatDashboard().environmentObject(squats)
-            case .pageVault:
-                PageVaultLibraryView(store: pageVault) { reading in
-                    orientation.setReadingSession(reading)
-                }
-            case .liftLog:
-                LiftLogView(store: liftLog)
-            case .body:
-                BodyLogView(store: bodyLog)
-            case .studyLog:
-                StudyLogView(store: studyLog)
-            case .backup:
-                FullBackupView(service: backup)
-            }
+        TabView(selection: $tab) {
+            NavigationStack {
+                PersonalTodayView(study: services.studyLog, todo: services.todo, journal: services.journal, preferences: services.preferences,
+                    keepGoing: { services.preferences.lastStudyConfirmation = Date(); services.personalNotifications.reconcile() })
+            }.tabItem { Label("Today", systemImage: "calendar") }.tag(PersonalHubTab.today)
+            NavigationStack { TodoView(store: services.todo) }
+                .tabItem { Label("To-do", systemImage: "checklist") }.tag(PersonalHubTab.todo)
+            NavigationStack {
+                JournalView(store: services.journal, facts: { services.facts($0) }, planTomorrow: { tomorrowPlan = true })
+            }.tabItem { Label("Journal", systemImage: "book.closed") }.tag(PersonalHubTab.journal)
+            NavigationStack(path: $appPath) {
+                PersonalAppsView(services: services)
+                    .navigationDestination(for: HubRoute.self) { route in destination(route) }
+            }.tabItem { Label("Apps", systemImage: "square.grid.2x2") }.tag(PersonalHubTab.apps)
         }
-        .task {
-            await squats.refresh()
-            liftLog.load()
-            bodyLog.load()
-            studyLog.load()
+        .tint(HubInk.copper)
+        .task { await refresh() }
+        .onChange(of: phase) { _, phase in
+            if phase == .background { services.journal.lock() }
+            if phase == .active { Task { await refresh() } }
         }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await squats.refresh() } }
-        }
-        // A tapped notification opens the feature that sent it. Replacing the path rather than
-        // appending is what makes that true from anywhere: whatever was open — PageVault, a book,
-        // a sheet's parent — is left behind instead of the feature being pushed on top of it.
         .onChange(of: navigator.requested) { _, route in
             guard let route else { return }
-            if path != [route] { path = [route] }
+            switch route {
+            case .studyLog: tab = .today
+            case .todo: tab = .todo
+            case .journal: tab = .journal
+            case .squats, .liftLog, .body:
+                if !services.preferences.fitnessStopped { legacyRoute = route }
+            default: tab = .apps; appPath = [route]
+            }
             navigator.clear()
         }
+        .sheet(isPresented: $tomorrowPlan) {
+            PriorityPicker(store: services.todo, day: services.todo.clock.shifted(services.todo.today, by: 1) ?? services.todo.today)
+        }
+        .sheet(item: Binding(get: { services.studyLog.runningRestoreReview }, set: { if $0 == nil { services.studyLog.finishRunningRestore(nil) } })) { review in
+            StudyRunningRestoreView(store: services.studyLog, review: review)
+        }
+        .sheet(isPresented: Binding(get: { legacyRoute != nil }, set: { if !$0 { legacyRoute = nil } })) {
+            NavigationStack { if let legacyRoute { destination(legacyRoute).toolbar { Button("Close") { self.legacyRoute = nil } } } }
+        }
+        .overlay {
+            if phase != .active { HubInk.background.ignoresSafeArea().overlay { Label("AkshatOS", systemImage: "lock.fill").foregroundStyle(.secondary) } }
+        }
+    }
+    @ViewBuilder private func destination(_ route: HubRoute) -> some View {
+        switch route {
+        case .pageVault: PageVaultLibraryView(store: services.pageVault) { services.orientation.setReadingSession($0) }
+        case .watchlist: WatchlistView(store: services.watchlist)
+        case .spending: SpendingView(store: services.spending)
+        case .backup: FullBackupView(service: services.backup)
+        case .studyLog: StudyPreferencesView(store: services.studyLog)
+        case .todo: TodoView(store: services.todo)
+        case .journal: JournalView(store: services.journal, facts: { services.facts($0) }, planTomorrow: { tomorrowPlan = true })
+        case .squats: SquatDashboard().environmentObject(services.squats)
+        case .liftLog: LiftLogView(store: services.liftLog)
+        case .body: BodyLogView(store: services.bodyLog)
+        }
+    }
+    private func refresh() async {
+        if !services.preferences.fitnessStopped { await services.squats.refresh() }
+        services.liftLog.load(); services.bodyLog.load(); services.studyLog.load()
+        services.todo.load(); services.journal.load(); services.watchlist.load(); services.spending.load()
+        services.personalNotifications.reconcile()
+        if services.transfer.linked { await services.transfer.checkWatchlist(after: services.watchlist.state.metadataRevision) }
+    }
+}
+
+private enum PersonalHubTab: String { case today, todo, journal, apps }
+
+extension AppServices {
+    func facts(_ day: String) -> JournalDayFacts {
+        let date = Date(), plan = todo.plan(day)
+        let reading = day == studyLog.today ? pageVault.current : nil
+        return JournalDayFacts(activityDay: day, capturedAt: date,
+            studySeconds: studyLog.storageAvailable ? studyLog.log.studied(on: day, now: date, clock: studyLog.clock) : nil,
+            studyBlocks: studyLog.storageAvailable ? studyLog.log.blocks(now: date, clock: studyLog.clock).filter { $0.day == day }.count : nil,
+            completedTasks: todo.available ? todo.state.tasks.filter { $0.completedAt.map { todo.clock.key($0) == day } == true }.count : nil,
+            selectedPriorities: todo.available ? plan?.selected.count : nil,
+            completedPriorities: todo.available ? plan?.completed.count : nil,
+            readingTitle: pageVault.storageAvailable ? reading?.title : nil,
+            readingPage: pageVault.storageAvailable ? reading.map { $0.currentPage + 1 } : nil)
     }
 }

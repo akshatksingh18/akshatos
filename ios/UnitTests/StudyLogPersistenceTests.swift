@@ -86,9 +86,12 @@ import XCTest
         let data = try original.backupData()
 
         let other = try makeStore(try makeContainer())
-        XCTAssertTrue(other.restoreBackup(data))
+        XCTAssertFalse(other.restoreBackup(data), "A backup cannot resume a timer without reconciling its end")
+        XCTAssertTrue(other.log.segments.isEmpty)
+        current = current.addingTimeInterval(600)
+        XCTAssertTrue(other.restoreBackup(data, confirmedRunningEnd: current))
         XCTAssertEqual(other.log.segments.count, 2)
-        XCTAssertTrue(other.isRunning, "A block running at backup time comes back running")
+        XCTAssertFalse(other.isRunning, "The restored block closes at its confirmed actual end")
         XCTAssertEqual(other.settings, .standard)
     }
 

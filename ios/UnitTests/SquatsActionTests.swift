@@ -921,7 +921,7 @@ import UserNotifications
     }
 
     func testAutomaticBatchAndDailyStartStayBelowIOSPendingLimit() {
-        XCTAssertEqual(ReminderService.automaticNudgeCount, 59)
+        XCTAssertEqual(ReminderService.automaticNudgeCount, 39)
         XCTAssertEqual(ReminderService.activeIdentifiers.count, 61)
         XCTAssertLessThanOrEqual(1 + ReminderService.automaticNudgeCount + 1, 64)
     }

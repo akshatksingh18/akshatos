@@ -7,6 +7,7 @@ final class BodyUITests: XCTestCase {
     func testBodyOpensWithWeightMeasurementsPhotosAndHistory() {
         let app = XCUIApplication()
         app.launch()
+        app.openLegacyMenu()
         let entry = app.buttons["open-body"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         for _ in 0..<4 where !entry.isHittable { app.swipeUp() }

@@ -77,5 +77,57 @@
     "ui_tests": [
       "UITests/StudyLogUITests.swift"
     ]
+  },
+  "todo": {
+    "domain_sources": [
+      "AkshatOS/shared/ActivityDay.swift",
+      "AkshatOS/features/todo/domain/Todo.swift"
+    ],
+    "domain_test": "tests/todo/main.swift",
+    "integration_tests": [
+      "UnitTests/PersonalHubPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/PersonalHubUITests.swift"
+    ]
+  },
+  "journal": {
+    "domain_sources": [
+      "AkshatOS/shared/ActivityDay.swift",
+      "AkshatOS/features/journal/domain/Journal.swift"
+    ],
+    "domain_test": "tests/journal/main.swift",
+    "integration_tests": [
+      "UnitTests/PersonalHubPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/PersonalHubUITests.swift"
+    ]
+  },
+  "watchlist": {
+    "domain_sources": [
+      "AkshatOS/shared/ActivityDay.swift",
+      "AkshatOS/features/watchlist/domain/Watchlist.swift"
+    ],
+    "domain_test": "tests/watchlist/main.swift",
+    "integration_tests": [
+      "UnitTests/PersonalHubPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/PersonalHubUITests.swift"
+    ]
+  },
+  "spending": {
+    "domain_sources": [
+      "AkshatOS/shared/ActivityDay.swift",
+      "AkshatOS/features/spending/domain/Spending.swift"
+    ],
+    "domain_test": "tests/spending/main.swift",
+    "integration_tests": [
+      "UnitTests/PersonalHubPersistenceTests.swift"
+    ],
+    "ui_tests": [
+      "UITests/PersonalHubUITests.swift"
+    ]
   }
 }
