@@ -7,6 +7,8 @@ check. Akshat runs the steps below on the PC and phone, alongside
 WHOOP Build 86's implementation (WHOOP `todo.md` section 10). LocalDevVPN is allowed on the phone
 as SideStore's installer helper; it is never a WHOOP or AkshatOS dependency.
 Public sources checked 2026-10-09; release claims are from that research, not a fresh release check.
+The study extension follow-up below was checked against public upstream sources on 2026-10-16;
+the latest-release URL still resolves to 0.7.0-alpha. The phone pilot remains unverified.
 The cached iloader MSI is present locally; registry/process probes did not establish an installed
 or running iloader in this session, which does not contradict Akshat's setup report.
 
@@ -115,6 +117,21 @@ PC/phone; nothing is automated by the agent.
    re-enable its automatic refresh; restore from the step-2 backups only if data was lost.
 
 ## Scope boundary
+
+### Build-39 study Live Activity experiment
+
+SideStore is authorized as the preferred free signing experiment for the next combined candidate;
+Sideloadly need not remain the long-term dependency. No IPA is requested yet and existing renewal
+ownership remains until verified handover. `study-display.md` owns the source variant and phone matrix.
+At upstream 0.7.0-alpha (`6032424a0e56c1c319762e786099bdd9186a238b`),
+[`FetchProvisioningProfilesOperation`](https://github.com/SideStore/SideStore/blob/6032424a0e56c1c319762e786099bdd9186a238b/SideStore/Core/Operations/PipelineOperations/FetchProvisioningProfilesOperation.swift)
+explicitly registers/fetches a profile per extension when `useMainProfile` is false. Choose
+**Keep app extensions (register app ID for each extension)** for the future experiment; reusing the
+parent profile or removing the extension does not test the required path. This is source evidence
+that a suitable provisioning route exists, not proof of signing, launch or renewals on the phone.
+Extensions also consume the separate weekly [App ID allowance](https://faq.altstore.io/altstore-classic/app-ids).
+Keep the existing preservation/certificate/monitoring gates above, then prove the card renders with
+DND, lock-screen access, AOD and StandBy. No account/installer changes are made by the source work.
 
 Signing refresh keeps an app launchable. It does not retrieve band history, refresh dashboards,
 improve GPS speed, grant continuous execution or override iOS suspension/force-quit behavior.

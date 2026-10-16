@@ -15,7 +15,11 @@ installed. `personal-hub.md` owns the new source contract; `cloud-build.md` owns
   Keep its native BLE restoration, database, and encrypted export/recovery separate from the hub.
 
 Two apps fit the free Personal Team allowance of three installed development apps; the third slot
-is unallocated, not an instruction to add a helper. Every product function can be available
+is not confirmed occupied. The separately approved SideStore pilot may use it as an installer helper;
+`sidestore-evaluation.md` owns that pilot. Build 39 prepares an opt-in study Live Activity extension,
+with separate App-ID provisioning and no change to installed app identity or data ownership;
+`study-display.md` owns its release/signing gates. Default recovery packaging remains extension-free.
+Every existing product function can be available
 without rotation or paid membership: Akshat's body-measurement tracker was added as a hub module
 rather than a separate app for exactly this reason. This is source-level feature composition, not guest
 IPAs, a PWA, LiveContainer, or an iOS extension workaround. No Flutter embedding is required.

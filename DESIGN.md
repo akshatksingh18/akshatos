@@ -124,6 +124,15 @@ Each of the four tabs owns a native `NavigationStack`. Today, Journal writing an
 
 The study instrument is one rounded container, with the status row, dial, explicit studied/block or break readout, primary timer action and thought capture. At accessibility Dynamic Type sizes, the main action moves above the dial, the date abbreviates and `AdaptiveRow` stacks its values. `StudyDial` changes its maximum width from 280 to 380 points and retains an aspect ratio of 1.12. It is allowed to scroll; there is no web-style viewport lock or documented width breakpoint.
 
+Build-39 Focus uses the same dial on a flat graphite desk surface. In compact-height landscape with
+at least 560 points of available width, the dial and controls align at the top side by side, with
+the dial sized to the usable height and an 8-point inner button inset instead of the portrait
+24-point inset, keeping the full countdown and single-line label readable. Narrow and accessibility
+layouts stack and scroll. Native navigation, safe areas and 44-point actions remain. Keep screen awake
+is one native switch; optional Live Activity controls are collapsed. The lock-screen card uses plain
+white semantic-sized text on graphite, system timer text and no animation or private topic content.
+`study-display.md` owns functional and device acceptance; source changes alone are not visual proof.
+
 Weekly blocks use a horizontal scroll area with day buttons at least 44 points wide, 24-point-wide block marks and a 100-point plot height. The month calendar has seven columns with 44-point minimum cells, a 320-point minimum grid width and horizontal overflow. Inspection happens by tapping a day. Future days have an explicit upcoming state rather than a fabricated total.
 
 Study history opens as one closable sheet. Focus opens a full-screen native cover with a Close action. Topic, task, priority and record editing use native sheets; Journal switches between writing and history inside its tab. Apps opens occasional tools through standard navigation. The daily hub has no fitness cards or fitness completion requirements; retained fitness recovery remains behind settings.
