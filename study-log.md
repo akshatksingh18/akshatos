@@ -2,7 +2,7 @@
 
 Build 39 (0.14.1) is the active source-development task, with no IPA requested. Rotating desk Focus,
 scoped keep-awake, quiet study notifications and the optional SideStore Live Activity candidate are
-implemented with a complete cloud pass; the compact-dial follow-up awaits confirmation.
+implemented and pass exact-source cloud/native verification at `86c4367` (draft PR #68).
 `study-display.md` owns exact evidence and the DND/signing/device gates.
 Build 38 below remains the delivered candidate and has none of these display changes.
 
@@ -77,7 +77,7 @@ approved graphite/copper design is in `todo-journal-plan.md`; native details are
   history (a Monday-to-Sunday week of bars with total and average per day so far, earlier weeks by
   arrow, month-grouped days, a day's blocks); the 3:00 AM day; restoring a running block after
   relaunch or force-quit; JSON backup/restore and the hub's full backup. Target and marks were fixed defaults in Build 1; source 0.14.0 makes them prospectively editable.
-- **Build 2 (implemented in source 0.14.0, verification pending):**
+- **Build 2 (implemented in source 0.14.0, cloud verified; phone acceptance pending):**
   - **Forgotten pauses:** the repeating "Still studying?" nudge with Keep going and Pause; the app provides Stopped earlier and the open-app check (Decision 2).
   - **Corrections:** add, edit and delete blocks (manual blocks for laptop study; no overlaps, none
     in the future); **Undo** for ten seconds after Start or Pause, so a mistaken tap is one tap to

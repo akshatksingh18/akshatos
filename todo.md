@@ -6,16 +6,19 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 
 **Current focus:** Develop Build 39 (0.14.1) incrementally without generating an IPA or merging a release.
 Rotating desk Focus, keep-awake, quiet study notifications and the optional SideStore Live Activity
-candidate are tracked in `study-display.md`; full CI passed at `d8856b0` and the compact-dial fix
-awaits exact-source confirmation. Build 38 (0.14.0), PR #67 at `b573ecc`, remains the delivered candidate.
+candidate are tracked in `study-display.md`; exact-source CI and native inspection pass at `86c4367`.
+Build 38 (0.14.0), PR #67 at `b573ecc`, remains the delivered candidate.
 The complete PR/main cloud gates, native accessibility fixes and local IPA/checksum validation pass;
 the IPA is in the single-slot testing cache. Build 37 remains installed/enrolled; Build 31 remains
 accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build.md` exact evidence.
 
-- [ ] Build 39: exact-source cloud tests, native Focus/lock-screen content inspection and optional extension compile.
+- [x] Build 39: exact-source cloud tests, native Focus/lock-screen content inspection and optional extension compile.
+      Run `38934281186` at `86c4367`: nine domain suites, 195 hosted and 14 UI tests, no IPA.
 - [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
-- [ ] Release only when requested: select the signing variant, extend IPA validation for a single allowed study extension,
-      then produce the combined candidate. Do not auto-merge/package this development branch.
+- [ ] Build-39 release preparation: explicit variant selection and strict single-study-extension
+      validation are implemented; pass exact-source CI with both built .app directories and no IPA.
+- [ ] Release only when requested: choose the variant and produce the combined candidate.
+      Do not auto-merge/package this development branch.
 
 - [x] Final exact-commit PR/main CI Gates, native accessibility-fix review and validated Build-38 testing IPA.
 - [ ] Phone: all four tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.

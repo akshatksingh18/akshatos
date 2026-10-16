@@ -7,15 +7,17 @@ The testing cache contains exactly one candidate. No new candidate is promoted w
 
 Working source is **0.14.1 (39)** in development, not a release artifact. No IPA is requested.
 It is on `feature/build-39-study-display`, draft [PR #68](https://github.com/akshatksingh18/akshatos/pull/68).
-Code `d8856b0` passed [CI](https://github.com/akshatksingh18/akshatos/actions/runs/38911666157):
+Study-display code `86c4367` passed [CI](https://github.com/akshatksingh18/akshatos/actions/runs/38934281186):
 nine domain suites, 195 hosted tests, 14 UI tests, default simulator/device compilation and optional
 Live Activity host/extension compilation and metadata checks. Packaging and IPA upload were skipped;
-`test-diagnostics-177-1` was the only artifact. Native inspection confirmed the card/accessibility fixes
-and found a compact-dial truncation, corrected in source and awaiting exact-source confirmation. No merge or signing/refresh-owner change is made.
+`test-diagnostics-178-1` was the only artifact. Final native inspection confirms readable compact
+landscape countdown/label, running Focus with keep-awake on and the prior card/accessibility fixes.
+No merge or signing/refresh-owner change is made.
 Keep this work on its development branch; PR validation compiles/tests both the default build and
 the optional study Live Activity candidate without packaging. Manual dispatch defaults to
-`package_ipa=false`; a future release request must select/validate the variant first. Build 38's
-testing cache and Build 31's recovery cache stay intact. `study-display.md` owns the remaining gates.
+`package_ipa=false` and `build_variant=standard`; explicit selection/validation is implemented,
+with exact-source CI pending. A future release request is still required to package either variant.
+Build 38's testing cache and Build 31's recovery cache stay intact. `study-display.md` owns the remaining gates.
 
 ## Current identity and artifact
 
@@ -28,7 +30,9 @@ testing cache and Build 31's recovery cache stay intact. `study-display.md` owns
   Every installable artifact gets its own build number. Bump `CURRENT_PROJECT_VERSION` in
   `ios/project.yml` with the first code change after a build is handed over, not at build time.
 - Workflow: `.github/workflows/ios-build.yml`, macOS 26/Xcode 26.6/XcodeGen 2.46.0.
-- Output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
+- Standard release output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
+  Opt-in output: `AkshatOS-study-live-activity-unsigned.ipa` in `akshatos-ios-<run>-study-live-activity`.
+  Build metadata identifies the variant and extension bundle ID; release uploads exclude test diagnostics.
 - Content: source 0.14.0 launches Today / To-do / Journal / Apps, with the personal features in
   `personal-hub.md`; the installed Build 37 still has hub picker → Pushup Reminder dashboard/core (with legacy `squats.*` persistence and
   notification identity retained for upgrade safety), plus PageVault's library, page-curl reader, page
@@ -55,11 +59,13 @@ separate acceptance gates. Never use deletion as the update workflow for data-be
 2. It compiles and runs every registered feature domain suite from `ios/tests/feature-tests.json`.
 3. It compiles the simulator build, runs the hosted XCTest and XCUITest suites with screenshot
    attachments, and compiles the unsigned arm64 device Release build. Test runners are not in the IPA.
-4. It additionally compiles the opt-in Live Activity host/extension without packaging, then restores
-   the default project. Only main pushes or an explicit manual `package_ipa=true` inspect/package
-   the default Payload IPA and write checksum/build metadata. PRs create no IPA.
+4. It compiles the opt-in Live Activity host/extension for simulator/device and the default device
+   app separately. Both device .app directories pass the variant-aware validator and arm64 checks
+   without creating an IPA. Only main pushes (standard) or an explicit manual `package_ipa=true`
+   inspect/package the selected variant and write checksum/build metadata. PRs create no IPA.
 5. Release runs upload a 14-day Actions artifact; PR/default manual runs upload diagnostics only. On Windows: download it, compare
-   its SHA-256 with the published checksum, run `ios/scripts/validate-ipa.py`, confirm the packaged
+   its SHA-256 with the published checksum, run `ios/scripts/validate-ipa.py <path>` (standard) or
+   add `--variant study-live-activity` for the explicit study candidate, confirm the packaged
    `CFBundleVersion`, and inspect the screenshots. Temporary Actions storage is not the release cache.
 
 No local Mac is available. Windows edits source; macOS/Xcode in the public GitHub build compiles.

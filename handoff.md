@@ -4,10 +4,12 @@ Build 39 (0.14.1) is now the active source-development task, with **no IPA and n
 requested. Continue adding features incrementally. `study-display.md` owns rotating desk Focus,
 keep-awake, quiet study notifications, the opt-in SideStore Live Activity candidate, research and
 DND/device/signing gates. SideStore exploration is authorized; installed signing/refresh ownership
-is unchanged. Full CI at `d8856b0` passed nine domain suites, 195 hosted and 14 UI tests plus both
-build variants with no IPA. Native review found a compact-dial truncation; its source fix awaits
-confirmation. `cloud-build.md` owns the exact current run. Build 38 below remains the last delivered
-candidate, not the working source version.
+is unchanged. Exact-source CI and native inspection pass at `86c4367` on draft PR #68, including
+the compact-dial readability correction. `cloud-build.md` owns the run, counts and diagnostics.
+No Build-39 IPA was created. Explicit release-variant selection and strict extension validation
+are implemented with exact-source CI pending; `study-display.md` owns this release contract.
+Physical signing/DND/AOD/renewal checks remain open. Build 38 below
+remains the last delivered candidate, not the working source version.
 
 **Status:** Personal-hub Build 38 (0.14.0), PR #67, is merged at `b573ecc` and validated in the
 single-slot testing cache. PR/main CI, local checksum/IPA inspection and the two native accessibility

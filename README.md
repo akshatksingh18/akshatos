@@ -17,6 +17,9 @@ owns exact evidence; [todo.md](todo.md) owns phone, provider and recovery checks
 
 Build 39 (0.14.1) is in source development with no IPA requested: portrait/landscape study Focus,
 scoped keep-awake, quiet notifications during study and an optional SideStore Live Activity variant.
+Exact-source cloud checks and native Focus/card inspection pass on draft PR #68; phone proof remains open.
+Release preparation adds explicit standard/study Live Activity selection and matching payload validation,
+with its exact-source CI pending. Selecting a variant does not create an IPA.
 [Study display](study-display.md) owns behavior, DND limits, public research and signing/device gates.
 
 Source 0.14.0 (38), PR #67, implements the approved personal hub: **Today / To-do / Journal / Apps**.

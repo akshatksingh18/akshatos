@@ -7,7 +7,9 @@ and device acceptance remain open. Build 37 is installed/enrolled and Build 31 i
 
 Build 39 (0.14.1) adds study-display source under development, not a new delivered IPA. The optional
 WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains
-extension-free. `study-display.md` owns payload privacy, lifecycle, DND and activation/release gates.
+extension-free. Release selection resolves fixed separate build/output paths; the payload validator
+checks either built .app directories or later IPA archives against the selected variant.
+`study-display.md` owns payload privacy, lifecycle, DND and activation/release gates.
 
 Source 0.14.0 implements Today/To-do/Journal/Apps. `personal-hub.md` owns the feature stores,
 `HubDayPart` summaries, Journal access gate, staged media restore, personal notification coordinator,

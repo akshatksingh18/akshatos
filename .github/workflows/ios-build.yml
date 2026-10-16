@@ -7,6 +7,13 @@ on:
         description: "Package a release IPA (leave off while developing Build 39)"
         type: boolean
         default: false
+      build_variant:
+        description: "Build to package only when package_ipa is enabled"
+        type: choice
+        default: standard
+        options:
+          - standard
+          - study-live-activity
   pull_request:
     branches: [main]
   push:
@@ -80,6 +87,7 @@ jobs:
           python3 ios/scripts/check-boundaries.py
           python3 ios/scripts/check-test-inventory.py
           python3 ios/scripts/check-backup-coverage.py
+          python3 ios/scripts/test-release-contract.py
       - name: Lint GitHub Actions workflows
         run: |
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
@@ -90,7 +98,7 @@ jobs:
     needs: checks
     if: ${{ needs.checks.outputs.build_required == 'true' }}
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Check out source
@@ -103,6 +111,16 @@ jobs:
         run: |
           sudo xcode-select --switch "$XCODE_PATH"
           xcodebuild -version
+
+      - name: Resolve selected release variant without packaging
+        shell: bash
+        env:
+          REQUESTED_VARIANT: ${{ inputs.build_variant || 'standard' }}
+        run: |
+          set -euo pipefail
+          python3 ios/scripts/release-variant.py --variant "$REQUESTED_VARIANT" \
+            --runner-temp "$RUNNER_TEMP" --run-number "$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          echo "Selected build variant: $REQUESTED_VARIANT (packaging requires a separate release trigger)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install pinned XcodeGen
         shell: bash
@@ -186,7 +204,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Compile opt-in Live Activity candidate without packaging
+      - name: Compile and validate Live Activity bundles without packaging
         shell: bash
         run: |
           set -euo pipefail
@@ -198,13 +216,16 @@ jobs:
           candidate="$RUNNER_TEMP/DerivedData-simulator/Build/Products/Debug-iphonesimulator/AkshatOS.app"
           test -d "$candidate/PlugIns/StudyActivityExtension.appex"
           test "$(plutil -extract NSSupportsLiveActivities raw "$candidate/Info.plist")" = true
-          xcodebuild build -project "$PROJECT_PATH" -scheme StudyActivityExtension \
+          xcodebuild build -project "$PROJECT_PATH" -scheme "$SCHEME" \
             -configuration Release -sdk iphoneos -destination "generic/platform=iOS" \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData-extension" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData-activity-device" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" COMPILER_INDEX_STORE_ENABLE=NO
-          extension="$RUNNER_TEMP/DerivedData-extension/Build/Products/Release-iphoneos/StudyActivityExtension.appex"
+          activity_app="$RUNNER_TEMP/DerivedData-activity-device/Build/Products/Release-iphoneos/AkshatOS.app"
+          extension="$activity_app/PlugIns/StudyActivityExtension.appex"
+          lipo -verify_arch arm64 "$activity_app/AkshatOS"
+          lipo -verify_arch arm64 "$extension/StudyActivityExtension"
           test -x "$extension/StudyActivityExtension"
-          test "$(plutil -extract NSExtension.NSExtensionPointIdentifier raw "$extension/Info.plist")" = com.apple.widgetkit-extension
+          python3 ios/scripts/validate-ipa.py "$activity_app" --variant study-live-activity
           "$XCODEGEN_BIN" generate --spec ios/project.yml
 
       - name: Build unsigned device application
@@ -222,16 +243,27 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             COMPILER_INDEX_STORE_ENABLE=NO
+          app_path="$RUNNER_TEMP/DerivedData-device/Build/Products/Release-iphoneos/AkshatOS.app"
+          lipo -verify_arch arm64 "$app_path/AkshatOS"
+          python3 ios/scripts/validate-ipa.py "$app_path" --variant standard
+
+      - name: Validate selected device bundle without packaging
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ios/scripts/validate-ipa.py \
+            "$DEVICE_DERIVED_DATA/Build/Products/Release-iphoneos/AkshatOS.app" --variant "$BUILD_VARIANT"
+          echo "Both device variants validated; selected=$BUILD_VARIANT" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Package and inspect IPA
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.package_ipa) }}
         shell: bash
         run: |
           set -euo pipefail
-          app_path="$RUNNER_TEMP/DerivedData-device/Build/Products/Release-iphoneos/AkshatOS.app"
+          app_path="$DEVICE_DERIVED_DATA/Build/Products/Release-iphoneos/AkshatOS.app"
           package_root="$RUNNER_TEMP/ipa-package"
-          artifact_root="$GITHUB_WORKSPACE/artifacts"
-          ipa_path="$artifact_root/AkshatOS-unsigned.ipa"
+          artifact_root="$GITHUB_WORKSPACE/artifacts/release"
+          ipa_path="$artifact_root/$IPA_FILENAME"
 
           test -d "$app_path"
           test -x "$app_path/AkshatOS"
@@ -247,11 +279,17 @@ jobs:
           )
 
           test -s "$ipa_path"
-          python3 ios/scripts/validate-ipa.py "$ipa_path"
-          shasum -a 256 "$ipa_path" | tee "$artifact_root/AkshatOS-unsigned.ipa.sha256"
+          python3 ios/scripts/validate-ipa.py "$ipa_path" --variant "$BUILD_VARIANT"
+          shasum -a 256 "$ipa_path" | tee "$artifact_root/$IPA_FILENAME.sha256"
           {
             echo "commit=$GITHUB_SHA"
             echo "bundle_id=$actual_bundle_id"
+            echo "build_variant=$BUILD_VARIANT"
+            if [[ "$BUILD_VARIANT" == study-live-activity ]]; then
+              echo "extension_bundle_id=$(plutil -extract CFBundleIdentifier raw "$app_path/PlugIns/StudyActivityExtension.appex/Info.plist")"
+            else
+              echo "extension_bundle_id=none"
+            fi
             echo "marketing_version=$(plutil -extract CFBundleShortVersionString raw "$app_path/Info.plist")"
             echo "build_number=$(plutil -extract CFBundleVersion raw "$app_path/Info.plist")"
             echo "xcodegen_version=$($XCODEGEN_BIN --version)"
@@ -262,8 +300,8 @@ jobs:
         if: ${{ success() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.package_ipa)) }}
         uses: actions/upload-artifact@v6.0.0
         with:
-          name: akshatos-ios-${{ github.run_number }}
-          path: artifacts/
+          name: ${{ env.IPA_ARTIFACT_NAME }}
+          path: artifacts/release/
           if-no-files-found: error
           retention-days: 14
           compression-level: 0

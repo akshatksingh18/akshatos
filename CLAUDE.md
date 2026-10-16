@@ -18,9 +18,11 @@ while AkshatOS's import/removal cutover remains open. Read it before a cross-app
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
 **Status:** Build 39 (0.14.1) is in source development: rotating study Focus, keep-awake, quiet study
-notifications and an opt-in SideStore Live Activity candidate. Complete CI passed at `d8856b0`;
-the compact-dial follow-up awaits confirmation. No IPA or merge is requested; continue incrementally
-with cloud validation only. `study-display.md` owns this scope and signing/device gates.
+notifications and an opt-in SideStore Live Activity candidate. Exact-source cloud checks and native
+Focus/card inspection pass at `86c4367` on draft PR #68; physical signing/display proof remains open.
+Release preparation adds explicit standard/Live Activity selection and strict variant validation;
+its exact-source CI is pending. No IPA or merge is requested; continue incrementally with cloud
+validation only. `study-display.md` owns this scope and signing/device gates.
 Build 38 (0.14.0), merged through PR #67 at `b573ecc`, is validated in `testing/` and
 awaits installation/device acceptance. PR/main CI Gates, local checksum/IPA checks and the native
 accessibility-fix review pass. Build 37 remains installed/enrolled; Build 31 remains accepted
@@ -102,9 +104,12 @@ push under the standing documentation rule.
   changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
-- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication,
-  including that no document types or file sharing are declared and that the only background mode
-  is audio (PageVault read-aloud).
+- `ios/scripts/validate-ipa.py` — validate an unsigned IPA or built .app against an explicit standard
+  or study-live-activity contract; preserve privacy/audio-only checks and allow only the named study extension.
+- `ios/scripts/release-variant.py` — resolve the selected variant to fixed device-build, filename and
+  artifact paths; standard stays the default, with distinct Live Activity output names. It packages nothing.
+- `ios/scripts/test-release-contract.py` — fast release-selection and payload-rejection regressions;
+  archives stay in memory, and directory probes create no IPA. Run in Source checks.
 - `ios/Support/AkshatOS-Info.plist` — the only Info.plist keys Xcode cannot generate from build
   settings, merged with generated keys: PageVault's audio background mode and the study URL scheme.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.

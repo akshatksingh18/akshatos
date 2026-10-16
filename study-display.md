@@ -1,8 +1,8 @@
 # Study display and lock-screen timer
 
-**Status:** Build 39 (0.14.1) is implemented on the development branch. Cloud run
-[38911666157](https://github.com/akshatksingh18/akshatos/actions/runs/38911666157) passed at `d8856b0`;
-its native inspection found a compact-dial truncation, corrected in source and awaiting confirmation.
+**Status:** Build 39 (0.14.1) source at `86c4367` passes
+[cloud verification](https://github.com/akshatksingh18/akshatos/actions/runs/38934281186) and native
+Focus/card inspection on draft PR #68. It remains on the development branch for further features.
 No Build-39 IPA is requested or produced. Build 38 remains the delivered candidate. The SideStore extension
 variant is an opt-in test candidate, not device-verified signing or a change to installed refresh ownership.
 
@@ -84,13 +84,28 @@ and keychain groups, no uninstall, no automatic certificate revocation, one refr
 and advancing-expiry evidence including SideStore's own renewals. No installer, credential, account,
 certificate, enrollment or scheduled-task change is performed by this source work.
 
-Build 39 stays on a development branch. PR CI compiles/tests without packaging an IPA. It separately
-compiles the optional host/extension for simulator and the extension for device, then restores the
-default project for normal device compilation. Manual dispatch defaults to no packaging. Main's
-existing release packaging remains; do not merge this branch or dispatch packaging until a later
-release request. The existing IPA validator remains intentionally extension-free; before producing a
-SideStore candidate, add explicit single-extension validation and release-variant selection. No
-SideStore IPA or phone compatibility is implied by a successful compile.
+Build 39 stays on a development branch. PR CI compiles/tests without packaging an IPA. It builds
+both complete device variants in separate DerivedData directories, validates each .app directly and
+verifies arm64 host/extension executables. The same validator checks ZIP payloads when packaging is
+later requested; normal source verification never creates an IPA.
+
+Manual dispatch has independent inputs: `build_variant` defaults to `standard` and may explicitly
+select `study-live-activity`; `package_ipa` defaults to false. Selecting a variant does not enable
+packaging. Main pushes retain standard-only release behavior. Do not merge or request packaging
+until a later release instruction. Selection is resolved through `ios/scripts/release-variant.py`.
+
+`validate-ipa.py` defaults to the extension-free standard contract. The opt-in contract requires
+exactly `PlugIns/StudyActivityExtension.appex`, its permanent child bundle ID, executable, WidgetKit
+extension point and matching app version/build/minimum OS, plus the host Live Activity flag. Both
+contracts reject foreign roots/extensions, test bundles, provisioning profiles, unsafe/duplicate
+archive paths and missing executables, and preserve the private Documents/audio-only restrictions.
+Checks use explicit errors and also run under optimized Python. Eighteen fast release-contract tests
+use in-memory archives and temporary synthetic .app directories; no IPA fixture is written.
+
+The eventual Live Activity output has a distinct filename/artifact name and build metadata recording
+the selected variant and extension ID. Release uploads contain only the release files; simulator
+screenshots remain in their diagnostics artifact. This release preparation is implemented with
+exact-source CI pending. It proves neither SideStore signing nor physical phone compatibility.
 
 ## Verification
 
@@ -100,11 +115,14 @@ denial, dismissal/retry, single-activity reconciliation, 03:00 and eight-hour bo
 tests cover passive reminders and foreground presentation. XCUITest exercises Focus, both landscape
 orientations, continued running, Pause and return to portrait. Synthetic native captures include
 portrait/landscape, accessibility and the actual shared lock-screen card/stale content. The complete
-cloud run at `d8856b0` passed all nine registered domain suites, 195 hosted tests and 14 UI tests,
+cloud run at `86c4367` passed all nine registered domain suites, 195 hosted tests and 14 UI tests,
 default simulator/device builds and the optional host/extension compilation and metadata checks.
 The UI test verifies keep-awake on through rotation and off on re-entry. Packaging and IPA upload
 were skipped; diagnostics were the only artifact. Normal and accessibility card content fits the
-synthetic viewport. The subsequent compact-dial padding fix still requires exact-source CI/captures.
+synthetic viewport. Final native captures confirm the compact landscape countdown and Remaining
+label are fully readable; the actual running landscape capture also shows keep-awake on. The
+smaller inset is presentation-only. These are shared-view/simulator checks, not physical WidgetKit
+placement, extension signing or AOD proof.
 
 Physical acceptance remains required:
 

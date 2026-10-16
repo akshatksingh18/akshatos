@@ -126,7 +126,8 @@ The study instrument is one rounded container, with the status row, dial, explic
 
 Build-39 Focus uses the same dial on a flat graphite desk surface. In compact-height landscape with
 at least 560 points of available width, the dial and controls align at the top side by side, with
-the dial sized to the usable height; narrow and accessibility
+the dial sized to the usable height and an 8-point inner button inset instead of the portrait
+24-point inset, keeping the full countdown and single-line label readable. Narrow and accessibility
 layouts stack and scroll. Native navigation, safe areas and 44-point actions remain. Keep screen awake
 is one native switch; optional Live Activity controls are collapsed. The lock-screen card uses plain
 white semantic-sized text on graphite, system timer text and no animation or private topic content.

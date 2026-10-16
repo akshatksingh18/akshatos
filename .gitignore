@@ -34,6 +34,8 @@ ios/DerivedData/
 ios/AkshatOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 
 # Local environment and OS files
+__pycache__/
+*.pyc
 .env
 .env.*
 !.env.example

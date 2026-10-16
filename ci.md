@@ -16,12 +16,16 @@ PageVault's phone verification.
   requested through `package_ipa=true`. Documentation-only changes do not
   spend macOS build minutes. PR validation never uses `pull_request_target`.
 - **Source checks**: logical module boundaries, feature test inventory and actionlint 1.7.12
-  workflow syntax/expression checking. ShellCheck is disabled; this is not shell/security auditing.
+  workflow syntax/expression checking, plus 18 fast release-selection/payload-validator tests with
+  in-memory ZIP fixtures (no IPA output). ShellCheck is disabled; this is not shell/security auditing.
 - **Build and test iOS**: all registered feature domain executables, simulator compilation,
   hosted XCTest persistence tests, XCUITest navigation, device Release compilation, and IPA
   payload/identity inspection only on release runs. PRs never create an IPA. The optional Build-39
-  study Live Activity host/extension compiles for simulator and the extension for device, without
-  packaging, before restoring the default project for device compilation. New features must register their tests in `ios/tests/feature-tests.json`;
+  study Live Activity host/extension compiles for simulator and device, without packaging. Both
+  complete device variants are built in separate directories, checked for arm64 and validated directly
+  with the variant-aware payload validator. The selected bundle is validated again before release
+  steps. The macOS timeout is 40 minutes for the two full device builds and simulator tests. New
+  features must register their tests in `ios/tests/feature-tests.json`;
   domain suites run automatically. The unit/UI directories are included recursively by XcodeGen.
 - **CI Gate**: always runs. It requires Source checks to succeed and, when classification requires
   macOS, requires the build to succeed. It accepts a skipped build only when the classifier output
@@ -30,7 +34,11 @@ PageVault's phone verification.
 - Simulator `.xcresult` bundles (including coverage) and screenshots are uploaded even when tests
   fail, when produced, with seven-day retention. Coverage is collected, not a numeric pass threshold.
 - IPA packaging/upload requires a main push or explicit manual `package_ipa=true` and successful
-  checks/tests. Build-39 development stays on its branch with a draft PR, not merged automatically.
+  checks/tests. Manual `build_variant` is independently selected (`standard` by default, or
+  `study-live-activity`); selecting the latter alone creates no IPA. Main stays standard. The study
+  variant uses a distinct filename/artifact, and build metadata records variant and extension ID.
+  Release upload includes only release files, separate from test diagnostics. Build-39 development
+  stays on its branch with a draft PR, not merged automatically.
   Artifacts expire after
   14 days; they are not signed releases or durable backups. No Apple credentials or auto-install step.
 - `gh run watch --exit-status` has reported success for a failed run. Verify each job's conclusion
