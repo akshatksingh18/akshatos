@@ -292,6 +292,8 @@ struct StudyLogBackup: Codable, Equatable {
     var exportedAt: Date
     var segments: [StudySegment]
     var settings: StudySettings?
+    var transferSourceID: String?
+    var transferRevision: Int?
 
     init(exportedAt: Date, segments: [StudySegment], settings: StudySettings?) {
         version = Self.currentVersion
@@ -302,6 +304,8 @@ struct StudyLogBackup: Codable, Equatable {
 
     func validatedSegments() throws -> [StudySegment] {
         guard version == Self.currentVersion else { throw StudyLogError.unsupportedVersion }
+        guard transferSourceID == nil || UUID(uuidString: transferSourceID!) != nil,
+              transferRevision == nil || transferRevision! >= 0 else { throw StudyLogError.invalidSegment }
         return try StudyLog.validated(segments)
     }
 }

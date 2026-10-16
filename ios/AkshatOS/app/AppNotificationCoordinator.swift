@@ -69,7 +69,7 @@ import UIKit
             let notification = response.notification
             if notification.request.identifier == PersonalNotifications.namespace + "study",
                notification.request.content.categoryIdentifier == PersonalNotifications.categoryID {
-                personal?.respond(response.actionIdentifier)
+                personal?.respond(response.actionIdentifier, blockID: (notification.request.content.userInfo["blockID"] as? String).flatMap(UUID.init(uuidString:)))
                 if response.actionIdentifier == PersonalNotifications.pauseAction || response.actionIdentifier == PersonalNotifications.keepGoingAction { navigator.request(.studyLog) }
             }
             // Routing is requested before the await, so opening a notification lands on its feature

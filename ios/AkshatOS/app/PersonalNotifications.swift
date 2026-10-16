@@ -105,7 +105,7 @@ import UserNotifications
             content.body = "Keep going, or pause and correct the block if you stopped earlier."
             content.sound = .default; content.categoryIdentifier = Self.categoryID
             let anchor = max(running.start, preferences.lastStudyConfirmation ?? running.start)
-            content.userInfo = ["anchor": anchor.timeIntervalSince1970]
+            content.userInfo = ["anchor": anchor.timeIntervalSince1970, "blockID": running.id.uuidString]
             desired.append(UNNotificationRequest(identifier: Self.namespace + "study", content: content,
                 trigger: UNTimeIntervalNotificationTrigger(timeInterval: Double(min(120, max(5, preferences.checkMinutes))) * 60, repeats: true)))
         }
@@ -141,8 +141,9 @@ import UserNotifications
             if planned.count < desired.count { status += " Other reminders currently use the remaining capacity." }
         } catch { status = "Some reminders could not be scheduled. Open Settings and retry. Existing unrelated reminders are unchanged." }
     }
-    func respond(_ identifier: String) {
+    func respond(_ identifier: String, blockID: UUID?) {
         study.load()
+        guard let blockID, study.log.running?.id == blockID else { reconcile(); return }
         if identifier == Self.pauseAction { study.pause() }
         if identifier == Self.keepGoingAction { preferences.lastStudyConfirmation = Date() }
         reconcile()

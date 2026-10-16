@@ -81,6 +81,20 @@ import UIKit
         XCTAssertNil(reopened.pendingImport)
         XCTAssertTrue(reopened.state.watched(title.id))
     }
+    func testStaleStudyNotificationCannotPauseAnotherBlock() throws {
+        let suite = "stale-study-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let db = try container(StudyLogSchemaV1.self)
+        let study = StudyLogStore(repository: SwiftDataStudyLogRepository(container: db), defaults: defaults)
+        study.load(); study.start()
+        let todo = TodoStore(container: try container(TodoSchemaV1.self)); todo.load()
+        let scheduler = PersonalNotifications(study: study, todo: todo, preferences: PersonalPreferences(defaults: defaults))
+        scheduler.respond(PersonalNotifications.pauseAction, blockID: UUID())
+        XCTAssertTrue(study.isRunning, "A tap on an older delivered reminder cannot stop a newer block")
+        scheduler.respond(PersonalNotifications.pauseAction, blockID: study.log.running?.id)
+        XCTAssertFalse(study.isRunning)
+    }
     func testInvalidSpendingRestoreCannotReplaceSavedExpenses() async throws {
         let db = try container(SpendingSchemaV1.self)
         let store = SpendingStore(container: db); store.load()

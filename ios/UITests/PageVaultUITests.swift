@@ -17,8 +17,8 @@ final class PageVaultUITests: XCTestCase {
         capture("PageVault library")
 
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(app.buttons["open-squats"].waitForExistence(timeout: 5),
-                      "Leaving PageVault returns to the hub with Pushup Reminder intact")
+        XCTAssertTrue(app.buttons["open-pageVault"].waitForExistence(timeout: 5),
+                      "Leaving PageVault returns to Apps")
     }
 
     /// The file mover and importer are system UI, so this covers what the app owns: the sheet is

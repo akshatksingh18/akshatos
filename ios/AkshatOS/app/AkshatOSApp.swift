@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 @main
 struct AkshatOSApp: App {
@@ -40,6 +41,7 @@ struct AkshatOSApp: App {
     /// and the request has to survive until one does.
     let navigator = HubNavigator()
     let orientation = OrientationGate()
+    private var preferencesSubscription: AnyCancellable?
 
     init() {
         // ReelVault was removed after Build 32; delete the videos and records it left behind.
@@ -61,6 +63,9 @@ struct AkshatOSApp: App {
         notifications = AppNotificationCoordinator(squats: squats, liftLog: liftLog, navigator: navigator, personal: personalNotifications)
         let scheduler = personalNotifications
         studyLog.onChange = { scheduler.reconcile() }; todo.onChange = { scheduler.reconcile() }
+        preferencesSubscription = preferences.objectWillChange.sink { _ in
+            Task { @MainActor in await Task.yield(); scheduler.reconcile() }
+        }
     }
 }
 

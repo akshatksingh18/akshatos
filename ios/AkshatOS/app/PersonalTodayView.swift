@@ -6,6 +6,7 @@ struct PersonalTodayView: View {
     @ObservedObject var journal: JournalStore
     @ObservedObject var preferences: PersonalPreferences
     var keepGoing: () -> Void
+    var openTodo: () -> Void
     @State private var history = false
     @State private var focus = false
     @State private var capture = false
@@ -100,7 +101,7 @@ struct PersonalTodayView: View {
                 Button(study.selectedTopic.isEmpty ? "Add a topic" : study.selectedTopic) { topic = study.selectedTopic; topicSheet = true }
                     .font(.caption).frame(minHeight: 44)
                 if !study.isRunning && !todo.state.thoughts.isEmpty {
-                    Text("\(todo.state.thoughts.count) things waiting in To-do → After study").font(.caption).foregroundStyle(.secondary)
+                    Button("\(todo.state.thoughts.count) things waiting in To-do → After study", action: openTodo).font(.caption).frame(minHeight: 44)
                 }
                 if study.needsRunningReview && date.timeIntervalSince(preferences.lastStudyConfirmation ?? .distantPast) >= 3600 {
                     DisclosureGroup("Check this running block") {
@@ -192,7 +193,7 @@ struct StudyWeekGraphic: View {
             let pieces = blocks.filter { $0.day == key }
             Text(key > store.today ? "\(key) · Upcoming day" : "\(key) · \(StudyTimeDisplay.short(pieces.reduce(0) { $0 + $1.duration })) · \(pieces.count) blocks")
                 .font(.caption).foregroundStyle(.secondary)
-            Text("Copper: recorded time · green: above the prior seven-day average · purple: personal best. Missing history has no comparison colour.").font(.caption2).foregroundStyle(.secondary)
+            Text("Copper: study time · green: above usual · purple: personal best").font(.caption2).foregroundStyle(.secondary)
         }.accessibilityIdentifier("study-week")
         .onAppear { if selected.isEmpty { selected = store.today } }
     }

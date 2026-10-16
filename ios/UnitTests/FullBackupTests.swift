@@ -44,6 +44,10 @@ import XCTest
         let liftLog: LiftLogStore
         let body: BodyLogStore
         let studyLog: StudyLogStore
+        let todo: TodoStore
+        let journal: JournalStore
+        let watchlist: WatchlistStore
+        let spending: SpendingStore
         let backup: FullBackupService
     }
 
@@ -109,10 +113,20 @@ import XCTest
                 container: try container(StudyLogSchemaV1.self, StudyLogMigration.self, name: "\(name)-studylog")),
             defaults: defaults, now: { clock }, calendar: calendar)
         studyLog.load()
-        let backup = FullBackupService(parts: [squats, pageVault, liftLog, body, studyLog],
+        func snapshot(_ version: any VersionedSchema.Type) throws -> ModelContainer {
+            let schema = Schema(versionedSchema: version)
+            return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+        }
+        defaults.set(false, forKey: "journal.lock-enabled")
+        let todo = TodoStore(container: try snapshot(TodoSchemaV1.self), now: { clock }, calendar: calendar); todo.load()
+        let journal = JournalStore(container: try snapshot(JournalSchemaV1.self), defaults: defaults, photoFolder: root.appendingPathComponent("JournalPhotos")); journal.load()
+        let watchlist = WatchlistStore(container: try snapshot(WatchlistSchemaV1.self)); watchlist.load()
+        let spending = SpendingStore(container: try snapshot(SpendingSchemaV1.self)); spending.load()
+        let preferences = PersonalPreferences(defaults: defaults)
+        let backup = FullBackupService(parts: [squats, pageVault, liftLog, body, studyLog, todo, journal, watchlist, spending, preferences],
                                        now: { clock }, calendar: calendar, appVersion: "test",
                                        scratch: root.appendingPathComponent("Outgoing"))
-        return Phone(squats: squats, pageVault: pageVault, liftLog: liftLog, body: body, studyLog: studyLog,
+        return Phone(squats: squats, pageVault: pageVault, liftLog: liftLog, body: body, studyLog: studyLog, todo: todo, journal: journal, watchlist: watchlist, spending: spending,
                      backup: backup)
     }
 
@@ -160,9 +174,15 @@ import XCTest
         await phone.pageVault.importBook(from: try makePDF(pages: 12, title: "Alpha"))
         let alpha = try XCTUnwrap(phone.pageVault.books.first)
         phone.pageVault.setPlace(alpha, page: 5)
-        // The clock is fixed, so this block is the one running at backup time.
-        phone.studyLog.start()
-        XCTAssertTrue(phone.studyLog.isRunning)
+        XCTAssertTrue(phone.studyLog.saveSegment(StudySegment(start: clock.addingTimeInterval(-600), end: clock, source: .manual, dayTarget: 21600)))
+        XCTAssertTrue(phone.todo.add("Synthetic priority"))
+        phone.todo.choose(try XCTUnwrap(phone.todo.visible.first?.id), day: phone.todo.today)
+        var entry = phone.journal.newEntry(phone.journal.today); entry.text = "Synthetic reflection"
+        XCTAssertTrue(phone.journal.save(entry)); phone.journal.markDone(entry)
+        phone.journal.addPhoto(sampleImage(), day: entry.day)
+        phone.watchlist.add(title: "Synthetic film", mood: "Calm", kind: "Movie")
+        phone.watchlist.mark(try XCTUnwrap(phone.watchlist.state.titles.first?.id), watched: true)
+        XCTAssertTrue(phone.spending.add(title: "Synthetic expense", amount: "12.34", category: "Other", date: clock))
         XCTAssertNil(phone.liftLog.message)
         XCTAssertNil(phone.body.message)
         XCTAssertNil(phone.pageVault.message)
@@ -176,9 +196,9 @@ import XCTest
         XCTAssertTrue(folder.lastPathComponent.hasPrefix("AkshatOS Backup 2026-09-19"))
         let manifest = try AkshatOSBackupManifest.decode(
             Data(contentsOf: folder.appendingPathComponent(AkshatOSBackupManifest.fileName)))
-        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "pageVault", "liftLog", "body", "studyLog"])
+        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "pageVault", "liftLog", "body", "studyLog", "todo", "journal", "watchlist", "spending", "personal-settings"])
         XCTAssertEqual(manifest.parts.map(\.path), ["pushups.json", "pagevault", "lift-log.json", "body",
-                                                    "study-log.json"])
+                                                    "study-log.json", "todo.json", "journal", "watchlist.json", "spending.json", "personal-settings.json"])
         for part in manifest.parts {
             XCTAssertTrue(FileManager.default.fileExists(atPath: folder.appendingPathComponent(part.path).path),
                           "\(part.title) is in the folder")
@@ -186,9 +206,9 @@ import XCTest
 
         let fresh = try await makePhone("PhoneB")
         let prepared = try await fresh.backup.prepareRestore(from: folder)
-        XCTAssertEqual(prepared.titles, ["Pushups", "PageVault", "Lift Log", "Body", "Study Log"])
+        XCTAssertEqual(prepared.titles, ["Pushups", "PageVault", "Lift Log", "Body", "Study Log", "To-do", "Journal", "Watchlist", "Spending", "Personal settings"])
         let summary = await fresh.backup.restore(prepared)
-        XCTAssertTrue(summary.hasPrefix("Restored: Pushups, PageVault, Lift Log, Body, Study Log."), summary)
+        XCTAssertTrue(summary.hasPrefix("Restored: Pushups, PageVault, Lift Log, Body, Study Log, To-do, Journal, Watchlist, Spending, Personal settings."), summary)
         XCTAssertFalse(summary.contains("Not restored"), summary)
         XCTAssertTrue(summary.contains("resume any open day"), "A module's note follows the summary")
         XCTAssertNil(fresh.squats.notice, "The summary replaces the module's own alert")
@@ -201,7 +221,12 @@ import XCTest
         XCTAssertEqual(fresh.body.heightInches, 70, "Height comes back with Body")
         XCTAssertEqual(fresh.pageVault.books.map(\.title), ["Alpha"], "PageVault books come back with their PDF")
         XCTAssertEqual(fresh.pageVault.books.first?.openingPage, 5)
-        XCTAssertTrue(fresh.studyLog.isRunning, "Study Log comes back, with its running block")
+        XCTAssertFalse(fresh.studyLog.isRunning)
+        XCTAssertEqual(fresh.todo.visible.map(\.title), ["Synthetic priority"])
+        XCTAssertEqual(fresh.journal.entries.first?.text, "Synthetic reflection")
+        XCTAssertNotNil(fresh.journal.photo(try XCTUnwrap(fresh.journal.entries.first?.photos.first)))
+        XCTAssertTrue(fresh.watchlist.state.watched(try XCTUnwrap(fresh.watchlist.state.titles.first?.id)))
+        XCTAssertEqual(fresh.spending.state.expenses.first?.cents, 1234)
         XCTAssertEqual(fresh.studyLog.log.segments.count, 1)
         XCTAssertNil(fresh.studyLog.message, "The hub's summary replaces Study Log's own restore message")
         XCTAssertNil(fresh.body.message, "The hub's summary replaces each module's own restore message")

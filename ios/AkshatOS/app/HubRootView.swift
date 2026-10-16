@@ -14,7 +14,8 @@ struct HubRootView: View {
         TabView(selection: $tab) {
             NavigationStack {
                 PersonalTodayView(study: services.studyLog, todo: services.todo, journal: services.journal, preferences: services.preferences,
-                    keepGoing: { services.preferences.lastStudyConfirmation = Date(); services.personalNotifications.reconcile() })
+                    keepGoing: { services.preferences.lastStudyConfirmation = Date(); services.personalNotifications.reconcile() },
+                    openTodo: { tab = .todo })
             }.tabItem { Label("Today", systemImage: "calendar") }.tag(PersonalHubTab.today)
             NavigationStack { TodoView(store: services.todo) }
                 .tabItem { Label("To-do", systemImage: "checklist") }.tag(PersonalHubTab.todo)

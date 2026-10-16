@@ -117,7 +117,11 @@ import Foundation
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
-        return try encoder.encode(StudyLogBackup(exportedAt: now(), segments: log.segments, settings: settings))
+        guard storageAvailable else { throw PersonalDataError.invalid("Study data is unavailable. Retry loading before exporting.") }
+        var backup = StudyLogBackup(exportedAt: now(), segments: log.segments, settings: settings)
+        backup.transferSourceID = defaults.string(forKey: "study.transfer-source")
+        backup.transferRevision = defaults.integer(forKey: "study.transfer-revision")
+        return try encoder.encode(backup)
     }
 
     /// Decodes and checks a backup without changing anything.
@@ -133,6 +137,7 @@ import Foundation
     func restoreBackup(_ data: Data, confirmedRunningEnd: Date? = nil) -> Bool {
         do {
             var restored = try Self.validatedBackup(data)
+            let archive = try LocalDataCoding.decode(StudyLogBackup.self, data)
             if let index = restored.segments.firstIndex(where: \.isRunning) {
                 guard let end = confirmedRunningEnd, end >= restored.segments[index].start, end <= now() else {
                     throw PersonalDataError.invalid("Choose the actual end of the backed-up running block before restoring. Elapsed time is not automatically accepted.")
@@ -143,6 +148,10 @@ import Foundation
             try repository.replaceAll(with: restored.segments)
             log = StudyLog(segments: restored.segments)
             if let restoredSettings = restored.settings { save(restoredSettings) }
+            if let source = archive.transferSourceID {
+                defaults.set(source, forKey: "study.transfer-source")
+                defaults.set(max(defaults.integer(forKey: "study.transfer-revision"), archive.transferRevision ?? 0), forKey: "study.transfer-revision")
+            }
             storageAvailable = true
             editUndo = nil; canUndoEdit = false; onChange?()
             message = "Study Log restored: \(restored.segments.count == 1 ? "1 block" : "\(restored.segments.count) blocks")."
