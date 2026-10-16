@@ -1,6 +1,6 @@
 # AkshatOS
 
-Personal native iPhone hub: the home screen selects a feature, starting with Pushup Reminder.
+Personal native iPhone hub: source 0.14.0 uses Today, To-do, Journal and Apps. Build 37 still uses the earlier module picker.
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
@@ -13,52 +13,25 @@ every module at once (`hub-plan.md` § Full backup). This repository evolved fro
 feature as Pushup Reminder with history preserved. Android remains an untouched, unverified legacy
 Squats fallback.
 
-`hub-plan.md` owns the unchanged WHOOP boundary and the Pushups port in WHOOP source alongside
-planned Lift Log/Body integration. Read it before a cross-app port, notification ownership,
+`hub-plan.md` owns the unchanged installed boundary: WHOOP implements Pushups and Lift Log/Body,
+while AkshatOS's import/removal cutover remains open. Read it before a cross-app port, notification ownership,
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
-**Status:** Building. Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
-`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
-editable Lift Log splits and read-aloud controls; the voice sounded robotic.
-Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
-installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. Its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
-Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
-PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
-(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
-which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
-on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
-dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen. It also makes Lift Log
-flexible: the split and an open workout stay in step, logged exercises move up in the order done,
-and the workout screen gains search, reorder and swipe-to-remove. Build 34 (PR #63 at `a93c48d`) passed PR/main CI (after a UI-test scrolling fix) and local
-checksum/IPA validation and is installed (0.11.0,
-automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
-after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
-PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
-and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
-once instead of at every redraw, measures the voice's size off the main thread, loads the model
-when the book opens and renders the next page's first sentence ahead of the page turn; it passed
-PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
-current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
-it is the next check (`pagevault/neural-voice-audit.md`).
-Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
-real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
-list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
-dragging covers. Not yet built by CI or phone-tested.
-PageVault v1 is phone-accepted through Build 24; Build 13 remains the detailed movement-lifecycle
-baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing gates remain open.
-`cloud-build.md` owns per-build evidence and `todo.md` owns open gates.
+**Status:** Working source is 0.14.0 (38), the authorized four-tab personal hub in PR #67. Native compilation
+and domain suites passed an intermediate revision; the final CI Gate, native review and testing
+IPA are pending. Build 37 is installed/enrolled with its feature phone checks open; Build 31 remains
+the accepted recovery artifact. `personal-hub.md` owns the implemented feature contract,
+`implementation-plan.md` tracks coverage, and `cloud-build.md` owns build evidence.
 
 ## Files
 
+- `DESIGN.md` — source-extracted native personal-hub tokens, component patterns and visual boundaries;
+  read before changing the approved graphite/copper system. Release verification is tracked separately.
+- `personal-hub.md` — native four-tab implementation, feature stores, privacy, notification budget,
+  full-backup and file-transfer contracts; read before changing the personal hub.
+
+- `implementation-plan.md` (local only) — authorized personal-hub build scope, explicit defaults, coverage and
+  remaining release/device gates; read while implementing the approved design and selected features.
 - `pagevault/` — PageVault's product scope, deployment plan, phases, device findings and fixture
   generator; routed through `pagevault/CLAUDE.md`. Its source is in `ios/AkshatOS/features/pagevault/`.
   Merged in from the former private `book-reader` repository, which keeps the earlier history.
@@ -69,6 +42,32 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 - `study-log.md` — Study Log module contract: a countdown study timer that records real study time,
   replacing the Windows Clock countdown Akshat uses; decisions, builds, data rules and gates. Read
   before changing it.
+- `PRODUCT.md` (local only) — product brief for the Impeccable design skill (installed in `../whoop/.claude/skills/impeccable/`):
+  users, purpose, constraints and brand commitments (iPhone feel, dark, plain words, motivating
+  mechanics); read before design work. Design scratch lives in the gitignored `.impeccable/`:
+  `mocks/simple-day.html` is the approved design reference, `mocks/check-simple-day.cjs`
+  checks its render/state logic, and `mocks/make-chat-preview.cjs` packages a scoped, synthetic
+  in-chat preview for phone review without a server or public deployment. Earlier comparisons stay
+  as reference; the approved native system is documented in `DESIGN.md` after finish review.
+- `laptop-phone-sync.md` (local only) — reviewed research and proposed approach for moving files between the
+  laptop and the apps (iCloud Drive linked folder, measure first, test build), plus the open
+  data-policy decision; read before building any import/export hand-off.
+- `laptop-phone-sync-research-prompt.md` (local only) — self-contained research brief (no personal data) on moving
+  files between the Windows laptop and the sideloaded apps: setup, what was tried, requirements and
+  questions. A prompt, not findings or a decision.
+- `todo-journal-plan.md` (local only) — accepted feature scope and design decisions, including all 18 selected
+  features and the day/completion/privacy contracts. Implementation and verification are tracked in
+  `implementation-plan.md` and `personal-hub.md`.
+
+- `ios/AkshatOS/features/todo/`, `features/journal/`, `features/watchlist/`, and `features/spending/`
+  (under `ios/AkshatOS/`) — new feature-owned domains, SwiftData snapshot stores, backup adapters and
+  native views; `personal-hub.md` owns their contracts and privacy/recovery boundaries.
+- `ios/AkshatOS/app/Personal*`, `StudyTransfer.swift`, `LinkedFolderService.swift` and
+  `LegacyFitnessTransition.swift` — app-owned shell, notification budget, App Intents, progress,
+  privacy-aware composition, explicit file transport and controlled old-reminder handover.
+- `ios/UnitTests/PersonalHubPersistenceTests.swift`, `PersonalNotificationTests.swift`,
+  `PersonalHubRenderTests.swift`, and `ios/UITests/PersonalHubUITests.swift` — new feature recovery,
+  failure/budget, synthetic native render and actual navigation checks; registered in the inventory.
 - `ios/AkshatOS/features/studylog/` — Study Log: `domain/StudyLog.swift` (blocks, the 3:00 AM day,
   totals, validation, backup), `data/` (SwiftData store), `StudyLogStore.swift`,
   `StudyLogBackupPart.swift` and `ui/` (Today, history, export document).
@@ -129,8 +128,8 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 36 (the natural voice test with the
-  read-aloud speed fix), installed and enrolled, pending its phone pass.
+  31 is the accepted copy and `testing\` holds Build 37 (Study Log, one voice list, Want to read
+  order), installed and enrolled, awaiting its feature phone pass.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -302,7 +301,7 @@ baseline. Broader physical edge cases, refresh/recovery and multi-cycle signing 
 
 - Use one stable normal-request identifier and a bounded batch of one-off
   `UNTimeIntervalNotificationTrigger` requests. The first request is one selected interval after
-  Start/Resume/Done (45 minutes by default); if ignored, follow it with 59 automatic nudges ten
+  Start/Resume/Done (45 minutes by default); if ignored, follow it with 39 automatic nudges ten
   minutes apart. Together with the idle daily-start request this remains below iOS's pending-
   notification ceiling. Foreground reconciliation replenishes a low or exhausted batch from the
   persisted cadence anchor without shifting the clock. Never build an unbounded request list.
@@ -687,6 +686,9 @@ data, device state, or durable release IPAs.
 
 ## Working agreement
 
+- **Code-level workflow:** make changes through source files and CLI tools. Akshat does not want
+  remote control or computer-use automation of browsers/native apps. He reviews local previews
+  himself; verify through source checks and appropriate CI without operating his UI.
 - **Continuous verification is automatic:** every feature/fix must add or update meaningful tests,
   register new feature suites, and pass the exact commit's GitHub Actions `CI Gate` before claiming
   verification or promoting an IPA. Inspect failures and fix the cause; never bypass or weaken tests
@@ -727,7 +729,13 @@ data, device state, or durable release IPAs.
 - **Design and wording stay clean, minimal and plain.** Akshat rejected the Build-25 gamified
   "quest" theme: no game metaphors (quests, portals, power-ups, combos, trophies, treasure) in the UI,
   notifications or icon, one calm accent, flat surfaces, standard fonts, and labels that say plainly
-  what things are. `features.md` § Dashboard and visual direction owns the details.
+  what things are. `features.md` § Dashboard and visual direction owns the details. This bans
+  themed decoration, not motivation: Akshat welcomes game-like mechanics (streaks, levels, goals,
+  progress rewards) when they genuinely help his personal development, shown in the same plain
+  style.
+- For the future hub design, simple must not mean bare text: Akshat wants purposeful graphics and
+  more visual character while keeping clear navigation and low noise. The dial/block/paper/book
+  direction is owned by `todo-journal-plan.md` §10 and implemented in source 0.14.0; Build 37 is still the installed app.
 - Treat `features.md` as the product-scope source of truth. Preserve the accepted dashboard,
   Start/Pause/Resume/End lifecycle, explicit-set counting, daily goal/streak, Home auto-pause, daily
   overview, and notification actions; keep optional Shortcuts automation distinct from the

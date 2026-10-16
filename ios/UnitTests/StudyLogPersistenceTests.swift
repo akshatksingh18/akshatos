@@ -56,6 +56,34 @@ import XCTest
                        "A paused block stays the length it was")
     }
 
+    func testStartPauseUndoAndCSVUseTheSavedBlocks() throws {
+        let store = try makeStore(try makeContainer())
+        store.start(); store.undoEdit(); XCTAssertTrue(store.log.segments.isEmpty)
+        store.start(); current = current.addingTimeInterval(600); store.pause()
+        store.undoEdit(); XCTAssertTrue(store.isRunning, "Undo restores a mistakenly paused timer")
+        current = current.addingTimeInterval(30); store.pause()
+        XCTAssertEqual(store.log.segments.first?.duration(now: current), 630)
+        let csv = try XCTUnwrap(String(data: store.csvData(), encoding: .utf8))
+        XCTAssertTrue(csv.contains("630"))
+        current = current.addingTimeInterval(11); store.undoEdit()
+        XCTAssertFalse(store.isRunning, "Expired Undo cannot reopen an old block")
+    }
+
+    func testTopicsRoadmapTypeAndMarksSurviveRelaunch() throws {
+        let db = try makeContainer(), store = try makeStore(db)
+        store.setDefaultRoadmapType("SQL"); XCTAssertTrue(store.setTopic("Synthetic SQL topic"))
+        store.start(); current = current.addingTimeInterval(600); store.pause()
+        store.updateSettings(target: 7200, floor: 1800, goal: 3600)
+        let reopened = try makeStore(db)
+        XCTAssertEqual(reopened.log.segments.first?.roadmapType, "SQL")
+        XCTAssertEqual(reopened.log.segments.first?.topic, "Synthetic SQL topic")
+        XCTAssertEqual(reopened.targetToday(at: current), 21600, "Changing settings does not rewrite today's first recorded aim")
+        let backup = try LocalDataCoding.decode(StudyLogBackup.self, reopened.backupData())
+        XCTAssertEqual(backup.defaultRoadmapType, "SQL")
+        current = current.addingTimeInterval(86400); reopened.start()
+        XCTAssertEqual(reopened.targetToday(at: current), 7200)
+    }
+
     func testAnAccidentalTapLeavesNoBlock() throws {
         let container = try makeContainer()
         let store = try makeStore(container)
@@ -86,9 +114,12 @@ import XCTest
         let data = try original.backupData()
 
         let other = try makeStore(try makeContainer())
-        XCTAssertTrue(other.restoreBackup(data))
+        XCTAssertFalse(other.restoreBackup(data), "A backup cannot resume a timer without reconciling its end")
+        XCTAssertTrue(other.log.segments.isEmpty)
+        current = current.addingTimeInterval(600)
+        XCTAssertTrue(other.restoreBackup(data, confirmedRunningEnd: current))
         XCTAssertEqual(other.log.segments.count, 2)
-        XCTAssertTrue(other.isRunning, "A block running at backup time comes back running")
+        XCTAssertFalse(other.isRunning, "The restored block closes at its confirmed actual end")
         XCTAssertEqual(other.settings, .standard)
     }
 

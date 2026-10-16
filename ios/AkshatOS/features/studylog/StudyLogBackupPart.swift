@@ -17,10 +17,19 @@ extension StudyLogStore: HubBackupPart {
 
     func prepareBackupRestore(from item: URL) async throws -> HubBackupRestore {
         let data = try Data(contentsOf: item)
-        _ = try Self.validatedBackup(data)
+        let checked = try Self.validatedBackup(data)
+        var end: Date?
+        if let running = checked.segments.first(where: \.isRunning) {
+            let backup = try LocalDataCoding.decode(StudyLogBackup.self, data)
+            guard let chosen = await approveRunningRestore(start: running.start, suggested: backup.exportedAt) else {
+                throw PersonalDataError.invalid("Study restore cancelled: running time was not confirmed.")
+            }
+            end = chosen
+        }
+        let confirmedEnd = end
         return HubBackupRestore { [self] in
             defer { message = nil }
-            return restoreBackup(data) ? .restored : .failed(message ?? "unknown error")
+            return restoreBackup(data, confirmedRunningEnd: confirmedEnd) ? .restored : .failed(message ?? "unknown error")
         }
     }
 }

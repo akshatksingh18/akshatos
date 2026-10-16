@@ -41,3 +41,13 @@ ios/AkshatOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Local design scratch and personal planning; reviewed technical DESIGN.md can be tracked
+.impeccable/
+
+# Personal product/planning context is kept local under the workspace privacy gate.
+PRODUCT.md
+implementation-plan.md
+todo-journal-plan.md
+laptop-phone-sync.md
+laptop-phone-sync-research-prompt.md

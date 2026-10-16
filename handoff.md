@@ -1,44 +1,17 @@
 # AkshatOS session handoff
 
-**Status:** Current-state entry point for resuming AkshatOS work. Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
-`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
-editable Lift Log splits and read-aloud controls; the voice sounded robotic.
-Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
-installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. Its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
-Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
-PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
-(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
-which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
-on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
-dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen. It also makes Lift Log
-flexible: the split and an open workout stay in step, logged exercises move up in the order done,
-and the workout screen gains search, reorder and swipe-to-remove. Build 34 (PR #63 at `a93c48d`) passed PR/main CI (after a UI-test scrolling fix) and local
-checksum/IPA validation and is installed (0.11.0,
-automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
-after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
-PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
-and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
-once instead of at every redraw, measures the voice's size off the main thread, loads the model
-when the book opens and renders the next page's first sentence ahead of the page turn; it passed
-PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
-current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
-it is the next check (`pagevault/neural-voice-audit.md`).
-Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
-real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
-list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
-dragging covers. Not yet built by CI or phone-tested.
-Read the linked owning documents for feature contracts, build evidence and open gates.
-Pending documentation travels with the next real implementation change. Do not include unrelated
-signing-script/setup edits or private fitness records in that change.
+**Status:** Authorized personal-hub implementation is on `feature/personal-hub`, PR #67,
+source 0.14.0 (38). Complete the exact-commit CI Gate, native review and testing IPA before calling
+it delivered. Build 37 remains installed/enrolled; Build 31 remains accepted recovery.
+`implementation-plan.md` tracks coverage, `personal-hub.md` is the native contract and
+`todo-journal-plan.md` records accepted product/design decisions. Do not restart design selection
+or request permission for already authorized work. The user reviews on a remote phone; localhost
+and PC links are not phone-accessible. All work stays at source/CLI level.
+
+Planning files remain local because the public push containing a personal planning document was
+rejected by automatic approval review. The accepted retry was code-only. Review every subsequent
+outgoing commit under the root privacy gate; do not publish personal routines/records to satisfy
+documentation synchronization. Technical implementation documentation can be reviewed separately.
 
 ## Start here
 
@@ -82,7 +55,7 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
-- Launch into an app picker; select Pushup Reminder, PageVault, Lift Log or Body for its own destination.
+- Source 0.14.0 launches Today / To-do / Journal / Apps. Build 37 still has the old picker; legacy fitness stores stay behind a controlled handover/recovery path.
   This is not a combined dashboard. ReelVault shipped in Build 32 and is removed from Build 33.
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
@@ -110,7 +83,7 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
   system (neutral surfaces, one accent, plain labels), a flat generated icon, and app-lifetime
   services across navigation. The Build-25 "quest" theme is replaced in 0.6.0 (29); keep it plain.
 - Pushups lifecycle: Start/Pause/Resume/End, dashboard and notification Done/Pause, Undo, a bounded
-  normal-plus-59-nudge schedule with foreground replenishment, and one idle 9:00 AM start invitation
+  normal-plus-39-nudge schedule with foreground replenishment, and one idle 9:00 AM start invitation
   that never auto-starts a day.
 - Durable actions: atomic after-first-unlock command inbox, receipts that survive Undo, shared
   commands, protected-store retry and queued-action UI.
@@ -151,7 +124,9 @@ launch or foreground entry; the app does not claim a background midnight executi
 and phone findings. Three facts matter when resuming: Build 13 is the detailed legacy movement-loop
 baseline, Build 24 is the accepted PageVault v1 feature baseline, Build 25 is the accepted
 installed Pushup/presentation baseline, and Build 31 is the current accepted recovery/refresh
-artifact. Build 32 is installed pending its phone pass; Build 33 is local source only. One same-ID update without uninstalling has preserved app data
+artifact. Build 37 is installed by Akshat's confirmation and enrolled for current-version automatic
+refresh in automatic bundle-ID mode with no recorded error; its feature phone pass remains open.
+One same-ID update without uninstalling has preserved app data
 (Build 12 over Build 11).
 Sideloadly is installed; give Akshat manual steps rather than driving it. The previously helpful
 Anisette workaround was disconnect phone, initialize Sideloadly, then reconnect; not a guaranteed fix.
@@ -159,16 +134,16 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-1. **Build 36:** installed over Build 34 and enrolled (0.12.1, automatic mode; Build 35 was never
-   installed). Akshat finds the Kokoro samples good; run the rest of the natural-voice test in
-   `todo.md` (the voice folder is in OneDrive at `Backups\AkshatOS Voice`). Build 34 is installed
-   and enrolled; its Lift Log and read-aloud checks are also in `todo.md`. Build 32 was installed over the accepted Build 31 with current-version enrollment; its
-   phone checks in `todo.md` (read-aloud voice; its ReelVault is removed in Build 33). For reference, Build 29's checks were: the minimal redesign and plain wording (hub, Pushups, PageVault, Lift Log,
-   notifications, icon), that PageVault no longer shows the inbox button, that Pushup and Lift Log
-   history open on their own screens with every day/workout present, that the last-performance line
-   lists every set, that the Body module passes `body-log.md`'s phone checks (the camera prompt
-   appears only when a photo is taken), and that existing data is intact before
-   promoting it; those passed with Build 31.
+0. **Finish the authorized implementation:** read `implementation-plan.md`, `personal-hub.md`,
+   accepted `todo-journal-plan.md` and the live PR #67 status. Finish the final exact-commit CI Gate,
+   native finish-review/documenter handoffs and validated Build-38 testing IPA. Day/design/scope and
+   implementation are authorized; Journal defaults to unlocked by explicit user choice; do not restart selection. Phone acceptance, file-provider proof,
+   roadmap receiver and fitness handover remain separate. Use source/CLI only.
+1. **Build 37 is installed and enrolled:** run its 0.13.0 (37) feature phone checks in `todo.md`
+   (Study Log, the single Voice list and Want to read ordering). Installation and enrollment do
+   not close those checks or promote the artifact; Build 31 remains the accepted recovery copy.
+   The remaining natural-voice, Lift Log and read-aloud checks are also in `todo.md`; exercise them
+   on the current build. The voice folder is in OneDrive at `Backups\AkshatOS Voice`.
 2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
    complete. Keep private history out of the public repository; consider the next scoped convenience
    improvement only after Akshat chooses it.

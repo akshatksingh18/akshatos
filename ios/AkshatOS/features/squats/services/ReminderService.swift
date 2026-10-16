@@ -39,8 +39,8 @@ struct ReminderSnapshot {
     static let pauseAction = namespace + "pause"
     static let legacySnoozeAction = namespace + "snooze-ten"
     static let automaticNudgeInterval: TimeInterval = 600
-    static let automaticNudgeCount = 59
-    static let scheduleVersion = 2
+    static let automaticNudgeCount = 39
+    static let scheduleVersion = 3
     static let featureDisplayName = "Pushup Reminder"
     static let dailyStartTitle = "Pushup Reminder"
     static let regularTitle = "Pushup time"
@@ -48,7 +48,7 @@ struct ReminderSnapshot {
     let center = UNUserNotificationCenter.current()
 
     static var activeIdentifiers: [String] {
-        [regular, legacySnooze] + (0..<automaticNudgeCount).map { automaticPrefix + String($0) }
+        [regular, legacySnooze] + (0..<max(59, automaticNudgeCount)).map { automaticPrefix + String($0) }
     }
 
     static func isActiveIdentifier(_ identifier: String) -> Bool {

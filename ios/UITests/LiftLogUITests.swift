@@ -1,15 +1,17 @@
 import XCTest
 
 final class LiftLogUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     func testHubOpensLiftLog() {
         let app = XCUIApplication()
         app.launch()
+        app.openLegacyMenu()
         XCTAssertTrue(app.buttons["open-liftLog"].waitForExistence(timeout: 10))
-        let entry = app.staticTexts["Lift Log"]
+        let entry = app.buttons["open-liftLog"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         for _ in 0..<4 {
             if entry.isHittable { break }
-            app.scrollViews.firstMatch.swipeUp()
+            app.swipeUp()
         }
         XCTAssertTrue(entry.isHittable)
         entry.tap()
@@ -51,9 +53,10 @@ final class LiftLogUITests: XCTestCase {
     func testSplitsOpenAndShowTheirExercises() {
         let app = XCUIApplication()
         app.launch()
-        let entry = app.staticTexts["Lift Log"]
+        app.openLegacyMenu()
+        let entry = app.buttons["open-liftLog"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
-        for _ in 0..<4 where !entry.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        for _ in 0..<4 where !entry.isHittable { app.swipeUp() }
         entry.tap()
         XCTAssertTrue(app.descendants(matching: .any)["lift-log-header"].waitForExistence(timeout: 10))
         let splits = app.buttons["open-lift-splits"]
@@ -96,9 +99,10 @@ final class LiftLogUITests: XCTestCase {
     func testHistoryOpensOnItsOwnScreen() {
         let app = XCUIApplication()
         app.launch()
-        let entry = app.staticTexts["Lift Log"]
+        app.openLegacyMenu()
+        let entry = app.buttons["open-liftLog"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
-        for _ in 0..<4 where !entry.isHittable { app.scrollViews.firstMatch.swipeUp() }
+        for _ in 0..<4 where !entry.isHittable { app.swipeUp() }
         entry.tap()
         XCTAssertTrue(app.descendants(matching: .any)["lift-log-header"].waitForExistence(timeout: 10))
         let history = app.buttons["open-lift-history"]

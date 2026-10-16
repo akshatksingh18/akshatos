@@ -1,12 +1,14 @@
 import XCTest
 
 final class BodyUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     /// The hub opens Body; the measurement form lists every site with its guidance; history and
     /// photos are reachable and explain an empty state. Typing values and the camera are left to
     /// hosted tests and the phone.
     func testBodyOpensWithWeightMeasurementsPhotosAndHistory() {
         let app = XCUIApplication()
         app.launch()
+        app.openLegacyMenu()
         let entry = app.buttons["open-body"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         for _ in 0..<4 where !entry.isHittable { app.swipeUp() }
