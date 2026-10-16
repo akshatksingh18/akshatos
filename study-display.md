@@ -17,6 +17,9 @@ the store available and study running. Pausing, leaving or becoming inactive rel
 returning resumes it only if still selected and running. The previous idle-timer value is restored.
 It does not change device brightness, disable manual locking, enable background execution or replace
 the low-power Always-On Lock Screen. Park a thought and Undo remain available.
+Apple DTS also notes that Adaptive Power can override the idle-timer setting and offers no public
+API to detect that mode specifically. Do not fake media/camera activity to keep the phone awake;
+include Adaptive Power in phone testing and keep the recorded session independent of display sleep.
 
 ## Live Activity candidate
 
@@ -106,7 +109,7 @@ Physical acceptance remains required:
   relaunch and reboot: saved segment identity/start survive; do not assume a card survives restart.
 - Lock-screen Live Activities allowed/denied, per-app authorization changed, Notification permission
   denied, card dismissed, Dynamic Island occupied by another activity, one repeated manual retry.
-- AOD on/off, dimmed readability, Low Power Mode and Sleep Focus, face down/covered, StandBy
+- AOD on/off, dimmed readability, Low Power Mode, Adaptive Power and Sleep Focus, face down/covered, StandBy
   charging/disconnected, portrait and both landscape directions. Darkness is not a recording failure.
 - 03:00 rollover, long block past eight hours, target reached/overtime, clock/time-zone/DST changes,
   phone offline and battery exhaustion. No stale card may be treated as current-day proof.
@@ -121,6 +124,7 @@ Public sources reviewed 2026-10-16; none proves this device's installed behavior
 - [Apple: system-rendered timer text](https://developer.apple.com/documentation/swiftui/text/init(timerinterval:pausetime:countsdown:showshours:)).
 - [Apple: Live Activity design and reduced-luminance behavior](https://developer.apple.com/design/human-interface-guidelines/live-activities).
 - [Apple: foreground screen-awake API](https://developer.apple.com/documentation/uikit/uiapplication/isidletimerdisabled).
+- [Apple DTS: Adaptive Power can override the idle timer](https://developer.apple.com/forums/thread/815962).
 - [Apple: passive notifications do not light the screen or play sound](https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel/passive).
 - [Apple: Focus options and Lock Screen settings](https://support.apple.com/en-gb/guide/iphone/iphd6288a67f/26/ios/26).
 - [Apple: Always-On conditions](https://support.apple.com/en-mn/guide/iphone/iph7117338a8/ios).

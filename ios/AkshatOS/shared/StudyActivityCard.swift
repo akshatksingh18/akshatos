@@ -7,10 +7,14 @@ struct StudyActivityCard: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(stale ? "Study · open app to refresh" : "Studying", systemImage: "book")
-                .font(.headline)
+            if stale || !typeSize.isAccessibilitySize {
+                Label(stale ? (typeSize.isAccessibilitySize ? "Open app" : "Study · open app to refresh") : "Studying", systemImage: "book")
+                    .font(.headline)
+            }
             if stale {
-                Text("Study recording continues. Open AkshatOS for today’s total.").font(.subheadline)
+                Text(typeSize.isAccessibilitySize ? "To refresh the study timer" : "Study recording continues. Open AkshatOS for today’s total.")
+                    .font(typeSize.isAccessibilitySize ? .caption : .subheadline)
+                    .fixedSize(horizontal: false, vertical: true)
             } else if typeSize.isAccessibilitySize {
                 elapsed
             } else {
@@ -29,7 +33,7 @@ struct StudyActivityCard: View {
     private var elapsed: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(timerInterval: state.elapsedRange, countsDown: false, showsHours: true)
-                .font(.largeTitle.weight(.medium)).monospacedDigit().multilineTextAlignment(.leading)
+                .font(typeSize.isAccessibilitySize ? .title2.weight(.medium) : .largeTitle.weight(.medium)).monospacedDigit().multilineTextAlignment(.leading)
             Text("Studied today").font(.caption)
         }
     }

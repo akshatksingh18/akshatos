@@ -27,8 +27,8 @@ struct StudyFocusView: View {
                                 ContentUnavailableView { Label("Study data unavailable", systemImage: "exclamationmark.triangle") }
                                 actions: { Button("Retry") { study.load() }.frame(minHeight: 44) }
                             } else if wide {
-                                HStack(spacing: 32) {
-                                    dial(at: date).frame(width: min(280, max(220, geometry.size.height * 0.92)))
+                                HStack(alignment: .top, spacing: 32) {
+                                    dial(at: date).frame(width: min(280, max(180, (geometry.size.height - 112) * 1.12)))
                                     controls(at: date).frame(maxWidth: 360)
                                 }.frame(maxWidth: .infinity)
                                     .accessibilityElement(children: .contain)
@@ -91,7 +91,7 @@ struct StudyFocusView: View {
             if study.canUndoEdit { Button("Undo last change") { study.undoEdit() }.frame(minHeight: 44) }
             Toggle("Keep screen awake", isOn: $keepAwake)
                 .frame(minHeight: 44).accessibilityIdentifier("study-keep-awake")
-            Text("While studying in Focus. Uses more battery. Locking your phone still turns this screen off.")
+            Text("While studying in Focus. Uses more battery.")
                 .font(.footnote).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if activity.configured {
                 DisclosureGroup {

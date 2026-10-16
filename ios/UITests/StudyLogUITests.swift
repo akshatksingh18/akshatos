@@ -16,11 +16,13 @@ final class StudyLogUITests: XCTestCase {
         let keepAwake = app.switches["study-keep-awake"]
         XCTAssertTrue(keepAwake.waitForExistence(timeout: 5))
         for _ in 0..<3 where !keepAwake.isHittable { app.swipeUp() }
-        keepAwake.tap()
+        keepAwake.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        XCTAssertEqual(keepAwake.value as? String, "1")
         capture("Focus portrait · studying")
         device.orientation = .landscapeLeft
         XCTAssertTrue(app.otherElements["study-focus-landscape"].waitForExistence(timeout: 5))
         XCTAssertEqual(toggle.label, "Pause studying", "Rotation cannot pause or replace the block")
+        XCTAssertEqual(app.switches["study-keep-awake"].value as? String, "1", "Rotation preserves the selected sleep policy")
         capture("Focus landscape · studying")
         device.orientation = .landscapeRight
         XCTAssertTrue(toggle.waitForExistence(timeout: 5))
