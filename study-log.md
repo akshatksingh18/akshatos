@@ -1,9 +1,9 @@
-# Study Log (planned module)
+# Study Log
 
-**Status:** Build 1 is implemented in working source 0.13.0 (37), not yet built by CI or
-phone-tested; Build 2 is planned. Akshat asked for the decisions on the agent's judgment (he will
-change anything he wants later) and then for the build. `hub-plan.md` records the module; this file
-is its contract, like `lift-log.md`.
+**Status:** Build 37 is installed/enrolled with the Build-1 phone pass open. Source 0.14.0 (38),
+PR #67, implements the authorized Build-2 study scope in the new Today tab: Focus, corrections/Undo,
+topics, target/marks, block/time inspection, motivation, optional reminders and versioned exports.
+`personal-hub.md` owns the shared contract; final CI/native/artifact and device gates remain open.
 
 ## Why
 
@@ -22,39 +22,45 @@ below favours less friction while studying and an honest record afterwards.
    and the studied time keeps counting.
 2. **Forgotten pauses are the real risk, so the nudge repeats.** "Still studying?" arrives 45
    minutes after the last confirmation (Start, Resume or Keep going) and again every 45 minutes
-   while the block runs, one pending request at a time. Actions:
+   while the block runs, using one repeating interval request reset by those actions. Delivery
+   alone is not a background callback to re-arm a one-shot request. Actions:
    - **Keep going** — confirms now and re-arms the next nudge.
    - **Pause** — ends the block now.
    - **I stopped earlier** — opens Study Log on an end-time sheet, prefilled with the last
-     confirmation time (the last moment known to be true) and adjustable between that and now.
+     confirmation time as a suggestion, adjustable back to the block's start and forward to now.
+     A confirmation records a tap, not proof of uninterrupted studying or the true stop time.
    On opening the app with a block running more than 90 minutes past its last confirmation, the
-   same sheet appears first, so a forgotten pause never silently inflates the day.
-3. **Marks stay at 2 h and 4 h**, editable, as quiet ticks on the progress bar toward the target.
-   Passing one is shown as progress only. No streaks, points, badges or completion verdicts; zero
-   is a valid day.
+   same sheet appears first, so an unresolved long block is visible for correction rather than
+   presented as independently verified effective study time.
+3. **Marks stay at 2 h and 4 h**, editable, as ticks on the progress bar toward the target. Zero is
+   a valid day, never shown as a failure. Akshat welcomes motivating mechanics that help him study
+   more (he rejected themed decoration, not game-like motivation), so Build 3 candidates include a
+   study streak and personal bests; they are shown plainly, in the hub's normal style.
 4. **No energy tap.** It costs a tap during study, competes for the notification budget (see
    Constraints) and has no clear use for study time. Dropped from the plan; revisit only if Akshat
    asks.
-5. **Study Log owns the study clock and daily totals.** The roadmap tracker keeps owning *what* was
-   studied (topics, evidence, its own Record study time entries). To stop double logging, a later
-   build adds a CSV of daily totals the roadmap can import; until then the roadmap's time entries
-   are optional. Wiring the roadmap side is a separate roadmap change.
+5. **Study Log owns how long; the roadmap owns what.** Akshat agreed: the timer is the honest
+   record of hours, and the AI/ML roadmap tracker (`../../roadmap/`) keeps its study types, notes,
+   weekly budget bars and review. Build 2 prepares a one-way file hand-off (the phone has no network and the roadmap is a local
+   laptop app): blocks carry an optional roadmap type and Study Log exports a sessions file. The
+   roadmap receiving importer is separately unimplemented; it must reconcile without duplicates. The
+   roadmap's own Record study time stays for anything not timed on the phone. Until Build 2,
+   entering time in the roadmap is optional.
 6. **Topic note: optional, never prompted.** A segment can carry a short free-text note, added from
    the day view afterwards; nothing asks for it during study.
 7. **Day starts at 3:00 AM local.** A late session stays with its day; a segment crossing 3:00 AM is
    split there. Each day keeps the target it had, so changing the target never rewrites history.
 
+The accepted day is 03:00 for Study, Journal and priorities. Calendar deadlines remain distinct.
+New blocks retain their originating zone and saved aim/marks; older blocks retain their previous
+local-time interpretation. A historical attribution migration would require a separate preview.
+
 ## Screens
 
-- **Today:** the countdown, studied time, a progress bar with the two marks and the target at its
-  end, one large Start/Pause button, the current block's length, and today's blocks (start–end,
-  length, note). Plain words, one accent, the shared flat cards.
-- **History:** a week view (one bar per day with the marks, the week's total and daily average) and
-  days grouped by month with the shared month dropdown (`shared/design-system/MonthGroup.swift`).
-  Tap a day for its blocks; edit or delete a block there; Add block for study done away from the
-  phone.
-- **Settings:** daily target, the two marks, nudge on/off and interval, backup and restore, CSV
-  export.
+Source 0.14.0 puts study on Today, with an optional Focus screen and one closable History sheet.
+Week/month inspection, corrections, topics, recorded time distribution, momentum, milestones and
+weekly review live there. Settings owns target/marks, default roadmap type, CSV and backup. The
+approved graphite/copper design is in `todo-journal-plan.md`; native details are in `personal-hub.md`.
 
 ## Builds
 
@@ -63,21 +69,60 @@ below favours less friction while studying and an honest record afterwards.
   today's total, the current block and today's blocks; the progress bar with the 2 h and 4 h ticks;
   history (a Monday-to-Sunday week of bars with total and average per day so far, earlier weeks by
   arrow, month-grouped days, a day's blocks); the 3:00 AM day; restoring a running block after
-  relaunch or force-quit; JSON backup/restore and the hub's full backup. Target and marks are the
-  defaults until Build 2 makes them editable.
-- **Build 2:** the repeating nudge with its three actions and the open-app check; add, edit and
-  delete blocks; editable target and marks; optional notes; CSV export.
-- **Later, only if wanted:** the daily-totals CSV for the roadmap tracker; a count-up option.
+  relaunch or force-quit; JSON backup/restore and the hub's full backup. Target and marks were fixed defaults in Build 1; source 0.14.0 makes them prospectively editable.
+- **Build 2 (implemented in source 0.14.0, verification pending):**
+  - **Forgotten pauses:** the repeating "Still studying?" nudge with Keep going and Pause; the app provides Stopped earlier and the open-app check (Decision 2).
+  - **Corrections:** add, edit and delete blocks (manual blocks for laptop study; no overlaps, none
+    in the future); **Undo** for ten seconds after Start or Pause, so a mistaken tap is one tap to
+    reverse.
+  - **Settings:** editable daily target and marks; nudge on/off and interval.
+  - **Roadmap bridge** (Decision 5):
+    - Each block can carry a roadmap type, matching the roadmap's recorder: main/project, SQL, DSA
+      lesson/Mixed practice, or other. It is set afterwards from the day view (with the optional
+      note) and never asked for on Pause; legacy untagged blocks need receiver review. Settings has a default type
+      (main/project to start with) applied to new blocks.
+    - **Export for roadmap** writes `study-sessions.json`: version, and per block its permanent id,
+      study date, start, whole minutes, type and note. A file picked/moved by Akshat is the baseline;
+      an explicit Files-folder export is implemented, with provider measurement and device proof still
+      open (`laptop-phone-sync.md`). No automatic Journal export or agent cloud write is enabled.
+    - The separately gated roadmap receiver must gain **Import study sessions** (a roadmap change, `roadmap/support/roadmap-guide.md`):
+      preview, then ordinary study entries; a block already imported is skipped by its id, and an
+      edited block updates its entry rather than adding another.
+    - **No double DSA time:** the roadmap counts solve time from its problem logs. Only actual DSA
+      lesson/Mixed time may become separate study entries; a solve block must not be relabelled
+      as a lesson to import it. Preview already-recorded/problem-linked time and exclude it or
+      reconcile it explicitly before accepting the bridge. A type label alone cannot deduplicate
+      manually entered time; `laptop-phone-sync.md` owns the proposed reconciliation contract.
+  - **Breaks:** while paused on a day that has study, Today shows how long the break has run
+    ("Break 0:12"). An optional **Back to it?** reminder (off by default; 15 minutes initially) fires
+    once per break, only before the day's target is reached.
+  - **Morning start (optional, off by default):** one upcoming eligible invitation at a chosen time when that study day has not started, refreshed
+    on app activity. It is a finite next-occurrence schedule, not an unlimited closed-app promise.
+  - **Shortcuts:** App Intents in the app itself (no extension) for Start studying, Pause studying
+    and Study time today, so the Action Button, Siri or a Focus automation ("when the Study Focus
+    turns on, start") can drive the timer. They use the same idempotent commands as the button.
+  - **Notes and CSV:** optional per-block notes; a plain CSV export of blocks.
+- **Wanted by Akshat for Build 2/3** (`todo-journal-plan.md` §7): a **Focus screen** while a block
+  runs, **study topics** per block with weekly hours per topic, and **When you study** (picked as
+  "When you study best"; timing records establish distribution, not learning quality).
+- **Build 3 (candidates, only if Akshat wants them after using Build 2):** a **study streak**
+  (consecutive days reaching the 2 h mark, with current and best, like Pushups' goal streak) and
+  **personal bests** (longest day, longest block, best week); a weekday target (for example lighter
+  weekends); this week against last week; a count-up option. Study-by-hour over four weeks is
+  already wanted above, not an unselected candidate. Comparison baseline and insufficient-history
+  rules are reviewed in `todo-journal-plan.md` §10.
 
 ## Data and edge cases
 
 - `StudySegment`: id, start, end (nil while running), source (timer or manual), optional note, and
   `dayTarget` (the target in force when it began; the day's first block sets the day's target).
-  Build 2 adds the last confirmation time for the nudge. Settings (target, marks) are one JSON value
+  Source 0.14.0 adds optional topic, originating zone, saved marks and roadmap type; Build 1 payloads
+  still decode. Last study confirmation belongs to app preferences, not the duration record. Settings (target, marks) are one JSON value
   in the app's preferences, `studylog.settings`.
 - A feature-owned, versioned SwiftData store like Lift Log and Body. The running state is the open
-  segment's start timestamp, never a ticking counter, so suspension, relaunch or a killed app
-  cannot lose or inflate time.
+  segment's start timestamp, never a ticking counter, so suspension/relaunch does not lose elapsed
+  time. A forgotten pause can still overstate effective study; recording timestamps does not verify
+  attention. Corrections and long-block reconciliation are implemented in source 0.14.0; device proof remains open.
 - One running block at most; Start and Pause are idempotent (double taps and duplicate notification
   callbacks change nothing). A Start never begins inside an earlier block, even with the clock set
   back. A block under five seconds is an accidental tap and is dropped on Pause. A block is stored
@@ -87,18 +132,21 @@ below favours less friction while studying and an honest record afterwards.
   belongs to uses local time. Tests cover a block across 3:00 AM on a daylight-saving night.
 - Backup: `study-log.json` (version 1, ISO dates, the blocks and the settings; whole-file validation
   — unique ids, no overlaps, at most one running block and it the latest — before a confirmed
-  restore replaces everything). A block running at backup time comes back running. Notification
-  permission is never carried.
+  restore replaces everything). Source 0.14.0 requires an explicit actual end for a backed-up running block and restores it
+  closed. Build 1 previously restored it as running. Notification permission is never carried.
 
 ## Constraints
 
-- **Notification budget.** iOS keeps at most 64 pending local notifications per app and drops the
-  rest silently. An active Pushups day holds 60 (`features.md`), Body's weekly reminder and Lift
-  Log's inactivity reminder one each: 62. Study Log's single rolling nudge makes 63. It must never
-  hold more than one pending request.
+- **Notification budget.** The app coordinator considers actual unrelated pending requests, keeps
+  two spare slots and a maximum of fifteen timed tasks. Study check and break are mutually
+  exclusive; Journal has one generic invitation and Morning plan has one upcoming dated slot.
+  Pushups uses 39 nudges plus its normal request until verified handover. `personal-hub.md` owns
+  capacity/failure handling; no delivery-time app execution is assumed.
+
 - **No app extension and no Live Activity** (free signing cannot provision them; `hub-plan.md`).
   The timer lives in the app plus local notifications; the lock screen shows only the nudge.
-- **Local only:** no network, account, sync with the Windows Clock, or roadmap integration in v1.
+- **Local only:** no network, account or sync with the Windows Clock. The roadmap bridge is a file
+  Akshat moves himself; nothing is sent anywhere by the app.
 - **Plumbing, the same as Body:** `StudyLogBackupPart` with the permanent `backupID` `studyLog`, listed
   in `FullBackupService(parts:)`; the `.studyLog` hub route and picker card; the `akshatos.study.`
   namespace mapped in `AppNotificationCoordinator` with its category (Build 2, when the nudge first
@@ -111,11 +159,14 @@ below favours less friction while studying and an honest record afterwards.
 
 - Registered domain tests (totals, countdown, 3:00 AM split including daylight saving, idempotent
   Start/Pause, restored running block, per-day target, nudge re-arm and retroactive end, manual
-  edits and overlap refusal), persistence and backup/restore tests, `FullBackupTests` extended,
+  edits and overlap refusal, Undo, the one rolling request choosing the right reminder, the sessions
+  export with stable ids and DSA kept out of solve time), persistence and backup/restore tests, `FullBackupTests` extended,
   and UI navigation tests, all in `ios/tests/feature-tests.json`.
 - Built and tested on GitHub Actions, not locally; the usual unsigned-IPA checks apply.
 - Phone acceptance by Akshat: a real study block with pause/resume, a force-quit while running, the
-  locked-screen nudge and its actions (Build 2), a day rollover, and a backup restored.
+  locked-screen nudge and its actions (Build 2), a day rollover, and a backup restored. Build 2 also:
+  a Shortcut or the Action Button starting and pausing the timer, and a sessions file imported into
+  the roadmap twice without duplicate entries.
 - On acceptance, update `hub-plan.md`, this folder's `CLAUDE.md`, `README.md`, `handoff.md` and
   `todo.md` in place.
 

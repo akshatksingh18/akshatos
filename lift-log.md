@@ -29,10 +29,10 @@ remains open (`cloud-build.md`, `todo.md`). No
 private workout history is bundled in source or authorized for the repository's current public
 remote.
 
-**Accepted integration plan, not a cutover:** Akshat accepted these features inside one
-existing WHOOP workout as future direction; repeat entry, rest timer, comparable records and
-workout times are selected for WHOOP, not added to this module. WHOOP build-86 source implements
-them (not built or installed); its importer reads this module's `lift-log.json`.
+**Implemented in WHOOP, not an AkshatOS cutover:** Akshat accepted these features inside one
+existing WHOOP workout; repeat entry, rest timer, comparable records and workout times are
+implemented there and retained in its installed build, not added to this module. WHOOP's owning
+integration plan records the open gym-session acceptance; its importer reads this module's `lift-log.json`.
 `hub-plan.md` records the unchanged installed boundary and links the
 WHOOP-owned design. This module, its history/splits, notification behavior and full-backup part
 remain implemented here; no removal, live cross-app sync or coaching-source change is approved.

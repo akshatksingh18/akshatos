@@ -1,50 +1,19 @@
 # AkshatOS and Pushups architecture
 
-**State:** Native hub modules and movement v1 are implemented. Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
-`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
-editable Lift Log splits and read-aloud controls; the voice sounded robotic.
-Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
-installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. Its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
-Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
-PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
-(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
-which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
-on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
-dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen. It also makes Lift Log
-flexible: the split and an open workout stay in step, logged exercises move up in the order done,
-and the workout screen gains search, reorder and swipe-to-remove. Build 34 (PR #63 at `a93c48d`) passed PR/main CI (after a UI-test scrolling fix) and local
-checksum/IPA validation and is installed (0.11.0,
-automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
-after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
-PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
-and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
-once instead of at every redraw, measures the voice's size off the main thread, loads the model
-when the book opens and renders the next page's first sentence ahead of the page turn; it passed
-PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
-current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
-it is the next check (`pagevault/neural-voice-audit.md`).
-Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
-real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
-list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
-dragging covers. Not yet built by CI or phone-tested.
-Build 13 remains the detailed movement-lifecycle baseline and PageVault v1 is accepted through
-Build 24. The broader physical edge-case, refresh/recovery and soak matrix stays open.
-PageVault's technical plan is owned by `pagevault/architecture.md`; build evidence by `cloud-build.md`.
+**State:** Native personal-hub source 0.14.0 (38), PR #67, is implemented with final verification
+pending. Build 37 remains installed/enrolled and Build 31 remains accepted recovery. Exact
+historical build and phone evidence belongs in `cloud-build.md`; `todo.md` owns remaining gates.
 
-`hub-plan.md` owns requested WHOOP Pushups exploration, not an implemented architecture change.
-Any Flutter port must preserve durable cold/locked action receipts and use WHOOP's one early
-notification coordinator with a shared request budget, rather than replacing its delegate or
-copying the 60-request batch unmodified. Optional Home/Always permission requires an explicit
-WHOOP capability decision. This hub's native routing, services, stores and recovery stay intact.
+Source 0.14.0 implements Today/To-do/Journal/Apps. `personal-hub.md` owns the feature stores,
+`HubDayPart` summaries, Journal access gate, staged media restore, personal notification coordinator,
+App Intents and explicit Files transport. Each new feature uses a versioned SwiftData snapshot and
+joins full backup; settings also join recovery. Final cloud/native/device evidence stays separate.
+The 03:00 activity day, one-to-three priorities, explicit nonempty Journal Done and optional combined
+challenge are accepted defaults. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
+
+`hub-plan.md` owns the WHOOP boundary: fitness is absent from the new daily hub but legacy stores
+and services remain until explicit verified handover stops their reminders. WHOOP implementing
+these features is not evidence of phone data migration or automatic synchronization.
 
 ## Current implementation
 
@@ -53,7 +22,7 @@ WHOOP capability decision. This hub's native routing, services, stores and recov
   `com.akshatksingh18.akshatos`, working source version in `cloud-build.md`; Build 13 is the last
   build accepted for the reminder loop under its legacy Squats presentation, Build 12 its retained
   predecessor, Build 25 is the accepted Pushup/visual baseline, and Build 31 is the current accepted
-  recovery/refresh build; Build 32 is installed pending its phone pass.
+  recovery/refresh build; Build 37 is installed and enrolled, pending its feature phone pass.
 - `app/AkshatOSApp.swift` creates `AppServices` through the application delegate before launch
   completes, including background launches. It owns one `SquatStore`, one `PageVaultStore`, one
   `LiftLogStore`, one `BodyLogStore`, the sole
@@ -131,7 +100,7 @@ WHOOP capability decision. This hub's native routing, services, stores and recov
   reconciliation/repair, snooze cleanup, Home-health/disable, DST/time-zone, summary/recovery,
   legacy-payload and Settings UI coverage. It also requires a non-nil next fire date before Resume
   treats an existing repeating request as healthy.
-- Deferred: App Intents and the remaining physical edge-case/refresh acceptance. The notification category exposes
+- Implemented in source 0.14.0: personal App Intents for study, tasks, thought capture and Journal. Physical edge-case/refresh acceptance remains separate. The notification category exposes
   Done then Pause without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-
   unverified behavior as accepted.
@@ -214,14 +183,14 @@ background-capable services at app lifetime; load future media views/resources o
 
 ### Scheduling and action model
 
-- Keep stable namespaced identifiers for the normal reminder, 59 automatic nudges, the idle daily
+- Keep stable namespaced identifiers for the normal reminder, 39 automatic nudges, the idle daily
   start invitation, and the legacy snooze identifier that upgrades must remove.
 - Persist the first deadline of each Start/Resume/Done cadence in the active session. Derive later
   ten-minute nudge deadlines from that anchor; use a legacy system trigger's next date only once to
   migrate an older active session. Foreground reconciliation must never restart the displayed interval.
 - Start validates a whole-minute interval (45 minutes by default), requests authorization when
   undetermined, creates an active day, removes stale project requests, and adds one normal one-off
-  plus 59 ten-minute automatic-nudge requests. Store/display Running only after the bounded batch is
+  plus 39 ten-minute automatic-nudge requests. Store/display Running only after the bounded batch is
   accepted; its first reminder occurs one interval after Start.
 - Pause removes the active batch while keeping the day open. Resume replaces it and begins a fresh
   interval. End removes active requests, finalizes the day and restores the idle daily-start request.

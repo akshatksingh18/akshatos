@@ -78,7 +78,7 @@ text clean-up changes. A different-sounding voice means a different engine.
   a change; Build 34 and 35 asked iOS for it at every redraw (once per voice row on Choose voices…),
   which made the speed menu and that screen hang.
 
-## One voice list (working source 0.13.0 (37), not yet phone-tested)
+## One voice list (Build 37, 0.13.0, not yet phone-tested)
 
 On Build 36 the speed menu shows a **Natural voice** switch beside the iPhone **Voice** list, so two
 voices look ticked at once (for example Ava · Premium and Natural voice) while only Kokoro is

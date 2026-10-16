@@ -37,12 +37,13 @@ struct TodoView: View {
             } else {
                 Section {
                     HStack {
-                        TextField("Add a task · e.g. read tomorrow 5pm", text: $quickAdd)
+                        TextField("Add a task", text: $quickAdd,
+                                  prompt: Text("e.g. read tomorrow 5pm").foregroundStyle(HubInk.sage))
                             .focused($quickAddFocused).onSubmit(add).accessibilityIdentifier("todo-quick-add")
                         Button(action: add) { Image(systemName: "plus.circle.fill").frame(minWidth: 44, minHeight: 44) }
                             .accessibilityLabel("Add task").accessibilityIdentifier("todo-add")
                     }
-                }
+                } header: { Text("Add a task") }
                 Section {
                     let priorities = store.priorities(store.today)
                     if priorities.isEmpty { Text("No priorities chosen.").foregroundStyle(.secondary) }

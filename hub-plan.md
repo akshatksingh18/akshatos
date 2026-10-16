@@ -1,11 +1,10 @@
 # AkshatOS — shared integration contract
 
-**Status:** Active shared integration contract for one native AkshatOS hub containing Pushup
-Reminder, PageVault, Lift Log, Body and Study Log, plus standalone WHOOP. (ReelVault shipped in Build 32 and is
-removed from Build 33.) AkshatOS owns the common
-source, permanent identity, build and full-backup registry. Feature contracts belong in their
-owning documents; build/phone progress belongs in `cloud-build.md`. The contract changes only
-when packaging, lifecycle boundaries, data ownership or shared recovery requirements change.
+**Status:** Active shared integration contract. AkshatOS source 0.14.0 uses Today, To-do, Journal
+and Apps, with PageVault, Watchlist and Spending; legacy Pushups/Lift/Body stores remain recoverable
+until explicit verified WHOOP handover. Build 37 remains installed with the old picker. AkshatOS
+owns its native identity, build and full-backup registry; WHOOP remains independently built and
+installed. `personal-hub.md` owns the new source contract; `cloud-build.md` owns verification.
 
 ## Installed applications
 
@@ -21,19 +20,20 @@ without rotation or paid membership: Akshat's body-measurement tracker was added
 rather than a separate app for exactly this reason. This is source-level feature composition, not guest
 IPAs, a PWA, LiveContainer, or an iOS extension workaround. No Flutter embedding is required.
 
-## Lift Log And Body In WHOOP: Accepted Plan, No Cutover
+## Lift Log And Body In WHOOP: Implemented There, No AkshatOS Cutover
 
 Akshat accepted Lift Log features inside the existing WHOOP workout as planned product direction.
-`../whoop/lift-log-integration-plan.md` owns the source-reviewed plan, and WHOOP `todo.md`
-lists it for Build 86. The planned destination is one session-owned set
+`../whoop/lift-log-integration-plan.md` owns the workflow, and WHOOP `todo.md`
+owns implementation and phone acceptance. The destination is one session-owned set
 log in WHOOP, not WHOOP embedded in this hub or two synchronized active workouts.
 He also wants Body and a single overall progress page, prioritizing recomposition: leaner while
 getting stronger, and accepted that direction. `../whoop/fitness-app-plan.md` owns the whole-app plan,
 including unified weight/profile data, Body parity, HR/set timing, comparison coverage and
 photo-inclusive encrypted recovery. Repeat last set, rest timer, comparable records, independent
 photo selection, workout times, historical entry and screenshot-based local import are selected.
-WHOOP build-86 source implements them (not built or installed); the private history import file
-is generated. Actual source data/media remain
+WHOOP's owning fitness plan records these features implemented from Build 86 and retained in
+its installed build, with feature phone acceptance still open; the private history import file
+is generated. Current build evidence belongs in WHOOP, not this shared contract. Actual source data/media remain
 private and outside both public app repositories.
 The expanded WHOOP plan explicitly joins daily diet, seven-day weights and weekly/monthly body/
 strength/activity/recovery reviews. It does not change private coaching ownership or claim
@@ -45,10 +45,11 @@ reviewed weight/height conflicts and missing photos, both apps' recovery proof a
 acceptance before any removal or cutover. Private coaching ownership is also unchanged; a local
 import is not a promise of ongoing two-app synchronization.
 
-## Pushup Reminder In WHOOP: Ported In Build-86 Source, No Cutover
+## Pushup Reminder In WHOOP: Implemented There, No AkshatOS Cutover
 
 Akshat approved the port, including Always location for Home auto-pause. WHOOP build-86 source
-implements it (WHOOP `todo.md` section 7 owns what was built and its phone checks); `features.md`
+implements it and the installed WHOOP build retains it (WHOOP `todo.md` section 7 and
+`fitness-app-plan.md` own the implementation and open phone checks); `features.md`
 remains the parity contract. This is not a notification-owner switch or a module-removal go:
 AkshatOS's installed data, SwiftUI feature, schedules, Home and backup registry are intact, the
 two apps do not sync, and running both means two sets of reminders until Akshat stops one.
@@ -78,6 +79,11 @@ Before a port or cutover:
 Streak grace/protected-rest rules are WHOOP proposals, not a change to AkshatOS's accepted
 Pushups daily-goal contract. Keep the two streaks separate and never fabricate completed sets.
 
+The accepted AkshatOS source design in `todo-journal-plan.md` excludes Pushup Reminder, Lift Log and Body
+from daily navigation and achievement requirements. WHOOP is their intended owner; the old
+AkshatOS schedulers remain gated by the explicit verified handover. That design boundary does not itself remove the installed modules, delete history
+or establish that local imports and phone acceptance have completed.
+
 ## Native hub boundaries
 
 App composition/navigation lives under `ios/AkshatOS/app/`, reusable UI under `shared/`, and each
@@ -87,7 +93,7 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - Use one native SwiftUI host and its feature modules (Pushups, PageVault, Lift Log, and
   Body); module names need not be separate
   application targets. Keep existing feature requirements and Android fallbacks intact.
-- A simple home/section selector opens each experience. Load PDF documents only
+- Source 0.14.0 uses Today / To-do / Journal / Apps, with Study history as one closable sheet. The installed Build 37 uses its earlier selector. Load PDF documents only
   when needed and release them on exit; preserve each module's state when switching.
 - Host-level Pushups services schedule local notifications and handle actions/Home-region events
   regardless of the selected screen. Navigating to a PDF must not stop an active day.
@@ -170,13 +176,15 @@ refused as an unknown module (Akshat made no Build 32 backups).
   entry per part: the module's id, name and item) beside each module's own, unchanged backup —
   today `pushups.json`, `pagevault/` (manifest and every PDF; left out when the library is empty),
   `lift-log.json`, `body/` (records, photos, height and measurement day) and, from 0.13.0 (37),
-  `study-log.json` (Study Log's blocks and settings, id `studyLog`). A part lifted out of
+  `study-log.json` (Study Log blocks/settings, id `studyLog`), plus `todo.json`, `journal/`
+  (entries and every referenced photo), `watchlist.json`, `spending.json` and `personal-settings.json`
+  from source 0.14.0. A part lifted out of
   the folder still restores from inside its own module. A module that cannot be read stops the
   backup rather than leaving a silently incomplete folder.
 - **Restore everything** takes that folder, reads the index, and checks every listed part with the
   module's own validation before anything changes; one missing, damaged or unknown part (from a
   module this build does not have) stops the whole restore. After confirmation each part applies:
-  Pushups, Lift Log, Body and Study Log are replaced by the backup; PageVault adds missing books and gives the
+  Pushups, Lift Log, Body and Study Log, To-do, Journal, Watchlist, Spending and personal settings are replaced by the backup; PageVault adds missing books and gives the
   rest the backup's place and status. The result names what was restored and anything that was not.
 - Not in any backup: notification, location and camera permissions, the Pushups Home area (kept out
   of backups by design), Body's reminder setting, and disposable caches. They are set again by hand.

@@ -58,8 +58,8 @@ device-owner authentication with device-passcode fallback. Changing that privacy
 authentication; an unavailable device passcode cannot accidentally leave the Journal locked.
 Writing, history, search, ratings, photos, weekly excerpts and exports all use the same access gate.
 Only completion facts may leave it while locked. Inactive previews are concealed; backgrounding
-relocks and invalidates an outstanding authentication attempt. Without a device passcode, the
-Journal stays locked and explains recovery through device settings.
+relocks when the optional lock is enabled and invalidates outstanding authentication. If an enabled
+lock cannot authenticate, the Journal stays locked and explains recovery through device settings.
 
 With the lock enabled, exports require authentication. Export actions warn that files are not encrypted by the screen
 lock. Cancelling Journal authentication stops a full export. Missing photos stop export/restore.
@@ -77,7 +77,8 @@ an explicit actual end before application; it cannot silently accumulate offline
 
 Personal notification reconciliation is serialized under its own namespace. It considers the actual
 pending count, reserves two spare slots and schedules at most fifteen timed tasks, one running-study
-check, one break reminder and one generic Journal invitation and one upcoming eligible Morning plan invitation. It preserves unrelated requests and
+check or one break reminder, one generic Journal invitation and one upcoming eligible Morning plan
+invitation. It preserves unrelated requests and
 reports denied permission/capacity/failure. Study actions carry the running block ID, so an old
 delivered notification cannot pause a newer block. The optional badge is remaining priorities.
 

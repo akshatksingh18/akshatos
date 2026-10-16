@@ -32,7 +32,7 @@ behavior and the app generally working well in ongoing phone use. The broader ph
 refresh/recovery and soak matrix remains open; legacy snooze data stays readable for upgrade compatibility.
 Android is an unverified fallback.
 
-This document owns Pushup Reminder only. Lift Log is a separate local feature whose load semantics,
+The new personal hub (source 0.14.0) is owned by `personal-hub.md`; its daily navigation excludes fitness and retains a controlled legacy handover/recovery path. This document owns Pushup Reminder only. Lift Log is a separate local feature whose load semantics,
 persistence, recovery and acceptance gates are owned by `lift-log.md`; it does not turn Pushups'
 completed-break counter into a general workout tracker.
 
@@ -40,14 +40,16 @@ completed-break counter into a general workout tracker.
 auto-pause included). Cutover and stopping AkshatOS's reminders remain separate decisions; this
 feature contract, installed source, daily goal/streak and reminders are unchanged. WHOOP rest protection is not a retroactive change to Pushups qualification.
 
+Source 0.14.0 implements the accepted personal hub in `personal-hub.md`, including the approved
+39-nudge trim. Pushups keeps its calendar-day goal and historical identifiers. Its old owner runs
+until the explicit verified WHOOP handover stops it; a design approval does not prove data migration.
+
 ## Hub entry
 
-AkshatOS opens to an app-selection screen. Choose **Pushup Reminder** to open this dashboard;
-navigate back without changing its active session or reminders. PageVault and Lift Log are separate
-available destinations alongside Body; WHOOP is not embedded. (ReelVault shipped in Build 32 and
-is removed from Build 33.)
-The hub receives display metadata and injected destinations; it does not own Pushups rules or data.
-The source-boundary refactor changes no user-facing feature scope or reminder/streak behavior.
+Installed Build 37 uses the app selector. Source 0.14.0 launches Today / To-do / Journal / Apps;
+Settings contains a temporary WHOOP handover path into the retained fitness modules. Switching
+screens preserves an active session and its reminders until handover is explicitly completed.
+WHOOP is not embedded. App composition owns navigation, while the feature retains its rules/store.
 
 ## Product promise
 
@@ -103,7 +105,9 @@ standard system font, and one calm accent colour used sparingly for the thing th
 screen. No game metaphors anywhere — no quests, portals, power-ups, combos, trophies or treasure —
 in the UI or in notifications; labels say plainly what things are ("Log a set", "Daily goal",
 "History", "Want to read"). State is always conveyed with text and symbols as well as colour, and
-nothing may invent completions, points or streaks. The hub is a plain list of modules.
+nothing may fabricate completions, points or streaks that did not happen. Real motivating mechanics
+— streaks, goals, levels, personal bests — are welcome where they help Akshat's development; only
+the themed decoration is out. The new hub has four fixed tabs; the retained Pushups screen uses this minimal visual contract.
 
 - A state card shows the current state, the time until the next reminder while running, and a
   plain paused/blocked/ended explanation in other states. The countdown
@@ -140,7 +144,7 @@ dashboard. Those would add signing/capability complexity without improving the c
 
 Use a bounded batch of one-off `UNTimeIntervalNotificationTrigger` requests plus a registered
 actionable-notification category. The normal request begins one full interval after Start, Resume,
-or Done; 59 ten-minute nudges follow if it is ignored. Foreground reconciliation replenishes a low
+or Done; 39 ten-minute nudges follow if it is ignored. Foreground reconciliation replenishes a low
 or exhausted batch from the persisted anchor without moving the countdown.
 
 The reminder category provides these actions:
@@ -169,7 +173,7 @@ is temporarily unavailable, Done waits for merge, and Pause cancels a matching s
 shows queued actions and a retry control. Inbox write failure is reported rather than represented
 as a completed set; reboot-before-first-unlock and locked delivery still require device testing.
 
-At most 60 active requests exist: one normal reminder plus 59 automatic nudges. The separate idle
+At most 40 active requests exist: one normal reminder plus 39 automatic nudges. Legacy cleanup still removes all historical 59-nudge identifiers. The separate idle
 daily-start request is canceled before an active batch is created, keeping the total under iOS's
 pending limit. Pause and End cancel active pending and delivered reminders. A delivery
 already in flight can race with Pause or End; the app documents observed behavior rather than

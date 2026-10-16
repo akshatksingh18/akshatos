@@ -4,44 +4,21 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Build 31 (0.8.0, PR #60 at `46445c5`) is the accepted recovery/refresh build in
-`../final-ipas/akshatos/backup/`. Akshat accepted the redesign, Body, full backup, month dropdowns,
-editable Lift Log splits and read-aloud controls; the voice sounded robotic.
-Build 32 (0.9.0, PR #61 at `eab351e`) passed PR/main CI and local artifact validation and is
-installed with current-version automatic-refresh enrollment in automatic bundle-ID mode and no
-error. Its read-aloud voice is still
-reported robotic. Working source 0.10.0 (33) fixes Best available to prefer voice quality across
-regional variants, using the exact locale only to break a quality tie. It also adds Lift Log's
-Weight loaded mode (seated calf raise) and a "Still working out?" reminder after an hour
-with nothing logged. At Akshat's request it removes ReelVault entirely and deletes the videos and records
-ReelVault left on the phone. Build 33 (PR #62 at `4a690cf`) passed
-PR/main CI (after a fix to a new test) and local checksum/IPA validation and is installed
-(Sideloadly: 0.10.0, automatic mode, current-version enrollment, no error) and replaces Build 32,
-which is not promoted. Akshat reports it looks good; with the Ava Premium voice, read aloud ran
-on past a sentence ending in a closing quote (`genius!” This`), and the voice menu listed every
-installed voice. Working source 0.11.0 (34) gives the voice plain sentence ends (quotation marks
-dropped, long dashes as a pause, footnote numbers skipped) and lists only chosen voices, with a
-Choose voices screen. It also makes Lift Log
-flexible: the split and an open workout stay in step, logged exercises move up in the order done,
-and the workout screen gains search, reorder and swipe-to-remove. Build 34 (PR #63 at `a93c48d`) passed PR/main CI (after a UI-test scrolling fix) and local
-checksum/IPA validation and is installed (0.11.0,
-automatic mode, current-version enrollment, no error). Akshat still finds the system voices robotic;
-after listening to Kokoro demos he chose it. Working source 0.12.0 (35) adds
-PageVault's **natural voice (test)**: Kokoro imported once from Files and run on the phone by
-sherpa-onnx, with a speed test. Build 35 (PR #64 at `1e37804`) passed PR/main CI
-and local validation but was never installed: on Build 34 Akshat found the speed menu and Choose
-voices… slow and hanging. Build 36 (0.12.1, PR #65 at `5826e40`) reads the iPhone's voice list
-once instead of at every redraw, measures the voice's size off the main thread, loads the model
-when the book opens and renders the next page's first sentence ahead of the page turn; it passed
-PR/main CI and local checksum/IPA validation and is installed (0.12.1, automatic mode,
-current-version enrollment, no error). Akshat finds the Kokoro samples good; reading a book with
-it is the next check (`pagevault/neural-voice-audit.md`).
-Working source 0.13.0 (37) adds **Study Log** Build 1 (a countdown study timer that records
-real study time; `study-log.md`), merges the speed menu's Natural voice switch and iPhone voice
-list into one Voice list with one tick, and lets Akshat order PageVault's Want to read shelf by
-dragging covers. Not yet built by CI or phone-tested.
-Wait for Akshat's named Enhanced/Premium voice result. Build 32 will not be promoted; Build 33
-replaces it. Detailed build history belongs in `cloud-build.md`.
+**Current focus:** Finish the authorized 0.14.0 (38) personal hub, PR #67. Domain and intermediate
+native compilation have passed; the final complete cloud gate, native finish review and testing IPA
+remain open. `implementation-plan.md` owns implementation coverage. Build 37 is installed/enrolled,
+Build 31 is accepted recovery. Detailed historical evidence belongs in `cloud-build.md`.
+
+- [ ] Final exact-commit cloud CI Gate, native screenshot review and validated Build-38 testing IPA.
+- [ ] Phone: all four tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
+- [ ] Phone: tasks/repeats/priorities/Undo/parked thoughts; Journal lock/passcode, background privacy,
+      photos, failed/cancelled save/export and full recovery into disposable data.
+- [ ] Phone: optional reminders/badge while locked, stale actions and finite scheduling windows.
+- [ ] Phone: Files linking, offline/revoked provider, stale/replayed/conflict exports and same-ID re-sign.
+- [ ] User: benchmark iCloud latency and retain the standing workspace data policy; agent uploads
+      remain disallowed. Build the roadmap receiver only in its separately authorized maintenance scope.
+- [ ] User: verify WHOOP imports/photos/reminders/recovery, then use Settings handover to stop the
+      old fitness owner. Do not delete legacy stores, assume cutover or promote an unaccepted IPA.
 
 ## iPhone-primary work
 
@@ -120,16 +97,21 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 
 ### Open
 
-- [ ] **Phone-check 0.13.0 (37) once built.** (1) Speed menu: one Voice list, one tick; picking a
+- [x] **Authorize the personal hub and selected features.** The graphite/copper four-tab design,
+      day/completion defaults and reminder trim are accepted. Source 0.14.0 implements them;
+      `implementation-plan.md` and `personal-hub.md` own coverage and remaining verification.
+- [ ] **Phone-check installed 0.13.0 (37).** Akshat confirms installation, and Sideloadly records
+      current-version automatic-refresh enrollment in automatic mode with no error. Feature
+      acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
       natural speaker reads with Kokoro, picking an iPhone voice switches back; Choose voices…
       ticks natural speakers into the menu and plays their samples. (2) PageVault: hold a Want to
       read cover and drag it onto another; Move to top/bottom; the order survives relaunch.
       (3) Study Log Build 1: a real study block with Pause/Resume, the countdown and studied time,
       force-quit while running and reopen (time kept), the week view and a day's blocks, a day
       rollover at 3:00 AM, and its backup in the hub's Back up everything.
-- [ ] **Study Log Build 2 (planned).** The repeating "Still studying?" nudge with Keep going,
-      Pause and I stopped earlier, the open-app check, add/edit/delete blocks, editable target and
-      marks, optional notes and CSV export (`study-log.md` § Builds).
+- [ ] **Verify Study Log Build 2 on the phone.** Source 0.14.0 adds the repeating study check,
+      corrections/Undo, editable target/marks, topics, break clock/nudge, Focus, Shortcuts, CSV and
+      versioned study export. The roadmap receiving importer remains separately unimplemented.
 - [ ] **Test the natural voice (Build 36).** Akshat chose Kokoro after listening.
       The unpacked voice is already in OneDrive at `Backups\AkshatOS Voice\kokoro-int8-multi-lang-v1_0`
       (182 MB, from sherpa-onnx's `tts-models` release; outside both backup-sync pairs, so the sync
@@ -174,11 +156,11 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
       recovery and explicit missing-media handling; do not treat hub success as all photos recovered.
       The proposed WHOOP import must preview/block or obtain partial-import approval. This records
       a recovery gate, not authorization to change AkshatOS or remove Body.
-- [ ] **Review Pushup Reminder exploration inside WHOOP.** `hub-plan.md` owns cross-project
-      approval/ownership gates; WHOOP's audit/fitness plan/TODO own proposed Train/Today placement,
-      protected action inbox parity, one notification coordinator/shared budget, Home/Always
-      permission decision, local import/recovery and phone tests. Keep this hub's module/streak/
-      schedules intact; no port, reminder-owner cutover or module removal is authorized yet.
+- [ ] **Complete the fitness import/removal cutover separately.** WHOOP implements Pushups,
+      Lift Log and Body in its installed build; its fitness/integration plans and TODO own the
+      outstanding phone and recovery checks. `hub-plan.md` owns cross-project entry/reminder
+      ownership. The future AkshatOS design excludes fitness features, but preserve this installed
+      hub's modules, history and schedules until the import, acceptance and removal gates pass.
 - [ ] **Move signing to a separate Apple Account.** Planned in
       `apple-account-switch.md`: new account (Akshat creates it), backups of every module and WHOOP,
       one app at a time into the new team with restore before removing the old install, then the
@@ -228,6 +210,12 @@ replaces it. Detailed build history belongs in `cloud-build.md`.
 - Configurable nudge spacing, an optional end-of-day prompt, or a scheduled quiet window.
 - Multiple saved places/geofences, multiple profiles/schedules, HealthKit, or a widget remain out of
   scope unless Akshat explicitly expands the one-purpose product after the core is reliable.
+- **Selected features:** `todo-journal-plan.md` is the accepted local plan, not an ideas backlog.
+  Source 0.14.0 implements its four-tab design and selected features. iCloud/provider timing,
+  workspace data policy, the roadmap receiver and physical acceptance remain separate gates.
+- **Unpicked ideas:** self-care checklist, interview flashcards and deadline countdowns remain
+  outside the selected plan and are revisited only if asked. Do not infer their selection from
+  their presence in this list or add new reminders without an approved shared budget.
 
 ## Documentation synchronization
 

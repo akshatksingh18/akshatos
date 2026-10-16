@@ -39,8 +39,10 @@ Build 33 (installed) fixes Best available's ranking; with Ava (Premium) it reads
 after a closing quote. 0.11.0 (34) gives the voice plain sentence ends and lists only chosen voices
 in the menu; Akshat still found every system voice robotic, so he chose Kokoro from
 `neural-voice-audit.md`. Build 36 (installed) adds it as a natural voice (test) run on the phone; he
-finds the samples good. Working source 0.13.0 (37) merges its switch and the iPhone voice list into
-one Voice list and lets the Want to read shelf be ordered by dragging (`features.md`). `features.md` § Read aloud.
+finds the samples good. Installed Build 37 merges its switch and the iPhone voice list into one
+Voice list and lets the Want to read shelf be ordered by dragging; its feature phone pass remains
+open (`features.md` § Read aloud). Source 0.14.0 moves the unchanged reader entry to Apps in the
+four-tab personal hub (`../personal-hub.md`); it does not alter PageVault import or reading data.
 **Removed in Build 29:** Build 28 added a linked OneDrive laptop inbox folder and Open in AkshatOS. On the
 phone, linking the folder did nothing, and Akshat asked for both to be removed; AkshatOS Build 29
 takes them out (see the laptop-to-phone decision below). PDFs still reach PageVault through the

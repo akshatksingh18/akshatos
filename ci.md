@@ -102,10 +102,10 @@ measurement form with its guidance, history and photos. Fixtures are synthetic; 
 measurement appears in tests.
 
 The hub's full backup (`app/backup/`) is not a feature suite, since it spans every module; it is
-covered by `UnitTests/FullBackupTests.swift`, which fills all four modules on one simulated phone,
+covered by `UnitTests/FullBackupTests.swift`, which fills all nine modules plus personal settings on one simulated phone,
 backs them up to one folder and restores it into a fresh phone, proves one damaged part restores
 nothing, refuses a non-backup, a newer backup and a part from a module the build lacks, leaves out an
-empty PageVault, names a missing part, and checks unique ids and safe part names. `ios/scripts/check-backup-coverage.py` runs beside the boundary check
+empty PageVault and Journal, names a missing part, and checks unique ids and safe part names. `ios/scripts/check-backup-coverage.py` runs beside the boundary check
 in both the checks job and the macOS build and fails when a module under `features/` does not take
 part in the full backup (no `HubBackupPart`, or not listed in `AppServices`). The hub UI test opens the Backup screen and returns. Saving and picking the folder go through
 system sheets, which only the phone exercises.
@@ -149,6 +149,16 @@ damaged or overlapping backup changing nothing; `StudyLogUITests`: Start, Pause 
 extends `FullBackupTests` with the `studyLog` part, and adds PageVault assertions for the Want to
 read order (drag up/down, to bottom, new imports, saved rank, reload) and the one voice list
 (natural menu speakers, single choice, import/remove).
+
+Source 0.14.0 registers To-do, Journal, Watchlist and Spending domain suites. Hosted personal-hub
+checks cover unavailable-store protection, atomic repeat/completion and relaunch Undo, Journal
+access gating and media staged before provider access ends, import replay with watched events
+preserved, exact expense recovery and stale notification actions. Notification tests inject denial,
+capacity and scheduling failures. Full backup restores all nine feature stores and personal
+settings. Native SwiftUI render fixtures capture synthetic Today at 390 points and 320 points with
+accessibility type, and the unlocked Journal. UI checks cover the four tabs, task capture, unlocked
+Journal default and occasional-tool destinations. These are cloud/simulator checks; they do not
+verify hardware authentication, notification delivery, file-provider behavior or phone migration.
 
 ReelVault's domain, storage and UI suites were removed with the module in Build 33.
 `FullBackupTests` checks that its leftover videos and store are deleted on launch without touching

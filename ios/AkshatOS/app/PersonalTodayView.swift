@@ -80,7 +80,10 @@ struct PersonalTodayView: View {
                 HStack {
                     Circle().fill(study.isRunning ? HubInk.copper : HubInk.sage).frame(width: 7, height: 7).accessibilityHidden(true)
                     Text(study.isRunning ? "Studying" : typeSize.isAccessibilitySize ? "Paused" : "Ready when you are").font(.subheadline)
-                    Spacer(); Button("Focus") { focus = true }.font(.subheadline).accessibilityIdentifier("study-focus")
+                    Spacer()
+                    Button { focus = true } label: {
+                        Text("Focus").font(.subheadline).frame(minWidth: 44, minHeight: 44)
+                    }.accessibilityIdentifier("study-focus")
                 }
             }
             if typeSize.isAccessibilitySize { timerControl(at: date) }
