@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 import PhotosUI
 import UniformTypeIdentifiers
 
@@ -9,6 +10,7 @@ struct JournalView: View {
     @Environment(\.scenePhase) private var phase
     @State private var day = ""
     @State private var history = false
+    @State private var chartWeek = true
     @State private var search = ""
     @State private var share: URL?
     @State private var showMover = false
@@ -115,7 +117,7 @@ struct JournalView: View {
                         .frame(minHeight: 240).accessibilityLabel("Journal entry").accessibilityIdentifier("journal-entry")
                 }.padding(18).background(HubInk.surface, in: UnevenRoundedRectangle(topLeadingRadius: 3, bottomLeadingRadius: 3, bottomTrailingRadius: 3, topTrailingRadius: 22))
                 if store.unsaved { Label("Draft not saved", systemImage: "exclamationmark.triangle"); Button("Retry save") { store.retryDraft() } }
-                else { Text(current.completedAt == nil ? "Draft saved on this iPhone" : "Done for this day").font(.caption).foregroundStyle(.secondary) }
+                else { Text(store.entry(day) == nil ? "No entry saved yet" : current.completedAt == nil ? "Draft saved on this iPhone" : "Done for this day").font(.caption).foregroundStyle(.secondary) }
                 Button {
                     if current.completedAt == nil { var value = current; value.facts = facts(day); store.markDone(value) }
                     else { store.markDone(current) }
@@ -164,10 +166,32 @@ struct JournalView: View {
         List {
             let old = store.onThisDay(store.today)
             if !old.isEmpty { Section("On this day") { ForEach(old) { historyRow($0) } } }
-            Section("Entries") {
-                ForEach(store.entries.filter { search.isEmpty || ($0.text + $0.wentWell + $0.change + $0.learned).localizedCaseInsensitiveContains(search) }) { historyRow($0) }
-                if store.entries.isEmpty { Text("Your first entry starts here.").foregroundStyle(.secondary) }
+            Section {
+                DisclosureGroup("Mood and energy") {
+                    Picker("Period", selection: $chartWeek) { Text("Week").tag(true); Text("Month").tag(false) }.pickerStyle(.segmented)
+                    let values = store.entries.filter { chartWeek ? store.clock.week(store.today).contains($0.day) : $0.day.hasPrefix(String(store.today.prefix(7))) }
+                    if values.contains(where: { $0.mood != nil || $0.energy != nil }) {
+                        Chart(values) { entry in
+                            if let date = store.clock.date(entry.day), let mood = entry.mood {
+                                PointMark(x: .value("Day", date), y: .value("Rating", mood)).foregroundStyle(by: .value("Measure", "Mood"))
+                            }
+                            if let date = store.clock.date(entry.day), let energy = entry.energy {
+                                PointMark(x: .value("Day", date), y: .value("Rating", energy)).foregroundStyle(by: .value("Measure", "Energy"))
+                            }
+                        }.chartYScale(domain: 1...5).chartForegroundStyleScale(["Mood": HubInk.copper, "Energy": HubInk.sage]).frame(height: 160)
+                        Text("Only recorded ratings appear. Tap an entry below to inspect or edit its values.").font(.caption).foregroundStyle(.secondary)
+                    } else { Text("No ratings recorded in this period.").foregroundStyle(.secondary) }
+                }
+                Text("\(store.entries.filter { $0.day.hasPrefix(String(store.today.prefix(7))) && $0.hasWriting }.count) written entries this month").font(.subheadline)
             }
+            let values = store.entries.filter { search.isEmpty || ($0.text + $0.wentWell + $0.change + $0.learned).localizedCaseInsensitiveContains(search) }
+            let groups = Dictionary(grouping: values) { String($0.day.prefix(7)) }
+            ForEach(groups.keys.sorted(by: >), id: \.self) { month in
+                Section(store.clock.date(month + "-01")?.formatted(.dateTime.month(.wide).year()) ?? month) {
+                    ForEach(groups[month, default: []]) { historyRow($0) }
+                }
+            }
+            if values.isEmpty { Text(search.isEmpty ? "Your first entry starts here." : "No matching entries.").foregroundStyle(.secondary) }
         }.personalList().searchable(text: $search, prompt: "Search unlocked entries")
     }
     private func historyRow(_ entry: JournalEntry) -> some View {

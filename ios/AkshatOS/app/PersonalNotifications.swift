@@ -10,7 +10,12 @@ import UserNotifications
     @Published var journalReminder: Bool { didSet { defaults.set(journalReminder, forKey: "personal.journal-reminder") } }
     @Published var journalHour: Int { didSet { defaults.set(journalHour, forKey: "personal.journal-hour") } }
     @Published var badge: Bool { didSet { defaults.set(badge, forKey: "personal.badge") } }
-    @Published var fullDayChallenge: Bool { didSet { defaults.set(fullDayChallenge, forKey: "personal.full-day-challenge") } }
+    @Published var fullDayChallenge: Bool { didSet {
+        defaults.set(fullDayChallenge, forKey: "personal.full-day-challenge")
+        if fullDayChallenge && fullDayStart.isEmpty { fullDayStart = ActivityDayClock().key(Date()) }
+    } }
+    @Published var fullDayStart: String { didSet { defaults.set(fullDayStart, forKey: "personal.full-day-start") } }
+    @Published var seenMilestone: Int { didSet { defaults.set(seenMilestone, forKey: "personal.seen-milestone") } }
     @Published var lastStudyConfirmation: Date? { didSet { defaults.set(lastStudyConfirmation, forKey: "personal.study-confirmation") } }
     @Published var challengeDay: String { didSet { defaults.set(challengeDay, forKey: "personal.challenge-day") } }
     @Published var challengeAccepted: Bool { didSet { defaults.set(challengeAccepted, forKey: "personal.challenge-accepted") } }
@@ -25,6 +30,8 @@ import UserNotifications
         journalReminder = defaults.bool(forKey: "personal.journal-reminder")
         journalHour = defaults.object(forKey: "personal.journal-hour") as? Int ?? 22
         badge = defaults.bool(forKey: "personal.badge")
+        fullDayStart = defaults.string(forKey: "personal.full-day-start") ?? ""
+        seenMilestone = defaults.integer(forKey: "personal.seen-milestone")
         fullDayChallenge = defaults.bool(forKey: "personal.full-day-challenge")
         lastStudyConfirmation = defaults.object(forKey: "personal.study-confirmation") as? Date
         challengeDay = defaults.string(forKey: "personal.challenge-day") ?? ""

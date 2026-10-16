@@ -123,6 +123,7 @@ struct TodoView: View {
     }
     private func add() { if store.add(quickAdd) { quickAdd = "" } }
     private func prepareExport(_ type: UTType) {
+        guard store.available else { store.message = "Load To-do before exporting."; return }
         do { document = PortableDocument(data: type == .json ? try LocalDataCoding.encode(store.state) : store.csv()); exportType = type; export = true }
         catch { store.message = error.localizedDescription }
     }
@@ -132,10 +133,12 @@ struct PriorityPicker: View {
     @ObservedObject var store: TodoStore
     let day: String
     @Environment(\.dismiss) private var dismiss
+    @State private var newTask = ""
     var body: some View {
         NavigationStack {
             List {
                 Text(store.clock.date(day)?.formatted(date: .complete, time: .omitted) ?? day).foregroundStyle(.secondary)
+                HStack { TextField("Add a task", text: $newTask).onSubmit { if store.add(newTask) { newTask = "" } }; Button("Add") { if store.add(newTask) { newTask = "" } }.frame(minHeight: 44) }
                 ForEach(store.visible.filter { $0.completedAt == nil || store.plan(day)?.selected.contains($0.id) == true }) { item in
                     let selected = store.plan(day)?.selected.contains(item.id) == true
                     Button {

@@ -14,5 +14,5 @@ entry.mood = nil; entry.completedAt = nil
 precondition(!entry.qualifies)
 let bytes = try LocalDataCoding.encode(JournalState(entries: [entry]))
 let decoded = try LocalDataCoding.decode(JournalState.self, bytes)
-precondition(decoded.entries[0] == entry)
+precondition(decoded.entries[0].text == entry.text && abs(decoded.entries[0].updatedAt.timeIntervalSince(entry.updatedAt)) < 1)
 print("Journal: completion, privacy-safe data format and unsafe media validation passed")

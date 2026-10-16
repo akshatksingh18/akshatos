@@ -24,6 +24,17 @@ struct PersonalTodayView: View {
                 } else {
                     TimelineView(.periodic(from: .now, by: 1)) { context in timer(at: context.date, focused: false) }
                 }
+                if study.storageAvailable {
+                    let count = study.days(at: Date()).filter { $0.studied > 0 }.count
+                    let milestone = ActivityProgress.milestones.last(where: { $0 <= count }) ?? 0
+                    if milestone > preferences.seenMilestone {
+                        HStack {
+                            Label("\(milestone) days with study recorded", systemImage: "checkmark.seal").foregroundStyle(HubInk.copper)
+                            Spacer()
+                            Button("Got it") { preferences.seenMilestone = milestone }.frame(minHeight: 44)
+                        }.font(.subheadline)
+                    }
+                }
                 priorities
                 if let next = todo.nextTimed, let date = next.due {
                     HStack { Image(systemName: "clock"); Text(date.formatted(date: .abbreviated, time: .shortened)); Text(next.title).lineLimit(2) }
@@ -83,7 +94,7 @@ struct PersonalTodayView: View {
                 Label(study.isRunning ? "Pause studying" : study.studiedToday(at: date) > 0 ? "Resume studying" : "Start studying", systemImage: study.isRunning ? "pause.fill" : "play.fill")
                     .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }.buttonStyle(.borderedProminent).tint(HubInk.copper).foregroundStyle(HubInk.background).accessibilityIdentifier("study-toggle")
-            if capture { ThoughtCaptureField { todo.park($0) } }
+            if capture { ThoughtCaptureField { if todo.park($0) { capture = false; return true }; return false } }
             else { Button { capture = true } label: { Label("Park a thought", systemImage: "plus").frame(maxWidth: .infinity, minHeight: 44) }.foregroundStyle(.secondary) }
             if !focused {
                 Button(study.selectedTopic.isEmpty ? "Add a topic" : study.selectedTopic) { topic = study.selectedTopic; topicSheet = true }
@@ -133,6 +144,18 @@ struct StudyWeekGraphic: View {
     @ObservedObject var store: StudyLogStore
     let anchor: String
     @Binding var selected: String
+    private func barColor(day: String, total: Double) -> Color {
+        let closed = store.days(at: Date()).filter { $0.day < store.today && $0.studied > 0 }
+        let best = closed.map(\.studied).max() ?? 0
+        if best > 0 && total >= best { return .purple }
+        let clock = ActivityDayClock(calendar: store.clock.calendar)
+        let prior = (1...7).compactMap { clock.shifted(day, by: -$0) }
+        if let first = closed.map(\.day).min(), let start = prior.min(), first <= start {
+            let baseline = prior.reduce(0.0) { sum, key in sum + (closed.first { $0.day == key }?.studied ?? 0) } / 7
+            if total > baseline && baseline > 0 { return HubInk.sage }
+        }
+        return HubInk.copper.opacity(day == selected ? 1 : 0.65)
+    }
     var body: some View {
         let now = Date(), days = store.clock.week(containing: anchor), blocks = store.log.blocks(now: now, clock: store.clock)
         let totals = days.map { key in blocks.filter { $0.day == key }.reduce(0) { $0 + $1.duration } }
@@ -151,7 +174,7 @@ struct StudyWeekGraphic: View {
                                     if total > 0 {
                                         VStack(spacing: 2) {
                                             ForEach(pieces) { piece in
-                                                RoundedRectangle(cornerRadius: 3).fill(day == selected ? HubInk.copper : HubInk.sage.opacity(0.65))
+                                                RoundedRectangle(cornerRadius: 3).fill(barColor(day: day, total: total))
                                                     .frame(height: max(2, 100 * piece.duration / scale - 2))
                                             }
                                         }.frame(width: 24)
@@ -169,6 +192,7 @@ struct StudyWeekGraphic: View {
             let pieces = blocks.filter { $0.day == key }
             Text(key > store.today ? "\(key) · Upcoming day" : "\(key) · \(StudyTimeDisplay.short(pieces.reduce(0) { $0 + $1.duration })) · \(pieces.count) blocks")
                 .font(.caption).foregroundStyle(.secondary)
+            Text("Copper: recorded time · green: above the prior seven-day average · purple: personal best. Missing history has no comparison colour.").font(.caption2).foregroundStyle(.secondary)
         }.accessibilityIdentifier("study-week")
         .onAppear { if selected.isEmpty { selected = store.today } }
     }

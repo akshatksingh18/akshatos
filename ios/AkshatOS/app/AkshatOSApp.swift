@@ -57,7 +57,7 @@ struct AkshatOSApp: App {
         personalNotifications = PersonalNotifications(study: studyLog, todo: todo, preferences: preferences)
         // Every module takes part in the full backup, in hub order. check-backup-coverage.py fails
         // CI if a module in features/ is missing from this list.
-        backup = FullBackupService(parts: [squats, pageVault, liftLog, bodyLog, studyLog, todo, journal, watchlist, spending])
+        backup = FullBackupService(parts: [squats, pageVault, liftLog, bodyLog, studyLog, todo, journal, watchlist, spending, preferences])
         notifications = AppNotificationCoordinator(squats: squats, liftLog: liftLog, navigator: navigator, personal: personalNotifications)
         let scheduler = personalNotifications
         studyLog.onChange = { scheduler.reconcile() }; todo.onChange = { scheduler.reconcile() }

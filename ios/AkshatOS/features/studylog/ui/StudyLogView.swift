@@ -49,7 +49,20 @@ struct StudyLogView: View {
         } message: { Text(store.message ?? "") }
         .alert("Replace Study Log data?", isPresented: $confirmingRestore) {
             Button("Replace", role: .destructive) {
-                if let pendingRestore { store.restoreBackup(pendingRestore) }
+                if let data = pendingRestore {
+                    Task {
+                        do {
+                            let checked = try StudyLogStore.validatedBackup(data)
+                            var end: Date?
+                            if let running = checked.segments.first(where: \.isRunning) {
+                                let backup = try LocalDataCoding.decode(StudyLogBackup.self, data)
+                                guard let actual = await store.approveRunningRestore(start: running.start, suggested: backup.exportedAt) else { return }
+                                end = actual
+                            }
+                            _ = store.restoreBackup(data, confirmedRunningEnd: end)
+                        } catch { store.message = error.localizedDescription }
+                    }
+                }
                 pendingRestore = nil
             }
             Button("Cancel", role: .cancel) { pendingRestore = nil }

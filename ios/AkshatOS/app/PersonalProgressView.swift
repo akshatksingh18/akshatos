@@ -53,7 +53,7 @@ struct PersonalProgressView: View {
     }
     private func shift(_ direction: Int) {
         guard let date = clock.date(effectiveAnchor), let next = clock.calendar.date(byAdding: month ? .month : .day, value: month ? direction : 7 * direction, to: date) else { return }
-        anchor = min(clock.calendarKey(next), study.today)
+        anchor = min(clock.calendarKey(next), study.today); selected = anchor
     }
     private var monthDays: [String] {
         guard let date = clock.date(effectiveAnchor), let interval = clock.calendar.dateInterval(of: .month, for: date),
@@ -84,7 +84,7 @@ struct PersonalProgressView: View {
     private func dayQualifies(_ day: String) -> Bool {
         let studyFact = study.daySummary(day, at: Date())
         if !fullDay { return studyFact.qualifies == true }
-        guard todo.available, journal.available, preferences.fullDayChallenge else { return false }
+        guard todo.available, journal.available, preferences.fullDayChallenge, !preferences.fullDayStart.isEmpty, day >= preferences.fullDayStart else { return false }
         return studyFact.qualifies == true && todo.daySummary(day, at: Date()).qualifies == true && journal.daySummary(day, at: Date()).qualifies == true
     }
     private var selectedBlocks: some View {
@@ -192,7 +192,15 @@ struct PersonalProgressView: View {
                 Button("Accept suggestion") { preferences.challengeDay = study.today; preferences.challengeStartedAt = Date(); preferences.challengeAccepted = true }
             }
             if preferences.fullDayChallenge {
-                Text("Full-day challenge: the recorded study mark + every chosen priority + a saved Journal entry marked Done. Fitness is not included.").font(.footnote).foregroundStyle(.secondary)
+                let qualified = Set(todo.state.plans.map(\.day).filter { day in
+                    day >= preferences.fullDayStart && study.daySummary(day, at: Date()).qualifies == true
+                        && todo.daySummary(day, at: Date()).qualifies == true && journal.daySummary(day, at: Date()).qualifies == true
+                })
+                if todo.available && journal.available {
+                    let streak = ActivityProgress.streak(qualified, today: study.today, clock: clock)
+                    LabeledContent("Full-day streak", value: "\(streak.current) · best \(streak.best)")
+                } else { Text("Full-day history unavailable").foregroundStyle(.secondary) }
+                Text("Started \(preferences.fullDayStart). Full-day challenge: the recorded study mark + every chosen priority + a saved Journal entry marked Done. Fitness is not included.").font(.footnote).foregroundStyle(.secondary)
             }
         }
     }
