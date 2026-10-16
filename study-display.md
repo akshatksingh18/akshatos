@@ -38,6 +38,9 @@ the low-power Always-On Lock Screen. Park a thought and Undo remain available.
 - Request failure, denied Live Activity authorization and a missing/hidden/ended card never pause,
   delete or alter study data. Status says requested, not visible or verified. Show again is a manual
   retry. Tapping the card routes `akshatos://study` to Today without starting or pausing study.
+  Explicit Off removes cards even when storage is unavailable; an unavailable cache alone does not
+  end them. System-ended cards are removed rather than updated/restarted. Unlock recovery retries
+  reconciliation after protected data becomes readable.
 
 ## Quiet operation and Do Not Disturb
 
@@ -49,6 +52,9 @@ to passive/no-sound requests during study, even if the app is allowed through DN
 normal settings for future reminders. The separately enabled Still studying check remains an explicit
 opt-in; normal iOS DND delivery rules still apply. A request already delivering at a transition cannot
 be recalled atomically, and unrelated app/system alerts remain controlled by iOS.
+Retained fitness reminder ownership remains governed by the explicit WHOOP handover; this change
+does not cancel those background schedules. Keeping AkshatOS off the DND allowlist does not prevent
+study recording. Foreground suppression applies to all this app's notification namespaces.
 
 Do not promise that allowlisting AkshatOS makes a Live Activity visible in every Focus configuration.
 Lock-screen access, per-app Live Activities, a different linked Lock Screen, user dismissal, competing

@@ -14,6 +14,7 @@ struct AkshatOSApp: App {
                         if !delegate.services.preferences.fitnessStopped { await delegate.services.squats.refresh() }
                         delegate.services.studyLog.load(); delegate.services.todo.load(); delegate.services.journal.load()
                         delegate.services.personalNotifications.reconcile()
+                        delegate.services.studyActivity.reconcile()
                     }
                 }
         }

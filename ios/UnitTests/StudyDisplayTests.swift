@@ -127,6 +127,15 @@ import SwiftUI
         fixture.client.activities = []
         unloaded.load(); reopened.reconcile(); await reopened.waitForPendingUpdates()
         XCTAssertEqual(fixture.client.startCount, 1, "Cold launch retains the saved last-shown session")
+        fixture.client.activities = [StudyActivityHandle(id: "ended", sessionID: try XCTUnwrap(fixture.study.log.running?.id), createdAt: fixture.now, canUpdate: false)]
+        reopened.reconcile(); await reopened.waitForPendingUpdates()
+        XCTAssertTrue(fixture.client.activities.isEmpty, "A system-ended card is removed, not updated or silently restarted")
+        XCTAssertEqual(fixture.client.startCount, 1)
+        fixture.client.activities = [StudyActivityHandle(id: "existing", sessionID: UUID(), createdAt: fixture.now)]
+        let unavailable = StudyLogStore(repository: fixture.repository, defaults: fixture.defaults)
+        let off = StudyLiveActivityCoordinator(study: unavailable, defaults: fixture.defaults, configured: true, client: fixture.client)
+        off.enabled = false; await off.waitForPendingUpdates()
+        XCTAssertTrue(fixture.client.activities.isEmpty, "An explicit Off must work even if storage cannot be read")
     }
 
     func testActivityExpiresAtThreeAMAndEightHoursWithoutStoppingTheSession() async throws {

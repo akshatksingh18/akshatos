@@ -6,6 +6,7 @@ struct StudyActivityHandle: Equatable {
     let id: String
     let sessionID: UUID
     let createdAt: Date
+    var canUpdate = true
 }
 
 @MainActor protocol StudyActivityClient {
@@ -19,8 +20,9 @@ struct StudyActivityHandle: Equatable {
 @MainActor final class SystemStudyActivityClient: StudyActivityClient {
     var allowed: Bool { ActivityAuthorizationInfo().areActivitiesEnabled }
     var activities: [StudyActivityHandle] {
-        Activity<StudyActivityAttributes>.activities.filter { $0.activityState == .active || $0.activityState == .stale }
-            .map { StudyActivityHandle(id: $0.id, sessionID: $0.attributes.sessionID, createdAt: $0.attributes.createdAt) }
+        Activity<StudyActivityAttributes>.activities.filter { $0.activityState != .dismissed }
+            .map { StudyActivityHandle(id: $0.id, sessionID: $0.attributes.sessionID, createdAt: $0.attributes.createdAt,
+                canUpdate: $0.activityState == .active || $0.activityState == .stale) }
     }
     func start(sessionID: UUID, state: StudyActivityAttributes.ContentState) throws {
         _ = try Activity.request(attributes: StudyActivityAttributes(sessionID: sessionID, createdAt: state.anchor),
@@ -90,14 +92,19 @@ struct StudyActivityHandle: Equatable {
 
     private func synchronize() async {
         guard configured else { status = "Available in the Live Activity build."; return }
+        if !enabled {
+            for handle in client.activities { await client.end(handle) }
+            remember(nil); suppressedSession = nil; status = "Off"
+            return
+        }
         guard study.storageAvailable else {
             status = "Waiting for study data. The lock-screen timer has not been changed."
             return
         }
-        let running = enabled ? study.log.running : nil
+        let running = study.log.running
         var matching: StudyActivityHandle?
         for handle in client.activities {
-            if let running, handle.sessionID == running.id, matching == nil {
+            if let running, handle.sessionID == running.id, handle.canUpdate, matching == nil {
                 matching = handle
             } else { await client.end(handle) }
         }

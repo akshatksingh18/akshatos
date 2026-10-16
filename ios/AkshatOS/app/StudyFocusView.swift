@@ -25,7 +25,7 @@ struct StudyFocusView: View {
                         Group {
                             if !study.storageAvailable {
                                 ContentUnavailableView { Label("Study data unavailable", systemImage: "exclamationmark.triangle") }
-                                actions: { Button("Retry") { study.load() } }
+                                actions: { Button("Retry") { study.load() }.frame(minHeight: 44) }
                             } else if wide {
                                 HStack(spacing: 32) {
                                     dial(at: date).frame(width: min(280, max(220, geometry.size.height * 0.92)))
@@ -94,10 +94,12 @@ struct StudyFocusView: View {
             Text("While studying in Focus. Uses more battery. Locking your phone still turns this screen off.")
                 .font(.footnote).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if activity.configured {
-                DisclosureGroup("Lock-screen timer") {
+                DisclosureGroup {
                     Toggle("Show study timer", isOn: $activity.enabled).frame(minHeight: 44)
                     Text(activity.status).font(.footnote).foregroundStyle(.secondary)
                     if activity.enabled && study.isRunning { Button("Show again") { activity.showAgain() }.frame(minHeight: 44) }
+                } label: {
+                    Text("Lock-screen timer").frame(minHeight: 44)
                 }
             }
             Button { capture = true } label: { Label("Park a thought", systemImage: "plus").frame(maxWidth: .infinity, minHeight: 44) }

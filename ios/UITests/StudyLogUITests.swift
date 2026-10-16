@@ -33,6 +33,11 @@ final class StudyLogUITests: XCTestCase {
         let portrait = NSPredicate { _, _ in app.frame.height > app.frame.width }
         expectation(for: portrait, evaluatedWith: app)
         waitForExpectations(timeout: 5)
+        app.buttons["study-focus"].tap()
+        let reopenedSwitch = app.switches["study-keep-awake"]
+        XCTAssertTrue(reopenedSwitch.waitForExistence(timeout: 5))
+        XCTAssertEqual(reopenedSwitch.value as? String, "0", "Keep-awake is an explicit choice on each Focus entry")
+        app.buttons["study-focus-close"].tap()
     }
     /// The hub opens Study Log on the countdown; Start runs a block, Pause keeps it, and history
     /// shows the week and the day. Locked-screen and relaunch behaviour are hosted tests and the phone.
