@@ -6,6 +6,12 @@ acceptance. Build 37 remains installed/enrolled; Build 31 remains accepted recov
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
 Working source is **0.14.1 (39)** in development, not a release artifact. No IPA is requested.
+It is on `feature/build-39-study-display`, draft [PR #68](https://github.com/akshatksingh18/akshatos/pull/68).
+Code `d8856b0` passed [CI](https://github.com/akshatksingh18/akshatos/actions/runs/38911666157):
+nine domain suites, 195 hosted tests, 14 UI tests, default simulator/device compilation and optional
+Live Activity host/extension compilation and metadata checks. Packaging and IPA upload were skipped;
+`test-diagnostics-177-1` was the only artifact. Native inspection confirmed the card/accessibility fixes
+and found a compact-dial truncation, corrected in source and awaiting exact-source confirmation. No merge or signing/refresh-owner change is made.
 Keep this work on its development branch; PR validation compiles/tests both the default build and
 the optional study Live Activity candidate without packaging. Manual dispatch defaults to
 `package_ipa=false`; a future release request must select/validate the variant first. Build 38's

@@ -3,6 +3,7 @@ import SwiftUI
 struct StudyDial: View {
     var studied: Double
     var target: Int
+    var compact = false
     @State private var showingStudied = false
     @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 48
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -24,9 +25,9 @@ struct StudyDial: View {
                     HStack(spacing: 6) {
                         Text(showingStudied ? "Studied" : "Remaining")
                         Image(systemName: "arrow.left.arrow.right").font(.caption2)
-                    }.font(.subheadline).foregroundStyle(.secondary)
+                    }.font(.subheadline).lineLimit(1).minimumScaleFactor(0.7).foregroundStyle(.secondary)
                 }.frame(maxWidth: .infinity, minHeight: 100).contentShape(Circle())
-            }.buttonStyle(.plain).padding(24).accessibilityLabel(showingStudied ? "Show remaining time" : "Show studied time")
+            }.buttonStyle(.plain).padding(compact ? 8 : 24).accessibilityLabel(showingStudied ? "Show remaining time" : "Show studied time")
             VStack {
                 Spacer()
                 HStack {

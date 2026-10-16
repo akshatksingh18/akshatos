@@ -6,7 +6,8 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 
 **Current focus:** Develop Build 39 (0.14.1) incrementally without generating an IPA or merging a release.
 Rotating desk Focus, keep-awake, quiet study notifications and the optional SideStore Live Activity
-candidate are tracked in `study-display.md`; cloud validation is pending. Build 38 (0.14.0), PR #67 at `b573ecc`, remains the delivered candidate.
+candidate are tracked in `study-display.md`; full CI passed at `d8856b0` and the compact-dial fix
+awaits exact-source confirmation. Build 38 (0.14.0), PR #67 at `b573ecc`, remains the delivered candidate.
 The complete PR/main cloud gates, native accessibility fixes and local IPA/checksum validation pass;
 the IPA is in the single-slot testing cache. Build 37 remains installed/enrolled; Build 31 remains
 accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build.md` exact evidence.

@@ -18,8 +18,9 @@ while AkshatOS's import/removal cutover remains open. Read it before a cross-app
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
 **Status:** Build 39 (0.14.1) is in source development: rotating study Focus, keep-awake, quiet study
-notifications and an opt-in SideStore Live Activity candidate. No IPA or merge is requested; continue
-incrementally with cloud validation only. `study-display.md` owns this scope and signing/device gates.
+notifications and an opt-in SideStore Live Activity candidate. Complete CI passed at `d8856b0`;
+the compact-dial follow-up awaits confirmation. No IPA or merge is requested; continue incrementally
+with cloud validation only. `study-display.md` owns this scope and signing/device gates.
 Build 38 (0.14.0), merged through PR #67 at `b573ecc`, is validated in `testing/` and
 awaits installation/device acceptance. PR/main CI Gates, local checksum/IPA checks and the native
 accessibility-fix review pass. Build 37 remains installed/enrolled; Build 31 remains accepted
@@ -105,7 +106,7 @@ push under the standing documentation rule.
   including that no document types or file sharing are declared and that the only background mode
   is audio (PageVault read-aloud).
 - `ios/Support/AkshatOS-Info.plist` — the only Info.plist keys Xcode cannot generate from build
-  settings, merged with the generated ones: the audio background mode for PageVault read-aloud.
+  settings, merged with generated keys: PageVault's audio background mode and the study URL scheme.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
@@ -188,7 +189,7 @@ push under the standing documentation rule.
 - `ios/AkshatOS/app/` — composition/lifetime ownership, sole notification delegate, and `hub/`
   display-only picker with metadata and injected destinations; read for host integration changes.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
-  everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
+  except the PageVault reader and study Focus, with independent presence ownership.
 - `ios/AkshatOS/app/backup/` — the hub's full backup: `AkshatOSBackup.swift` (the folder's index,
   part-name and registry checks, errors; Foundation-only), `FullBackupService.swift` (runs every
   registered `HubBackupPart`, knowing no module by name) and `FullBackupView.swift` (the Backup screen).
@@ -289,8 +290,10 @@ push under the standing documentation rule.
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, or Body
-  for its own destination. Returning to the picker must not stop reminders.
+- Source Build 38 onward launches Today / To-do / Journal / Apps. PageVault and occasional tools
+  live in Apps; retained fitness destinations live behind Settings recovery/handover. Installed
+  Build 37 still uses the earlier picker. Navigation must never stop or reset a persisted session
+  or silently transfer reminder ownership.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
 
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), use

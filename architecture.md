@@ -34,11 +34,11 @@ these features is not evidence of phone data migration or automatic synchronizat
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation. The app declares no document types and handles no opened
   files.
-  `HubRootView` adapts observed feature state into
-  display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
-  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
-  `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
-  choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
+  `HubRootView` composes Today / To-do / Journal / Apps, injects destinations and reconciles
+  foreground entry. The display-only `HubEntry`/`app/hub/HubView.swift` picker is retained legacy
+  source, not the current daily shell. Apps opens PageVault and the occasional tools; retained fitness
+  destinations are reached through Settings recovery/handover. Lift Log asks which of the editable
+  splits (or an empty workout) before atomically creating
   the active workout and preloading the split's ordered exercises; more can be added during the
   workout, and finishing removes exercises with no sets. From 0.11.0 (34) the workout keeps its
   split's id and each exercise its split exercise's id, `LiftWorkoutSession.sync(with:)` applies a

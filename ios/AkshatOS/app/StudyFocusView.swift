@@ -28,7 +28,7 @@ struct StudyFocusView: View {
                                 actions: { Button("Retry") { study.load() }.frame(minHeight: 44) }
                             } else if wide {
                                 HStack(alignment: .top, spacing: 32) {
-                                    dial(at: date).frame(width: min(280, max(180, (geometry.size.height - 112) * 1.12)))
+                                    dial(at: date, compact: true).frame(width: min(280, max(180, (geometry.size.height - 112) * 1.12)))
                                     controls(at: date).frame(maxWidth: 360)
                                 }.frame(maxWidth: .infinity)
                                     .accessibilityElement(children: .contain)
@@ -67,11 +67,11 @@ struct StudyFocusView: View {
         .personalMessage("Study", message: $study.message)
     }
 
-    private func dial(at date: Date) -> some View {
+    private func dial(at date: Date, compact: Bool = false) -> some View {
         VStack(spacing: 12) {
             Label(study.isRunning ? "Studying" : "Paused", systemImage: study.isRunning ? "circle.fill" : "pause.circle")
                 .font(.subheadline).foregroundStyle(HubInk.sage)
-            StudyDial(studied: study.studiedToday(at: date), target: study.targetToday(at: date))
+            StudyDial(studied: study.studiedToday(at: date), target: study.targetToday(at: date), compact: compact)
             Text("\(StudyTimeDisplay.short(study.studiedToday(at: date))) studied today")
                 .font(.subheadline).monospacedDigit().foregroundStyle(.secondary)
                 .accessibilityIdentifier("study-focus-studied")

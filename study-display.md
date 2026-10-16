@@ -1,7 +1,9 @@
 # Study display and lock-screen timer
 
-**Status:** Build 39 (0.14.1) implementation in progress, with cloud verification pending. No Build-39
-IPA is requested or produced. Build 38 remains the delivered candidate. The SideStore extension
+**Status:** Build 39 (0.14.1) is implemented on the development branch. Cloud run
+[38911666157](https://github.com/akshatksingh18/akshatos/actions/runs/38911666157) passed at `d8856b0`;
+its native inspection found a compact-dial truncation, corrected in source and awaiting confirmation.
+No Build-39 IPA is requested or produced. Build 38 remains the delivered candidate. The SideStore extension
 variant is an opt-in test candidate, not device-verified signing or a change to installed refresh ownership.
 
 ## Desk Focus
@@ -97,7 +99,12 @@ override preservation, independent rotation ownership, clock projection, request
 denial, dismissal/retry, single-activity reconciliation, 03:00 and eight-hour boundaries. Notification
 tests cover passive reminders and foreground presentation. XCUITest exercises Focus, both landscape
 orientations, continued running, Pause and return to portrait. Synthetic native captures include
-portrait/landscape, accessibility and the actual shared lock-screen card/stale content.
+portrait/landscape, accessibility and the actual shared lock-screen card/stale content. The complete
+cloud run at `d8856b0` passed all nine registered domain suites, 195 hosted tests and 14 UI tests,
+default simulator/device builds and the optional host/extension compilation and metadata checks.
+The UI test verifies keep-awake on through rotation and off on re-entry. Packaging and IPA upload
+were skipped; diagnostics were the only artifact. Normal and accessibility card content fits the
+synthetic viewport. The subsequent compact-dial padding fix still requires exact-source CI/captures.
 
 Physical acceptance remains required:
 
@@ -111,6 +118,8 @@ Physical acceptance remains required:
   denied, card dismissed, Dynamic Island occupied by another activity, one repeated manual retry.
 - AOD on/off, dimmed readability, Low Power Mode, Adaptive Power and Sleep Focus, face down/covered, StandBy
   charging/disconnected, portrait and both landscape directions. Darkness is not a recording failure.
+- Portrait Orientation Lock on/off, Display Zoom, larger text and long topic names: no automatic
+  change to system settings; critical timer controls remain reachable through reflow/scrolling.
 - 03:00 rollover, long block past eight hours, target reached/overtime, clock/time-zone/DST changes,
   phone offline and battery exhaustion. No stale card may be treated as current-day proof.
 - SideStore installs without removal, extension has its own matching profile and launches, data
@@ -129,6 +138,7 @@ Public sources reviewed 2026-10-16; none proves this device's installed behavior
 - [Apple: Focus options and Lock Screen settings](https://support.apple.com/en-gb/guide/iphone/iphd6288a67f/26/ios/26).
 - [Apple: Always-On conditions](https://support.apple.com/en-mn/guide/iphone/iph7117338a8/ios).
 - [Apple: StandBy](https://support.apple.com/en-ie/guide/iphone/iph878d77632/ios).
+- [Apple: Portrait Orientation Lock and rotation](https://support.apple.com/en-gb/118226).
 - [SideStore: version-pinned extension provisioning source](https://github.com/SideStore/SideStore/blob/6032424a0e56c1c319762e786099bdd9186a238b/SideStore/Core/Operations/PipelineOperations/FetchProvisioningProfilesOperation.swift).
 - [SideStore: latest release](https://github.com/SideStore/SideStore/releases/latest) still resolves to 0.7.0-alpha, a temporary sign-in fix.
 - [SideStore: limits and in-place transfer FAQ](https://docs.sidestore.io/docs/faq).

@@ -2,7 +2,8 @@
 
 Build 39 (0.14.1) is the active source-development task, with no IPA requested. Rotating desk Focus,
 scoped keep-awake, quiet study notifications and the optional SideStore Live Activity candidate are
-implemented for cloud verification; `study-display.md` owns this contract and its DND/signing gates.
+implemented with a complete cloud pass; the compact-dial follow-up awaits confirmation.
+`study-display.md` owns exact evidence and the DND/signing/device gates.
 Build 38 below remains the delivered candidate and has none of these display changes.
 
 **Status:** Build 38 (0.14.0), PR #67 at `b573ecc`, is validated in `testing/` after PR/main CI,
