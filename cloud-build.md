@@ -16,8 +16,11 @@ No merge or signing/refresh-owner change is made.
 Keep this work on its development branch; PR validation compiles/tests both the default build and
 the optional study Live Activity candidate without packaging. Manual dispatch defaults to
 `package_ipa=false` and `build_variant=standard`; explicit selection/validation is implemented,
-with exact-source CI pending after binding the extension Info.plist version/build to its target
-settings (the generator otherwise defaults to 1.0/build 1).
+with exact-source CI pending for the corrected architecture-check invocation. Run
+[38943056262](https://github.com/akshatksingh18/akshatos/actions/runs/38943056262) at `d775fc1` passed
+source/domain/simulator tests and the complete Live Activity build, then stopped on the lipo argument
+order before payload validation. Inputs now precede its variadic `-verify_arch` architecture list.
+The extension Info.plist already binds version/build to target settings rather than generator defaults.
 A future release request is still required to package either variant.
 Build 38's testing cache and Build 31's recovery cache stay intact. `study-display.md` owns the remaining gates.
 

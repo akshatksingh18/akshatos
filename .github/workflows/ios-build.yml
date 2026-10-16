@@ -222,8 +222,8 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" COMPILER_INDEX_STORE_ENABLE=NO
           activity_app="$RUNNER_TEMP/DerivedData-activity-device/Build/Products/Release-iphoneos/AkshatOS.app"
           extension="$activity_app/PlugIns/StudyActivityExtension.appex"
-          lipo -verify_arch arm64 "$activity_app/AkshatOS"
-          lipo -verify_arch arm64 "$extension/StudyActivityExtension"
+          lipo "$activity_app/AkshatOS" -verify_arch arm64
+          lipo "$extension/StudyActivityExtension" -verify_arch arm64
           test -x "$extension/StudyActivityExtension"
           python3 ios/scripts/validate-ipa.py "$activity_app" --variant study-live-activity
           "$XCODEGEN_BIN" generate --spec ios/project.yml
@@ -244,7 +244,7 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             COMPILER_INDEX_STORE_ENABLE=NO
           app_path="$RUNNER_TEMP/DerivedData-device/Build/Products/Release-iphoneos/AkshatOS.app"
-          lipo -verify_arch arm64 "$app_path/AkshatOS"
+          lipo "$app_path/AkshatOS" -verify_arch arm64
           python3 ios/scripts/validate-ipa.py "$app_path" --variant standard
 
       - name: Validate selected device bundle without packaging

@@ -23,7 +23,8 @@ PageVault's phone verification.
   payload/identity inspection only on release runs. PRs never create an IPA. The optional Build-39
   study Live Activity host/extension compiles for simulator and device, without packaging. Both
   complete device variants are built in separate directories, checked for arm64 and validated directly
-  with the variant-aware payload validator. The selected bundle is validated again before release
+  with the variant-aware payload validator. For lipo architecture checks, the input binary precedes
+  `-verify_arch` and its variadic architecture list. The selected bundle is validated again before release
   steps. The macOS timeout is 40 minutes for the two full device builds and simulator tests. New
   features must register their tests in `ios/tests/feature-tests.json`;
   domain suites run automatically. The unit/UI directories are included recursively by XcodeGen.
