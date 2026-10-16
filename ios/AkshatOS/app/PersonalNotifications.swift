@@ -148,6 +148,16 @@ import UserNotifications
             }
         }
         let capacity = max(0, 64 - otherCount - 2)
+        if study.isRunning {
+            desired = desired.map { request in
+                // Keep timed tasks and invitations in Notification Center without interrupting a block,
+                // even if AkshatOS is allowed through DND. The explicit study-check opt-in is separate.
+                guard request.identifier != Self.namespace + "study",
+                      let content = request.content.mutableCopy() as? UNMutableNotificationContent else { return request }
+                content.sound = nil; content.interruptionLevel = .passive
+                return UNNotificationRequest(identifier: request.identifier, content: content, trigger: request.trigger)
+            }
+        }
         let planned = Array(desired.prefix(capacity)), IDs = Set(planned.map(\.identifier))
         // Remove only surplus own requests; unrelated modules are never cancelled to create room.
         center.remove( owned.filter { !IDs.contains($0.identifier) }.map(\.identifier))
@@ -162,6 +172,7 @@ import UserNotifications
             try await center.badge(left)
             let dueCount = desired.filter { $0.identifier.contains(".todo.") }.count
             status = "\(planned.count) scheduled. Timed tasks: next \(min(dueCount, capacity)) of at most 15; opening the app refreshes the window."
+            if study.isRunning { status += " Tasks and invitations stay quiet while studying." }
             if planned.count < desired.count { status += " Other reminders currently use the remaining capacity." }
         } catch { status = "Some reminders could not be scheduled. Open Settings and retry. Existing unrelated reminders are unchanged." }
     }

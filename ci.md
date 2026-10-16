@@ -12,13 +12,16 @@ PageVault's phone verification.
   full-history diff compares the previous head to the new head; a newly opened/reopened PR compares
   its base to its head. The macOS build is skipped only when every changed path ends in `.md`; an
   unavailable/empty comparison or any non-Markdown path runs it. Pushes to `main` run the full pipeline for
-  `ios/**` or the workflow; manual dispatch also runs everything. Documentation-only changes do not
+  `ios/**` or the workflow; manual dispatch runs compile/tests with packaging off unless explicitly
+  requested through `package_ipa=true`. Documentation-only changes do not
   spend macOS build minutes. PR validation never uses `pull_request_target`.
 - **Source checks**: logical module boundaries, feature test inventory and actionlint 1.7.12
   workflow syntax/expression checking. ShellCheck is disabled; this is not shell/security auditing.
-- **Build installable IPA**: all registered feature domain executables, simulator compilation,
+- **Build and test iOS**: all registered feature domain executables, simulator compilation,
   hosted XCTest persistence tests, XCUITest navigation, device Release compilation, and IPA
-  payload/identity inspection. New features must register their tests in `ios/tests/feature-tests.json`;
+  payload/identity inspection only on release runs. PRs never create an IPA. The optional Build-39
+  study Live Activity host/extension compiles for simulator and the extension for device, without
+  packaging, before restoring the default project for device compilation. New features must register their tests in `ios/tests/feature-tests.json`;
   domain suites run automatically. The unit/UI directories are included recursively by XcodeGen.
 - **CI Gate**: always runs. It requires Source checks to succeed and, when classification requires
   macOS, requires the build to succeed. It accepts a skipped build only when the classifier output
@@ -26,7 +29,9 @@ PageVault's phone verification.
   is the stable required branch-protection check.
 - Simulator `.xcresult` bundles (including coverage) and screenshots are uploaded even when tests
   fail, when produced, with seven-day retention. Coverage is collected, not a numeric pass threshold.
-- IPA upload requires successful checks/tests/packaging and a non-PR run. Artifacts expire after
+- IPA packaging/upload requires a main push or explicit manual `package_ipa=true` and successful
+  checks/tests. Build-39 development stays on its branch with a draft PR, not merged automatically.
+  Artifacts expire after
   14 days; they are not signed releases or durable backups. No Apple credentials or auto-install step.
 - `gh run watch --exit-status` has reported success for a failed run. Verify each job's conclusion
   directly before treating a run as green.
@@ -122,7 +127,7 @@ sentence spoken whole across a page break, a text-less book saying so, and the r
 Local Build 33 adds nine synthetic domain assertions for automatic voice selection: Premium or
 Enhanced over a basic exact-locale voice, candidate-order independence, exact-locale ties, a sole
 basic voice, no candidates, an absent exact locale and other language variants. These assertions
-are already included by the registered PageVault domain suite; their execution awaits cloud CI. Real speech, the lock screen, headphones and interruptions are phone checks.
+are included by the registered PageVault domain suite and pass in the current cloud build. Real speech, the lock screen, headphones and interruptions are phone checks.
 `validate-ipa.py` also requires the audio background mode and no other.
 
 Local Build 33 also extends the registered Lift Log suites: domain assertions for the Weight loaded

@@ -4,12 +4,19 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Finish the authorized 0.14.0 (38) personal hub, PR #67. Domain and intermediate
-native compilation have passed; the final complete cloud gate, native finish review and testing IPA
-remain open. `implementation-plan.md` owns implementation coverage. Build 37 is installed/enrolled,
-Build 31 is accepted recovery. Detailed historical evidence belongs in `cloud-build.md`.
+**Current focus:** Develop Build 39 (0.14.1) incrementally without generating an IPA or merging a release.
+Rotating desk Focus, keep-awake, quiet study notifications and the optional SideStore Live Activity
+candidate are tracked in `study-display.md`; cloud validation is pending. Build 38 (0.14.0), PR #67 at `b573ecc`, remains the delivered candidate.
+The complete PR/main cloud gates, native accessibility fixes and local IPA/checksum validation pass;
+the IPA is in the single-slot testing cache. Build 37 remains installed/enrolled; Build 31 remains
+accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build.md` exact evidence.
 
-- [ ] Final exact-commit cloud CI Gate, native screenshot review and validated Build-38 testing IPA.
+- [ ] Build 39: exact-source cloud tests, native Focus/lock-screen content inspection and optional extension compile.
+- [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
+- [ ] Release only when requested: select the signing variant, extend IPA validation for a single allowed study extension,
+      then produce the combined candidate. Do not auto-merge/package this development branch.
+
+- [x] Final exact-commit PR/main CI Gates, native accessibility-fix review and validated Build-38 testing IPA.
 - [ ] Phone: all four tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
 - [ ] Phone: tasks/repeats/priorities/Undo/parked thoughts; Journal lock/passcode, background privacy,
       photos, failed/cancelled save/export and full recovery into disposable data.
@@ -100,9 +107,8 @@ Build 31 is accepted recovery. Detailed historical evidence belongs in `cloud-bu
 - [x] **Authorize the personal hub and selected features.** The graphite/copper four-tab design,
       day/completion defaults and reminder trim are accepted. Source 0.14.0 implements them;
       `implementation-plan.md` and `personal-hub.md` own coverage and remaining verification.
-- [ ] **Phone-check installed 0.13.0 (37).** Akshat confirms installation, and Sideloadly records
-      current-version automatic-refresh enrollment in automatic mode with no error. Feature
-      acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
+- [ ] **Phone-check retained Build-37 changes on Build 38.** Build 37 is installed/enrolled;
+      Build 38 awaits installation and its own enrollment. Prior feature acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
       natural speaker reads with Kokoro, picking an iPhone voice switches back; Choose voices…
       ticks natural speakers into the menu and plays their samples. (2) PageVault: hold a Want to
       read cover and drag it onto another; Move to top/bottom; the order survives relaunch.

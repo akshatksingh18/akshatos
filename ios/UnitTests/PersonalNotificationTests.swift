@@ -22,6 +22,25 @@ import UserNotifications
 }
 
 @MainActor final class PersonalNotificationTests: XCTestCase {
+    func testForegroundStudyNotificationsNeverRequestBannersOrSound() {
+        XCTAssertEqual(AppNotificationCoordinator.presentationOptions(studying: true), [.list])
+        XCTAssertEqual(AppNotificationCoordinator.presentationOptions(studying: false), [.banner, .list, .sound])
+    }
+    func testTasksAndJournalBecomePassiveDuringStudyAndRecoverAfterPause() async throws {
+        try await withServices { study, todo, preferences, center in
+            todo.save(TodoItem(title: "Synthetic timed task", due: Date().addingTimeInterval(3600), hasTime: true))
+            XCTAssertEqual(todo.visible.count, 1)
+            preferences.journalReminder = true
+            study.start()
+            let scheduler = PersonalNotifications(study: study, todo: todo, preferences: preferences, center: center)
+            scheduler.reconcile(); await scheduler.waitUntilSettled()
+            XCTAssertEqual(center.requests.count, 2)
+            XCTAssertTrue(center.requests.allSatisfy { $0.content.sound == nil && $0.content.interruptionLevel == .passive })
+            XCTAssertTrue(study.isRunning)
+            study.pause(); scheduler.reconcile(); await scheduler.waitUntilSettled()
+            XCTAssertTrue(center.requests.allSatisfy { $0.content.sound != nil && $0.content.interruptionLevel == .active })
+        }
+    }
     private func memory(_ version: any VersionedSchema.Type) throws -> ModelContainer {
         let schema = Schema(versionedSchema: version)
         return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])

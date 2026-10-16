@@ -1,10 +1,15 @@
 # Personal hub implementation
 
-**Status:** Native source candidate 0.14.0 (38), PR #67. Compilation and domain checks have passed
-an intermediate revision; the final commit still needs its complete CI Gate, native review and
-testing artifact. Physical-device acceptance is separate.
+**Status:** Delivered candidate 0.14.0 (38), PR #67 at `b573ecc`, is in the testing cache. Complete
+PR/main CI Gates and local checksum/IPA validation pass. The native finish reviewer scored both
+accessibility fixes resolved after fresh simulator captures. Physical-device acceptance, provider
+behavior and the separate roadmap receiving importer remain open; see `cloud-build.md` and `todo.md`.
 
 ## Navigation and presentation
+
+Build-39 source adds rotating desk Focus, a foreground-only keep-awake switch, quiet study
+notifications and an optional Live Activity candidate; `study-display.md` owns the contract and
+unverified phone/signing boundaries. No Build-39 IPA is requested yet.
 
 Four persistent tabs: Today, To-do, Journal, Apps. Today owns the study countdown, selected
 priorities, Park a thought and the weekly block graphic. History is one closable sheet containing
@@ -90,7 +95,8 @@ This source path is not evidence that phone migration or WHOOP acceptance has ha
 ## Shortcuts and file hand-offs
 
 App Intents start/pause study, return today's study minutes, add a task, park a thought and open Journal. They open the ordinary
-app and retain Journal authentication. No extension, App Group or cloud container is added.
+app and retain Journal authentication. These intents add no extension, App Group or cloud container.
+The separately opt-in Build-39 study Live Activity target does not change this intent contract.
 
 An explicitly selected Files folder is a transport adapter, with manual import/export fallback.
 Study exports are versioned complete snapshots of finished segments, permanent segment/source IDs,

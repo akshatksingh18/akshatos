@@ -17,13 +17,28 @@ Squats fallback.
 while AkshatOS's import/removal cutover remains open. Read it before a cross-app port, notification ownership,
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
-**Status:** Working source is 0.14.0 (38), the authorized four-tab personal hub in PR #67. Native compilation
-and domain suites passed an intermediate revision; the final CI Gate, native review and testing
-IPA are pending. Build 37 is installed/enrolled with its feature phone checks open; Build 31 remains
-the accepted recovery artifact. `personal-hub.md` owns the implemented feature contract,
-`implementation-plan.md` tracks coverage, and `cloud-build.md` owns build evidence.
+**Status:** Build 39 (0.14.1) is in source development: rotating study Focus, keep-awake, quiet study
+notifications and an opt-in SideStore Live Activity candidate. No IPA or merge is requested; continue
+incrementally with cloud validation only. `study-display.md` owns this scope and signing/device gates.
+Build 38 (0.14.0), merged through PR #67 at `b573ecc`, is validated in `testing/` and
+awaits installation/device acceptance. PR/main CI Gates, local checksum/IPA checks and the native
+accessibility-fix review pass. Build 37 remains installed/enrolled; Build 31 remains accepted
+recovery. `personal-hub.md` owns the implementation, `implementation-plan.md` local coverage and
+`cloud-build.md` exact build evidence. Release evidence edits stay local until the next real code
+push under the standing documentation rule.
 
 ## Files
+
+- `study-display.md` — Build-39 desk Focus, DND/lock-screen contract, opt-in Live Activity variant,
+  public signing research and remaining device/release gates; read before this work.
+- `ios/AkshatOS/app/StudyFocusView.swift`, `StudyDisplayController.swift`, and
+  `StudyLiveActivityCoordinator.swift` — rotating Focus, scoped idle-timer override and optional
+  ActivityKit lifecycle; none owns or changes the persisted clock.
+- `ios/AkshatOS/shared/StudyActivityAttributes.swift`, `StudyActivityCard.swift`,
+  `ios/StudyActivityExtension/` and `ios/project-live-activity.yml` — timer-only payload/card and
+  optional WidgetKit target; default project remains extension-free. Generated extension Info.plist is ignored.
+- `ios/UnitTests/StudyDisplayTests.swift` — registered lifecycle, rotation and ActivityKit-adapter
+  regression tests with synthetic data and an injected client.
 
 - `DESIGN.md` — source-extracted native personal-hub tokens, component patterns and visual boundaries;
   read before changing the approved graphite/copper system. Release verification is tracked separately.
@@ -128,8 +143,8 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 37 (Study Log, one voice list, Want to read
-  order), installed and enrolled, awaiting its feature phone pass.
+  31 is the accepted copy and `testing\` holds validated Build 38 (the four-tab personal hub),
+  awaiting installation and its phone pass. Build 37 remains the installed/enrolled version.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -292,7 +307,9 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   Personal Automation, LiveContainer/JIT, or the Android phone. App Intents/Shortcuts are optional
   convenience entry points after the native core works, never the reminder engine.
 - Use a single ordinary application target with no widget, Watch app, App Group, or notification-
-  service extension. Core Location geographic-region monitoring and its honest usage descriptions
+  service extension in the default build. Build 39 additionally prepares an opt-in WidgetKit study
+  Live Activity candidate (`study-display.md`), with no App Group or remote push; its release waits
+  for explicit packaging and verified extension signing. Core Location geographic-region monitoring and its honest usage descriptions
   are accepted for Home auto-pause. Add only the location/background configuration demonstrated to
   be necessary for region events on the target iOS version; never run continuous route/location
   tracking or retain movement history.

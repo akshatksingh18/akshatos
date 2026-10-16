@@ -1,8 +1,13 @@
 # AkshatOS and Pushups architecture
 
-**State:** Native personal-hub source 0.14.0 (38), PR #67, is implemented with final verification
-pending. Build 37 remains installed/enrolled and Build 31 remains accepted recovery. Exact
-historical build and phone evidence belongs in `cloud-build.md`; `todo.md` owns remaining gates.
+**State:** Personal-hub Build 38 (0.14.0), PR #67 at `b573ecc`, passed PR/main cloud checks,
+native accessibility-fix review and local artifact validation; its IPA is in `testing/`. Installation
+and device acceptance remain open. Build 37 is installed/enrolled and Build 31 is accepted recovery.
+`cloud-build.md` owns exact evidence and `todo.md` the remaining gates.
+
+Build 39 (0.14.1) adds study-display source under development, not a new delivered IPA. The optional
+WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains
+extension-free. `study-display.md` owns payload privacy, lifecycle, DND and activation/release gates.
 
 Source 0.14.0 implements Today/To-do/Journal/Apps. `personal-hub.md` owns the feature stores,
 `HubDayPart` summaries, Journal access gate, staged media restore, personal notification coordinator,
@@ -43,8 +48,8 @@ these features is not evidence of phone data migration or automatic synchronizat
   deletes the videos and store it left at launch, a no-op once they are gone. WHOOP
   remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
-  everywhere except an open PDF reader, which reports its own presence rather than setting
-  orientation itself. The Pushups dashboard therefore keeps its verified portrait layout.
+  except the PDF reader and, in Build-39 source, study Focus. Each reports its own presence;
+  one ending cannot clear the other's rotation permission. Other destinations remain portrait.
 - `SquatSession.swift` is a pure Codable event/session model and calendar-day streak calculation.
   `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema. The feature's
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
@@ -176,8 +181,10 @@ background-capable services at app lifetime; load future media views/resources o
   Derive current/best streak from those records instead of treating mutable counters as truth. Core
   Data or SQLite is the fallback only if the final device/toolchain makes SwiftData unsuitable.
 - App Intents for optional Siri/Shortcuts commands after the same native domain commands are proven.
-- One application target only: no widget, Watch app, App Group, notification-service extension,
-  backend, analytics, or remote push. Add the honest location usage descriptions and only the
+- One application target in the default build: no widget, Watch app, App Group, notification-service
+  extension, backend, analytics, or remote push. The opt-in study Live Activity candidate adds one
+  WidgetKit extension without shared storage or push; `study-display.md` owns the explicit gate.
+  Add the honest location usage descriptions and only the
   location/background configuration proven necessary for region delivery on the selected target;
   do not enable continuous background-location updates as a substitute for region monitoring.
 

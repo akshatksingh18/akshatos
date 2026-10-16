@@ -13,7 +13,7 @@ struct HubRootView: View {
     var body: some View {
         TabView(selection: $tab) {
             NavigationStack {
-                PersonalTodayView(study: services.studyLog, todo: services.todo, journal: services.journal, preferences: services.preferences,
+                PersonalTodayView(study: services.studyLog, todo: services.todo, journal: services.journal, preferences: services.preferences, orientation: services.orientation, studyActivity: services.studyActivity,
                     keepGoing: { services.preferences.lastStudyConfirmation = Date(); services.personalNotifications.reconcile() },
                     openTodo: { tab = .todo })
             }.tabItem { Label("Today", systemImage: "calendar") }.tag(PersonalHubTab.today)
@@ -28,6 +28,9 @@ struct HubRootView: View {
             }.tabItem { Label("Apps", systemImage: "square.grid.2x2") }.tag(PersonalHubTab.apps)
         }
         .tint(HubInk.copper)
+        .onOpenURL { url in
+            if url.scheme == "akshatos", url.host == "study", url.path.isEmpty { navigator.request(.studyLog) }
+        }
         .task { await refresh() }
         .onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in
             services.studyLog.refreshDay(); services.todo.refreshDay(); services.journal.refreshDay()
@@ -81,6 +84,7 @@ struct HubRootView: View {
         services.liftLog.load(); services.bodyLog.load(); services.studyLog.load()
         services.todo.load(); services.journal.load(); services.watchlist.load(); services.spending.load()
         services.personalNotifications.reconcile()
+        services.studyActivity.reconcile()
         if services.transfer.linked { await services.transfer.checkWatchlist(after: services.watchlist.state.metadataRevision) }
     }
 }

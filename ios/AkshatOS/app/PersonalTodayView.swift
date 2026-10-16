@@ -5,6 +5,8 @@ struct PersonalTodayView: View {
     @ObservedObject var todo: TodoStore
     @ObservedObject var journal: JournalStore
     @ObservedObject var preferences: PersonalPreferences
+    let orientation: OrientationGate
+    let studyActivity: StudyLiveActivityCoordinator
     var keepGoing: () -> Void
     var openTodo: () -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -54,11 +56,7 @@ struct PersonalTodayView: View {
         .sheet(isPresented: $history) { NavigationStack { PersonalProgressView(study: study, todo: todo, journal: journal, preferences: preferences) } }
         .sheet(isPresented: $planning) { PriorityPicker(store: todo, day: todo.today) }
         .fullScreenCover(isPresented: $focus) {
-            NavigationStack {
-                ScrollView { TimelineView(.periodic(from: .now, by: 1)) { context in timer(at: study.isRunning ? context.date : study.currentDate(), focused: true).padding(22) } }
-                    .background(HubInk.background).navigationTitle("Focus").navigationBarTitleDisplayMode(.inline)
-                    .toolbar { Button("Close") { focus = false } }
-            }.tint(HubInk.copper)
+            StudyFocusView(study: study, todo: todo, orientation: orientation, activity: studyActivity, close: { focus = false })
         }
         .sheet(isPresented: $topicSheet) {
             NavigationStack {

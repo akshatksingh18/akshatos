@@ -29,6 +29,7 @@ keystore.properties
 
 # Generated iOS project/build artifacts
 ios/*.xcodeproj/
+ios/Support/StudyActivity-Info.plist
 ios/DerivedData/
 ios/AkshatOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 

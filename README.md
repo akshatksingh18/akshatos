@@ -10,17 +10,21 @@ AkshatOS import/removal cutover remain open ([shared boundary](hub-plan.md)). Th
 design excludes those fitness features; the installed hub and its stores, backups and reminder
 ownership remain intact until the separate migration/recovery and acceptance gates pass.
 
-**Current state:** Build 37 is installed and enrolled, with feature phone checks open. Build 31
-remains the accepted recovery artifact. Source 0.14.0 (38), PR #67, is undergoing final verification.
-[Cloud build](cloud-build.md) owns exact build/run/artifact evidence and historical device findings;
-[todo.md](todo.md) owns outstanding checks. Physical and refresh acceptance remain separate from CI.
+**Current state:** Build 38 (0.14.0), PR #67 at `b573ecc`, is validated and ready in `testing/`.
+Both PR/main CI Gates, local checksum/IPA validation and the two native accessibility fixes pass.
+Build 37 remains installed/enrolled; Build 31 remains accepted recovery. [Cloud build](cloud-build.md)
+owns exact evidence; [todo.md](todo.md) owns phone, provider and recovery checks.
+
+Build 39 (0.14.1) is in source development with no IPA requested: portrait/landscape study Focus,
+scoped keep-awake, quiet notifications during study and an optional SideStore Live Activity variant.
+[Study display](study-display.md) owns behavior, DND limits, public research and signing/device gates.
 
 Source 0.14.0 (38), PR #67, implements the approved personal hub: **Today / To-do / Journal / Apps**.
 The copper study dial, block chart and task checks provide direct interaction; occasional tools
 stay in Apps and Study history is one closable sheet. [Implementation contract](personal-hub.md)
 covers tasks/repeats/Undo, Journal/photos with optional Face ID protection, Watchlist, Spending, optional progress and
-reminders, Shortcuts and explicit Files hand-offs. Final CI, native review and IPA delivery remain
-pending. Build 37 is still installed. Fitness stores stay recoverable through a controlled WHOOP
+reminders, Shortcuts and explicit Files hand-offs. Build 38 is ready for phone testing; Build 37
+is still installed. Fitness stores stay recoverable through a controlled WHOOP
 handover; the new daily hub has no fitness requirements. Provider/device proof remains separate.
 
 This repository evolved from Squat Reminder and now presents that feature as Pushup Reminder,
@@ -59,7 +63,8 @@ App composition, display-only hub, shared styling and the Pushup Reminder featur
   Start/Resume choices, visible health, and edit/disable/delete. No route history is retained.
 - No server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** Shortcuts and the remaining physical, refresh and recovery testing. The full
+**Still deferred for retained Pushups:** optional Shortcut automation and the remaining physical,
+refresh and recovery testing. Personal-hub App Intents are implemented in Build 38. The full
 intended scope below remains the target, not a list of completed features. Until recovery and device tests pass, use
 disposable test activity only.
 

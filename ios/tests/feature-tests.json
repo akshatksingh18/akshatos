@@ -72,7 +72,8 @@
     ],
     "domain_test": "tests/studylog/main.swift",
     "integration_tests": [
-      "UnitTests/StudyLogPersistenceTests.swift"
+      "UnitTests/StudyLogPersistenceTests.swift",
+      "UnitTests/StudyDisplayTests.swift"
     ],
     "ui_tests": [
       "UITests/StudyLogUITests.swift"

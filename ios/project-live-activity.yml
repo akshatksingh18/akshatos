@@ -1,0 +1,40 @@
+# Opt-in SideStore candidate. Default project.yml remains extension-free for recovery/Sideloadly.
+include:
+  - project.yml
+
+targets:
+  AkshatOS:
+    dependencies:
+      - target: StudyActivityExtension
+    settings:
+      base:
+        INFOPLIST_KEY_NSSupportsLiveActivities: "YES"
+
+  StudyActivityExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: StudyActivityExtension
+      - path: AkshatOS/shared/StudyActivityAttributes.swift
+      - path: AkshatOS/shared/StudyActivityCard.swift
+    info:
+      path: Support/StudyActivity-Info.plist
+      properties:
+        CFBundleDisplayName: Study timer
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akshatksingh18.akshatos.studyactivity
+        PRODUCT_NAME: StudyActivityExtension
+        MARKETING_VERSION: "0.14.1"
+        CURRENT_PROJECT_VERSION: "39"
+        APPLICATION_EXTENSION_API_ONLY: "YES"
+        SKIP_INSTALL: "YES"
+        CODE_SIGN_STYLE: Automatic
+
+schemes:
+  StudyActivityExtension:
+    build:
+      targets:
+        StudyActivityExtension: all

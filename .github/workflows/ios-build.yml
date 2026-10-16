@@ -2,6 +2,11 @@ name: iOS Cloud Build
 
 on:
   workflow_dispatch:
+    inputs:
+      package_ipa:
+        description: "Package a release IPA (leave off while developing Build 39)"
+        type: boolean
+        default: false
   pull_request:
     branches: [main]
   push:
@@ -81,7 +86,7 @@ jobs:
           "$(go env GOPATH)/bin/actionlint" -shellcheck=""
 
   build:
-    name: Build installable IPA
+    name: Build and test iOS
     needs: checks
     if: ${{ needs.checks.outputs.build_required == 'true' }}
     runs-on: macos-26
@@ -181,6 +186,24 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Compile opt-in Live Activity candidate without packaging
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$XCODEGEN_BIN" generate --spec ios/project-live-activity.yml
+          xcodebuild build -project "$PROJECT_PATH" -scheme "$SCHEME" \
+            -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData-simulator" \
+            CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
+          xcodebuild build -project "$PROJECT_PATH" -scheme StudyActivityExtension \
+            -configuration Release -sdk iphoneos -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData-extension" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" COMPILER_INDEX_STORE_ENABLE=NO
+          extension="$RUNNER_TEMP/DerivedData-extension/Build/Products/Release-iphoneos/StudyActivityExtension.appex"
+          test -x "$extension/StudyActivityExtension"
+          test "$(plutil -extract NSExtension.NSExtensionPointIdentifier raw "$extension/Info.plist")" = com.apple.widgetkit-extension
+          "$XCODEGEN_BIN" generate --spec ios/project.yml
+
       - name: Build unsigned device application
         shell: bash
         run: |
@@ -198,6 +221,7 @@ jobs:
             COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Package and inspect IPA
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.package_ipa) }}
         shell: bash
         run: |
           set -euo pipefail
@@ -232,7 +256,7 @@ jobs:
           } > "$artifact_root/build-info.txt"
 
       - name: Upload IPA artifact
-        if: ${{ success() && github.event_name != 'pull_request' }}
+        if: ${{ success() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.package_ipa)) }}
         uses: actions/upload-artifact@v6.0.0
         with:
           name: akshatos-ios-${{ github.run_number }}

@@ -1,9 +1,15 @@
 # Study Log
 
-**Status:** Build 37 is installed/enrolled with the Build-1 phone pass open. Source 0.14.0 (38),
-PR #67, implements the authorized Build-2 study scope in the new Today tab: Focus, corrections/Undo,
-topics, target/marks, block/time inspection, motivation, optional reminders and versioned exports.
-`personal-hub.md` owns the shared contract; final CI/native/artifact and device gates remain open.
+Build 39 (0.14.1) is the active source-development task, with no IPA requested. Rotating desk Focus,
+scoped keep-awake, quiet study notifications and the optional SideStore Live Activity candidate are
+implemented for cloud verification; `study-display.md` owns this contract and its DND/signing gates.
+Build 38 below remains the delivered candidate and has none of these display changes.
+
+**Status:** Build 38 (0.14.0), PR #67 at `b573ecc`, is validated in `testing/` after PR/main CI,
+native accessibility-fix review and local artifact checks. It implements the authorized Build-2
+scope on Today: Focus, corrections/Undo, topics, target/marks, history, motivation, optional reminders
+and versioned exports. Build 37 remains installed/enrolled. Study/provider/Shortcuts phone checks
+and the separately unimplemented roadmap receiver remain open (`personal-hub.md`, `todo.md`).
 
 ## Why
 
@@ -143,8 +149,27 @@ approved graphite/copper design is in `todo-journal-plan.md`; native details are
   Pushups uses 39 nudges plus its normal request until verified handover. `personal-hub.md` owns
   capacity/failure handling; no delivery-time app execution is assumed.
 
-- **No app extension and no Live Activity** (free signing cannot provision them; `hub-plan.md`).
-  The timer lives in the app plus local notifications; the lock screen shows only the nudge.
+- **Current distribution has no app extension or Live Activity** (`hub-plan.md`). The tested
+  WHOOP/Sideloadly installation provisioned only the parent app, and iOS killed its Live Activity
+  extension before launch with a CODESIGNING / Invalid Page error; see
+  [WHOOP's signing evidence](../whoop/build-81-audit.md#decisions-akshat).
+  This establishes a limitation of the tested installation path, not a universal prohibition on
+  Live Activities with every free-account setup. The timer currently lives in the app plus local
+  notifications; the lock screen shows only the nudge.
+- **Build-39 display work (source, not device-verified):** Apple supports Live Activities on
+  iPhone's [Always-On Lock Screen](https://developer.apple.com/design/human-interface-guidelines/always-on),
+  but their UI requires a [WidgetKit extension](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities).
+  The optional lock-screen timer still waits for separately proven extension provisioning before
+  release; SideStore exploration and candidate source are authorized. Apple's
+  [StandBy](https://support.apple.com/en-ie/guide/iphone/iph878d77632/ios) can show Live Activities
+  while charging sideways and stationary, but does not bypass that requirement.
+  The foreground desk display uses
+  [`isIdleTimerDisabled`](https://developer.apple.com/documentation/uikit/uiapplication/isidletimerdisabled)
+  while running Focus is active and explicitly enabled, restoring normal auto-lock on exit. It uses more
+  power and requires the app to remain foreground; it is not the low-power Always-On Lock Screen.
+  Build 38 has no Focus keep-awake behavior, and Today/Focus remain portrait-only; only the
+  PageVault reader enables landscape there. Build-39 source adds portrait/landscape Focus; Today
+  stays portrait. `study-display.md` owns current implementation, public sources and all phone gates.
 - **Local only:** no network, account or sync with the Windows Clock. The roadmap bridge is a file
   Akshat moves himself; nothing is sent anywhere by the app.
 - **Plumbing, the same as Body:** `StudyLogBackupPart` with the permanent `backupID` `studyLog`, listed
