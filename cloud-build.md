@@ -16,7 +16,9 @@ No merge or signing/refresh-owner change is made.
 Keep this work on its development branch; PR validation compiles/tests both the default build and
 the optional study Live Activity candidate without packaging. Manual dispatch defaults to
 `package_ipa=false` and `build_variant=standard`; explicit selection/validation is implemented,
-with exact-source CI pending. A future release request is still required to package either variant.
+with exact-source CI pending after binding the extension Info.plist version/build to its target
+settings (the generator otherwise defaults to 1.0/build 1).
+A future release request is still required to package either variant.
 Build 38's testing cache and Build 31's recovery cache stay intact. `study-display.md` owns the remaining gates.
 
 ## Current identity and artifact

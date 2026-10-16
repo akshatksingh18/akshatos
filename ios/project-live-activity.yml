@@ -21,6 +21,8 @@ targets:
       path: Support/StudyActivity-Info.plist
       properties:
         CFBundleDisplayName: Study timer
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:

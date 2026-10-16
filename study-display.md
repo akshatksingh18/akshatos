@@ -96,7 +96,10 @@ until a later release instruction. Selection is resolved through `ios/scripts/re
 
 `validate-ipa.py` defaults to the extension-free standard contract. The opt-in contract requires
 exactly `PlugIns/StudyActivityExtension.appex`, its permanent child bundle ID, executable, WidgetKit
-extension point and matching app version/build/minimum OS, plus the host Live Activity flag. Both
+extension point and matching app version/build/minimum OS, plus the host Live Activity flag.
+The extension Info.plist explicitly binds its version/build to the target settings: pinned
+[XcodeGen defaults](https://github.com/yonaskolb/XcodeGen/blob/2.46.0/Sources/XcodeGenKit/InfoPlistGenerator.swift)
+would otherwise generate 1.0/build 1 even when target build settings differ. Both
 contracts reject foreign roots/extensions, test bundles, provisioning profiles, unsafe/duplicate
 archive paths and missing executables, and preserve the private Documents/audio-only restrictions.
 Checks use explicit errors and also run under optimized Python. Eighteen fast release-contract tests
