@@ -53,13 +53,15 @@ stores. App composition consumes `HubDayPart` summaries and provides cross-featu
 
 ## Journal privacy and recovery
 
-Journal defaults to locked, using device-owner authentication with device-passcode fallback.
+Journal defaults to unlocked by the confirmed user choice. Settings offers an optional lock using
+device-owner authentication with device-passcode fallback. Changing that privacy setting requires
+authentication; an unavailable device passcode cannot accidentally leave the Journal locked.
 Writing, history, search, ratings, photos, weekly excerpts and exports all use the same access gate.
 Only completion facts may leave it while locked. Inactive previews are concealed; backgrounding
 relocks and invalidates an outstanding authentication attempt. Without a device passcode, the
 Journal stays locked and explains recovery through device settings.
 
-Exports require authentication and warn that the exported files are not encrypted by the screen
+With the lock enabled, exports require authentication. Export actions warn that files are not encrypted by the screen
 lock. Cancelling Journal authentication stops a full export. Missing photos stop export/restore.
 Restore stages validated photo bytes locally while provider access is active, then installs them
 with a recovery preimage and rolls back on save failure. Draft-save errors remain visible and
@@ -75,7 +77,7 @@ an explicit actual end before application; it cannot silently accumulate offline
 
 Personal notification reconciliation is serialized under its own namespace. It considers the actual
 pending count, reserves two spare slots and schedules at most fifteen timed tasks, one running-study
-check, one break reminder and one generic Journal invitation. It preserves unrelated requests and
+check, one break reminder and one generic Journal invitation and one upcoming eligible Morning plan invitation. It preserves unrelated requests and
 reports denied permission/capacity/failure. Study actions carry the running block ID, so an old
 delivered notification cannot pause a newer block. The optional badge is remaining priorities.
 
@@ -86,13 +88,14 @@ This source path is not evidence that phone migration or WHOOP acceptance has ha
 
 ## Shortcuts and file hand-offs
 
-App Intents start/pause study, add a task, park a thought and open Journal. They open the ordinary
+App Intents start/pause study, return today's study minutes, add a task, park a thought and open Journal. They open the ordinary
 app and retain Journal authentication. No extension, App Group or cloud container is added.
 
 An explicitly selected Files folder is a transport adapter, with manual import/export fallback.
 Study exports are versioned complete snapshots of finished segments, permanent segment/source IDs,
-revision/hash, originating zone, all day pieces and one whole-block rounding policy. Running IDs
-are explicitly excluded. Source identity/revision travel in Study backup. Exports never mark
+revision/hash, originating zone, all day pieces and one whole-block rounding policy. Running IDs and explicitly already-logged DSA solve IDs
+are excluded from timed imports. A per-block/default roadmap type is editable after study; receiver
+review is still required, because a type label cannot deduplicate manual/problem-log time. Source identity/revision travel in Study backup. Exports never mark
 curriculum complete. The roadmap receiver remains a separate, unimplemented integration.
 
 Watchlist import previews a single writer's newer revision; replay/older/different-writer conflicts

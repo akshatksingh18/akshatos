@@ -27,6 +27,7 @@ struct LiftLogView: View {
     @State private var showingSplits = false
 
     var body: some View {
+        ScrollViewReader { scroll in
         List {
             Section { header.liftRow() }
             if let active = store.active {
@@ -39,6 +40,14 @@ struct LiftLogView: View {
                 splitsRow.liftRow()
                 backupControls.liftRow()
             }
+        }
+        .onChange(of: search) { _, _ in
+            // A search made after adding an exercise must reveal its first result, rather than
+            // retain the old bottom-of-workout offset above a much shorter filtered list.
+            if let workout = store.active, let first = shown(workout).first {
+                scroll.scrollTo(first.id, anchor: .top)
+            }
+        }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -249,6 +258,7 @@ struct LiftLogView: View {
                     }
                 }
                 .liftRow()
+                .id(exercise.id)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) { removeButton(exercise) }
                 .swipeActions(edge: .leading, allowsFullSwipe: false) { removeButton(exercise) }
             }

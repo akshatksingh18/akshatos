@@ -27,12 +27,12 @@ final class PersonalHubUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Synthetic task"].waitForExistence(timeout: 5))
         capture("To-do · saved task")
     }
-    func testJournalProtectedAndAppsHaveClearDestinations() {
+    func testJournalStartsUnlockedAndAppsHaveClearDestinations() {
         let app = XCUIApplication(); app.launch()
         app.tabBars.buttons["Journal"].tap()
-        XCTAssertTrue(app.buttons["journal-unlock"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.textViews["journal-entry"].exists)
-        capture("Journal · locked")
+        XCTAssertTrue(app.textViews["journal-entry"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["journal-unlock"].exists)
+        capture("Journal · unlocked by default")
         app.openApps()
         capture("Apps")
         app.buttons["open-watchlist"].tap()

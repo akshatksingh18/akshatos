@@ -35,7 +35,7 @@ enum JournalSchemaV1: VersionedSchema {
     init(container: ModelContainer? = nil, defaults: UserDefaults = .standard, photoFolder: URL? = nil,
          calendar: Calendar? = nil) {
         self.container = container; self.defaults = defaults; clock = ActivityDayClock(calendar: calendar ?? .current); followsSystemZone = calendar == nil
-        lockEnabled = defaults.object(forKey: "journal.lock-enabled") as? Bool ?? true
+        lockEnabled = defaults.object(forKey: "journal.lock-enabled") as? Bool ?? false
         self.photoFolder = photoFolder ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("JournalPhotos", isDirectory: true)
         unlocked = !lockEnabled
@@ -115,8 +115,8 @@ enum JournalSchemaV1: VersionedSchema {
         accessGeneration += 1; authContext?.invalidate(); authContext = nil
         if lockEnabled { unlocked = false }
     }
-    @discardableResult func authenticate(reason: String = "Open your private Journal") async -> Bool {
-        if !isLocked { return true }
+    @discardableResult func authenticate(reason: String = "Open your private Journal", requireAuthentication: Bool = false) async -> Bool {
+        if !isLocked && !requireAuthentication { return true }
         guard !authenticating else { return false }
         authenticating = true; defer { authenticating = false }
         let context = LAContext(), generation = accessGeneration
@@ -132,7 +132,7 @@ enum JournalSchemaV1: VersionedSchema {
         } catch { message = "Journal stayed locked. Try unlocking again."; return false }
     }
     func setLockEnabled(_ value: Bool) async {
-        guard await authenticate(reason: "Change Journal privacy") else { return }
+        guard await authenticate(reason: "Change Journal privacy", requireAuthentication: true) else { return }
         defaults.set(value, forKey: "journal.lock-enabled"); lockEnabled = value; unlocked = !value
     }
     func daySummary(_ day: String, at date: Date) -> HubDaySummary {
