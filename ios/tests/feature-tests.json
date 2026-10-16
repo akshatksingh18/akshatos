@@ -85,7 +85,8 @@
     ],
     "domain_test": "tests/todo/main.swift",
     "integration_tests": [
-      "UnitTests/PersonalHubPersistenceTests.swift"
+      "UnitTests/PersonalHubPersistenceTests.swift",
+      "UnitTests/PersonalHubRenderTests.swift"
     ],
     "ui_tests": [
       "UITests/PersonalHubUITests.swift"
@@ -98,7 +99,8 @@
     ],
     "domain_test": "tests/journal/main.swift",
     "integration_tests": [
-      "UnitTests/PersonalHubPersistenceTests.swift"
+      "UnitTests/PersonalHubPersistenceTests.swift",
+      "UnitTests/PersonalHubRenderTests.swift"
     ],
     "ui_tests": [
       "UITests/PersonalHubUITests.swift"

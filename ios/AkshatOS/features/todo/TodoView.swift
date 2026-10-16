@@ -53,7 +53,11 @@ struct TodoView: View {
                 taskSection("Undated", items: matching.filter { $0.completedAt == nil && $0.due == nil })
                 Section {
                     DisclosureGroup("Done · \(matching.filter { $0.completedAt != nil }.count)") {
-                        ForEach(matching.filter { $0.completedAt != nil }.sorted { $0.completedAt! > $1.completedAt! }) { row($0) }
+                        let done = Dictionary(grouping: matching.filter { $0.completedAt != nil }) { store.clock.key($0.completedAt!) }
+                        ForEach(done.keys.sorted(by: >), id: \.self) { day in
+                            Text(store.clock.date(day)?.formatted(date: .abbreviated, time: .omitted) ?? day).font(.caption).foregroundStyle(.secondary)
+                            ForEach(done[day, default: []].sorted { $0.completedAt! > $1.completedAt! }) { row($0) }
+                        }
                     }
                 }
                 if store.undoAvailable { Button("Undo completion") { store.undo() }.accessibilityIdentifier("todo-undo") }
@@ -103,7 +107,7 @@ struct TodoView: View {
                 Image(systemName: task.completedAt == nil ? "circle" : "checkmark.circle.fill")
                     .font(.title3).foregroundStyle(task.completedAt == nil ? HubInk.copper : HubInk.sage)
                     .frame(minWidth: 44, minHeight: 44)
-            }.buttonStyle(.plain).accessibilityLabel(task.completedAt == nil ? "Complete \(task.title)" : "Completed \(task.title)")
+            }.buttonStyle(.plain).disabled(task.completedAt != nil || task.archivedAt != nil).accessibilityLabel(task.completedAt == nil ? "Complete \(task.title)" : "Completed \(task.title)")
             Button { editing = task } label: {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(task.title).foregroundStyle(task.completedAt == nil ? .primary : .secondary)

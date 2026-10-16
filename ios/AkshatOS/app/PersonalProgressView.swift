@@ -64,7 +64,8 @@ struct PersonalProgressView: View {
         VStack(alignment: .leading, spacing: 12) {
             if preferences.fullDayChallenge { Toggle("Show full-day challenge", isOn: $fullDay) }
             let days = monthDays, lead = days.first.flatMap(clock.date).map { (clock.calendar.component(.weekday, from: $0) + 5) % 7 } ?? 0
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 32), spacing: 2), count: 7), spacing: 2) {
+            ScrollView(.horizontal, showsIndicators: false) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 44), spacing: 2), count: 7), spacing: 2) {
                 ForEach(Array(["M", "T", "W", "T", "F", "S", "S"].enumerated()), id: \.offset) { _, title in Text(title).font(.caption).foregroundStyle(.secondary) }
                 ForEach(0..<lead, id: \.self) { _ in Color.clear.frame(minHeight: 44) }
                 ForEach(days, id: \.self) { day in
@@ -74,9 +75,11 @@ struct PersonalProgressView: View {
                             .background(future ? Color.clear : completed ? HubInk.copper.opacity(0.55) : HubInk.surface, in: RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(day == effectiveDay ? HubInk.copper : .clear, lineWidth: 2))
                     }.buttonStyle(.plain).disabled(future)
-                        .accessibilityLabel("\(day), \(future ? "upcoming" : !planned ? "unplanned" : completed ? "completed" : "not completed")")
+                        .accessibilityLabel("\(day), \(future ? "upcoming" : fullDay && (!todo.available || !journal.available) ? "data unavailable" : fullDay && day < preferences.fullDayStart ? "before challenge began" : !planned ? "unplanned" : completed ? "completed" : "not completed")")
                 }
+            }.frame(minWidth: 320)
             }
+            if fullDay && (!todo.available || !journal.available) { Text("Full-day history unavailable. Retry the affected store before interpreting this grid.").font(.caption).foregroundStyle(.secondary) }
             Text(fullDay ? "Copper: study mark, chosen priorities and Journal complete. No priorities: unplanned. Today remains open." : "Copper: the recorded study mark reached. The mark and the daily aim are separate.")
                 .font(.caption).foregroundStyle(.secondary)
         }
