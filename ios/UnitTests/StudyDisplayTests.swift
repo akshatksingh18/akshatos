@@ -115,6 +115,20 @@ import SwiftUI
         XCTAssertEqual(fixture.client.startCount, 2)
     }
 
+    func testColdLaunchBeforeStoreLoadCannotEraseDismissalOrEndAnExistingCard() async throws {
+        let fixture = try Fixture()
+        defer { fixture.clean() }
+        fixture.study.start(); fixture.activity.enabled = true
+        await fixture.activity.waitForPendingUpdates()
+        let unloaded = StudyLogStore(repository: fixture.repository, defaults: fixture.defaults, now: { fixture.now })
+        let reopened = StudyLiveActivityCoordinator(study: unloaded, defaults: fixture.defaults, configured: true, client: fixture.client, isForeground: { true })
+        reopened.reconcile(); await reopened.waitForPendingUpdates()
+        XCTAssertEqual(fixture.client.activities.count, 1, "An empty cache before load is not a paused session")
+        fixture.client.activities = []
+        unloaded.load(); reopened.reconcile(); await reopened.waitForPendingUpdates()
+        XCTAssertEqual(fixture.client.startCount, 1, "Cold launch retains the saved last-shown session")
+    }
+
     func testActivityExpiresAtThreeAMAndEightHoursWithoutStoppingTheSession() async throws {
         let fixture = try Fixture()
         defer { fixture.clean() }
@@ -154,6 +168,7 @@ import SwiftUI
 @MainActor private final class Fixture {
     let suite = "study-display-" + UUID().uuidString
     let defaults: UserDefaults
+    let repository: SwiftDataStudyLogRepository
     let client = FakeStudyActivityClient()
     var now = ISO8601DateFormatter().date(from: "2026-01-01T12:00:00Z")!
     var foreground = true
@@ -163,8 +178,9 @@ import SwiftUI
         defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         let schema = Schema(versionedSchema: StudyLogSchemaV1.self)
         let db = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+        repository = SwiftDataStudyLogRepository(container: db)
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        study = StudyLogStore(repository: SwiftDataStudyLogRepository(container: db), defaults: defaults, now: { [unowned self] in self.now }, calendar: calendar)
+        study = StudyLogStore(repository: repository, defaults: defaults, now: { [unowned self] in self.now }, calendar: calendar)
         study.load()
         activity = StudyLiveActivityCoordinator(study: study, defaults: defaults, configured: true, client: client, isForeground: { [unowned self] in self.foreground })
     }

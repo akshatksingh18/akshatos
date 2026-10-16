@@ -195,6 +195,9 @@ jobs:
             -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData-simulator" \
             CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
+          candidate="$RUNNER_TEMP/DerivedData-simulator/Build/Products/Debug-iphonesimulator/AkshatOS.app"
+          test -d "$candidate/PlugIns/StudyActivityExtension.appex"
+          test "$(plutil -extract NSSupportsLiveActivities raw "$candidate/Info.plist")" = true
           xcodebuild build -project "$PROJECT_PATH" -scheme StudyActivityExtension \
             -configuration Release -sdk iphoneos -destination "generic/platform=iOS" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData-extension" \

@@ -90,7 +90,11 @@ struct StudyActivityHandle: Equatable {
 
     private func synchronize() async {
         guard configured else { status = "Available in the Live Activity build."; return }
-        let running = study.storageAvailable && enabled ? study.log.running : nil
+        guard study.storageAvailable else {
+            status = "Waiting for study data. The lock-screen timer has not been changed."
+            return
+        }
+        let running = enabled ? study.log.running : nil
         var matching: StudyActivityHandle?
         for handle in client.activities {
             if let running, handle.sessionID == running.id, matching == nil {

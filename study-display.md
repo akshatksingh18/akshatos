@@ -115,6 +115,7 @@ Public sources reviewed 2026-10-16; none proves this device's installed behavior
 - [Apple: system-rendered timer text](https://developer.apple.com/documentation/swiftui/text/init(timerinterval:pausetime:countsdown:showshours:)).
 - [Apple: Live Activity design and reduced-luminance behavior](https://developer.apple.com/design/human-interface-guidelines/live-activities).
 - [Apple: foreground screen-awake API](https://developer.apple.com/documentation/uikit/uiapplication/isidletimerdisabled).
+- [Apple: passive notifications do not light the screen or play sound](https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel/passive).
 - [Apple: Focus options and Lock Screen settings](https://support.apple.com/en-gb/guide/iphone/iphd6288a67f/26/ios/26).
 - [Apple: Always-On conditions](https://support.apple.com/en-mn/guide/iphone/iph7117338a8/ios).
 - [Apple: StandBy](https://support.apple.com/en-ie/guide/iphone/iph878d77632/ios).
