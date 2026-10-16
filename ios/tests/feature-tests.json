@@ -86,7 +86,8 @@
     "domain_test": "tests/todo/main.swift",
     "integration_tests": [
       "UnitTests/PersonalHubPersistenceTests.swift",
-      "UnitTests/PersonalHubRenderTests.swift"
+      "UnitTests/PersonalHubRenderTests.swift",
+      "UnitTests/PersonalNotificationTests.swift"
     ],
     "ui_tests": [
       "UITests/PersonalHubUITests.swift"

@@ -1,17 +1,19 @@
 import XCTest
 
 extension XCUIApplication {
-    func openApps() { tabBars.buttons["Apps"].tap() }
+    func openApps() { let tab = tabBars.buttons["Apps"]; XCTAssertTrue(tab.waitForExistence(timeout: 10)); tab.tap() }
     func openLegacyMenu() {
         openApps()
-        buttons["open-personal-settings"].tap()
+        let settings = buttons["open-personal-settings"]; XCTAssertTrue(settings.waitForExistence(timeout: 5)); settings.tap()
         let transition = buttons["fitness-transition"]
         for _ in 0..<6 where !transition.isHittable { swipeUp() }
         transition.tap()
+        XCTAssertTrue(navigationBars["WHOOP handover"].waitForExistence(timeout: 10))
     }
 }
 
 final class PersonalHubUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     func testFourTabsAndTaskCaptureWithoutFitnessNoise() {
         let app = XCUIApplication(); app.launch()
         XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10))

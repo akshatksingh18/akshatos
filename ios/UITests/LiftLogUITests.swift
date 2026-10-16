@@ -1,6 +1,7 @@
 import XCTest
 
 final class LiftLogUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     func testHubOpensLiftLog() {
         let app = XCUIApplication()
         app.launch()

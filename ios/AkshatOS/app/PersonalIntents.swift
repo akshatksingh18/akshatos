@@ -58,12 +58,22 @@ struct OpenJournalIntent: AppIntent {
         return .result()
     }
 }
+struct StudyTimeTodayIntent: AppIntent {
+    static var title: LocalizedStringResource = "Study time today"
+    static var openAppWhenRun = true
+    @MainActor func perform() async throws -> some IntentResult & ReturnsValue<Double> {
+        let store = AppServices.shared.studyLog; store.load()
+        guard store.storageAvailable else { throw PersonalDataError.invalid("Study data is unavailable.") }
+        return .result(value: store.studiedToday(at: Date()) / 60)
+    }
+}
 struct PersonalShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: StartStudyIntent(), phrases: ["Start studying with \(.applicationName)"], shortTitle: "Start studying", systemImageName: "play.fill")
         AppShortcut(intent: PauseStudyIntent(), phrases: ["Pause studying with \(.applicationName)"], shortTitle: "Pause studying", systemImageName: "pause.fill")
         AppShortcut(intent: AddTodoIntent(), phrases: ["Add a task in \(.applicationName)"], shortTitle: "Add a task", systemImageName: "checkmark.circle")
         AppShortcut(intent: ParkThoughtIntent(), phrases: ["Park a thought in \(.applicationName)"], shortTitle: "Park a thought", systemImageName: "tray")
+        AppShortcut(intent: StudyTimeTodayIntent(), phrases: ["Study time today in \(.applicationName)"], shortTitle: "Study minutes today", systemImageName: "timer")
         AppShortcut(intent: OpenJournalIntent(), phrases: ["Open Journal in \(.applicationName)"], shortTitle: "Open Journal", systemImageName: "book.closed")
     }
 }

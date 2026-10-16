@@ -1,6 +1,7 @@
 import XCTest
 
 final class BodyUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     /// The hub opens Body; the measurement form lists every site with its guidance; history and
     /// photos are reachable and explain an empty state. Typing values and the camera are left to
     /// hosted tests and the phone.

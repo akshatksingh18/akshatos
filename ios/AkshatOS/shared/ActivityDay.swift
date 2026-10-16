@@ -49,7 +49,9 @@ enum LocalDataCoding {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return try encoder.encode(value)
+        let data = try encoder.encode(value)
+        guard data.count <= 25_000_000 else { throw PersonalDataError.invalid("The saved document exceeds the 25 MB recovery limit. Shorten the content or keep a separate export.") }
+        return data
     }
     static func decode<T: Decodable>(_ type: T.Type, _ data: Data) throws -> T {
         guard data.count <= 25_000_000 else { throw PersonalDataError.invalid("That file is too large.") }

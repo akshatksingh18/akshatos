@@ -16,6 +16,7 @@ enum JournalSchemaV1: VersionedSchema {
 @MainActor final class JournalStore: ObservableObject, HubDayPart {
     @Published private var state = JournalState()
     @Published private(set) var available = false
+    @Published private(set) var dayStamp = ""
     @Published private(set) var unlocked = false
     @Published private(set) var lockEnabled: Bool
     @Published var message: String?
@@ -23,15 +24,17 @@ enum JournalSchemaV1: VersionedSchema {
     var onChange: (() -> Void)?
     private var container: ModelContainer?
     private let defaults: UserDefaults
-    let clock: ActivityDayClock
+    private(set) var clock: ActivityDayClock
+    private let followsSystemZone: Bool
     let photoFolder: URL
     private var failedDraft: JournalEntry?
+    private var failedWeekNotes: [String: String] = [:]
     private var accessGeneration = 0
     private var authenticating = false
     private var authContext: LAContext?
     init(container: ModelContainer? = nil, defaults: UserDefaults = .standard, photoFolder: URL? = nil,
-         calendar: Calendar = .current) {
-        self.container = container; self.defaults = defaults; clock = ActivityDayClock(calendar: calendar)
+         calendar: Calendar? = nil) {
+        self.container = container; self.defaults = defaults; clock = ActivityDayClock(calendar: calendar ?? .current); followsSystemZone = calendar == nil
         lockEnabled = defaults.object(forKey: "journal.lock-enabled") as? Bool ?? true
         self.photoFolder = photoFolder ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("JournalPhotos", isDirectory: true)
@@ -40,6 +43,7 @@ enum JournalSchemaV1: VersionedSchema {
     var isLocked: Bool { lockEnabled && !unlocked }
     var entries: [JournalEntry] { isLocked ? [] : state.entries.sorted { $0.day > $1.day } }
     var today: String { clock.key(Date()) }
+    func refreshDay() { if followsSystemZone { clock.calendar.timeZone = .current }; let stamp = today + "|" + clock.calendar.timeZone.identifier; if dayStamp != stamp { dayStamp = stamp } }
     func entry(_ day: String) -> JournalEntry? {
         guard !isLocked else { return nil }
         if failedDraft?.day == day { return failedDraft }
@@ -74,15 +78,22 @@ enum JournalSchemaV1: VersionedSchema {
     @discardableResult func save(_ entry: JournalEntry) -> Bool {
         guard !isLocked else { return false }
         if !available { load(); guard available else { return false } }
+        guard failedDraft == nil || failedDraft?.day == entry.day else {
+            message = "Retry the unsaved entry before changing another day."; return false
+        }
         var value = entry; value.updatedAt = Date()
         if !value.hasWriting { value.completedAt = nil }
         var next = state
         if let index = next.entries.firstIndex(where: { $0.day == value.day }) { next.entries[index] = value }
         else { next.entries.append(value) }
-        if commit(next) { failedDraft = nil; unsaved = false; return true }
+        if commit(next) { failedDraft = nil; unsaved = !failedWeekNotes.isEmpty; return true }
         failedDraft = value; unsaved = true; return false
     }
-    func retryDraft() { if let draft = failedDraft, !isLocked { _ = save(draft) } }
+    func retryDraft() {
+        guard !isLocked else { return }
+        if let draft = failedDraft { _ = save(draft) }
+        for (key, text) in failedWeekNotes { setWeekNote(text, week: key) }
+    }
     func markDone(_ entry: JournalEntry) {
         guard entry.hasWriting, !isLocked else { return }
         var value = entry; value.completedAt = entry.completedAt == nil ? Date() : nil; _ = save(value)
@@ -92,9 +103,13 @@ enum JournalSchemaV1: VersionedSchema {
         var value = entry(facts.activityDay) ?? newEntry(facts.activityDay)
         value.facts = facts; _ = save(value)
     }
-    func weekNote(_ key: String) -> String { isLocked ? "" : (state.weeklyNotes[key] ?? "") }
+    func weekNote(_ key: String) -> String { isLocked ? "" : (failedWeekNotes[key] ?? state.weeklyNotes[key] ?? "") }
     func setWeekNote(_ text: String, week: String) {
-        guard !isLocked, available else { return }; var next = state; next.weeklyNotes[week] = text; _ = commit(next)
+        guard !isLocked, available else { return }
+        var next = state; next.weeklyNotes[week] = text
+        if commit(next) { failedWeekNotes.removeValue(forKey: week) }
+        else { failedWeekNotes[week] = text }
+        unsaved = failedDraft != nil || !failedWeekNotes.isEmpty
     }
     func lock() {
         accessGeneration += 1; authContext?.invalidate(); authContext = nil
@@ -175,8 +190,9 @@ extension JournalStore: HubBackupPart {
     var backupID: String { "journal" }
     var backupTitle: String { "Journal" }
     func writeBackup(into folder: URL) async throws -> String? {
-        guard await authenticate(reason: "Include Journal in the full backup") else { throw PersonalDataError.invalid("Journal authentication cancelled. The full backup was stopped.") }
         if !available { load() }; guard available, !unsaved else { throw PersonalDataError.invalid("Save the Journal draft before exporting.") }
+        if state.entries.isEmpty && state.weeklyNotes.isEmpty { return nil }
+        guard await authenticate(reason: "Include Journal in the full backup") else { throw PersonalDataError.invalid("Journal authentication cancelled. The full backup was stopped.") }
         let destination = folder.appendingPathComponent("journal", isDirectory: true)
         try FileManager.default.createDirectory(at: destination.appendingPathComponent("photos"), withIntermediateDirectories: true)
         try LocalDataCoding.encode(state).write(to: destination.appendingPathComponent("journal.json"), options: [.atomic, .completeFileProtection])
@@ -222,7 +238,7 @@ extension JournalStore: HubBackupPart {
                 if files.fileExists(atPath: photoFolder.path) { try files.moveItem(at: photoFolder, to: recovery); movedOld = true }
                 try files.moveItem(at: staging, to: photoFolder); installedNew = true
                 guard commit(checked) else { throw PersonalDataError.invalid(message ?? "Journal restore failed.") }
-                failedDraft = nil; unsaved = false
+                failedDraft = nil; failedWeekNotes = [:]; unsaved = false
                 if movedOld { try? files.removeItem(at: recovery) }
                 return .restored
             } catch {

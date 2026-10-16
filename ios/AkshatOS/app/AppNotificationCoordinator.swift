@@ -26,7 +26,8 @@ import UIKit
         (PersonalNotifications.namespace + "todo.", .todo),
         (PersonalNotifications.namespace + "journal", .journal),
         (PersonalNotifications.namespace + "study", .studyLog),
-        (PersonalNotifications.namespace + "break", .studyLog)
+        (PersonalNotifications.namespace + "break", .studyLog),
+        (PersonalNotifications.namespace + "morning", .studyLog)
     ]
 
     init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator, personal: PersonalNotifications? = nil) {

@@ -18,7 +18,11 @@ struct SpendingView: View {
         List {
             if store.available {
             Section {
-                DatePicker("Month", selection: $month, displayedComponents: .date)
+                HStack {
+                    Button { moveMonth(-1) } label: { Image(systemName: "chevron.left").frame(minWidth: 44, minHeight: 44) }.buttonStyle(.plain).accessibilityLabel("Previous month")
+                    Spacer(); Text(month.formatted(.dateTime.month(.wide).year())).font(.headline); Spacer()
+                    Button { moveMonth(1) } label: { Image(systemName: "chevron.right").frame(minWidth: 44, minHeight: 44) }.buttonStyle(.plain).accessibilityLabel("Next month")
+                }
                 Picker("Currency", selection: Binding(get: { store.state.currency }, set: { store.setCurrency($0) })) {
                     ForEach(SpendingState.currencies, id: \.self) { Text($0).tag($0) }
                 }
@@ -32,12 +36,12 @@ struct SpendingView: View {
                     budgetText = store.state.budget(key, currency: store.state.currency).map { NSDecimalNumber(decimal: Decimal($0) / 100).stringValue } ?? ""
                     budgetSheet = true
                 }
-            } header: { Text(month.formatted(.dateTime.month(.wide).year())) }
-              footer: { Text("Calendar-month totals. Currencies are kept separate; no conversion or financial-account import.") }
+            } header: { Text("Month") }
+              footer: { Text("Each currency has its own total and monthly budget.") }
 
             Section("Expenses") {
                 let values = store.state.expenses.filter { SpendingState.month($0.date) == key && $0.currency == store.state.currency }.sorted { $0.date > $1.date }
-                if values.isEmpty { Text("No expenses recorded.").foregroundStyle(.secondary) }
+                if values.isEmpty { Text("No expenses recorded.").foregroundStyle(.secondary); Button("Add expense", systemImage: "plus") { editing = Expense(title: "", cents: 0, currency: store.state.currency, date: Date()) } }
                 ForEach(values) { expense in
                     Button { editing = expense } label: {
                         HStack {
@@ -85,6 +89,7 @@ struct SpendingView: View {
             Button("Delete expense", role: .destructive) { if let deleting { store.remove(deleting) }; deleting = nil }
         }
     }
+    private func moveMonth(_ offset: Int) { if let next = Calendar.current.date(byAdding: .month, value: offset, to: month) { month = next } }
     private func money(_ cents: Int64, currency: String) -> String { (Double(cents) / 100).formatted(.currency(code: currency)) }
     private func prepare(_ type: UTType) {
         guard store.available else { store.message = "Load Spending before exporting."; return }

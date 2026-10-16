@@ -27,3 +27,14 @@ import Foundation
     }
     func cancel() { base.cancel() }
 }
+
+@MainActor struct GatedBodyReminders: BodyReminding {
+    let preferences: PersonalPreferences
+    private let base = BodyReminderService()
+    init(preferences: PersonalPreferences) { self.preferences = preferences }
+    func enable(weekday: Int, hour: Int, minute: Int) async throws -> Bool {
+        guard !preferences.fitnessStopped else { base.disable(); return false }
+        return try await base.enable(weekday: weekday, hour: hour, minute: minute)
+    }
+    func disable() { base.disable() }
+}

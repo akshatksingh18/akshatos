@@ -7,6 +7,8 @@ import UserNotifications
     @Published var checkMinutes: Int { didSet { defaults.set(checkMinutes, forKey: "personal.check-minutes") } }
     @Published var breakReminder: Bool { didSet { defaults.set(breakReminder, forKey: "personal.break-reminder") } }
     @Published var breakMinutes: Int { didSet { defaults.set(breakMinutes, forKey: "personal.break-minutes") } }
+    @Published var morningPlan: Bool { didSet { defaults.set(morningPlan, forKey: "personal.morning-plan") } }
+    @Published var morningHour: Int { didSet { defaults.set(morningHour, forKey: "personal.morning-hour") } }
     @Published var journalReminder: Bool { didSet { defaults.set(journalReminder, forKey: "personal.journal-reminder") } }
     @Published var journalHour: Int { didSet { defaults.set(journalHour, forKey: "personal.journal-hour") } }
     @Published var badge: Bool { didSet { defaults.set(badge, forKey: "personal.badge") } }
@@ -27,6 +29,8 @@ import UserNotifications
         checkMinutes = defaults.object(forKey: "personal.check-minutes") as? Int ?? 30
         breakReminder = defaults.bool(forKey: "personal.break-reminder")
         breakMinutes = defaults.object(forKey: "personal.break-minutes") as? Int ?? 15
+        morningPlan = defaults.bool(forKey: "personal.morning-plan")
+        morningHour = defaults.object(forKey: "personal.morning-hour") as? Int ?? 9
         journalReminder = defaults.bool(forKey: "personal.journal-reminder")
         journalHour = defaults.object(forKey: "personal.journal-hour") as? Int ?? 22
         badge = defaults.bool(forKey: "personal.badge")
@@ -48,15 +52,15 @@ import UserNotifications
     static let pauseAction = namespace + "pause"
     static let keepGoingAction = namespace + "keep-going"
     @Published private(set) var status = "Reminders are optional."
-    private let center: UNUserNotificationCenter
+    private let center: any PersonalNotificationCenter
     private let study: StudyLogStore
     private let todo: TodoStore
     private let preferences: PersonalPreferences
     private var task: Task<Void, Never>?
     private var dirty = false
     init(study: StudyLogStore, todo: TodoStore, preferences: PersonalPreferences,
-         center: UNUserNotificationCenter = .current()) {
-        self.study = study; self.todo = todo; self.preferences = preferences; self.center = center
+         center: (any PersonalNotificationCenter)? = nil) {
+        self.study = study; self.todo = todo; self.preferences = preferences; self.center = center ?? SystemPersonalNotificationCenter()
     }
     static func category() -> UNNotificationCategory {
         UNNotificationCategory(identifier: categoryID, actions: [
@@ -66,7 +70,7 @@ import UserNotifications
     }
     func requestPermission() async {
         do {
-            let allowed = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            let allowed = try await center.authorize()
             status = allowed ? "Notifications allowed." : "Notifications are off. Enable them in iPhone Settings."
         } catch { status = "Notification permission could not be checked. Try again." }
         reconcile()
@@ -80,14 +84,15 @@ import UserNotifications
             task = nil
         }
     }
+    func waitUntilSettled() async { await task?.value }
     private func update() async {
-        let settings = await center.notificationSettings()
-        let pending = await center.pendingNotificationRequests()
+        let authorization = await center.authorization()
+        let pending = await center.pending()
         let owned = pending.filter { $0.identifier.hasPrefix(Self.namespace) }
         let otherCount = pending.count - owned.count
-        guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else {
+        guard authorization == .authorized || authorization == .provisional else {
             status = "Notifications are off. Local study and lists still work."
-            if preferences.badge { try? await center.setBadgeCount(0) }
+            if preferences.badge { try? await center.badge(0) }
             return
         }
         // A failed store read must not cancel the last known good intentions for that feature.
@@ -109,7 +114,8 @@ import UserNotifications
             desired.append(UNNotificationRequest(identifier: Self.namespace + "study", content: content,
                 trigger: UNTimeIntervalNotificationTrigger(timeInterval: Double(min(120, max(5, preferences.checkMinutes))) * 60, repeats: true)))
         }
-        if preferences.breakReminder, !study.isRunning, let end = study.lastPause {
+        if preferences.breakReminder, !study.isRunning, study.studiedToday(at: now) > 0,
+           study.studiedToday(at: now) < Double(study.targetToday(at: now)), let end = study.lastPause {
             let date = end.addingTimeInterval(Double(min(180, max(5, preferences.breakMinutes))) * 60)
             if date > now {
                 let content = UNMutableNotificationContent(); content.title = "Back to it?"; content.body = "Your study timer is paused."; content.sound = .default
@@ -123,10 +129,28 @@ import UserNotifications
             desired.append(UNNotificationRequest(identifier: Self.namespace + "journal", content: content,
                 trigger: UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: min(23, max(0, preferences.journalHour))), repeats: true)))
         }
+        if preferences.morningPlan {
+            // One upcoming eligible invitation, replenished on app activity. Starting study cancels
+            // today's invitation; a closed app is never assumed to inspect its records at delivery.
+            for offset in 0..<8 {
+                guard let day = Calendar.current.date(byAdding: .day, value: offset, to: now),
+                      let date = Calendar.current.date(bySettingHour: min(23, max(0, preferences.morningHour)), minute: 0, second: 0, of: day), date > now else { continue }
+                let key = study.clock.key(for: date)
+                let started = study.log.segments.contains { segment in
+                    study.clock.pieces(of: segment, now: now).contains { $0.day == key } || study.clock.key(for: segment.start) == key
+                }
+                if started { continue }
+                let content = UNMutableNotificationContent(); content.title = "A little plan for today"
+                content.body = "Choose your priorities and check your study aim."; content.sound = .default
+                desired.append(UNNotificationRequest(identifier: Self.namespace + "morning", content: content,
+                    trigger: UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date), repeats: false)))
+                break
+            }
+        }
         let capacity = max(0, 64 - otherCount - 2)
         let planned = Array(desired.prefix(capacity)), IDs = Set(planned.map(\.identifier))
         // Remove only surplus own requests; unrelated modules are never cancelled to create room.
-        center.removePendingNotificationRequests(withIdentifiers: owned.filter { !IDs.contains($0.identifier) }.map(\.identifier))
+        center.remove( owned.filter { !IDs.contains($0.identifier) }.map(\.identifier))
         do {
             for request in planned {
                 if let previous = owned.first(where: { $0.identifier == request.identifier }),
@@ -135,7 +159,7 @@ import UserNotifications
             }
             let plan = todo.plan(todo.today)
             let left = preferences.badge ? max(0, (plan?.selected.count ?? 0) - (plan?.completed.count ?? 0)) : 0
-            try await center.setBadgeCount(left)
+            try await center.badge(left)
             let dueCount = desired.filter { $0.identifier.contains(".todo.") }.count
             status = "\(planned.count) scheduled. Timed tasks: next \(min(dueCount, capacity)) of at most 15; opening the app refreshes the window."
             if planned.count < desired.count { status += " Other reminders currently use the remaining capacity." }

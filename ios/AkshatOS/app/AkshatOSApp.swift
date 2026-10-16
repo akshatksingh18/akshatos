@@ -52,7 +52,7 @@ struct AkshatOSApp: App {
         squats = SquatStore(reminders: GatedSquatReminders(preferences: preferences), homeMonitor: home)
         pageVault = PageVaultStore()
         liftLog = LiftLogStore(reminders: GatedLiftReminders(preferences: preferences))
-        bodyLog = BodyLogStore()
+        bodyLog = BodyLogStore(reminders: GatedBodyReminders(preferences: preferences))
         studyLog = StudyLogStore()
         todo = TodoStore(); journal = JournalStore(); watchlist = WatchlistStore(); spending = SpendingStore()
         transfer = LinkedFolderService()

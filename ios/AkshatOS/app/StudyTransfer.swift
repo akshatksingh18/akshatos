@@ -11,6 +11,7 @@ struct StudyTransfer: Codable {
         var start: Date
         var end: Date
         var type: String
+        var typeNeedsReview = true
         var topic: String?
         var note: String?
         var timeZone: String
@@ -23,6 +24,7 @@ struct StudyTransfer: Codable {
     var revision: Int
     var fullSnapshot = true
     var excludedRunningIDs: [UUID]
+    var excludedDSASolveIDs: [UUID] = []
     var segments: [Segment]
 }
 
@@ -33,7 +35,7 @@ extension AppServices {
         let source = defaults.string(forKey: "study.transfer-source") ?? UUID().uuidString
         let revision = defaults.integer(forKey: "study.transfer-revision") + 1
         let segments = try studyLog.log.segments.compactMap { segment -> StudyTransfer.Segment? in
-            guard let end = segment.end else { return nil }
+            guard let end = segment.end, segment.roadmapType != "DSA solve already logged" else { return nil }
             let pieces = studyLog.clock.pieces(of: segment, now: end)
             // Round once per original block, then distribute its whole minutes. Split days must
             // never gain minutes through independent rounding.
@@ -49,10 +51,10 @@ extension AppServices {
             let type = topic.contains("sql") ? "SQL" : topic.contains("dsa") ? "DSA lesson/Mixed practice"
                 : topic.contains("project") || topic.contains("main") || topic.contains("ml") ? "main/project" : "other"
             return StudyTransfer.Segment(id: segment.id, revision: digest, start: segment.start, end: end,
-                type: type, topic: segment.topic, note: segment.note, timeZone: segment.timeZoneID ?? studyLog.clock.calendar.timeZone.identifier, pieces: transferred)
+                type: segment.roadmapType ?? type, topic: segment.topic, note: segment.note, timeZone: segment.timeZoneID ?? studyLog.clock.calendar.timeZone.identifier, pieces: transferred)
         }
         let data = try LocalDataCoding.encode(StudyTransfer(sourceID: source, exportedAt: Date(), revision: revision,
-            excludedRunningIDs: studyLog.log.segments.filter(\.isRunning).map(\.id), segments: segments))
+            excludedRunningIDs: studyLog.log.segments.filter(\.isRunning).map(\.id), excludedDSASolveIDs: studyLog.log.segments.filter { $0.roadmapType == "DSA solve already logged" }.map(\.id), segments: segments))
         defaults.set(source, forKey: "study.transfer-source"); defaults.set(revision, forKey: "study.transfer-revision")
         return data
     }

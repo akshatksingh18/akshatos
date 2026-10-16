@@ -7,6 +7,7 @@ struct PersonalTodayView: View {
     @ObservedObject var preferences: PersonalPreferences
     var keepGoing: () -> Void
     var openTodo: () -> Void
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var history = false
     @State private var focus = false
     @State private var capture = false
@@ -18,12 +19,12 @@ struct PersonalTodayView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 26) {
-                Text(study.clock.date(of: study.today)?.formatted(date: .complete, time: .omitted) ?? study.today).font(.subheadline).foregroundStyle(.secondary)
+                Text(study.clock.date(of: study.today)?.formatted(date: typeSize.isAccessibilitySize ? .abbreviated : .complete, time: .omitted) ?? study.today).font(.subheadline).foregroundStyle(.secondary)
                 if Calendar.current.component(.hour, from: Date()) < 3 { Text("Still the \(study.today) activity day · changes at 3 AM").font(.caption).foregroundStyle(.secondary) }
                 if !study.storageAvailable {
                     ContentUnavailableView { Label("Study data unavailable", systemImage: "exclamationmark.triangle") } actions: { Button("Retry") { study.load() } }
                 } else {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in timer(at: context.date, focused: false) }
+                    TimelineView(.periodic(from: .now, by: 1)) { context in timer(at: study.isRunning ? context.date : study.currentDate(), focused: false) }
                 }
                 if study.storageAvailable {
                     let count = study.days(at: Date()).filter { $0.studied > 0 }.count
@@ -54,7 +55,7 @@ struct PersonalTodayView: View {
         .sheet(isPresented: $planning) { PriorityPicker(store: todo, day: todo.today) }
         .fullScreenCover(isPresented: $focus) {
             NavigationStack {
-                ScrollView { TimelineView(.periodic(from: .now, by: 1)) { context in timer(at: context.date, focused: true).padding(22) } }
+                ScrollView { TimelineView(.periodic(from: .now, by: 1)) { context in timer(at: study.isRunning ? context.date : study.currentDate(), focused: true).padding(22) } }
                     .background(HubInk.background).navigationTitle("Focus").navigationBarTitleDisplayMode(.inline)
                     .toolbar { Button("Close") { focus = false } }
             }.tint(HubInk.copper)
@@ -78,10 +79,11 @@ struct PersonalTodayView: View {
             if !focused {
                 HStack {
                     Circle().fill(study.isRunning ? HubInk.copper : HubInk.sage).frame(width: 7, height: 7).accessibilityHidden(true)
-                    Text(study.isRunning ? "Studying" : "Ready when you are").font(.subheadline)
+                    Text(study.isRunning ? "Studying" : typeSize.isAccessibilitySize ? "Paused" : "Ready when you are").font(.subheadline)
                     Spacer(); Button("Focus") { focus = true }.font(.subheadline).accessibilityIdentifier("study-focus")
                 }
             }
+            if typeSize.isAccessibilitySize { timerControl(at: date) }
             StudyDial(studied: study.studiedToday(at: date), target: study.targetToday(at: date))
                 .frame(maxWidth: .infinity).padding(.vertical, 4)
             AdaptiveRow {
@@ -89,12 +91,10 @@ struct PersonalTodayView: View {
             } trailing: {
                 if let block = study.currentBlock(at: date) {
                     Text("Block · \(StudyTimeDisplay.short(block))").accessibilityIdentifier("study-current-block")
-                } else if let end = study.lastPause { Text("Break · \(StudyTimeDisplay.short(max(0, date.timeIntervalSince(end))))") }
+                } else if study.studiedToday(at: date) > 0, let end = study.lastPause { Text("Break · \(StudyTimeDisplay.short(max(0, date.timeIntervalSince(end))))") }
             }.font(.caption).foregroundStyle(.secondary)
-            Button { study.toggle() } label: {
-                Label(study.isRunning ? "Pause studying" : study.studiedToday(at: date) > 0 ? "Resume studying" : "Start studying", systemImage: study.isRunning ? "pause.fill" : "play.fill")
-                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
-            }.buttonStyle(.borderedProminent).tint(HubInk.copper).foregroundStyle(HubInk.background).accessibilityIdentifier("study-toggle")
+            if !typeSize.isAccessibilitySize { timerControl(at: date) }
+            if study.canUndoEdit { Button("Undo last change") { study.undoEdit() }.frame(minHeight: 44) }
             if capture { ThoughtCaptureField { if todo.park($0) { capture = false; return true }; return false } }
             else { Button { capture = true } label: { Label("Park a thought", systemImage: "plus").frame(maxWidth: .infinity, minHeight: 44) }.foregroundStyle(.secondary) }
             if !focused {
@@ -115,11 +115,18 @@ struct PersonalTodayView: View {
             }
         }.padding(16).background(HubInk.surface, in: RoundedRectangle(cornerRadius: 24))
     }
+    private func timerControl(at date: Date) -> some View {
+        Button { study.toggle() } label: {
+                Label(study.isRunning ? "Pause studying" : study.studiedToday(at: date) > 0 ? "Resume studying" : "Start studying", systemImage: study.isRunning ? "pause.fill" : "play.fill")
+                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+            }.buttonStyle(.borderedProminent).tint(HubInk.copper).foregroundStyle(HubInk.background).accessibilityIdentifier("study-toggle")
+    }
     private var priorities: some View {
         VStack(alignment: .leading, spacing: 12) {
             let plan = todo.plan(todo.today), values = todo.priorities(todo.today)
             HStack {
                 Text("Today’s tasks").font(.title3.weight(.semibold)); Spacer()
+                if todo.available && !values.isEmpty { Button("Edit") { planning = true }.frame(minHeight: 44) }
                 if todo.available, let plan, !plan.selected.isEmpty { Text("\(plan.completed.count) of \(plan.selected.count)").font(.subheadline).foregroundStyle(.secondary) }
             }
             if !todo.available { Text("Tasks unavailable").foregroundStyle(.secondary) }
@@ -130,7 +137,7 @@ struct PersonalTodayView: View {
                     Button { todo.toggle(item.id) } label: {
                         HStack(spacing: 12) {
                             Image(systemName: item.completedAt == nil ? "circle" : "checkmark.circle.fill").font(.title3).foregroundStyle(item.completedAt == nil ? HubInk.copper : HubInk.sage)
-                            VStack(alignment: .leading) { Text(item.title).foregroundStyle(item.completedAt == nil ? .primary : .secondary); if item.archivedAt != nil { Text("Archived · choose a replacement in To-do").font(.caption).foregroundStyle(.secondary) } }
+                            VStack(alignment: .leading) { Text(item.title).foregroundStyle(item.completedAt == nil ? .primary : .secondary); if item.archivedAt != nil { Text("Archived · choose a replacement").font(.caption).foregroundStyle(.secondary) }; if item.completedAt != nil && plan?.completed.contains(item.id) != true { Text("Completed earlier · choose a replacement").font(.caption).foregroundStyle(.secondary) } }
                             Spacer()
                         }.frame(minHeight: 44).contentShape(Rectangle())
                     }.buttonStyle(.plain).disabled(item.completedAt != nil || item.archivedAt != nil)

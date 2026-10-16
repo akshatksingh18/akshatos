@@ -56,6 +56,8 @@ struct PersonalSettingsView: View {
             }
             Section("Reminders") {
                 Button("Allow notifications / retry") { Task { await scheduler.requestPermission() } }
+                Toggle("Morning plan invitation", isOn: $preferences.morningPlan)
+                if preferences.morningPlan { Stepper("At \(preferences.morningHour):00", value: $preferences.morningHour, in: 0...23); Text("One upcoming invitation before study starts, refreshed when you use the app.").font(.footnote).foregroundStyle(.secondary) }
                 Toggle("Daily Journal invitation", isOn: $preferences.journalReminder)
                 if preferences.journalReminder { Stepper("At \(preferences.journalHour):00", value: $preferences.journalHour, in: 0...23) }
                 Text("An optional generic daily invitation, including days with an entry. Timed task reminders have a finite rolling window; return to the app to refresh it.").font(.footnote).foregroundStyle(.secondary)
@@ -68,7 +70,7 @@ struct PersonalSettingsView: View {
             }
             Section("Files and recovery") {
                 NavigationLink("Linked folder") { LinkedFolderView(services: services) }
-                NavigationLink(value: HubRoute.backup) { Text("Back up / restore everything") }
+                NavigationLink { FullBackupView(service: services.backup) } label: { Text("Back up / restore everything") }
             }
             Section {
                 NavigationLink { FitnessTransitionView(services: services) } label: {
@@ -92,20 +94,20 @@ private struct FitnessTransitionView: View {
         Form {
             Section {
                 Text("Pushup Reminder, Lift Log and Body now belong in WHOOP. Their old AkshatOS stores are retained for recovery, not daily progress.")
-                NavigationLink(value: HubRoute.backup) { Text("Back up old and new data") }
+                NavigationLink { FullBackupView(service: services.backup) } label: { Text("Back up old and new data") }
             }
             if !preferences.fitnessStopped {
                 Section("Review before switching") {
-                    NavigationLink(value: HubRoute.squats) { Text("Previous Pushup Reminder") }.accessibilityIdentifier("open-squats")
-                    NavigationLink(value: HubRoute.liftLog) { Text("Previous Lift Log") }.accessibilityIdentifier("open-liftLog")
-                    NavigationLink(value: HubRoute.body) { Text("Previous Body") }.accessibilityIdentifier("open-body")
+                    NavigationLink { SquatDashboard().environmentObject(services.squats) } label: { Text("Previous Pushup Reminder") }.accessibilityIdentifier("open-squats")
+                    NavigationLink { LiftLogView(store: services.liftLog) } label: { Text("Previous Lift Log") }.accessibilityIdentifier("open-liftLog")
+                    NavigationLink { BodyLogView(store: services.bodyLog) } label: { Text("Previous Body") }.accessibilityIdentifier("open-body")
                     Toggle("WHOOP imports, photos, reminders and recovery checked on my phone", isOn: $verified)
                     Button("Stop old fitness reminders") { confirming = true }.disabled(!verified)
                 }
             } else {
                 Section { Label("Old reminder ownership stopped", systemImage: "checkmark.circle"); Text("History remains in full backup. No automatic WHOOP synchronization is enabled.").font(.footnote).foregroundStyle(.secondary) }
             }
-        }.personalList().navigationTitle("WHOOP handover")
+        }.personalList().navigationTitle("WHOOP handover").navigationBarTitleDisplayMode(.inline)
         .confirmationDialog("Stop the old fitness reminders?", isPresented: $confirming, titleVisibility: .visible) {
             Button("Stop old reminders") { Task { await handOver() } }
         } message: { Text("This ends the old Pushups day and removes its Home boundary and reminders, plus Body/Lift reminders. It does not delete history or start anything in WHOOP.") }
@@ -155,7 +157,7 @@ private struct LinkedFolderView: View {
                 Button("Export watched events to linked folder") {
                     Task { do { await transfer.write(try watchlist.watchedExport(), file: .watched) } catch { watchlist.message = error.localizedDescription } }
                 }.disabled(!transfer.linked || transfer.busy)
-                NavigationLink(value: HubRoute.watchlist) { Text("Manual import / export") }
+                NavigationLink { WatchlistView(store: services.watchlist) } label: { Text("Manual import / export") }
             }
             Section("Study → laptop") {
                 Button("Export finished study sessions") {

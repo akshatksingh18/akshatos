@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct TodoView: View {
     @ObservedObject var store: TodoStore
+    @FocusState private var quickAddFocused: Bool
     @State private var afterStudy = false
     @State private var quickAdd = ""
     @State private var search = ""
@@ -37,7 +38,7 @@ struct TodoView: View {
                 Section {
                     HStack {
                         TextField("Add a task · e.g. read tomorrow 5pm", text: $quickAdd)
-                            .onSubmit(add).accessibilityIdentifier("todo-quick-add")
+                            .focused($quickAddFocused).onSubmit(add).accessibilityIdentifier("todo-quick-add")
                         Button(action: add) { Image(systemName: "plus.circle.fill").frame(minWidth: 44, minHeight: 44) }
                             .accessibilityLabel("Add task").accessibilityIdentifier("todo-add")
                     }
@@ -125,7 +126,7 @@ struct TodoView: View {
         }
         .swipeActions { Button("Archive", role: .destructive) { store.archive(task.id) } }
     }
-    private func add() { if store.add(quickAdd) { quickAdd = "" } }
+    private func add() { if store.add(quickAdd) { quickAdd = ""; quickAddFocused = false } }
     private func prepareExport(_ type: UTType) {
         guard store.available else { store.message = "Load To-do before exporting."; return }
         do { document = PortableDocument(data: type == .json ? try LocalDataCoding.encode(store.state) : store.csv()); exportType = type; export = true }

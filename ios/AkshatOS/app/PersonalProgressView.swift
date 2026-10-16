@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 struct PersonalProgressView: View {
     @ObservedObject var study: StudyLogStore
@@ -108,7 +109,7 @@ struct PersonalProgressView: View {
                     dayTarget: study.log.target(for: day, clock: study.clock) ?? study.settings.target,
                     timeZoneID: clock.calendar.timeZone.identifier, dayFloor: study.settings.floor, dayGoal: study.settings.goal)
             }.disabled(day > study.today)
-            if study.canUndoEdit { Button("Undo block correction") { study.undoEdit() } }
+            if study.canUndoEdit { Button("Undo last change") { study.undoEdit() } }
         }
     }
     private var periodKeys: [String] { month ? monthDays.filter { $0 <= study.today } : clock.week(effectiveAnchor).filter { $0 <= study.today } }
@@ -136,8 +137,21 @@ struct PersonalProgressView: View {
                 let a = recent.reduce(0) { $0 + (totals[$1] ?? 0) } / 7, b = previous.reduce(0) { $0 + (totals[$1] ?? 0) } / 7
                 Text("\(StudyTimeDisplay.short(a))/day vs \(StudyTimeDisplay.short(b))/day")
                     .foregroundStyle(a > b ? .green : .primary)
+                Chart(trendPoints) { point in
+                    LineMark(x: .value("Day", point.date), y: .value("Hours per day", point.hours)).foregroundStyle(HubInk.copper)
+                    PointMark(x: .value("Day", point.date), y: .value("Hours per day", point.hours)).foregroundStyle(HubInk.copper)
+                }.frame(height: 110).chartYAxisLabel("h/day")
+                Text("Rolling seven-day average, closed days only").font(.caption).foregroundStyle(.secondary)
                 Text("\(recent.min() ?? "")–\(recent.max() ?? "") vs \(previous.min() ?? "")–\(previous.max() ?? ""). Closed days only.").font(.caption).foregroundStyle(.secondary)
             } else { Text("Building history · comparisons need fourteen closed calendar days of coverage.").font(.subheadline).foregroundStyle(.secondary) }
+        }
+    }
+    private var trendPoints: [StudyTrendPoint] {
+        let totals = Dictionary(uniqueKeysWithValues: study.days(at: Date()).map { ($0.day, $0.studied) })
+        return (1...7).reversed().compactMap { offset in
+            guard let day = clock.shifted(study.today, by: -offset), let date = clock.date(day) else { return nil }
+            let keys = (0..<7).compactMap { clock.shifted(day, by: -$0) }
+            return StudyTrendPoint(date: date, hours: keys.reduce(0.0) { $0 + (totals[$1] ?? 0) } / (7 * 3600))
         }
     }
     private var topics: some View {
@@ -173,6 +187,9 @@ struct PersonalProgressView: View {
                     .foregroundStyle(days >= number ? HubInk.copper : .secondary)
             }
             if todo.available {
+                DisclosureGroup("Priority milestones") {
+                    milestoneRows(count: todo.state.plans.filter(\.qualifies).count, name: "priority days")
+                }
                 let qualified = Set(todo.state.plans.filter(\.qualifies).map(\.day))
                 let streak = ActivityProgress.streak(qualified, today: todo.today, clock: clock)
                 LabeledContent("Priority streak", value: "\(streak.current) · best \(streak.best)")
@@ -180,6 +197,7 @@ struct PersonalProgressView: View {
             if journal.available {
                 let qualified = Set(journal.entries.filter(\.qualifies).map(\.day))
                 if !journal.isLocked {
+                    DisclosureGroup("Writing milestones") { milestoneRows(count: qualified.count, name: "writing days") }
                     let streak = ActivityProgress.streak(qualified, today: journal.today, clock: clock)
                     LabeledContent("Writing streak", value: "\(streak.current) · best \(streak.best)")
                 } else { Text("Unlock Journal to see writing history.").foregroundStyle(.secondary) }
@@ -207,6 +225,15 @@ struct PersonalProgressView: View {
             }
         }
     }
+    private func milestoneRows(count: Int, name: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("\(count) \(name) recorded")
+            ForEach(ActivityProgress.milestones, id: \.self) { number in
+                Label("\(number) \(name)", systemImage: count >= number ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(count >= number ? HubInk.copper : .secondary)
+            }
+        }.padding(.vertical, 8)
+    }
     private var weeklyReview: some View {
         let week = clock.week(effectiveAnchor), key = week.first ?? effectiveAnchor
         return DisclosureGroup("Weekly review") {
@@ -228,4 +255,10 @@ struct PersonalProgressView: View {
             }.padding(.vertical, 12)
         }
     }
+}
+
+private struct StudyTrendPoint: Identifiable {
+    var date: Date
+    var hours: Double
+    var id: Date { date }
 }

@@ -15,11 +15,11 @@ import SwiftData
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         defaults.set(false, forKey: "journal.lock-enabled")
-        let now = Date()
-        let study = StudyLogStore(repository: SwiftDataStudyLogRepository(container: try container(StudyLogSchemaV1.self)), defaults: defaults)
+        let now = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
+        let study = StudyLogStore(repository: SwiftDataStudyLogRepository(container: try container(StudyLogSchemaV1.self)), defaults: defaults, now: { now })
         study.load()
         XCTAssertTrue(study.saveSegment(StudySegment(start: now.addingTimeInterval(-5400), end: now.addingTimeInterval(-1800), source: .manual, dayTarget: 21600, topic: "Synthetic topic")))
-        let todo = TodoStore(container: try container(TodoSchemaV1.self)); todo.load()
+        let todo = TodoStore(container: try container(TodoSchemaV1.self), now: { now }); todo.load()
         XCTAssertTrue(todo.add("Read one chapter")); XCTAssertTrue(todo.add("Review a practice problem"))
         for task in todo.visible { todo.choose(task.id, day: todo.today) }
         let journal = JournalStore(container: try container(JournalSchemaV1.self), defaults: defaults); journal.load()
@@ -38,7 +38,7 @@ import SwiftData
         let previous = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows).first(where: \.isKeyWindow)
         let window = UIWindow(frame: CGRect(origin: .zero, size: size))
         if let scene = previous?.windowScene { window.windowScene = scene }
-        let host = UIHostingController(rootView: view.preferredColorScheme(.dark))
+        let host = UIHostingController(rootView: view.preferredColorScheme(.dark).tint(HubInk.copper).environment(\.scenePhase, .active))
         window.rootViewController = host; window.makeKeyAndVisible()
         try? await Task.sleep(nanoseconds: 250_000_000)
         host.view.setNeedsLayout(); host.view.layoutIfNeeded()

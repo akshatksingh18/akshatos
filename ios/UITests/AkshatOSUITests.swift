@@ -1,6 +1,7 @@
 import XCTest
 
 final class AkshatOSUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     func testHubOpensPushupReminderAndReturns() {
         let app = XCUIApplication()
         app.launch()

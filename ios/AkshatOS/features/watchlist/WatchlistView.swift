@@ -20,7 +20,12 @@ struct WatchlistView: View {
                 if let pick = candidates.first(where: \.pick) {
                     Section("Start here") { titleRow(pick) }
                 }
-                if visible.isEmpty { ContentUnavailableView("Nothing to watch yet", systemImage: "film", description: Text("Add a title or import a Watchlist file.")) }
+                if visible.isEmpty { ContentUnavailableView {
+                    Label("Nothing to watch yet", systemImage: "film")
+                } actions: {
+                    Button("Add title") { editing = WatchTitle(title: "") }
+                    Button("Import titles") { importBackup = false; importing = true }
+                } }
                 ForEach(Array(Set(visible.map(\.mood))).sorted(), id: \.self) { mood in
                     Section(mood) { ForEach(visible.filter { $0.mood == mood }) { titleRow($0) } }
                 }

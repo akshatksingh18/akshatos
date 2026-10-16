@@ -56,6 +56,34 @@ import XCTest
                        "A paused block stays the length it was")
     }
 
+    func testStartPauseUndoAndCSVUseTheSavedBlocks() throws {
+        let store = try makeStore(try makeContainer())
+        store.start(); store.undoEdit(); XCTAssertTrue(store.log.segments.isEmpty)
+        store.start(); current = current.addingTimeInterval(600); store.pause()
+        store.undoEdit(); XCTAssertTrue(store.isRunning, "Undo restores a mistakenly paused timer")
+        current = current.addingTimeInterval(30); store.pause()
+        XCTAssertEqual(store.log.segments.first?.duration(now: current), 630)
+        let csv = try XCTUnwrap(String(data: store.csvData(), encoding: .utf8))
+        XCTAssertTrue(csv.contains("630"))
+        current = current.addingTimeInterval(11); store.undoEdit()
+        XCTAssertFalse(store.isRunning, "Expired Undo cannot reopen an old block")
+    }
+
+    func testTopicsRoadmapTypeAndMarksSurviveRelaunch() throws {
+        let db = try makeContainer(), store = try makeStore(db)
+        store.setDefaultRoadmapType("SQL"); XCTAssertTrue(store.setTopic("Synthetic SQL topic"))
+        store.start(); current = current.addingTimeInterval(600); store.pause()
+        store.updateSettings(target: 7200, floor: 1800, goal: 3600)
+        let reopened = try makeStore(db)
+        XCTAssertEqual(reopened.log.segments.first?.roadmapType, "SQL")
+        XCTAssertEqual(reopened.log.segments.first?.topic, "Synthetic SQL topic")
+        XCTAssertEqual(reopened.targetToday(at: current), 21600, "Changing settings does not rewrite today's first recorded aim")
+        let backup = try LocalDataCoding.decode(StudyLogBackup.self, reopened.backupData())
+        XCTAssertEqual(backup.defaultRoadmapType, "SQL")
+        current = current.addingTimeInterval(86400); reopened.start()
+        XCTAssertEqual(reopened.targetToday(at: current), 7200)
+    }
+
     func testAnAccidentalTapLeavesNoBlock() throws {
         let container = try makeContainer()
         let store = try makeStore(container)

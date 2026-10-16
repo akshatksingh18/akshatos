@@ -1,6 +1,7 @@
 import XCTest
 
 final class PageVaultUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     /// Simulator coverage stops at navigation and the empty library: importing a real PDF goes
     /// through the system document picker and belongs to the physical-device feasibility run.
     func testHubOpensPageVaultLibraryAndReturns() {

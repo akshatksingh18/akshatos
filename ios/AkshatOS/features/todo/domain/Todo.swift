@@ -115,8 +115,8 @@ struct QuickTask {
         let lower = title.lowercased()
         var date: Date?
         var match: String?
-        if lower.contains("tomorrow") { date = calendar.date(byAdding: .day, value: 1, to: now); match = "tomorrow" }
-        else if lower.contains("today") { date = now; match = "today" }
+        if lower.range(of: #"\btomorrow\b"#, options: .regularExpression) != nil { date = calendar.date(byAdding: .day, value: 1, to: now); match = "tomorrow" }
+        else if lower.range(of: #"\btoday\b"#, options: .regularExpression) != nil { date = now; match = "today" }
         else if let range = lower.range(of: #"\bin \d{1,3} days?\b"#, options: .regularExpression) {
             let phrase = String(lower[range]); let n = Int(phrase.filter(\.isNumber)) ?? 1
             date = calendar.date(byAdding: .day, value: n, to: now); match = phrase

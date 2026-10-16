@@ -1,6 +1,7 @@
 import XCTest
 
 final class StudyLogUITests: XCTestCase {
+    override func setUp() { super.setUp(); continueAfterFailure = false }
     /// The hub opens Study Log on the countdown; Start runs a block, Pause keeps it, and history
     /// shows the week and the day. Locked-screen and relaunch behaviour are hosted tests and the phone.
     func testStudyLogStartsPausesAndShowsHistory() {

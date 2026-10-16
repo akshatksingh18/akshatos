@@ -18,6 +18,7 @@ precondition(state.tasks.count == 2, "Completion replay must not create repeat d
 let parsed = QuickTask.parse("Practice SQL Tuesday 5pm", now: now, calendar: cal)
 precondition(parsed.title == "Practice SQL" && parsed.hasTime)
 precondition(cal.component(.weekday, from: parsed.due!) == 3)
+precondition(QuickTask.parse("A tomorrowland note", now: now, calendar: cal).due == nil)
 var broken = state; broken.plans[0].selected.append(UUID())
 do { _ = try broken.validated(); fatalError("Unknown priority id accepted") } catch {}
 precondition(!PriorityPlan(day: "2026-10-15", zone: "UTC").qualifies)

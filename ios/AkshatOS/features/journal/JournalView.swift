@@ -11,6 +11,7 @@ struct JournalView: View {
     @State private var day = ""
     @State private var history = false
     @State private var chartWeek = true
+    @State private var openMonths = OpenMonths()
     @State private var search = ""
     @State private var share: URL?
     @State private var showMover = false
@@ -92,9 +93,9 @@ struct JournalView: View {
             Image(systemName: "lock.fill").font(.largeTitle).foregroundStyle(HubInk.copper)
             Text("Your journal is locked").font(.title2)
             Button("Unlock Journal") { Task { _ = await store.authenticate() } }
-                .buttonStyle(.borderedProminent).accessibilityIdentifier("journal-unlock")
+                .buttonStyle(.borderedProminent).foregroundStyle(HubInk.background).accessibilityIdentifier("journal-unlock")
             Text("Face ID with device-passcode fallback").font(.footnote).foregroundStyle(.secondary)
-        }.frame(maxWidth: .infinity, maxHeight: .infinity).accessibilityIdentifier("journal-locked")
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     private var current: JournalEntry { store.entry(day) ?? store.newEntry(day) }
     private func textBinding(_ path: WritableKeyPath<JournalEntry, String>) -> Binding<String> {
@@ -124,7 +125,7 @@ struct JournalView: View {
                 } label: {
                     Label(current.completedAt == nil ? "Done for this day" : "Mark as draft", systemImage: "checkmark")
                         .frame(maxWidth: .infinity, minHeight: 44)
-                }.buttonStyle(.borderedProminent).disabled(!current.hasWriting || store.unsaved)
+                }.buttonStyle(.borderedProminent).foregroundStyle(HubInk.background).disabled(!current.hasWriting || store.unsaved)
                     .accessibilityIdentifier("journal-done")
                 DisclosureGroup("Writing prompts") {
                     VStack(spacing: 14) {
@@ -187,12 +188,13 @@ struct JournalView: View {
             let values = store.entries.filter { search.isEmpty || ($0.text + $0.wentWell + $0.change + $0.learned).localizedCaseInsensitiveContains(search) }
             let groups = Dictionary(grouping: values) { String($0.day.prefix(7)) }
             ForEach(groups.keys.sorted(by: >), id: \.self) { month in
-                Section(store.clock.date(month + "-01")?.formatted(.dateTime.month(.wide).year()) ?? month) {
+                MonthGroup(title: MonthKey.title(month), summary: "\(groups[month, default: []].count) entries", isExpanded: $openMonths.month(month)) {
                     ForEach(groups[month, default: []]) { historyRow($0) }
                 }
             }
             if values.isEmpty { Text(search.isEmpty ? "Your first entry starts here." : "No matching entries.").foregroundStyle(.secondary) }
         }.personalList().searchable(text: $search, prompt: "Search unlocked entries")
+        .onAppear { openMonths.seed(newest: store.entries.first.map { String($0.day.prefix(7)) }) }
     }
     private func historyRow(_ entry: JournalEntry) -> some View {
         Button { day = entry.day; history = false } label: {

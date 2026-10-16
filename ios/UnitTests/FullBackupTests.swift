@@ -280,7 +280,7 @@ import XCTest
         let folder = try await phone.backup.prepareExport()
         let manifest = try AkshatOSBackupManifest.decode(
             Data(contentsOf: folder.appendingPathComponent(AkshatOSBackupManifest.fileName)))
-        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "liftLog", "body", "studyLog"],
+        XCTAssertEqual(manifest.parts.map(\.id), ["pushups", "liftLog", "body", "studyLog", "todo", "watchlist", "spending", "personal-settings"],
                        "An empty PageVault has nothing to export")
 
         try FileManager.default.removeItem(at: folder.appendingPathComponent("body"))

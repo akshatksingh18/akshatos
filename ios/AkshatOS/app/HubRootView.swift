@@ -29,11 +29,14 @@ struct HubRootView: View {
         }
         .tint(HubInk.copper)
         .task { await refresh() }
+        .onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in
+            services.studyLog.refreshDay(); services.todo.refreshDay(); services.journal.refreshDay()
+        }
         .onChange(of: phase) { _, phase in
             if phase == .background { services.journal.lock() }
             if phase == .active { Task { await refresh() } }
         }
-        .onChange(of: navigator.requested) { _, route in
+        .onChange(of: navigator.requested, initial: true) { _, route in
             guard let route else { return }
             switch route {
             case .studyLog: tab = .today
@@ -73,6 +76,7 @@ struct HubRootView: View {
         }
     }
     private func refresh() async {
+        services.studyLog.refreshDay(); services.todo.refreshDay(); services.journal.refreshDay()
         if !services.preferences.fitnessStopped { await services.squats.refresh() }
         services.liftLog.load(); services.bodyLog.load(); services.studyLog.load()
         services.todo.load(); services.journal.load(); services.watchlist.load(); services.spending.load()

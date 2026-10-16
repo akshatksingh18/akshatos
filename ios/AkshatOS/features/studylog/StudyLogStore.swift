@@ -7,8 +7,10 @@ import Foundation
     @Published private(set) var log = StudyLog()
     @Published private(set) var settings: StudySettings
     @Published private(set) var storageAvailable = false
+    @Published private(set) var dayStamp = ""
     @Published var message: String?
     @Published var selectedTopic = ""
+    @Published private(set) var defaultRoadmapType: String
     @Published var runningRestoreReview: StudyRunningRestoreReview?
     @Published private(set) var canUndoEdit = false
     var onChange: (() -> Void)?
@@ -18,20 +20,23 @@ import Foundation
     private let repository: any StudyLogRepository
     private let defaults: UserDefaults
     private let now: () -> Date
-    let clock: StudyDayClock
+    private(set) var clock: StudyDayClock
+    private let followsSystemZone: Bool
 
     private enum Keys {
         static let settings = "studylog.settings"
     }
 
     init(repository: (any StudyLogRepository)? = nil, defaults: UserDefaults = .standard,
-         now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
+         now: @escaping () -> Date = Date.init, calendar: Calendar? = nil) {
         self.repository = repository ?? SwiftDataStudyLogRepository()
         self.defaults = defaults
         self.now = now
-        clock = StudyDayClock(calendar: calendar)
+        clock = StudyDayClock(calendar: calendar ?? .current)
+        followsSystemZone = calendar == nil
         settings = (defaults.data(forKey: Keys.settings)
             .flatMap { try? JSONDecoder().decode(StudySettings.self, from: $0) } ?? .standard).validated()
+        defaultRoadmapType = defaults.string(forKey: "studylog.default-roadmap-type").flatMap { StudySegment.roadmapTypes.contains($0) ? $0 : nil } ?? "main/project"
         selectedTopic = defaults.string(forKey: "studylog.topic") ?? ""
     }
 
@@ -47,6 +52,7 @@ import Foundation
 
     var isRunning: Bool { log.running != nil }
     var today: String { clock.key(for: now()) }
+    func refreshDay() { if followsSystemZone { clock.calendar.timeZone = .current }; let stamp = today + "|" + clock.calendar.timeZone.identifier; if dayStamp != stamp { dayStamp = stamp; onChange?() } }
 
     /// Time studied in the study day that is current at `date`, counting a running block up to then.
     func studiedToday(at date: Date) -> TimeInterval {
@@ -80,14 +86,15 @@ import Foundation
     func start() {
         if !storageAvailable { load() }
         guard storageAvailable else { return }
+        let before = log.segments
         var updated = log
         guard let segment = updated.start(at: now(), target: settings.target,
-            topic: selectedTopic.isEmpty ? nil : selectedTopic, timeZoneID: clock.calendar.timeZone.identifier, dayFloor: settings.floor, dayGoal: settings.goal) else { return }
+            topic: selectedTopic.isEmpty ? nil : selectedTopic, timeZoneID: clock.calendar.timeZone.identifier, dayFloor: settings.floor, dayGoal: settings.goal, roadmapType: defaultRoadmapType) else { return }
         do {
             try repository.save(segment)
             log = updated
             defaults.set(selectedTopic, forKey: "studylog.topic")
-            editUndo = nil; canUndoEdit = false; onChange?()
+            editUndo = (before, updated.segments, now().addingTimeInterval(10)); canUndoEdit = true; onChange?()
         } catch {
             message = "Start could not be saved: \(error.localizedDescription)"
         }
@@ -95,6 +102,7 @@ import Foundation
 
     func pause() {
         guard let running = log.running else { return }
+        let before = log.segments
         var updated = log
         do {
             if let finished = updated.pause(at: now()) {
@@ -103,7 +111,7 @@ import Foundation
                 try repository.delete(id: running.id)
             }
             log = updated
-            editUndo = nil; canUndoEdit = false; onChange?()
+            editUndo = (before, updated.segments, now().addingTimeInterval(10)); canUndoEdit = true; onChange?()
         } catch {
             message = "Pause could not be saved: \(error.localizedDescription)"
         }
@@ -120,8 +128,20 @@ import Foundation
         guard storageAvailable else { throw PersonalDataError.invalid("Study data is unavailable. Retry loading before exporting.") }
         var backup = StudyLogBackup(exportedAt: now(), segments: log.segments, settings: settings)
         backup.transferSourceID = defaults.string(forKey: "study.transfer-source")
+        backup.defaultRoadmapType = defaultRoadmapType
         backup.transferRevision = defaults.integer(forKey: "study.transfer-revision")
         return try encoder.encode(backup)
+    }
+
+    func csvData() throws -> Data {
+        guard storageAvailable else { throw PersonalDataError.invalid("Study data is unavailable.") }
+        let header = "id,start,end,seconds,activity_days,topic,note"
+        let rows = log.segments.map { segment in
+            [segment.id.uuidString, segment.start.ISO8601Format(), segment.end?.ISO8601Format() ?? "",
+             String(Int(segment.duration(now: now()))), clock.pieces(of: segment, now: now()).map(\.day).joined(separator: ";"),
+             segment.topic ?? "", segment.note ?? ""].map(LocalDataCoding.csv).joined(separator: ",")
+        }
+        return Data(([header] + rows).joined(separator: "\r\n").utf8)
     }
 
     /// Decodes and checks a backup without changing anything.
@@ -148,6 +168,7 @@ import Foundation
             try repository.replaceAll(with: restored.segments)
             log = StudyLog(segments: restored.segments)
             if let restoredSettings = restored.settings { save(restoredSettings) }
+            if let type = archive.defaultRoadmapType { setDefaultRoadmapType(type) }
             if let source = archive.transferSourceID {
                 defaults.set(source, forKey: "study.transfer-source")
                 defaults.set(max(defaults.integer(forKey: "study.transfer-revision"), archive.transferRevision ?? 0), forKey: "study.transfer-revision")
@@ -167,6 +188,10 @@ import Foundation
         if let data = try? JSONEncoder().encode(settings) { defaults.set(data, forKey: Keys.settings) }
     }
 
+    func setDefaultRoadmapType(_ type: String) {
+        guard StudySegment.roadmapTypes.contains(type) else { return }
+        defaultRoadmapType = type; defaults.set(type, forKey: "studylog.default-roadmap-type")
+    }
     func updateSettings(target: Int, floor: Int, goal: Int) {
         save(StudySettings(target: target, floor: floor, goal: goal)); onChange?()
     }
@@ -263,6 +288,6 @@ extension StudyLogStore: HubDayPart {
         return HubDaySummary(source: "study", day: day, asOf: date,
             availability: !storageAvailable ? .unavailable : seconds > 0 ? .available : .noData,
             completed: Int(seconds), selected: log.target(for: day, clock: clock) ?? settings.target,
-            qualifies: storageAvailable ? seconds >= Double(log.settings(for: day, clock: clock)?.floor ?? settings.floor) : nil)
+            qualifies: storageAvailable ? seconds > 0 && seconds >= Double(log.settings(for: day, clock: clock)?.floor ?? settings.floor) : nil)
     }
 }

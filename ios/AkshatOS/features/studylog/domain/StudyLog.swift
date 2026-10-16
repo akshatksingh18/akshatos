@@ -20,9 +20,11 @@ struct StudySegment: Codable, Identifiable, Equatable {
     var dayGoal: Int?
     var topic: String?
     var timeZoneID: String?
+    var roadmapType: String?
+    static let roadmapTypes = ["main/project", "SQL", "DSA lesson/Mixed practice", "other", "DSA solve already logged"]
 
     init(id: UUID = UUID(), start: Date, end: Date? = nil, source: Source = .timer,
-         note: String? = nil, dayTarget: Int, topic: String? = nil, timeZoneID: String? = nil, dayFloor: Int? = nil, dayGoal: Int? = nil) {
+         note: String? = nil, dayTarget: Int, topic: String? = nil, timeZoneID: String? = nil, dayFloor: Int? = nil, dayGoal: Int? = nil, roadmapType: String? = nil) {
         self.id = id
         self.start = start
         self.end = end
@@ -33,6 +35,7 @@ struct StudySegment: Codable, Identifiable, Equatable {
         self.dayGoal = dayGoal
         self.topic = topic
         self.timeZoneID = timeZoneID
+        self.roadmapType = roadmapType
     }
 
     var isRunning: Bool { end == nil }
@@ -204,11 +207,11 @@ struct StudyLog: Equatable {
     /// Starts a block at `date` unless one is already running. Returns the new block, or nil when
     /// nothing changed, so a double tap or a repeated callback starts only one.
     @discardableResult
-    mutating func start(at date: Date, target: Int, id: UUID = UUID(), topic: String? = nil, timeZoneID: String? = nil, dayFloor: Int? = nil, dayGoal: Int? = nil) -> StudySegment? {
+    mutating func start(at date: Date, target: Int, id: UUID = UUID(), topic: String? = nil, timeZoneID: String? = nil, dayFloor: Int? = nil, dayGoal: Int? = nil, roadmapType: String? = nil) -> StudySegment? {
         guard running == nil else { return nil }
         // Never start inside an earlier block, even if the clock was set back.
         let latestEnd = segments.compactMap(\.end).max() ?? .distantPast
-        let segment = StudySegment(id: id, start: max(date, latestEnd), dayTarget: target, topic: topic, timeZoneID: timeZoneID, dayFloor: dayFloor, dayGoal: dayGoal)
+        let segment = StudySegment(id: id, start: max(date, latestEnd), dayTarget: target, topic: topic, timeZoneID: timeZoneID, dayFloor: dayFloor, dayGoal: dayGoal, roadmapType: roadmapType)
         segments.append(segment)
         return segment
     }
@@ -272,6 +275,7 @@ struct StudyLog: Equatable {
                   segment.dayFloor == nil || (0...segment.dayTarget).contains(segment.dayFloor!),
                   segment.dayGoal == nil || (0...segment.dayTarget).contains(segment.dayGoal!),
                   segment.dayFloor == nil || segment.dayGoal == nil || segment.dayFloor! <= segment.dayGoal!,
+                  segment.roadmapType == nil || StudySegment.roadmapTypes.contains(segment.roadmapType!),
                   (segment.topic?.count ?? 0) <= 200, (segment.note?.count ?? 0) <= 100_000,
                   segment.timeZoneID == nil || TimeZone(identifier: segment.timeZoneID!) != nil else { throw StudyLogError.invalidSegment }
         }
@@ -294,6 +298,7 @@ struct StudyLogBackup: Codable, Equatable {
     var settings: StudySettings?
     var transferSourceID: String?
     var transferRevision: Int?
+    var defaultRoadmapType: String?
 
     init(exportedAt: Date, segments: [StudySegment], settings: StudySettings?) {
         version = Self.currentVersion
@@ -306,6 +311,7 @@ struct StudyLogBackup: Codable, Equatable {
         guard version == Self.currentVersion else { throw StudyLogError.unsupportedVersion }
         guard transferSourceID == nil || UUID(uuidString: transferSourceID!) != nil,
               transferRevision == nil || transferRevision! >= 0 else { throw StudyLogError.invalidSegment }
+        guard defaultRoadmapType == nil || StudySegment.roadmapTypes.contains(defaultRoadmapType!) else { throw StudyLogError.invalidSegment }
         return try StudyLog.validated(segments)
     }
 }

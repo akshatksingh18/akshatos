@@ -14,17 +14,20 @@ enum TodoSchemaV1: VersionedSchema {
 @MainActor final class TodoStore: ObservableObject, HubDayPart {
     @Published private(set) var state = TodoState()
     @Published private(set) var available = false
+    @Published private(set) var dayStamp = ""
     @Published var message: String?
     @Published private(set) var undoAvailable = false
     var onChange: (() -> Void)?
     private var container: ModelContainer?
     private let now: () -> Date
-    let clock: ActivityDayClock
+    private(set) var clock: ActivityDayClock
+    private let followsSystemZone: Bool
     private var undoCompletion: (id: UUID, child: TodoItem?, completedAt: Date, until: Date)?
-    init(container: ModelContainer? = nil, now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
-        self.container = container; self.now = now; clock = ActivityDayClock(calendar: calendar)
+    init(container: ModelContainer? = nil, now: @escaping () -> Date = Date.init, calendar: Calendar? = nil) {
+        self.container = container; self.now = now; clock = ActivityDayClock(calendar: calendar ?? .current); followsSystemZone = calendar == nil
     }
     var today: String { clock.key(now()) }
+    func refreshDay() { if followsSystemZone { clock.calendar.timeZone = .current }; let stamp = today + "|" + clock.calendar.timeZone.identifier; if dayStamp != stamp { dayStamp = stamp; onChange?() } }
     var visible: [TodoItem] { state.tasks.filter { $0.archivedAt == nil } }
     var nextTimed: TodoItem? {
         visible.filter { $0.completedAt == nil && $0.hasTime && ($0.due ?? .distantPast) >= now() }
@@ -104,12 +107,13 @@ enum TodoSchemaV1: VersionedSchema {
     func undo() {
         guard let undo = undoCompletion, now() <= undo.until,
               let index = state.tasks.firstIndex(where: { $0.id == undo.id }),
-              state.tasks[index].completedAt == undo.completedAt else {
+              state.tasks[index].completedAt.map({ abs($0.timeIntervalSince(undo.completedAt)) < 1 }) == true else {
             undoAvailable = false; message = "The Undo window has ended."; return
         }
         var next = state
         if let child = undo.child {
-            guard next.tasks.first(where: { $0.id == child.id }) == child else {
+            guard let savedChild = next.tasks.first(where: { $0.id == child.id }),
+                  (try? LocalDataCoding.encode(savedChild)) == (try? LocalDataCoding.encode(child)) else {
                 message = "The next repeat was edited. Undo cannot remove that edited task."; return
             }
             next.tasks.removeAll { $0.id == child.id }

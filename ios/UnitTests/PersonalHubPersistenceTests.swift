@@ -18,6 +18,7 @@ import UIKit
         XCTAssertEqual(store.plan(store.today)?.qualifies, true)
         let other = TodoStore(container: db); other.load()
         XCTAssertEqual(other.state.tasks.count, 2)
+        store.load() // A foreground reload within the Undo window must preserve the inverse.
         store.undo()
         XCTAssertEqual(store.state.tasks.count, 1)
         XCTAssertNil(store.state.tasks.first?.completedAt)
@@ -80,6 +81,13 @@ import UIKit
         reopened.preview(try LocalDataCoding.encode(transfer))
         XCTAssertNil(reopened.pendingImport)
         XCTAssertTrue(reopened.state.watched(title.id))
+    }
+    func testBodyReminderCannotReactivateAfterFitnessHandover() async throws {
+        let suite = "fitness-handover-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite)); defer { defaults.removePersistentDomain(forName: suite) }
+        let preferences = PersonalPreferences(defaults: defaults); preferences.fitnessStopped = true
+        let allowed = try await GatedBodyReminders(preferences: preferences).enable(weekday: 2, hour: 8, minute: 0)
+        XCTAssertFalse(allowed, "A later restore or lifecycle refresh cannot reacquire fitness reminder ownership")
     }
     func testStaleStudyNotificationCannotPauseAnotherBlock() throws {
         let suite = "stale-study-" + UUID().uuidString
