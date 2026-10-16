@@ -20,7 +20,7 @@ struct StudyFocusView: View {
             GeometryReader { geometry in
                 let wide = verticalSize == .compact && geometry.size.width >= 560 && !typeSize.isAccessibilitySize
                 ScrollView {
-                    TimelineView(.periodic(from: .now, by: 1, paused: phase != .active)) { context in
+                    TimelineView(.periodic(from: .now, by: phase == .active ? 1 : 60)) { context in
                         let date = study.isRunning ? context.date : study.currentDate()
                         Group {
                             if !study.storageAvailable {
