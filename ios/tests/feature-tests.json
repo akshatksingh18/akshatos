@@ -82,7 +82,8 @@
   "todo": {
     "domain_sources": [
       "AkshatOS/shared/ActivityDay.swift",
-      "AkshatOS/features/todo/domain/Todo.swift"
+      "AkshatOS/features/todo/domain/Todo.swift",
+      "AkshatOS/features/todo/domain/DailyRoutine.swift"
     ],
     "domain_test": "tests/todo/main.swift",
     "integration_tests": [

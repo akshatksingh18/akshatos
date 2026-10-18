@@ -1,6 +1,6 @@
 # AkshatOS
 
-Personal native iPhone hub: source 0.14.0 uses Today, To-do, Journal and Apps. Build 37 still uses the earlier module picker.
+Personal native iPhone hub: source 0.15.0 uses Today, To-do, Journal and Apps. Build 37 still uses the earlier module picker.
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
@@ -17,21 +17,29 @@ Squats fallback.
 while AkshatOS's import/removal cutover remains open. Read it before a cross-app port, notification ownership,
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
-**Status:** Build 39 (0.14.1) is in source development: rotating study Focus, keep-awake, quiet study
-notifications and an opt-in SideStore Live Activity candidate. Exact-source cloud checks and native
-Focus/card inspection pass at `86c4367` on draft PR #68; physical signing/display proof remains open.
-Release preparation adds explicit standard/Live Activity selection and strict variant validation;
-its exact-source CI is pending. No IPA or merge is requested; continue incrementally with cloud
-validation only. `study-display.md` owns this scope and signing/device gates.
-Build 38 (0.14.0), merged through PR #67 at `b573ecc`, is validated in `testing/` and
-awaits installation/device acceptance. PR/main CI Gates, local checksum/IPA checks and the native
-accessibility-fix review pass. Build 37 remains installed/enrolled; Build 31 remains accepted
+**Status:** Build 40 (0.15.0) adds the requested Daily routine in source on draft PR #68; cloud/native
+verification is pending. It extends Today and To-do recovery without a new tab or notifications;
+`daily-routine-plan.md` owns scope and defaults. Build 39 (0.14.1) remains the delivered testing IPA. Exact-source
+cloud checks pass at `8342d0e`, including standard/Live Activity selection, strict payload validation
+and both complete device builds. Native Focus/card inspection at `86c4367` remains applicable;
+release preparation changes no UI source. The requested combined Live Activity IPA passed manual
+release run `38975509228` at `8342d0e`, local checksum/payload/version checks and delivery to the
+single-slot `testing/` cache. It replaces the never-installed Build-38 candidate. The draft branch
+remains unmerged; signing/refresh ownership is unchanged. Physical signing/display proof remains
+open. `study-display.md` owns this scope and signing/device gates.
+Build 38's personal-hub work, merged through PR #67 at `b573ecc`, is included in Build 39.
+Build 37 remains installed/enrolled; Build 31 remains accepted
 recovery. `personal-hub.md` owns the implementation, `implementation-plan.md` local coverage and
 `cloud-build.md` exact build evidence. Release evidence edits stay local until the next real code
 push under the standing documentation rule.
 
 ## Files
 
+- `daily-routine-plan.md` — requested Daily routine checklist, quiet Today integration, daily-record
+  and recovery contract, defaults and implementation/verification scope; read before routine work.
+- `ios/AkshatOS/features/todo/domain/DailyRoutine.swift` and `features/todo/RoutineView.swift`
+  (under `ios/AkshatOS/`) — user-authored routine templates, day snapshots and native checklist,
+  editor/history; persisted and recovered through the To-do snapshot, independently of priorities.
 - `study-display.md` — Build-39 desk Focus, DND/lock-screen contract, opt-in Live Activity variant,
   public signing research and remaining device/release gates; read before this work.
 - `ios/AkshatOS/app/StudyFocusView.swift`, `StudyDisplayController.swift`, and
@@ -149,7 +157,7 @@ push under the standing documentation rule.
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds validated Build 38 (the four-tab personal hub),
+  31 is the accepted copy and `testing\` holds validated Build 39 (personal hub and study Live Activity),
   awaiting installation and its phone pass. Build 37 remains the installed/enrolled version.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
@@ -291,7 +299,7 @@ push under the standing documentation rule.
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
   Build 25 is the accepted Pushup Reminder/presentation baseline; Build 31 is the current accepted
-  recovery/refresh artifact; Build 32 is installed pending its phone pass. The
+  recovery/refresh artifact; `cloud-build.md` owns the installed and testing versions. The
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
@@ -316,8 +324,8 @@ push under the standing documentation rule.
   convenience entry points after the native core works, never the reminder engine.
 - Use a single ordinary application target with no widget, Watch app, App Group, or notification-
   service extension in the default build. Build 39 additionally prepares an opt-in WidgetKit study
-  Live Activity candidate (`study-display.md`), with no App Group or remote push; its release waits
-  for explicit packaging and verified extension signing. Core Location geographic-region monitoring and its honest usage descriptions
+  Live Activity candidate (`study-display.md`), with no App Group or remote push; its requested
+  unsigned IPA is delivered, while extension signing/device acceptance remain open. Core Location geographic-region monitoring and its honest usage descriptions
   are accepted for Home auto-pause. Add only the location/background configuration demonstrated to
   be necessary for region events on the target iOS version; never run continuous route/location
   tracking or retain movement history.

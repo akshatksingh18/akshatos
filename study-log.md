@@ -1,13 +1,15 @@
 # Study Log
 
-Build 39 (0.14.1) is the active source-development task, with no IPA requested. Rotating desk Focus,
+Build 39 (0.14.1) is delivered as the requested combined Live Activity testing IPA;
+manual release run `38975509228` at `8342d0e` and local checksum/payload/version checks pass. Rotating desk Focus,
 scoped keep-awake, quiet study notifications and the optional SideStore Live Activity candidate are
-implemented and pass exact-source cloud/native verification at `86c4367` (draft PR #68).
+implemented with full cloud verification at `8342d0e` (draft PR #68). Native inspection at
+`86c4367` remains applicable to the unchanged UI source; release selection/validation is also complete.
 `study-display.md` owns exact evidence and the DND/signing/device gates.
-Build 38 below remains the delivered candidate and has none of these display changes.
+Build 39 includes the Build-38 personal-hub scope below and replaces its testing candidate.
 
-**Status:** Build 38 (0.14.0), PR #67 at `b573ecc`, is validated in `testing/` after PR/main CI,
-native accessibility-fix review and local artifact checks. It implements the authorized Build-2
+**Status:** Build 39 (0.14.1), Live Activity variant at `8342d0e`, is validated in `testing/` after
+manual release CI and local artifact checks. It includes the authorized Build-2
 scope on Today: Focus, corrections/Undo, topics, target/marks, history, motivation, optional reminders
 and versioned exports. Build 37 remains installed/enrolled. Study/provider/Shortcuts phone checks
 and the separately unimplemented roadmap receiver remain open (`personal-hub.md`, `todo.md`).
@@ -160,8 +162,8 @@ approved graphite/copper design is in `todo-journal-plan.md`; native details are
 - **Build-39 display work (source, not device-verified):** Apple supports Live Activities on
   iPhone's [Always-On Lock Screen](https://developer.apple.com/design/human-interface-guidelines/always-on),
   but their UI requires a [WidgetKit extension](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities).
-  The optional lock-screen timer still waits for separately proven extension provisioning before
-  release; SideStore exploration and candidate source are authorized. Apple's
+  The requested unsigned testing IPA is delivered; extension provisioning, launch and display
+  acceptance remain open in the authorized SideStore experiment. Apple's
   [StandBy](https://support.apple.com/en-ie/guide/iphone/iph878d77632/ios) can show Live Activities
   while charging sideways and stationary, but does not bypass that requirement.
   The foreground desk display uses

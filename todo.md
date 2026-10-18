@@ -4,21 +4,34 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Develop Build 39 (0.14.1) incrementally without generating an IPA or merging a release.
+**Current focus:** User-operated signing/install and physical acceptance of delivered Build 39
+(0.14.1), study-live-activity variant at `8342d0e`. Manual run `38975509228`, local checksum/payload/
+version checks and delivery to the one-slot testing cache pass. The draft branch remains unmerged;
+installed signing/refresh ownership is unchanged.
+Build 40 (0.15.0) now implements the requested Daily routine in source; exact-source cloud/native
+verification is pending. `daily-routine-plan.md` owns the grouped default, daily snapshots, scope
+and recovery contract. No Build-40 IPA is requested; the Build-39 testing cache stays intact.
 Rotating desk Focus, keep-awake, quiet study notifications and the optional SideStore Live Activity
-candidate are tracked in `study-display.md`; exact-source CI and native inspection pass at `86c4367`.
-Build 38 (0.14.0), PR #67 at `b573ecc`, remains the delivered candidate.
-The complete PR/main cloud gates, native accessibility fixes and local IPA/checksum validation pass;
-the IPA is in the single-slot testing cache. Build 37 remains installed/enrolled; Build 31 remains
+candidate are tracked in `study-display.md`; exact-source CI passes at `8342d0e`. Native inspection
+at `86c4367` remains applicable to the unchanged UI source.
+Build 38 (0.14.0), PR #67 at `b573ecc`, and its native accessibility fixes are included in Build 39;
+the never-installed Build-38 candidate was removed from testing. Build 37 remains installed/enrolled; Build 31 remains
 accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build.md` exact evidence.
 
 - [x] Build 39: exact-source cloud tests, native Focus/lock-screen content inspection and optional extension compile.
-      Run `38934281186` at `86c4367`: nine domain suites, 195 hosted and 14 UI tests, no IPA.
+      Current full CI: run `38971711206` at `8342d0e`; native inspection at `86c4367` applies to
+      the unchanged UI source. The subsequent requested release below delivers the IPA.
 - [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
-- [ ] Build-39 release preparation: explicit variant selection and strict single-study-extension
-      validation are implemented; pass exact-source CI with both built .app directories and no IPA.
-- [ ] Release only when requested: choose the variant and produce the combined candidate.
-      Do not auto-merge/package this development branch.
+- [x] Build-40 routine source: Today checklist, user-authored day groups/times/weekdays, Done/Skip,
+      reversal, pause/reorder and seven-day history, in To-do's atomic snapshot and JSON recovery.
+- [ ] Build-40 exact-source CI, native routine/manager accessibility inspection and finish review;
+      phone check-offs/day rollover, native form editing and backup restoration remain separate.
+- [x] Build-39 release preparation: explicit variant selection and strict single-study-extension
+      validation pass exact-source CI at `8342d0e` (run `38971711206`), with both complete built
+      .app directories, arm64 checks and matching generated versions. All 18 contract tests pass.
+- [x] Requested release: manual run `38975509228` passed with the study-live-activity variant;
+      published checksum/payload/version were verified locally and the IPA delivered to testing.
+      Keep PR #68 draft/unmerged and leave signing/installation to the user.
 
 - [x] Final exact-commit PR/main CI Gates, native accessibility-fix review and validated Build-38 testing IPA.
 - [ ] Phone: all four tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
@@ -111,8 +124,8 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
 - [x] **Authorize the personal hub and selected features.** The graphite/copper four-tab design,
       day/completion defaults and reminder trim are accepted. Source 0.14.0 implements them;
       `implementation-plan.md` and `personal-hub.md` own coverage and remaining verification.
-- [ ] **Phone-check retained Build-37 changes on Build 38.** Build 37 is installed/enrolled;
-      Build 38 awaits installation and its own enrollment. Prior feature acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
+- [ ] **Phone-check retained Build-37 changes on Build 39.** Build 37 is installed/enrolled;
+      Build 39 awaits signing/installation and its own enrollment. Prior feature acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
       natural speaker reads with Kokoro, picking an iPhone voice switches back; Choose voices…
       ticks natural speakers into the menu and plays their samples. (2) PageVault: hold a Want to
       read cover and drag it onto another; Move to top/bottom; the order survives relaunch.

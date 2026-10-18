@@ -1,36 +1,46 @@
 # AkshatOS cloud build and iPhone installation
 
-**State:** Build 38 (0.14.0), PR #67 at `b573ecc`, passed PR/main CI Gates, native accessibility-fix
-review, checksum and local IPA validation. It is ready in `testing/`, awaiting installation and phone
-acceptance. Build 37 remains installed/enrolled; Build 31 remains accepted recovery in `backup/`.
+**State:** Build 39 (0.14.1), study-live-activity variant at `8342d0e`, passed manual release CI Gate,
+checksum and local IPA validation. It is ready in `testing/`, awaiting signing, installation and phone
+acceptance. It includes Build 38's personal hub and native accessibility fixes. Build 37 remains
+installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
-Working source is **0.14.1 (39)** in development, not a release artifact. No IPA is requested.
+Working source is **0.15.0 (40)** for the requested Daily routine addition; its cloud/native checks
+are pending and no Build-40 IPA has been requested. Both host/extension versions are kept aligned.
+Delivered source is **0.14.1 (39)**. The user requested the combined Live Activity IPA;
+[manual release run 38975509228](https://github.com/akshatksingh18/akshatos/actions/runs/38975509228)
+passed at verified `8342d0e` with `package_ipa=true` and `build_variant=study-live-activity`.
+Source checks, Build and test iOS, CI Gate, packaging and IPA upload all succeeded. The release-only
+artifact `akshatos-ios-182-study-live-activity` was downloaded and validated locally, then replaced
+the never-installed Build-38 candidate. No merge or signing/refresh-owner change is made.
 It is on `feature/build-39-study-display`, draft [PR #68](https://github.com/akshatksingh18/akshatos/pull/68).
-Study-display code `86c4367` passed [CI](https://github.com/akshatksingh18/akshatos/actions/runs/38934281186):
-nine domain suites, 195 hosted tests, 14 UI tests, default simulator/device compilation and optional
-Live Activity host/extension compilation and metadata checks. Packaging and IPA upload were skipped;
-`test-diagnostics-178-1` was the only artifact. Final native inspection confirms readable compact
-landscape countdown/label, running Focus with keep-awake on and the prior card/accessibility fixes.
-No merge or signing/refresh-owner change is made.
-Keep this work on its development branch; PR validation compiles/tests both the default build and
-the optional study Live Activity candidate without packaging. Manual dispatch defaults to
-`package_ipa=false` and `build_variant=standard`; explicit selection/validation is implemented,
-with exact-source CI pending for the corrected architecture-check invocation. Run
-[38943056262](https://github.com/akshatksingh18/akshatos/actions/runs/38943056262) at `d775fc1` passed
-source/domain/simulator tests and the complete Live Activity build, then stopped on the lipo argument
-order before payload validation. Inputs now precede its variadic `-verify_arch` architecture list.
-The extension Info.plist already binds version/build to target settings rather than generator defaults.
-A future release request is still required to package either variant.
-Build 38's testing cache and Build 31's recovery cache stay intact. `study-display.md` owns the remaining gates.
+Build-39 head `8342d0e` passed [CI](https://github.com/akshatksingh18/akshatos/actions/runs/38971711206):
+18 release-contract tests, all nine domain suites, 195 hosted tests and 14 UI tests. Both complete
+device app variants pass arm64 and variant-specific payload checks; the selected standard bundle
+passes again. The extension's generated version/build metadata follows its target settings.
+That earlier source-verification run skipped packaging/upload; `test-diagnostics-181-1` was its
+only artifact. The cached
+standard Build-38 IPA also passed the new validator read-only before replacement. The subsequent
+manual release above created the requested Live Activity IPA. Native Focus/card inspection at `86c4367` remains applicable because the release
+preparation changes no UI source.
+
+Keep this work on its development branch. PR validation builds/tests/validates both variants without
+packaging. Manual dispatch defaults to `package_ipa=false` and `build_variant=standard`; choosing
+`study-live-activity` alone still creates no IPA. Explicit selection and strict extension validation
+are implemented and cloud-verified. The current release request authorizes the Live Activity
+candidate only; the draft branch stays unmerged.
+The one-slot testing cache now holds Build 39; Build 31's recovery cache stays intact. `study-display.md` owns the
+remaining signing/device/release gates.
 
 ## Current identity and artifact
 
 - Temporarily public source: https://github.com/akshatksingh18/akshatos (renamed with history preserved).
 - Local source: `D:\AI Important Files\personal-project\akshatos`.
 - XcodeGen target/scheme: `AkshatOS`; display name: **AkshatOS**.
-- Bundle ID: `com.akshatksingh18.akshatos`; delivered candidate **0.14.0 (38)**, PR #67, the personal
-  hub in `personal-hub.md`. PR/main cloud, native fix review and local artifact checks pass. Installed: Build 37;
+- Bundle ID: `com.akshatksingh18.akshatos`; delivered candidate **0.14.1 (39)**, draft PR #68 at
+  `8342d0e`, the personal hub plus study display in `study-display.md`. Manual release cloud and
+  local artifact checks pass. Installed: Build 37;
   accepted recovery: Build 31. Minimum iOS 17.
   Every installable artifact gets its own build number. Bump `CURRENT_PROJECT_VERSION` in
   `ios/project.yml` with the first code change after a build is handed over, not at build time.
@@ -38,7 +48,7 @@ Build 38's testing cache and Build 31's recovery cache stay intact. `study-displ
 - Standard release output: `AkshatOS-unsigned.ipa`, checksum and `build-info.txt` in `akshatos-ios-<run>`.
   Opt-in output: `AkshatOS-study-live-activity-unsigned.ipa` in `akshatos-ios-<run>-study-live-activity`.
   Build metadata identifies the variant and extension bundle ID; release uploads exclude test diagnostics.
-- Content: source 0.14.0 launches Today / To-do / Journal / Apps, with the personal features in
+- Content: source 0.14.1 retains Today / To-do / Journal / Apps, with the personal features in
   `personal-hub.md`; the installed Build 37 still has hub picker → Pushup Reminder dashboard/core (with legacy `squats.*` persistence and
   notification identity retained for upgrade safety), plus PageVault's library, page-curl reader, page
   themes (paper, sepia, night), reading status, bookmarked place, covers, Started shelf,
@@ -98,7 +108,7 @@ a cleanup and are recoverable until it is emptied; Build 18 was never downloaded
 "Folder" is each build's historical Actions-run identifier, not a live path — only the current
 accepted build's files are guaranteed to still exist, at `D:\AI Important Files\personal-project\final-ipas\akshatos\backup\<folder>`.
 
-| Build | Folder | Merge (PR) | Main run | SHA-256 | Status |
+| Build | Folder | Source (PR) | Release run | SHA-256 | Status |
 |---|---|---|---|---|---|
 | 29 | `akshatos-build-29-2637ea1\akshatos-ios-140` | `2637ea1` (#57) | [36656727736](https://github.com/akshatksingh18/akshatos/actions/runs/36656727736) | `4c49f4e23254a272f1742b5eebb73181c6af97ba4e5d4373c4634717a36c1acb` | **Installed, superseded** — PR #57 fixed a main-actor fake in a test default argument and a History card tap area; successful PR run `36655530523` passed 135 hosted and 8 UI tests; complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, and its redesign/Body/history phone pass was accepted with Build 31; removed from `testing\` when Build 30 arrived and reproducible from its run |
 | 30 | `akshatos-build-30-10357b9\akshatos-ios-144` | `10357b9` (#59) | [36763493014](https://github.com/akshatksingh18/akshatos/actions/runs/36763493014) | `ee0720feeb4ec9c08f08f7d2c0f0eb598a3497b1b517df4420dddd744bde8ff7` | **Superseded, never installed** — complete PR/main CI Gates (the first PR run failed on two new test mistakes, fixed before merge), package inspection, checksum/local IPA validation (0.7.0 (30)) and screenshot review, including the Backup screen, pass; removed from `testing\` when Build 31, which contains all of it, arrived; reproducible from its run |
@@ -109,7 +119,8 @@ accepted build's files are guaranteed to still exist, at `D:\AI Important Files\
 | 35 | `akshatos-build-35-1e37804\akshatos-ios-159` | `1e37804` (#64) | [37523650754](https://github.com/akshatksingh18/akshatos/actions/runs/37523650754) | `e77c4f56799d6666b765d6a5c2ee1b98939272346f3cfd3468412eb8277e556d` | **Superseded, never installed** — complete PR/main CI Gates (the first PR run stopped on two sources sharing a file name; the model file name was then corrected to the int8 download's `model.int8.onnx`), package inspection, checksum/local IPA validation (0.12.0 (35)); the IPA is 12.6 MB and now embeds `SherpaOnnxC.framework` and `onnxruntime.framework` from the sherpa-onnx 1.13.8 Swift package; PageVault natural voice (Kokoro) test; **superseded, never installed** — Akshat found Build 34's voice menus hanging before installing it, and Build 36 fixes that; removed from `testing\` when Build 36 arrived and reproducible from its run |
 | 36 | `akshatos-build-36-5826e40\akshatos-ios-162` | `5826e40` (#65) | [38486056813](https://github.com/akshatksingh18/akshatos/actions/runs/38486056813) | `1f0dddca8cc89319dbc5af964b788503c9b76ea5954cc8c989ae0f942795ae71` | **Installed, superseded** — complete PR/main CI Gates (PR run `38484459547`), checksum/local IPA validation (0.12.1 (36), 12.7 MB, Xcode 26.6); the iPhone voice list is read once instead of at every redraw, the natural voice's size is measured off the main thread, the model loads when a book opens and the next page's opening is rendered ahead; also carries the WHOOP build-86 and SideStore docs; installed over Build 34 with current-version enrollment in automatic mode and no error; Akshat finds the Kokoro samples good, book reading with it pending; removed from `testing\` when Build 37 arrived and reproducible from its run |
 | 37 | `akshatos-build-37-03be00c\akshatos-ios-164` | `03be00c` (#66) | [38651844463](https://github.com/akshatksingh18/akshatos/actions/runs/38651844463) | `029f4d037a2fc5544f74a31bfa6f11efa36e4c8db59816493b188f06fa03037d` | **Installed, feature phone pass open; artifact superseded** — complete PR/main CI Gates on the first run (PR run `38650257517`), checksum/local IPA validation (0.13.0 (37), 12.8 MB) and screenshot review of Study Log (countdown, studied time, 2 h/4 h ticks, running block, week view and month-grouped history); Study Log Build 1, one Voice list in the speed menu, Want to read order by dragging; Akshat confirms installation; Sideloadly records 0.13.0 with current-version automatic-refresh enrollment in automatic bundle-ID mode and no error; feature phone checks remain open, so it is not promoted; removed from `testing\` when Build 38 arrived and reproducible from its run |
-| 38 | `akshatos-build-38-b573ecc\akshatos-ios-172` | `b573ecc` (#67) | [38896862871](https://github.com/akshatksingh18/akshatos/actions/runs/38896862871) | `e3b20f4e307e5b446d906dfc52716667a945ae54787372a2a512d2ca5bc8a921` | **Validated candidate in `testing\`, not installed** — PR run [38894048203](https://github.com/akshatksingh18/akshatos/actions/runs/38894048203) and main pass all nine domain suites, 184 hosted and 13 UI tests, simulator/device builds and IPA checks. Local checksum, ZIP/payload/identity/version validation pass (0.14.0 (38), 13,888,234 bytes, audio background only). Native dark captures at 390 points and 320-point accessibility type were reviewed; both material accessibility fixes were scored resolved. Today/To-do/Journal/Apps, unlocked Journal default with optional lock, study tools, Watchlist/Spending, full backup, optional reminders and Files hand-offs. Build 31 recovery checksum remains unchanged; phone/provider/Shortcuts acceptance, roadmap receiver and fitness handover remain separate. |
+| 38 | `akshatos-build-38-b573ecc\akshatos-ios-172` | `b573ecc` (#67) | [38896862871](https://github.com/akshatksingh18/akshatos/actions/runs/38896862871) | `e3b20f4e307e5b446d906dfc52716667a945ae54787372a2a512d2ca5bc8a921` | **Superseded, never installed** — PR run [38894048203](https://github.com/akshatksingh18/akshatos/actions/runs/38894048203) and main pass all nine domain suites, 184 hosted and 13 UI tests, simulator/device builds and IPA checks. Local checksum, ZIP/payload/identity/version validation pass (0.14.0 (38), 13,888,234 bytes, audio background only). Native dark captures at 390 points and 320-point accessibility type were reviewed; both material accessibility fixes were scored resolved. Today/To-do/Journal/Apps, unlocked Journal default with optional lock, study tools, Watchlist/Spending, full backup, optional reminders and Files hand-offs. Removed from the one-slot testing cache when Build 39 arrived; reproducible from its run. Phone/provider/Shortcuts acceptance, roadmap receiver and fitness handover remain separate. |
+| 39 | `akshatos-build-39-8342d0e\akshatos-ios-182-study-live-activity` | `8342d0e` (#68, draft/unmerged) | [38975509228](https://github.com/akshatksingh18/akshatos/actions/runs/38975509228) (manual) | `1b6218f9cba249b5f228b581c0b621c99d300da51363221ed1fe7064647d022e` | **Validated Live Activity candidate in `testing\`, not installed** — exact-source CI Gate, 18 release-contract tests, nine domain suites, 195 hosted and 14 UI tests, both simulator/device variants, arm64 and selected IPA checks pass. Local published checksum, ZIP integrity, strict payload/identity/extension and matching 0.14.1 (39) metadata pass; 14,007,788 bytes. Contains the complete Build-38 personal hub plus rotating Focus, scoped keep-awake, quiet study notifications and the single study WidgetKit extension. Build 31 recovery checksum is unchanged. Signing, extension launch, DND/AOD/StandBy, data preservation and renewal proof remain open. |
 | 28 | `akshatos-build-28-6c08c87\akshatos-ios-136` | `6c08c87` (#56) | [36328010157](https://github.com/akshatksingh18/akshatos/actions/runs/36328010157) | `544701ea48c630538f43bb48f3482ba6d393a12c20a1bb74202ec8fb7f1df324` | **Installed, not accepted** — complete PR/main CI Gates, package inspection, checksum/local IPA validation and screenshot review pass; installed with current-version enrollment, but linking the laptop inbox did nothing on the phone, so the inbox and Open in are removed in Build 29; removed from `testing\` when Build 29 arrived and reproducible from its run |
 | 27 | `akshatos-build-27-ebb44d3\akshatos-ios-133` | `ebb44d3` (#54) | [35925770220](https://github.com/akshatksingh18/akshatos/actions/runs/35925770220) | `744b7ed57d76259773f35d71b30196544bc8b58f91341f6cd676c76b17f0bb9f` | **Accepted, superseded by Build 31** — complete PR/main CI Gates, package inspection, checksum/local IPA validation, focused phone behavior and current-version automatic-refresh enrollment passed; removed from the one-slot backup cache and reproducible from its run |
 | 26 | `akshatos-build-26-7a4f639\akshatos-ios-129` | `7a4f639` (#52) | [35870794873](https://github.com/akshatksingh18/akshatos/actions/runs/35870794873) | `46904f57e6dba743e083b7813dc8aa788088aff841c046c264a39d04cc617b83` | Complete CI Gate, package inspection, checksum and local IPA validation passed; superseded by Build 27 and removed from the one-slot local testing cache; reproduce from Git/run if needed |

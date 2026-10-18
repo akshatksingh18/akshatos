@@ -43,6 +43,31 @@ final class PersonalHubUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Spending"].waitForExistence(timeout: 5))
         capture("Spending · empty")
     }
+    func testDailyRoutineCreateCheckAndUndoWithoutAnotherTab() {
+        let app = XCUIApplication(); app.launch()
+        let manage = app.buttons["routine-manage"]
+        for _ in 0..<7 where !manage.isHittable { app.swipeUp() }
+        XCTAssertTrue(manage.waitForExistence(timeout: 5)); manage.tap()
+        app.buttons["routine-add"].tap()
+        let title = app.textFields["routine-title"].firstMatch
+        if title.exists { title.tap(); title.typeText("Synthetic routine check") }
+        else {
+            let multiline = app.textViews["routine-title"]; XCTAssertTrue(multiline.waitForExistence(timeout: 5))
+            multiline.tap(); multiline.typeText("Synthetic routine check")
+        }
+        app.buttons["routine-save"].tap()
+        XCTAssertTrue(app.staticTexts["Synthetic routine check"].waitForExistence(timeout: 5))
+        capture("Daily routine · manage")
+        app.navigationBars["Daily routine"].buttons["Done"].tap()
+        let check = app.buttons["routine-check-Synthetic routine check"]
+        for _ in 0..<6 where !check.isHittable { app.swipeUp() }
+        XCTAssertTrue(check.waitForExistence(timeout: 5)); check.tap()
+        XCTAssertEqual(check.value as? String, "done")
+        capture("Daily routine · checked")
+        check.tap()
+        XCTAssertEqual(check.value as? String, "pending")
+        XCTAssertEqual(app.tabBars.buttons.count, 4)
+    }
     private func capture(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)

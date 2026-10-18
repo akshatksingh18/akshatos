@@ -120,8 +120,9 @@ PC/phone; nothing is automated by the agent.
 
 ### Build-39 study Live Activity experiment
 
-SideStore is authorized as the preferred free signing experiment for the next combined candidate;
-Sideloadly need not remain the long-term dependency. No IPA is requested yet and existing renewal
+SideStore is authorized as the preferred free signing experiment for the combined Build-39 candidate;
+Sideloadly need not remain the long-term dependency. The requested unsigned Live Activity IPA is
+validated and delivered in `testing/`; `cloud-build.md` owns its exact evidence. Existing renewal
 ownership remains until verified handover. `study-display.md` owns the source variant and phone matrix.
 At upstream 0.7.0-alpha (`6032424a0e56c1c319762e786099bdd9186a238b`),
 [`FetchProvisioningProfilesOperation`](https://github.com/SideStore/SideStore/blob/6032424a0e56c1c319762e786099bdd9186a238b/SideStore/Core/Operations/PipelineOperations/FetchProvisioningProfilesOperation.swift)

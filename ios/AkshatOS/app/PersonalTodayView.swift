@@ -40,6 +40,7 @@ struct PersonalTodayView: View {
                     }
                 }
                 priorities
+                DailyRoutineSection(store: todo)
                 if let next = todo.nextTimed, let date = next.due {
                     HStack { Image(systemName: "clock"); Text(date.formatted(date: .abbreviated, time: .shortened)); Text(next.title).lineLimit(2) }
                         .font(.subheadline).foregroundStyle(.secondary)

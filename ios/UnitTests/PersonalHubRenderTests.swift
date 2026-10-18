@@ -22,6 +22,10 @@ import SwiftData
         let todo = TodoStore(container: try container(TodoSchemaV1.self), now: { now }); todo.load()
         XCTAssertTrue(todo.add("Read one chapter")); XCTAssertTrue(todo.add("Review a practice problem"))
         for task in todo.visible { todo.choose(task.id, day: todo.today) }
+        let routine = RoutineItem(title: "Read a chapter", period: .morning, targetMinute: 510)
+        XCTAssertTrue(todo.saveRoutine(routine))
+        XCTAssertTrue(todo.saveRoutine(RoutineItem(title: "Review the day", period: .evening)))
+        todo.recordRoutine(routine.id, status: .done, day: todo.today)
         let journal = JournalStore(container: try container(JournalSchemaV1.self), defaults: defaults); journal.load()
         var entry = journal.newEntry(journal.today)
         entry.text = "A synthetic entry for visual testing. I kept the session small and returned after the break."
@@ -30,6 +34,9 @@ import SwiftData
         let today = PersonalTodayView(study: study, todo: todo, journal: journal, preferences: preferences, orientation: OrientationGate(), studyActivity: StudyLiveActivityCoordinator(study: study, defaults: defaults, configured: false), keepGoing: {}, openTodo: {})
         await capture(NavigationStack { today }, name: "Native Today 390", size: CGSize(width: 390, height: 844))
         await capture(NavigationStack { today.environment(\.dynamicTypeSize, .accessibility3) }, name: "Native Today 320 accessibility", size: CGSize(width: 320, height: 568))
+        await capture(NavigationStack { ScrollView { DailyRoutineSection(store: todo).padding(22) }.background(HubInk.background).navigationTitle("Today") }, name: "Native routine 390", size: CGSize(width: 390, height: 844))
+        await capture(NavigationStack { ScrollView { DailyRoutineSection(store: todo).padding(22) }.background(HubInk.background).environment(\.dynamicTypeSize, .accessibility3).navigationTitle("Today") }, name: "Native routine 320 accessibility", size: CGSize(width: 320, height: 568))
+        await capture(RoutineManager(store: todo), name: "Native routine manager 390", size: CGSize(width: 390, height: 844))
         let activity = StudyLiveActivityCoordinator(study: study, defaults: defaults, configured: false)
         let focus = StudyFocusView(study: study, todo: todo, orientation: OrientationGate(), activity: activity, close: {})
         await capture(focus, name: "Native Focus portrait 390", size: CGSize(width: 390, height: 844))

@@ -1,15 +1,21 @@
 # Personal hub implementation
 
-**Status:** Delivered candidate 0.14.0 (38), PR #67 at `b573ecc`, is in the testing cache. Complete
-PR/main CI Gates and local checksum/IPA validation pass. The native finish reviewer scored both
-accessibility fixes resolved after fresh simulator captures. Physical-device acceptance, provider
+**Status:** The personal hub merged in 0.14.0 (38), PR #67 at `b573ecc`, is included in delivered
+Build 39 (0.14.1), study-live-activity variant at `8342d0e`, in the testing cache. Manual release CI
+and local checksum/IPA validation pass. The native finish reviewer scored both accessibility fixes
+resolved after fresh simulator captures. Physical-device acceptance, provider
 behavior and the separate roadmap receiving importer remain open; see `cloud-build.md` and `todo.md`.
 
 ## Navigation and presentation
 
+Build 40 source adds Daily routine below priorities on Today and a management entry in To-do's More
+menu. Its grouped checklist, native item editor and seven-day history use the same four tabs and
+visual system. Cloud/native verification is pending; Build 39's delivered IPA is unchanged.
+
 Build-39 source adds rotating desk Focus, a foreground-only keep-awake switch, quiet study
 notifications and an optional Live Activity candidate; `study-display.md` owns the contract and
-unverified phone/signing boundaries. No Build-39 IPA is requested yet.
+unverified phone/signing boundaries. The requested unsigned IPA is delivered; signing/installation
+is user-operated and installed refresh ownership is unchanged.
 
 Four persistent tabs: Today, To-do, Journal, Apps. Today owns the study countdown, selected
 priorities, Park a thought and the weekly block graphic. History is one closable sheet containing
@@ -46,7 +52,9 @@ updates related records in one save; failure rolls back the context and keeps th
 Normal mutations refuse an unavailable store. Explicit validated restore can replace one.
 
 - `features/todo/`: tasks, recurrence, area/note/deadline, selected priority plans, parked thoughts,
-  ten-second completion Undo, local quick-date grammar, CSV and JSON recovery.
+  ten-second completion Undo, local quick-date grammar, CSV and JSON recovery. Build 40 adds routine
+  templates and daily check-offs to the same atomic snapshot; JSON includes them, while task CSV
+  remains a task-only analysis export. Old JSON without routines remains readable.
 - `features/journal/`: activity-day writing/prompts, optional ratings/photos, immutable facts,
   history/search/On this day, week notes, Markdown/photo export and Journal backup.
 - `features/watchlist/`: phone-created titles, imported metadata and a separate watched-event stream.
@@ -79,6 +87,8 @@ settings. Older backups remain valid; absent new parts leave their existing phon
 Personal settings restore keeps device-specific folder/fitness/privacy choices and disables
 personal reminder opt-ins until deliberately re-enabled. A restored running study block requires
 an explicit actual end before application; it cannot silently accumulate offline hours.
+Replacing To-do from an older backup with no routine field clears the current routine too, with an
+explicit warning; absent To-do parts in older full backups still leave the entire store alone.
 
 Personal notification reconciliation is serialized under its own namespace. It considers the actual
 pending count, reserves two spare slots and schedules at most fifteen timed tasks, one running-study

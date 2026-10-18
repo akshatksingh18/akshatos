@@ -1,23 +1,34 @@
 # AkshatOS session handoff
 
-Build 39 (0.14.1) is now the active source-development task, with **no IPA and no release merge**
-requested. Continue adding features incrementally. `study-display.md` owns rotating desk Focus,
+Build 40 (0.15.0) now adds the requested Daily routine in source; cloud/native verification is
+pending. `daily-routine-plan.md` owns the grouped default (optional layout question unanswered),
+calendar-day record and recovery contract. Do not package a Build-40 IPA without a release request.
+Build 39 remains the delivered testing candidate described below.
+
+Build 39 (0.14.1), **study-live-activity variant**, is delivered without merging.
+Manual release run `38975509228` passed at verified `8342d0e` on the development branch. Local
+checksum/payload/version validation passed and the IPA replaced Build 38 in the one-slot testing
+cache. `cloud-build.md` owns the exact path/hash. `study-display.md` owns rotating desk Focus,
 keep-awake, quiet study notifications, the opt-in SideStore Live Activity candidate, research and
 DND/device/signing gates. SideStore exploration is authorized; installed signing/refresh ownership
-is unchanged. Exact-source CI and native inspection pass at `86c4367` on draft PR #68, including
-the compact-dial readability correction. `cloud-build.md` owns the run, counts and diagnostics.
-No Build-39 IPA was created. Explicit release-variant selection and strict extension validation
-are implemented with exact-source CI pending; `study-display.md` owns this release contract.
-Physical signing/DND/AOD/renewal checks remain open. Build 38 below
-remains the last delivered candidate, not the working source version.
+is unchanged. Cloud source/build/release checks pass at `8342d0e` on draft PR #68.
+Explicit variant selection and strict single-extension validation are complete, with both device
+.app directories validated without packaging. Native inspection at `86c4367` remains applicable;
+release preparation changes no UI source. `cloud-build.md` owns the run, counts and diagnostics,
+and `study-display.md` owns the release/signing contract. Installation/signing is user-operated;
+physical signing/DND/AOD/renewal checks remain open. Build 38's complete personal hub is included
+in this candidate, so no intermediate installation is required.
 
-**Status:** Personal-hub Build 38 (0.14.0), PR #67, is merged at `b573ecc` and validated in the
-single-slot testing cache. PR/main CI, local checksum/IPA inspection and the two native accessibility
-fixes pass. Build 37 remains installed/enrolled; Build 31 remains accepted recovery.
+**Status:** Build 39 (0.14.1), Live Activity candidate at `8342d0e`, is validated in the single-slot
+testing cache. Release CI and local artifact checks pass. The Build-38 personal hub merged through
+PR #67 at `b573ecc` and its two native accessibility fixes are included. Build 37 remains
+installed/enrolled; Build 31 remains accepted recovery, with its checksum unchanged.
 `implementation-plan.md` tracks local coverage, `personal-hub.md` the implementation and
 `todo-journal-plan.md` accepted decisions. Journal defaults unlocked. Do not restart design selection
 or request approval for completed authorized work. All work stays at source/CLI level. Final release
 evidence is synchronized locally and waits for the next real code change before its next push.
+Build 39 has been handed over, so the new routine source uses Build 40 in both host and optional
+extension settings. Documentation-only synchronization does not bump it.
 
 Planning files remain local because the public push containing a personal planning document was
 rejected by automatic approval review. The accepted retry was code-only. Review every subsequent
@@ -146,10 +157,17 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-0. **Continue Build 39 without packaging:** `study-display.md` owns current changes, research and
-   DND/SideStore gates. Use the development branch and draft PR for cloud checks. Do not merge or
-   create an IPA until requested; the user plans one combined installation after more features.
-   Build 38 remains cached for recovery/testing reference, not a required intermediate install.
+Before the device work, finish the requested Build-40 routine's cloud/native verification and
+finish review; source implementation alone is not acceptance. Its tests include legacy decode,
+daily/weekday/DST/replay, snapshot history, real save/restore and UI check/uncheck. No source change
+in this work signs/installs an app or replaces the delivered Build-39 cache.
+
+0. **User-operated signing/install of delivered Build 39:** the Live Activity IPA from successful
+   manual run `38975509228` is validated in testing. Follow the SideStore preservation/provisioning
+   gates in `study-display.md` and `sidestore-evaluation.md`: exports first, preserve signed identity,
+   keep/register the extension, no uninstall or unreviewed certificate revocation. Do not change
+   installed refresh ownership until verified handover. Keep the draft branch unmerged.
+   Build 38 is superseded and reproducible from its run, not an intermediate installation.
 1. **Phone acceptance:** four tabs, real study Start/Pause/Focus/corrections/Undo/rollover, task
    recurrence/priorities, Journal default/privacy/photos/recovery and optional notifications. The
    retained Build-37 voice-menu and shelf-order checks should run on this candidate too; one

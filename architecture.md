@@ -1,11 +1,19 @@
 # AkshatOS and Pushups architecture
 
-**State:** Personal-hub Build 38 (0.14.0), PR #67 at `b573ecc`, passed PR/main cloud checks,
-native accessibility-fix review and local artifact validation; its IPA is in `testing/`. Installation
-and device acceptance remain open. Build 37 is installed/enrolled and Build 31 is accepted recovery.
+**State:** Build 39 (0.14.1), study-live-activity variant at `8342d0e`, passed manual release CI
+and local checksum/payload/version checks; its IPA is in `testing/`. It includes the personal hub
+merged in Build 38. Installation and device acceptance remain open. Build 37 is installed/enrolled
+and Build 31 is accepted recovery; the development branch remains unmerged.
 `cloud-build.md` owns exact evidence and `todo.md` the remaining gates.
 
-Build 39 (0.14.1) adds study-display source under development, not a new delivered IPA. The optional
+Build 40 source adds an optional `DailyRoutine` inside the existing To-do snapshot. Templates and
+dated, zone-labelled checklist snapshots commit together; no new SwiftData store or backup part is
+created. Legacy JSON without the optional field still decodes. Explicit replacement from an older
+To-do backup clears the routine and warns accordingly. Daily materialization runs on load/day refresh,
+not completion or background work. Closed and completed/skipped snapshots retain their content;
+pending rows may follow today's template edits. `daily-routine-plan.md` owns scope; CI is pending.
+
+Build 39 (0.14.1) delivers the requested study-display testing IPA. The optional
 WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains
 extension-free. Release selection resolves fixed separate build/output paths; the payload validator
 checks either built .app directories or later IPA archives against the selected variant.

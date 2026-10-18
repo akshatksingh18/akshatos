@@ -1,9 +1,12 @@
 # Study display and lock-screen timer
 
-**Status:** Build 39 (0.14.1) source at `86c4367` passes
-[cloud verification](https://github.com/akshatksingh18/akshatos/actions/runs/38934281186) and native
-Focus/card inspection on draft PR #68. It remains on the development branch for further features.
-No Build-39 IPA is requested or produced. Build 38 remains the delivered candidate. The SideStore extension
+**Status:** Build 39 (0.14.1) source and release preparation at `8342d0e` pass
+[cloud verification](https://github.com/akshatksingh18/akshatos/actions/runs/38971711206) on draft PR #68.
+Both device variants validate without packaging. Native Focus/card inspection at `86c4367` remains
+applicable because release preparation changes no UI source. Further features may continue on the branch.
+The requested combined Live Activity IPA passed manual release run `38975509228` at `8342d0e`,
+local checksum/payload/version validation and delivery to the one-slot testing cache. Build 38's
+never-installed candidate was replaced; accepted Build 31 recovery is unchanged. The SideStore extension
 variant is an opt-in test candidate, not device-verified signing or a change to installed refresh ownership.
 
 ## Desk Focus
@@ -86,13 +89,13 @@ certificate, enrollment or scheduled-task change is performed by this source wor
 
 Build 39 stays on a development branch. PR CI compiles/tests without packaging an IPA. It builds
 both complete device variants in separate DerivedData directories, validates each .app directly and
-verifies arm64 host/extension executables. The same validator checks ZIP payloads when packaging is
-later requested; normal source verification never creates an IPA.
+verifies arm64 host/extension executables. The same validator checks ZIP payloads during explicitly
+requested packaging; normal source verification never creates an IPA.
 
 Manual dispatch has independent inputs: `build_variant` defaults to `standard` and may explicitly
 select `study-live-activity`; `package_ipa` defaults to false. Selecting a variant does not enable
-packaging. Main pushes retain standard-only release behavior. Do not merge or request packaging
-until a later release instruction. Selection is resolved through `ios/scripts/release-variant.py`.
+packaging. Main pushes retain standard-only release behavior. The current user instruction
+authorizes manual packaging of `study-live-activity` from verified `8342d0e`, without merging. Selection is resolved through `ios/scripts/release-variant.py`.
 
 `validate-ipa.py` defaults to the extension-free standard contract. The opt-in contract requires
 exactly `PlugIns/StudyActivityExtension.appex`, its permanent child bundle ID, executable, WidgetKit
@@ -105,10 +108,15 @@ archive paths and missing executables, and preserve the private Documents/audio-
 Checks use explicit errors and also run under optimized Python. Eighteen fast release-contract tests
 use in-memory archives and temporary synthetic .app directories; no IPA fixture is written.
 
-The eventual Live Activity output has a distinct filename/artifact name and build metadata recording
+The Live Activity output has a distinct filename/artifact name and build metadata recording
 the selected variant and extension ID. Release uploads contain only the release files; simulator
-screenshots remain in their diagnostics artifact. This release preparation is implemented with
-exact-source CI pending. It proves neither SideStore signing nor physical phone compatibility.
+screenshots remain in their diagnostics artifact. Release preparation passes exact-source CI with
+both compiled device app directories, including matching generated version metadata. The cached
+standard Build-38 IPA passed the same validator read-only before replacement. The requested manual
+release then passed packaging and upload of `akshatos-ios-182-study-live-activity`. Local validation
+confirmed its published SHA-256, ZIP integrity, host/extension identities and matching 0.14.1 (39)
+versions; `cloud-build.md` owns the path/hash/size. SideStore signing and physical phone compatibility
+remain unverified; no signing/enrollment/account state changed.
 
 ## Verification
 
@@ -118,10 +126,12 @@ denial, dismissal/retry, single-activity reconciliation, 03:00 and eight-hour bo
 tests cover passive reminders and foreground presentation. XCUITest exercises Focus, both landscape
 orientations, continued running, Pause and return to portrait. Synthetic native captures include
 portrait/landscape, accessibility and the actual shared lock-screen card/stale content. The complete
-cloud run at `86c4367` passed all nine registered domain suites, 195 hosted tests and 14 UI tests,
-default simulator/device builds and the optional host/extension compilation and metadata checks.
-The UI test verifies keep-awake on through rotation and off on re-entry. Packaging and IPA upload
-were skipped; diagnostics were the only artifact. Normal and accessibility card content fits the
+cloud run at `8342d0e` passed 18 release-contract tests, all nine registered domain suites,
+195 hosted tests and 14 UI tests, default simulator/device builds and the optional host/extension
+compilation, arm64 and strict payload checks.
+The UI test verifies keep-awake on through rotation and off on re-entry. The source-verification
+run skipped packaging; the later manual release `38975509228` passed the same full checks and
+delivered the explicitly selected Live Activity IPA. Normal and accessibility card content fits the
 synthetic viewport. Final native captures confirm the compact landscape countdown and Remaining
 label are fully readable; the actual running landscape capture also shows keep-awake on. The
 smaller inset is presentation-only. These are shared-view/simulator checks, not physical WidgetKit
