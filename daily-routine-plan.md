@@ -1,6 +1,6 @@
 # Daily routine
 
-**Status:** Implemented in Build-40 (0.15.0) source; cloud/native verification is pending. Not present
+**Status:** Implemented in Build-40 (0.15.0) source; exact-source cloud run `39120899546` at `f8fed9b` is in progress; native review is pending. Not present
 in the delivered Build-39 IPA. Core scope is authorized. Grouped presentation is the stated default
 while the optional layout question is unanswered. Source/CI/device evidence must stay separate.
 
@@ -33,6 +33,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 DESIGN.md, and every shipping raster carrying its provenance
 
 ## Verification
+
+The native finish review at `f8fed9b` requested two material fixes: stack the checklist header/action
+at accessibility sizes, and move manager/history instructions behind optional disclosures so actions
+and records lead. These source fixes await a matching recapture and reviewer verdict; the earlier
+captures are not evidence that the corrections render correctly.
 
 Cover independent daily generation, weekdays/03:00/DST, empty/no-schedule/unavailable states, double taps,
 skips/undo, historic snapshots, editing/pausing, legacy decode, malformed restore and real persistence/

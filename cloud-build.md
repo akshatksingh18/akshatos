@@ -7,7 +7,8 @@ installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its ch
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
 Working source is **0.15.0 (40)** for the requested Daily routine addition; its cloud/native checks
-are pending and no Build-40 IPA has been requested. Both host/extension versions are kept aligned.
+run [39120899546](https://github.com/akshatksingh18/akshatos/actions/runs/39120899546) at
+`f8fed9b` is in progress; native review is pending and no Build-40 IPA has been requested. Both host/extension versions are kept aligned.
 Delivered source is **0.14.1 (39)**. The user requested the combined Live Activity IPA;
 [manual release run 38975509228](https://github.com/akshatksingh18/akshatos/actions/runs/38975509228)
 passed at verified `8342d0e` with `package_ipa=true` and `build_variant=study-live-activity`.

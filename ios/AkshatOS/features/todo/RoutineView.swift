@@ -5,13 +5,16 @@ struct DailyRoutineSection: View {
     @State private var managing = false
     @State private var history = false
     @State private var expanded: Set<RoutinePeriod> = Set(RoutinePeriod.allCases)
+    @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Daily routine").font(.title3.weight(.semibold))
-                Spacer()
-                Button("Manage") { managing = true }.frame(minWidth: 44, minHeight: 44)
-                    .accessibilityIdentifier("routine-manage")
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily routine").font(.title3.weight(.semibold))
+                    manageButton
+                }
+            } else {
+                HStack { Text("Daily routine").font(.title3.weight(.semibold)); Spacer(); manageButton }
             }
             if !store.available {
                 Text("Routine unavailable").foregroundStyle(.secondary)
@@ -54,6 +57,10 @@ struct DailyRoutineSection: View {
         .sheet(isPresented: $managing) { RoutineManager(store: store) }
         .sheet(isPresented: $history) { RoutineHistory(store: store) }
     }
+    private var manageButton: some View {
+        Button("Manage") { managing = true }.fixedSize().frame(minWidth: 44, minHeight: 44)
+            .accessibilityIdentifier("routine-manage")
+    }
     private func checkRow(_ check: RoutineCheck, day: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Button {
@@ -91,8 +98,6 @@ struct RoutineManager: View {
         NavigationStack {
             List {
                 Section {
-                    Text("Your routine repeats on its selected days. Check it off on Today; a fresh day starts at 3 AM. Times are targets, not alarms.")
-                        .font(.subheadline).foregroundStyle(.secondary)
                     Button("Add routine item", systemImage: "plus") { editing = RoutineItem(title: "") }
                         .disabled(!store.available).accessibilityIdentifier("routine-add")
                 }
@@ -110,8 +115,10 @@ struct RoutineManager: View {
                 }
                 Section {
                     NavigationLink("Routine history") { RoutineHistoryContent(store: store) }
-                    Text("Remove or pause an item to stop future appearances. Closed days keep their saved checklist. Editing today's unfinished items changes today's list; completed and skipped entries keep their original wording.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                    DisclosureGroup("How routines work") {
+                        Text("Your routine repeats on its selected days. Check it off on Today; a fresh day starts at 3 AM. Times are targets, not alarms.")
+                        Text("Remove or pause an item to stop future appearances. Closed days keep their saved checklist. Editing today's unfinished items changes today's list; completed and skipped entries keep their original wording.")
+                    }.font(.footnote).foregroundStyle(.secondary)
                 }
             }.personalList().navigationTitle("Daily routine")
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } }; ToolbarItem(placement: .topBarTrailing) { EditButton() } }
@@ -174,8 +181,7 @@ struct RoutineHistoryContent: View {
     var body: some View {
         List {
             Section {
-                Text("Last seven activity days. Skipped is separate from done. Unrecorded days have no saved checklist; they are not assumed missed.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                Text("Past seven days").font(.footnote).foregroundStyle(.secondary)
             }
             if !store.available { Text("Routine history unavailable") }
             else {
@@ -204,6 +210,11 @@ struct RoutineHistoryContent: View {
                         } else { Text("Not recorded").foregroundStyle(.secondary) }
                     }
                 }
+            }
+            Section {
+                DisclosureGroup("About this history") {
+                    Text("Skipped is separate from done. Unrecorded days have no saved checklist; they are not assumed missed. Check-off times use the time zone saved with that activity day.")
+                }.font(.footnote).foregroundStyle(.secondary)
             }
         }.personalList().navigationTitle("Routine history").navigationBarTitleDisplayMode(.inline)
     }
