@@ -121,7 +121,7 @@ struct RoutineManager: View {
     }
 }
 
-private struct RoutineEditor: View {
+struct RoutineEditor: View {
     @ObservedObject var store: TodoStore
     @State var item: RoutineItem
     @Environment(\.dismiss) private var dismiss
@@ -190,13 +190,17 @@ struct RoutineHistoryContent: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(check.title)
                                         if let recorded = check.recordedAt {
-                                            Text("\(check.status == .done ? "Checked" : "Skipped") at \(recorded.formatted(date: .omitted, time: .shortened))")
+                                            Text("\(check.status == .done ? "Checked" : "Skipped") at \(routineRecordedTime(recorded, zone: day.zone))")
                                                 .font(.caption).foregroundStyle(.secondary)
                                         } else { Text("Not checked off").font(.caption).foregroundStyle(.secondary) }
                                     }
                                 }.accessibilityElement(children: .combine)
                             }
                             if day.checks.isEmpty { Text("Nothing scheduled").foregroundStyle(.secondary) }
+                            if day.zone != TimeZone.current.identifier {
+                                Text("Times use \(TimeZone(identifier: day.zone)?.localizedName(for: .generic, locale: .current) ?? day.zone)")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         } else { Text("Not recorded").foregroundStyle(.secondary) }
                     }
                 }
@@ -208,4 +212,10 @@ struct RoutineHistoryContent: View {
 private func routineTime(_ minute: Int) -> String {
     let date = Calendar.current.date(bySettingHour: minute / 60, minute: minute % 60, second: 0, of: Date()) ?? Date()
     return date.formatted(date: .omitted, time: .shortened)
+}
+
+private func routineRecordedTime(_ date: Date, zone: String) -> String {
+    let formatter = DateFormatter(); formatter.timeStyle = .short
+    formatter.timeZone = TimeZone(identifier: zone)
+    return formatter.string(from: date)
 }

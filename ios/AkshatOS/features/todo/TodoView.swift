@@ -76,7 +76,7 @@ struct TodoView: View {
                     Button("Daily routine", systemImage: "checklist") { routines = true }
                     Button("Plan tomorrow", systemImage: "calendar") { planDay = store.clock.shifted(store.today, by: 1) ?? store.today; planning = true }
                     Button("Export backup") { prepareExport(.json) }
-                    Button("Export CSV") { prepareExport(.commaSeparatedText) }
+                    Button("Export task CSV") { prepareExport(.commaSeparatedText) }
                     Button("Restore backup") { importing = true }
                 } label: { Label("More", systemImage: "ellipsis.circle") }
             }

@@ -27,7 +27,7 @@ THESIS: check the day's repeated actions in one familiar place, independently of
 OWN-WORLD: inherit DESIGN.md, semantic native text, copper controls, sage completion and SF Symbols.
 STORY: see what is due today, tap to record it, undo a mistake, then return to studying.
 FIRST VIEWPORT: preserve the study instrument; the routine follows today's priorities, with a labelled
-completion count and short segmented progress track. Groups disclose their rows without new navigation.
+completion count and short progress track. Groups disclose their rows without new navigation.
 FORM: local extension of Today, Operate mode, code-led; no concept seed is required for this scope.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict,
 DESIGN.md, and every shipping raster carrying its provenance

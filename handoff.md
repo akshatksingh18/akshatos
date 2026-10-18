@@ -157,10 +157,11 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-Before the device work, finish the requested Build-40 routine's cloud/native verification and
+For the current code task, finish the requested Build-40 routine's cloud/native verification and
 finish review; source implementation alone is not acceptance. Its tests include legacy decode,
 daily/weekday/DST/replay, snapshot history, real save/restore and UI check/uncheck. No source change
-in this work signs/installs an app or replaces the delivered Build-39 cache.
+in this work signs/installs an app or replaces the delivered Build-39 cache. The user may test
+the already-delivered Build 39 independently of this source work.
 
 0. **User-operated signing/install of delivered Build 39:** the Live Activity IPA from successful
    manual run `38975509228` is validated in testing. Follow the SideStore preservation/provisioning
