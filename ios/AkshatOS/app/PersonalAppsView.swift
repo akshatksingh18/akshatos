@@ -136,10 +136,16 @@ private struct LinkedFolderView: View {
     let services: AppServices
     @ObservedObject private var transfer: LinkedFolderService
     @ObservedObject private var watchlist: WatchlistStore
+    @ObservedObject private var study: StudyLogStore
     @State private var selecting = false
     @State private var exportingStudy = false
     @State private var document: PortableDocument?
+    @State private var exportName = "study-sessions"
+    @State private var importingStudy = false
+    @State private var previewingStudy = false
+    @State private var studyPreviewFiles: [Data] = []
     init(services: AppServices) {
+        _study = ObservedObject(wrappedValue: services.studyLog)
         self.services = services; _transfer = ObservedObject(wrappedValue: services.transfer); _watchlist = ObservedObject(wrappedValue: services.watchlist)
     }
     var body: some View {
@@ -159,9 +165,33 @@ private struct LinkedFolderView: View {
                 }.disabled(!transfer.linked || transfer.busy)
                 NavigationLink { WatchlistView(store: services.watchlist) } label: { Text("Manual import / export") }
             }
-            Section("Study → laptop") {
+            Section("Laptop ↔ iPhone study") {
+                Text(transfer.studyStatus).font(.footnote).foregroundStyle(.secondary)
+                Button("Check linked laptop sessions") { Task { await transfer.checkStudy() } }
+                    .disabled(!transfer.linked || transfer.busy)
+                if !transfer.studyFiles.isEmpty {
+                    Button("Preview laptop sessions") { studyPreviewFiles = transfer.studyFiles; previewingStudy = true }
+                }
+                Button("Import laptop file…") { importingStudy = true }
+                Button("Export phone sessions for Study Desk") {
+                    do {
+                        let value = try study.exchangeData()
+                        document = PortableDocument(data: value.data); exportName = "study-iphone-\(value.source.uuidString.lowercased())"
+                        exportingStudy = true
+                    } catch { study.message = error.localizedDescription }
+                }
+                Button("Send phone sessions to linked folder") {
+                    Task {
+                        do { let value = try study.exchangeData(); await transfer.writePhoneStudy(value.data, source: value.source) }
+                        catch { study.message = error.localizedDescription }
+                    }
+                }.disabled(!transfer.linked || transfer.busy)
+                Text("Use one timer at a time. Finished-session import refuses overlapping time. Each device writes its own file; cloud delivery can be delayed. Imported records are not exported back as new sessions.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            Section("Study → roadmap") {
                 Button("Export finished study sessions") {
-                    do { document = PortableDocument(data: try services.studyExport()); exportingStudy = true }
+                    do { document = PortableDocument(data: try services.studyExport()); exportName = "study-sessions"; exportingStudy = true }
                     catch { watchlist.message = error.localizedDescription }
                 }
                 Button("Send finished sessions to linked folder") {
@@ -171,7 +201,20 @@ private struct LinkedFolderView: View {
             }
         }.personalList().navigationTitle("Linked folder")
         .fileImporter(isPresented: $selecting, allowedContentTypes: [.folder]) { result in if case .success(let url) = result { transfer.link(url) } }
-        .fileExporter(isPresented: $exportingStudy, document: document, contentType: .json, defaultFilename: "study-sessions") { result in if case .failure(let error) = result { watchlist.message = error.localizedDescription } }
+        .fileExporter(isPresented: $exportingStudy, document: document, contentType: .json, defaultFilename: exportName) { result in if case .failure(let error) = result { watchlist.message = error.localizedDescription } }
+        .fileImporter(isPresented: $importingStudy, allowedContentTypes: [.json]) { result in
+            guard case .success(let url) = result else { return }
+            Task {
+                let scoped = url.startAccessingSecurityScopedResource()
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                do {
+                    let data = try await Task.detached(priority: .utility) { try LinkedFolderService.readStudyDocument(url) }.value
+                    studyPreviewFiles = [data]; previewingStudy = true
+                } catch { study.message = "That study file could not be read: \(error.localizedDescription)" }
+            }
+        }
+        .sheet(isPresented: $previewingStudy) { StudyExchangePreview(store: study, files: studyPreviewFiles) }
+        .personalMessage("Study exchange", message: $study.message)
         .alert("Import Watchlist revision?", isPresented: Binding(get: { watchlist.pendingImport != nil }, set: { if !$0 { watchlist.pendingImport = nil } })) {
             Button("Import") { watchlist.applyImport() }; Button("Cancel", role: .cancel) { watchlist.pendingImport = nil }
         } message: { Text(watchlist.importDescription) }

@@ -18,8 +18,17 @@ owns exact evidence; [todo.md](todo.md) owns phone, provider and recovery checks
 
 Build 40 (0.15.0) adds a Daily routine checklist in source: grouped day parts, chosen weekdays,
 optional target times, Done/Skip/undo, pause/reorder and seven-day history. It starts empty and joins
-To-do/full JSON recovery. Cloud/native checks are pending; it is not in the delivered Build-39 IPA.
+To-do/full JSON recovery. Exact-source CI Gate passes at `18a59b1`, with 197 hosted and 15 UI tests;
+native review scored both accessibility fixes resolved. Phone acceptance remains open. No Build-40
+IPA is created; the routine is not in the delivered Build-39 IPA.
 [Routine contract](daily-routine-plan.md) owns the default layout and verification boundary.
+
+The first [Windows Study Desk](windows/README.md) implementation adds a resizable native desktop
+countdown, automatic pause on lock/sleep/minimize/close, local records and explicit finished-session
+exchange. Working Build-40 iOS source gains a previewed additive laptop importer and a separate
+phone-to-desktop exchange export. Exact-source cloud/native checks are pending for this addition.
+It does not change the delivered Build-39 IPA or signing ownership. iCloud folder delivery is
+optional transport, not a live cross-device lock; overlaps are refused rather than double-counted.
 
 Build 39 (0.14.1) is the requested Live Activity testing candidate: portrait/landscape study Focus,
 scoped keep-awake, quiet notifications during study and an optional SideStore Live Activity variant.

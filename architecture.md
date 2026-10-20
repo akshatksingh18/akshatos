@@ -6,12 +6,26 @@ merged in Build 38. Installation and device acceptance remain open. Build 37 is 
 and Build 31 is accepted recovery; the development branch remains unmerged.
 `cloud-build.md` owns exact evidence and `todo.md` the remaining gates.
 
+Windows Study Desk 0.1.0 is a WPF/.NET 10 companion under `windows/`, with a platform-independent
+core, atomic per-user local JSON state and a single-process guard. Lock/sleep/minimize/X close the
+current block; resume is manual. Checkpoints bound conservative recovery after a crash or missed
+interruption. The fixed `akshatos-study-exchange` version-1 format transports closed sessions,
+source IDs, timestamps, originating zone, recorded target and optional topic. It is distinct from
+the roadmap export and replace-all backup. Each origin writes its own file. Receivers preview
+additions, retain provenance/revision with saved records and refuse overlaps, changed IDs, stale
+revisions and invalid/future sessions before atomic save. Imported records are read-only and are
+not re-exported as new locally authored sessions. Missing rows never delete history; cross-device
+corrections/deletions require a future reviewed protocol. Phone provenance travels in its existing
+Study/full backup without a SwiftData schema/store change. Desktop/phone source checks are pending;
+folder availability/latency and Windows/iPhone lifecycle behavior need physical acceptance.
+
 Build 40 source adds an optional `DailyRoutine` inside the existing To-do snapshot. Templates and
 dated, zone-labelled checklist snapshots commit together; no new SwiftData store or backup part is
 created. Legacy JSON without the optional field still decodes. Explicit replacement from an older
 To-do backup clears the routine and warns accordingly. Daily materialization runs on load/day refresh,
 not completion or background work. Closed and completed/skipped snapshots retain their content;
-pending rows may follow today's template edits. `daily-routine-plan.md` owns scope; CI is pending.
+pending rows may follow today's template edits. `daily-routine-plan.md` owns scope; exact-source
+CI Gate passes at `18a59b1` (run `39122553639`). Physical routine/recovery checks remain open.
 
 Build 39 (0.14.1) delivers the requested study-display testing IPA. The optional
 WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains

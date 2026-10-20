@@ -18,13 +18,20 @@ struct StudyCorrectionView: View {
                     Button("Delete block", role: .destructive) { store.removeSegment(segment.id); if store.message == nil { dismiss() } }
                 }
             }.personalList().navigationTitle("Study block")
+            .disabled(segment.exchangeOriginID != nil)
+            .safeAreaInset(edge: .bottom) {
+                if segment.exchangeOriginID != nil {
+                    Text("Imported from Laptop · read-only in this exchange version.")
+                        .font(.footnote).padding().frame(maxWidth: .infinity).background(HubInk.background)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) { Button("Save") {
                     var value = segment
                     if value.end == nil { value.end = Date() }
                     if store.saveSegment(value) { dismiss() }
-                } }
+                }.disabled(segment.exchangeOriginID != nil) }
             }.personalMessage("Study correction", message: $store.message)
         }
     }

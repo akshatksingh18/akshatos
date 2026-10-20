@@ -68,7 +68,8 @@
   },
   "studylog": {
     "domain_sources": [
-      "AkshatOS/features/studylog/domain/StudyLog.swift"
+      "AkshatOS/features/studylog/domain/StudyLog.swift",
+      "AkshatOS/features/studylog/domain/StudyExchange.swift"
     ],
     "domain_test": "tests/studylog/main.swift",
     "integration_tests": [

@@ -8,9 +8,17 @@ behavior and the separate roadmap receiving importer remain open; see `cloud-bui
 
 ## Navigation and presentation
 
+Working Build-40 source adds a finished-session exchange under Settings > Linked folder: explicit
+manual import, linked laptop-file check/preview, and a separate phone-to-Study-Desk export. The
+foreground availability check never auto-applies records. Existing roadmap export remains separate.
+Study/full JSON recovery retains imported origin and revision. Overlap or changed-record conflicts
+refuse the complete merge. `windows/README.md` owns the first desktop client's limits; its new
+source/CI/device checks are separate from the earlier routine verification and delivered Build 39.
+
 Build 40 source adds Daily routine below priorities on Today and a management entry in To-do's More
 menu. Its grouped checklist, native item editor and seven-day history use the same four tabs and
-visual system. Cloud/native verification is pending; Build 39's delivered IPA is unchanged.
+visual system. Exact-source CI Gate passes at `18a59b1`; native review scored both accessibility
+fixes resolved. Phone acceptance remains open; Build 39's delivered IPA is unchanged.
 
 Build-39 source adds rotating desk Focus, a foreground-only keep-awake switch, quiet study
 notifications and an optional Live Activity candidate; `study-display.md` owns the contract and

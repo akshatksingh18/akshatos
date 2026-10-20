@@ -1,0 +1,16 @@
+{
+  "format": "akshatos-study-exchange",
+  "version": 1,
+  "sourceID": "33333333-3333-4333-8333-333333333333",
+  "device": "iphone",
+  "revision": 1,
+  "exportedAt": "2026-10-20T18:00:00Z",
+  "sessions": [{
+    "id": "44444444-4444-4444-8444-444444444444",
+    "start": "2026-10-20T17:00:00Z",
+    "end": "2026-10-20T17:30:00Z",
+    "timeZone": "Etc/UTC",
+    "targetSeconds": 21600,
+    "topic": ""
+  }]
+}

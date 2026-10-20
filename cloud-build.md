@@ -6,9 +6,20 @@ acceptance. It includes Build 38's personal hub and native accessibility fixes. 
 installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
-Working source is **0.15.0 (40)** for the requested Daily routine addition; its cloud/native checks
-run [39120899546](https://github.com/akshatksingh18/akshatos/actions/runs/39120899546) at
-`f8fed9b` is in progress; native review is pending and no Build-40 IPA has been requested. Both host/extension versions are kept aligned.
+The Windows Study Desk and additive laptop/phone exchange are a new implementation awaiting
+exact-source verification. `Windows Study Desk` CI runs core checks on Linux, then native WPF
+compile/render and a portable Windows x64 build; it does not produce an IPA. The updated iOS source
+remains Build 40, with no Build-40 IPA requested. Earlier routine-only evidence at `18a59b1` below
+is a baseline, not verification of the new exchange. `windows/README.md` owns desktop use and gates.
+
+Working source is **0.15.0 (40)** for the requested Daily routine addition. Exact-source
+[run 39122553639](https://github.com/akshatksingh18/akshatos/actions/runs/39122553639) at
+`18a59b1` passes Source checks, Build and test iOS and CI Gate: 18 release-contract tests, nine
+domain suites, 197 hosted tests and 15 UI tests. Both complete device variants pass payload checks.
+IPA packaging/upload were skipped; `test-diagnostics-185-1` is the only artifact. Matching native
+captures and a fresh reviewer confirm both routine accessibility fixes resolved; this is scoped
+evidence, not physical-phone acceptance. `daily-routine-plan.md` owns the capture/review boundary.
+No Build-40 IPA has been requested or created. Both host/extension versions are kept aligned.
 Delivered source is **0.14.1 (39)**. The user requested the combined Live Activity IPA;
 [manual release run 38975509228](https://github.com/akshatksingh18/akshatos/actions/runs/38975509228)
 passed at verified `8342d0e` with `package_ipa=true` and `build_variant=study-live-activity`.

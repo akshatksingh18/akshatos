@@ -86,6 +86,7 @@ struct HubRootView: View {
         services.personalNotifications.reconcile()
         services.studyActivity.reconcile()
         if services.transfer.linked { await services.transfer.checkWatchlist(after: services.watchlist.state.metadataRevision) }
+        if services.transfer.linked { await services.transfer.checkStudy() }
     }
 }
 

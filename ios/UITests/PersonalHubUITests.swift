@@ -14,6 +14,17 @@ extension XCUIApplication {
 
 final class PersonalHubUITests: XCTestCase {
     override func setUp() { super.setUp(); continueAfterFailure = false }
+    func testStudyExchangeLivesInSettingsWithoutAnotherTab() {
+        let app = XCUIApplication(); app.launch(); app.openApps()
+        app.buttons["open-personal-settings"].tap()
+        let folder = app.buttons["Linked folder"]
+        for _ in 0..<7 where !folder.isHittable { app.swipeUp() }
+        XCTAssertTrue(folder.isHittable); folder.tap()
+        let manual = app.buttons["Import laptop file…"]
+        for _ in 0..<8 where !manual.isHittable { app.swipeUp() }
+        XCTAssertTrue(manual.isHittable)
+        XCTAssertEqual(app.tabBars.buttons.count, 4)
+    }
     func testFourTabsAndTaskCaptureWithoutFitnessNoise() {
         let app = XCUIApplication(); app.launch()
         XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10))

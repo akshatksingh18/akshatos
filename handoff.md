@@ -1,9 +1,21 @@
 # AkshatOS session handoff
 
-Build 40 (0.15.0) now adds the requested Daily routine in source; cloud/native verification is
-pending. `daily-routine-plan.md` owns the grouped default (optional layout question unanswered),
-calendar-day record and recovery contract. Do not package a Build-40 IPA without a release request.
+Build 40 (0.15.0) adds the requested Daily routine in source; exact-source CI Gate passes at
+`18a59b1` (run `39122553639`), and native review scored both accessibility fixes resolved.
+`daily-routine-plan.md` owns the grouped default (optional layout question unanswered), activity-day
+record and recovery contract. Phone acceptance remains open. Do not package a Build-40 IPA without a release request.
 Build 39 remains the delivered testing candidate described below.
+
+The Windows Study Desk and additive laptop/phone session exchange are implemented in source,
+awaiting exact-source cloud/native verification. The user confirmed remaining time primary,
+studied time below, automatic pause on lock/sleep/X and manual Resume, both devices recording and
+iCloud Drive research/testing. `windows/CLAUDE.md` and `windows/README.md` own the desktop source,
+operation and first-version limits; local `desktop-study-plan.md` retains decisions. No tiny fixed
+window, hidden running tray timer, repeat preference question or automatic private-data cloud write.
+Overlaps stop merge; disconnected devices cannot enforce one global running timer. Read-only closed
+sessions merge without duplication, source provenance survives backup, and imported time is not
+re-exported as new local time. Do not use roadmap export or replace-all restore as this exchange.
+The delivered Build-39 IPA lacks this importer and stays the SideStore/display test candidate.
 
 Build 39 (0.14.1), **study-live-activity variant**, is delivered without merging.
 Manual release run `38975509228` passed at verified `8342d0e` on the development branch. Local
@@ -157,11 +169,12 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-For the current code task, finish the requested Build-40 routine's cloud/native verification and
-finish review; source implementation alone is not acceptance. Its tests include legacy decode,
-daily/weekday/DST/replay, snapshot history, real save/restore and UI check/uncheck. No source change
-in this work signs/installs an app or replaces the delivered Build-39 cache. The user may test
-the already-delivered Build 39 independently of this source work.
+Build-40 routine implementation, exact-source cloud checks and the bounded native finish review
+are complete. Tests include legacy decode, daily/weekday/DST/replay, snapshot history, real save/restore
+and UI check/uncheck. The documenter confirmed that the existing design system remains appropriate.
+Future routine phone acceptance needs an explicitly requested Build-40 release; no IPA was created.
+Check real day rollover, native editing and restoration on the phone then. Build 39 remains in the
+testing cache and can be tested independently; no signing/installation or cache replacement occurred.
 
 0. **User-operated signing/install of delivered Build 39:** the Live Activity IPA from successful
    manual run `38975509228` is validated in testing. Follow the SideStore preservation/provisioning

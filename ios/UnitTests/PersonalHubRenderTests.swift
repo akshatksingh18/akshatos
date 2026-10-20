@@ -58,6 +58,25 @@ import SwiftData
             completedTasks: 0, selectedPriorities: 2, completedPriorities: 0)
         await capture(NavigationStack { JournalView(store: journal, facts: { _ in facts }, planTomorrow: {}) }, name: "Native Journal unlocked 390", size: CGSize(width: 390, height: 844))
     }
+    func testStudyExchangeReviewAndConflictAtPhoneSizes() async throws {
+        let suite = "exchange-render-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let now = Date()
+        let study = StudyLogStore(repository: SwiftDataStudyLogRepository(container: try container(StudyLogSchemaV1.self)), defaults: defaults, now: { now })
+        study.load()
+        XCTAssertTrue(study.saveSegment(StudySegment(start: now.addingTimeInterval(-3600), end: now.addingTimeInterval(-1800), source: .manual, dayTarget: 21600)))
+        var payload = StudyExchange(sourceID: UUID(), device: "laptop", revision: 1, exportedAt: now,
+            sessions: [.init(id: UUID(), start: now.addingTimeInterval(-9000), end: now.addingTimeInterval(-7800), timeZone: "UTC", targetSeconds: 21600, topic: "Read a chapter")])
+        let data = try LocalDataCoding.encode(payload)
+        await capture(StudyExchangePreview(store: study, files: [data]), name: "Native exchange review 390", size: CGSize(width: 390, height: 844))
+        await capture(StudyExchangePreview(store: study, files: [data]).environment(\.dynamicTypeSize, .accessibility3), name: "Native exchange review 320 accessibility", size: CGSize(width: 320, height: 568))
+        payload.sessions[0].start = now.addingTimeInterval(-3500); payload.sessions[0].end = now.addingTimeInterval(-2000)
+        let conflict = try LocalDataCoding.encode(payload)
+        await capture(StudyExchangePreview(store: study, files: [conflict]), name: "Native exchange overlap 390", size: CGSize(width: 390, height: 844))
+        await capture(StudyExchangePreview(store: study, files: [conflict]).environment(\.dynamicTypeSize, .accessibility3), name: "Native exchange overlap 320 accessibility", size: CGSize(width: 320, height: 568))
+        XCTAssertEqual(study.log.segments.count, 1, "Preview alone must not save anything")
+    }
     private func capture<V: View>(_ view: V, name: String, size: CGSize) async {
         let previous = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows).first(where: \.isKeyWindow)
         let window = UIWindow(frame: CGRect(origin: .zero, size: size))

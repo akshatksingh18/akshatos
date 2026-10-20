@@ -54,3 +54,9 @@ implementation-plan.md
 todo-journal-plan.md
 laptop-phone-sync.md
 laptop-phone-sync-research-prompt.md
+desktop-study-plan.md
+
+# Windows companion build output and local records
+**/bin/
+**/obj/
+windows/artifacts/

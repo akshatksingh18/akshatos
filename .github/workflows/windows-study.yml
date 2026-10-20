@@ -1,0 +1,73 @@
+name: Windows Study Desk
+on:
+  pull_request:
+    branches: [main]
+    paths: ["windows/**", ".github/workflows/windows-study.yml"]
+  push:
+    branches: [main]
+    paths: ["windows/**", ".github/workflows/windows-study.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: study-desk-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+jobs:
+  domain:
+    name: Desktop domain and recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with: {persist-credentials: false}
+      - uses: actions/setup-dotnet@v5.0.0
+        with: {global-json-file: windows/global.json}
+      - name: Test clock, recovery and exchange
+        working-directory: windows
+        run: dotnet run --project tests/StudyDesk.Tests.csproj -c Release -- --write-wire artifacts/wire
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: study-desk-wire
+          path: windows/artifacts/wire
+          retention-days: 7
+  windows:
+    name: Native Windows build and captures
+    needs: domain
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with: {persist-credentials: false}
+      - uses: actions/setup-dotnet@v5.0.0
+        with: {global-json-file: windows/global.json}
+      - name: Compile native application
+        working-directory: windows
+        run: dotnet build app/StudyDesk.csproj -c Release
+      - name: Render synthetic native states
+        working-directory: windows
+        run: dotnet run --no-build --project app/StudyDesk.csproj -c Release -- --capture artifacts/native
+      - name: Build portable Windows application
+        working-directory: windows
+        run: dotnet publish app/StudyDesk.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/portable
+      - name: Add operation guide and package
+        shell: pwsh
+        run: |
+          Copy-Item -LiteralPath windows/README.md -Destination windows/artifacts/portable/README.md
+          Compress-Archive -Path windows/artifacts/portable/* -DestinationPath windows/artifacts/AkshatOS-StudyDesk-windows-x64.zip
+          (Get-FileHash windows/artifacts/AkshatOS-StudyDesk-windows-x64.zip -Algorithm SHA256).Hash.ToLower() | Set-Content windows/artifacts/SHA256.txt
+      - uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: study-desk-native-${{ github.run_number }}
+          path: windows/artifacts/native
+          retention-days: 7
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: study-desk-windows-${{ github.run_number }}
+          path: |
+            windows/artifacts/AkshatOS-StudyDesk-windows-x64.zip
+            windows/artifacts/SHA256.txt
+          retention-days: 14

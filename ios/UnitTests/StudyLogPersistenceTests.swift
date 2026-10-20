@@ -56,6 +56,32 @@ import XCTest
                        "A paused block stays the length it was")
     }
 
+    func testLaptopExchangeSurvivesRelaunchBackupAndRefusesOverlap() throws {
+        let container = try makeContainer(), store = try makeStore(container)
+        let source = UUID(), id = UUID()
+        let payload = StudyExchange(sourceID: source, device: "laptop", revision: 1, exportedAt: current,
+            sessions: [.init(id: id, start: current.addingTimeInterval(-3600), end: current.addingTimeInterval(-1800),
+                timeZone: "UTC", targetSeconds: 21600, topic: "Read a chapter")])
+        let data = try LocalDataCoding.encode(payload)
+        XCTAssertTrue(store.importExchange([data]))
+        XCTAssertTrue(store.importExchange([data]))
+        XCTAssertEqual(store.log.segments.count, 1)
+        let reopened = try makeStore(container)
+        XCTAssertEqual(reopened.log.segments.first?.exchangeOriginID, source)
+        let restored = try makeStore(try makeContainer())
+        XCTAssertTrue(restored.restoreBackup(try reopened.backupData()))
+        XCTAssertTrue(restored.importExchange([data]))
+        XCTAssertEqual(restored.log.segments.count, 1)
+        restored.removeSegment(id)
+        XCTAssertEqual(restored.log.segments.count, 1, "Imported records cannot be locally removed and replayed")
+        var collision = payload
+        collision.sessions[0].id = UUID()
+        XCTAssertFalse(restored.importExchange([try LocalDataCoding.encode(collision)]))
+        XCTAssertEqual(restored.log.segments.count, 1)
+        let outward = try LocalDataCoding.decode(StudyExchange.self, restored.exchangeData().data)
+        XCTAssertTrue(outward.sessions.isEmpty, "Laptop hours must not be exported as new phone hours")
+    }
+
     func testStartPauseUndoAndCSVUseTheSavedBlocks() throws {
         let store = try makeStore(try makeContainer())
         store.start(); store.undoEdit(); XCTAssertTrue(store.log.segments.isEmpty)

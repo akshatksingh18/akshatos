@@ -8,8 +8,9 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 (0.14.1), study-live-activity variant at `8342d0e`. Manual run `38975509228`, local checksum/payload/
 version checks and delivery to the one-slot testing cache pass. The draft branch remains unmerged;
 installed signing/refresh ownership is unchanged.
-Build 40 (0.15.0) now implements the requested Daily routine in source; exact-source cloud/native
-verification is pending. `daily-routine-plan.md` owns the grouped default, daily snapshots, scope
+Build 40 (0.15.0) implements the requested Daily routine in source; exact-source CI Gate passes at
+`18a59b1` (run `39122553639`), and both native accessibility fixes are scored resolved.
+Phone acceptance remains open. `daily-routine-plan.md` owns the grouped default, daily snapshots, scope
 and recovery contract. No Build-40 IPA is requested; the Build-39 testing cache stays intact.
 Rotating desk Focus, keep-awake, quiet study notifications and the optional SideStore Live Activity
 candidate are tracked in `study-display.md`; exact-source CI passes at `8342d0e`. Native inspection
@@ -22,10 +23,18 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       Current full CI: run `38971711206` at `8342d0e`; native inspection at `86c4367` applies to
       the unchanged UI source. The subsequent requested release below delivers the IPA.
 - [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
+- [x] Windows Study Desk and additive phone exchange implemented in source: resizable countdown,
+      manual Resume, lock/sleep/minimize/X pause, explicit file transport and overlap refusal.
+- [ ] Exact-source Windows core/native/package checks and iOS CI Gate for the exchange addition;
+      then native finish review. `windows/README.md` owns operation and first-version limits.
+- [ ] Physical Windows/iPhone/iCloud round trip, lifecycle, same-ID re-sign and duplicate/conflict
+      acceptance. No live distributed lock, cross-device edits/deletions or Build-40 IPA is implied.
 - [x] Build-40 routine source: Today checklist, user-authored day groups/times/weekdays, Done/Skip,
       reversal, pause/reorder and seven-day history, in To-do's atomic snapshot and JSON recovery.
-- [ ] Build-40 exact-source CI, native routine/manager accessibility inspection and finish review;
-      phone check-offs/day rollover, native form editing and backup restoration remain separate.
+- [x] Build-40 exact-source CI, native routine/manager/editor/history inspection and finish review;
+      run `39122553639` at `18a59b1`, 197 hosted and 15 UI tests, both device variants; no IPA created.
+- [ ] Future Build-40 phone acceptance after a requested release: check-offs/day rollover, native
+      form editing, accessibility/VoiceOver and backup restoration.
 - [x] Build-39 release preparation: explicit variant selection and strict single-study-extension
       validation pass exact-source CI at `8342d0e` (run `38971711206`), with both complete built
       .app directories, arm64 checks and matching generated versions. All 18 contract tests pass.

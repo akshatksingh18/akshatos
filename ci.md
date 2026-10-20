@@ -8,6 +8,14 @@ PageVault's phone verification.
 
 ## Automated checks
 
+- **Windows Study Desk** (`windows-study.yml`): path-scoped PR/main and manual jobs use pinned
+  .NET 10.0.402. Ubuntu 24.04 runs clock/recovery/exchange assertions; Windows 2025 compiles WPF,
+  renders synthetic native normal/narrow/large/transfer states and publishes the self-contained
+  x64 ZIP plus SHA-256. Read-only permissions, no secrets, bounded timeouts and concurrency
+  cancellation apply. Shared wire fixtures also join the Swift study domain suite. Desktop success
+  must be verified separately from the required iOS CI Gate; it does not package an IPA or prove
+  physical lock/sleep/display/provider behavior.
+
 - Every pull request to `main` runs Source checks and `CI Gate`. On a normal PR update, a checked-out
   full-history diff compares the previous head to the new head; a newly opened/reopened PR compares
   its base to its head. The macOS build is skipped only when every changed path ends in `.md`; an

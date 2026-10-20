@@ -3,12 +3,12 @@
 **Status:** Pilot approved; Akshat reports setting up SideStore on the laptop. On-phone installation,
 self-refresh, app handover and unattended renewals are not yet confirmed. Sideloadly's local
 records still enroll both apps; no signing ownership or certificate setting was changed in this
-check. Akshat runs the steps below on the PC and phone, alongside
-WHOOP Build 86's implementation (WHOOP `todo.md` section 10). LocalDevVPN is allowed on the phone
+check. Akshat runs the steps below on the PC and phone; WHOOP's current build and its later handover
+remain owned by that project's instructions. LocalDevVPN is allowed on the phone
 as SideStore's installer helper; it is never a WHOOP or AkshatOS dependency.
-Public sources checked 2026-10-09; release claims are from that research, not a fresh release check.
-The study extension follow-up below was checked against public upstream sources on 2026-10-16;
-the latest-release URL still resolves to 0.7.0-alpha. The phone pilot remains unverified.
+Public install/prerequisite/FAQ pages and the latest-release URL were rechecked 2026-10-19.
+They still prescribe iloader and LocalDevVPN, and latest resolves to 0.7.0-alpha. The study
+extension follow-up uses pinned upstream provisioning source. The phone pilot remains unverified.
 The cached iloader MSI is present locally; registry/process probes did not establish an installed
 or running iloader in this session, which does not contradict Akshat's setup report.
 
@@ -90,10 +90,10 @@ These are our acceptance requirements, not completed migration steps:
 Approved; laptop setup reported, phone steps unconfirmed. Each step is done by Akshat on the
 PC/phone; nothing is automated by the agent.
 
-1. **Timing (Akshat: alongside WHOOP Build 86):** set up SideStore and move AkshatOS first,
-   install WHOOP Build 86 with Sideloadly (the proven path), and move WHOOP to SideStore only
-   after Build 86 has worked for a day or two. A signing problem and a new-build problem then
-   stay distinguishable while both happen in the same window.
+1. **Timing:** set up SideStore and pilot the delivered AkshatOS Build-39 Live Activity candidate
+   first. Leave WHOOP's installed app and existing refresh owner alone during this pilot; its
+   owning project controls its current build and later handover. Build 40 is source-only and is
+   not in this installation. Do not assume the earlier WHOOP Build-86 timing remains current.
 2. **Backups first:** WHOOP encrypted export copied to Windows; AkshatOS Back up everything with
    the Body photo count checked against the library. Record each app's final bundle ID and expiry.
 3. **Install SideStore** from its official release after checking which version the Stable
@@ -115,6 +115,61 @@ PC/phone; nothing is automated by the agent.
    from the PC, with advancing expiry and preserved data. Then decide adopt, fallback or remove.
 8. **Rollback:** reinstall the cached IPA with Sideloadly at the same final bundle ID and
    re-enable its automatic refresh; restore from the step-2 backups only if data was lost.
+
+## Build-39 install and test checklist
+
+This is an instruction checklist, not evidence that any installation or test was performed.
+`cloud-build.md` owns the exact testing IPA path and checksum; `study-display.md` owns the full
+physical edge-case matrix. Keep the accepted Build-31 recovery copy unchanged.
+
+1. Export AkshatOS full backup and WHOOP's encrypted backup to Windows. Confirm the files are
+   actually readable there; compare Body photos with the library. Do not test a destructive
+   restore against the only live copy. Do not uninstall either app or switch Apple Accounts.
+2. Use home Wi-Fi and USB for initial setup. Install LocalDevVPN from the official prerequisite
+   page on the phone. Open iloader on Windows (use its official installer if needed), connect and
+   trust the phone, sign in with the same signing Apple Account/team, select the phone and choose
+   Install SideStore (Stable), not LiveContainer. Check the fetched version against releases.
+3. Trust the developer in Settings > General > VPN & Device Management; enable Developer Mode
+   if needed. Connect LocalDevVPN, open SideStore, sign in with the same account and manually
+   refresh SideStore itself before adding AkshatOS. Stop at certificate-revocation prompts for
+   review: the generic upstream Yes instruction does not establish safety for the existing apps.
+4. Copy the validated Build-39 unsigned IPA to Files yourself. In SideStore > My Apps > +,
+   select it and keep extensions with Register app ID for each extension. Preserve the expected
+   final host identity `com.akshatksingh18.akshatos.5564K8D4SV`, team and keychain groups; do not
+   select a random/custom identity. If identity cannot be confirmed before overwrite, stop for
+   inspection. A duplicate app, unexpected empty store or prompt to delete the original is not
+   a successful in-place handover. Do not delete either copy to troubleshoot.
+5. Confirm version 0.14.1 (39), four tabs, previous study/task/fitness/Body/PageVault data and
+   permissions. After a successful SideStore-managed install/refresh and identity/data checks,
+   retire only AkshatOS's Sideloadly automatic-refresh enrollment and update its expiry monitor;
+   do not change WHOOP's owner or globally disable its daemon. No ownership change has occurred
+   merely because SideStore installed.
+6. Run a short study, pause for a break and resume. Check actual elapsed time. Open Focus,
+   rotate both ways, enable Keep screen awake, then leave/reopen Focus and verify it defaults off.
+7. Enable Focus > Lock-screen timer > Show study timer, lock and check the card. Pausing should
+   end it; resuming from the foreground should request a new one. Missing cards are display/signing
+   failures, not permission to erase study data. Check system Live Activity access if absent.
+8. Enable Settings > StandBy, charge and stand the locked phone sideways. Inspect/expand the
+   study Live Activity if present. Compare its studied/remaining values with the app. Then test
+   DND before Start and toggled during study, without an AkshatOS allowlist, plus Low Power Mode,
+   Sleep Focus and unplugging. Display sleep must not pause the persisted block; dimmed seconds
+   need not animate continuously. Calls/other apps remain under iOS control.
+9. Switch apps, lock for several minutes, relaunch and compare totals; inspect the next actual
+   03:00 rollover. Reboot/card recovery and long-session limits follow `study-display.md`.
+10. Test other hub features using disposable tasks/Journal entries and a short PageVault read;
+    export a fresh full backup without replacing live data. Build 39 has no Daily routine yet.
+11. Separately test linked-folder delivery with harmless files in both directions; measure actual
+    arrival/edit latency, offline recovery and re-linking per `laptop-phone-sync.md`. This is not
+    continuous sync, and it does not depend on SideStore working.
+12. Away from the PC, manually refresh SideStore and AkshatOS and check advancing expiry/data.
+    Then verify two unattended renewals of both with Wi-Fi and the required tunnel available.
+    Record exact expiry changes rather than assuming a rounded day counter proves renewal. Keep
+    WHOOP migration and cache promotion open until their own acceptance gates pass.
+
+Report version, old-data preservation, manual refresh/expiry, landscape/keep-awake, lock-screen,
+StandBy, DND and timed-session results as pass/fail. Never include passwords, pairing files or
+signing material in reports. No installer, account, certificate or refresh-owner state was changed
+by preparing these instructions.
 
 ## Scope boundary
 

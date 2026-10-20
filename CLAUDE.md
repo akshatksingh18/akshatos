@@ -17,8 +17,9 @@ Squats fallback.
 while AkshatOS's import/removal cutover remains open. Read it before a cross-app port, notification ownership,
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
-**Status:** Build 40 (0.15.0) adds the requested Daily routine in source on draft PR #68; cloud/native
-verification is pending. It extends Today and To-do recovery without a new tab or notifications;
+**Status:** Build 40 (0.15.0) adds the requested Daily routine in source on draft PR #68; exact-source
+CI Gate passes at `18a59b1` (run `39122553639`) and both native accessibility fixes are scored resolved.
+Phone acceptance remains open; no Build-40 IPA is created. It extends Today and To-do recovery without a new tab or notifications;
 `daily-routine-plan.md` owns scope and defaults. Build 39 (0.14.1) remains the delivered testing IPA. Exact-source
 cloud checks pass at `8342d0e`, including standard/Live Activity selection, strict payload validation
 and both complete device builds. Native Focus/card inspection at `86c4367` remains applicable;
@@ -35,6 +36,11 @@ push under the standing documentation rule.
 
 ## Files
 
+- `windows/` — native Windows Study Desk companion, its core/transfer tests, portable build and
+  operation guide; read `windows/CLAUDE.md`. First implementation awaits exact-source cloud checks.
+- `desktop-study-plan.md` — selected resizable/customizable Windows app direction and proposed
+  non-destructive import into phone history (local only); confirmed close/lock/sleep rules and
+  implementation/device gates. Read before this work.
 - `daily-routine-plan.md` — requested Daily routine checklist, quiet Today integration, daily-record
   and recovery contract, defaults and implementation/verification scope; read before routine work.
 - `ios/AkshatOS/features/todo/domain/DailyRoutine.swift` and `features/todo/RoutineView.swift`
