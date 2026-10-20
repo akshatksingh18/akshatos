@@ -2,7 +2,8 @@
 
 Native WPF companion to AkshatOS Study Log. Read the parent instructions first.
 
-**Status:** First implementation in progress; cloud and physical acceptance are separate gates.
+**Status:** First portable 0.1.0 candidate passes cloud checks and native finish review; physical
+Windows/iPhone/provider acceptance remains open. `../cloud-build.md` owns exact artifact evidence.
 
 ## Files
 

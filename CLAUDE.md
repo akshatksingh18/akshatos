@@ -37,9 +37,10 @@ push under the standing documentation rule.
 ## Files
 
 - `windows/` — native Windows Study Desk companion, its core/transfer tests, portable build and
-  operation guide; read `windows/CLAUDE.md`. First implementation awaits exact-source cloud checks.
-- `desktop-study-plan.md` — selected resizable/customizable Windows app direction and proposed
-  non-destructive import into phone history (local only); confirmed close/lock/sleep rules and
+  operation guide; read `windows/CLAUDE.md`. Portable candidate passes cloud checks/native review;
+  physical acceptance remains open. `cloud-build.md` owns exact evidence.
+- `desktop-study-plan.md` — selected resizable/customizable Windows app and additive
+  import into phone history (local only); confirmed close/lock/sleep rules and
   implementation/device gates. Read before this work.
 - `daily-routine-plan.md` — requested Daily routine checklist, quiet Today integration, daily-record
   and recovery contract, defaults and implementation/verification scope; read before routine work.
@@ -81,8 +82,8 @@ push under the standing documentation rule.
   checks its render/state logic, and `mocks/make-chat-preview.cjs` packages a scoped, synthetic
   in-chat preview for phone review without a server or public deployment. Earlier comparisons stay
   as reference; the approved native system is documented in `DESIGN.md` after finish review.
-- `laptop-phone-sync.md` (local only) — reviewed research and proposed approach for moving files between the
-  laptop and the apps (iCloud Drive linked folder, measure first, test build), plus the open
+- `laptop-phone-sync.md` (local only) — reviewed research and implemented file-exchange contract between the
+  laptop and the apps (iCloud Drive linked folder, explicit transfer and device latency pilot), plus the open
   data-policy decision; read before building any import/export hand-off.
 - `laptop-phone-sync-research-prompt.md` (local only) — self-contained research brief (no personal data) on moving
   files between the Windows laptop and the sideloaded apps: setup, what was tried, requirements and

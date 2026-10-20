@@ -6,15 +6,29 @@ acceptance. It includes Build 38's personal hub and native accessibility fixes. 
 installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
-The Windows Study Desk passes [run 39412259561](https://github.com/akshatksingh18/akshatos/actions/runs/39412259561)
-at `958475b`: 37 core assertions, native WPF compilation/action smoke checks, five native client
-renders and portable Windows x64 packaging. The corrected captures received a fresh finish-review
-`ship` verdict with no material fixes. A subsequent study-day date-heading correction must pass
-its new native 02:00 regression before delivery. The additive phone exchange still awaits iOS CI
-and its own native review. `Windows Study Desk` CI runs core checks on Linux, then native WPF
+Windows Study Desk 0.1.0 passes [run 39412889714](https://github.com/akshatksingh18/akshatos/actions/runs/39412889714)
+at `cd17eef`: 37 core assertions, native WPF compilation/action smoke checks (Pause, X and the
+02:00 study-day heading), five native client renders and portable Windows x64 packaging. The
+captures match the reviewed `958475b` layouts byte-for-byte; the fresh finish review returned
+`ship` with no material fixes. The documenter confirms an ordinary extension and preserves the
+incumbent design files. Phone simulator tests pass in run `39412889821`; the fresh review accepts
+all four native captures and requests one truthful recovery-copy fix for immutable overlap conflicts.
+That correction and the directly analogous Windows error clarification now await exact-source CI
+and a phone verdict pass; the validated Windows candidate below precedes those text-only changes.
+`Windows Study Desk` CI runs core checks on Linux, then native WPF
 compile/render and a portable Windows x64 build; it does not produce an IPA. The updated iOS source
 remains Build 40, with no Build-40 IPA requested. Earlier routine-only evidence at `18a59b1` below
 is a baseline, not verification of the new exchange. `windows/README.md` owns desktop use and gates.
+
+Windows artifact `study-desk-windows-4` contains `AkshatOS-StudyDesk-windows-x64.zip` (60,830,490 bytes),
+SHA-256 `e9ab410de8ed25c58843da84e8e29598d0c7fdb00c3939382c5c6c5837def999`. It is downloaded and
+extracted under `windows/artifacts/testing/study-desk-cd17eef/app/`; launch `AkshatOS.StudyDesk.exe`.
+The executable is 139,833,003 bytes, file version 0.1.0.0; ProductVersion includes the Actions PR
+merge checkout `cdb7c0fefc89c5c989be889659c5ea8ac71ca475`. ZIP hash, safe entry paths and PE metadata
+were checked without running the app locally. Native evidence is in the ignored
+`.impeccable/review/windows-study-cd17eef/`; these are WPF client renders, not physical desktop
+screenshots. The package is unsigned. Real lock/sleep/display scaling and iCloud delivery remain
+user-operated acceptance gates. The IPA cache is unchanged.
 
 Working source is **0.15.0 (40)** for the requested Daily routine addition. Exact-source
 [run 39122553639](https://github.com/akshatksingh18/akshatos/actions/runs/39122553639) at

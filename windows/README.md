@@ -1,6 +1,8 @@
 # AkshatOS Study Desk for Windows
 
-Native Windows study timer. Source version 0.1.0; a packaged candidate is not a physical-device pass.
+Native Windows study timer. Portable candidate 0.1.0 passes cloud checks and native finish review;
+a packaged candidate is not a physical-device pass. `../cloud-build.md` owns the current source,
+run, local candidate path and checksum.
 The WPF app uses .NET 10; CI publishes a self-contained x64 build, so using the packaged application
 does not require installing an SDK or a separate runtime. The ZIP is unsigned.
 
@@ -28,7 +30,7 @@ The executable folder contains no live records. A failed save retains the previo
 an error; a normal close is blocked if the pause cannot be saved. Invalid existing data is not reset.
 Keep recovery files local. There is no delete/reset command in this first build.
 
-The study day starts at 03:00. Sessions keep their originating IANA time zone and daily aim; duration
+The study day and date heading roll over at 03:00. Sessions keep their originating IANA time zone and daily aim; duration
 uses absolute timestamps, including DST. Changing the aim does not rewrite the current recorded day.
 Closed sessions are read-only in exchange version 1. Independent cross-device corrections/deletions
 are deliberately unsupported: changed IDs stop import, and absence never deletes history.

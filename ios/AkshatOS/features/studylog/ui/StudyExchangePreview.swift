@@ -23,7 +23,7 @@ struct StudyExchangePreview: View {
                 case .failure(let error):
                     Section("Import stopped") {
                         Text(error.localizedDescription)
-                        Text("Pause the other timer and reconcile the conflicting times. Your existing study history is unchanged.")
+                        Text("Nothing was imported. Your existing study history is unchanged. Close this preview and choose another study file. Finished records cannot be corrected through this exchange.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 }

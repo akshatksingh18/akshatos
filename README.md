@@ -26,7 +26,9 @@ IPA is created; the routine is not in the delivered Build-39 IPA.
 The first [Windows Study Desk](windows/README.md) implementation adds a resizable native desktop
 countdown, automatic pause on lock/sleep/minimize/close, local records and explicit finished-session
 exchange. Working Build-40 iOS source gains a previewed additive laptop importer and a separate
-phone-to-desktop exchange export. Exact-source cloud/native checks are pending for this addition.
+phone-to-desktop exchange export. The portable Windows candidate passes cloud checks and native
+finish review; phone exchange verification is still pending. See [cloud build](cloud-build.md) for
+the candidate path and remaining device gates.
 It does not change the delivered Build-39 IPA or signing ownership. iCloud folder delivery is
 optional transport, not a live cross-device lock; overlaps are refused rather than double-counted.
 

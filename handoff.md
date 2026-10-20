@@ -6,8 +6,9 @@ Build 40 (0.15.0) adds the requested Daily routine in source; exact-source CI Ga
 record and recovery contract. Phone acceptance remains open. Do not package a Build-40 IPA without a release request.
 Build 39 remains the delivered testing candidate described below.
 
-The Windows Study Desk and additive laptop/phone session exchange are implemented in source,
-awaiting exact-source cloud/native verification. The user confirmed remaining time primary,
+Windows Study Desk 0.1.0 passes cloud checks at `cd17eef` (run `39412889714`) and native finish review
+(`ship`); its ZIP/hash/version are validated locally. `cloud-build.md` owns the candidate path.
+The additive phone exchange still awaits iOS CI/native review. The user confirmed remaining time primary,
 studied time below, automatic pause on lock/sleep/X and manual Resume, both devices recording and
 iCloud Drive research/testing. `windows/CLAUDE.md` and `windows/README.md` own the desktop source,
 operation and first-version limits; local `desktop-study-plan.md` retains decisions. No tiny fixed

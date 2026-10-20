@@ -83,7 +83,7 @@ public static class StudyClock
         }
         for (var i = 1; i < sessions.Length; i++)
             if (sessions[i - 1].End is null || sessions[i - 1].End > sessions[i].Start)
-                throw new InvalidDataException("Study sessions overlap. Pause the other timer and correct the conflicting times before importing.");
+                throw new InvalidDataException("Study sessions overlap. Overlapping study time cannot be combined.");
         return sessions;
     }
 }

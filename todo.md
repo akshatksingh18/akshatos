@@ -25,8 +25,11 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
 - [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
 - [x] Windows Study Desk and additive phone exchange implemented in source: resizable countdown,
       manual Resume, lock/sleep/minimize/X pause, explicit file transport and overlap refusal.
-- [ ] Exact-source Windows core/native/package checks and iOS CI Gate for the exchange addition;
-      then native finish review. `windows/README.md` owns operation and first-version limits.
+- [x] Windows core/native/package checks at `cd17eef` (run `39412889714`): 37 core assertions,
+      Pause/X/date-heading smoke and five layouts; fresh native finish review returned `ship`.
+      Portable candidate hash/version checked locally. `cloud-build.md` owns its path and checksum.
+- [ ] iOS CI Gate and native exchange preview/conflict finish review for the exchange addition.
+      `windows/README.md` owns operation and first-version limits.
 - [ ] Physical Windows/iPhone/iCloud round trip, lifecycle, same-ID re-sign and duplicate/conflict
       acceptance. No live distributed lock, cross-device edits/deletions or Build-40 IPA is implied.
 - [x] Build-40 routine source: Today checklist, user-authored day groups/times/weekdays, Done/Skip,

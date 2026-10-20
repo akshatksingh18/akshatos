@@ -11,13 +11,15 @@ core, atomic per-user local JSON state and a single-process guard. Lock/sleep/mi
 current block; resume is manual. Checkpoints bound conservative recovery after a crash or missed
 interruption. The fixed `akshatos-study-exchange` version-1 format transports closed sessions,
 source IDs, timestamps, originating zone, recorded target and optional topic. It is distinct from
-the roadmap export and replace-all backup. Each origin writes its own file. Receivers preview
-additions, retain provenance/revision with saved records and refuse overlaps, changed IDs, stale
+the roadmap export and replace-all backup. Each origin writes its own file. Receivers review
+files before import (phone previews new additions; Windows confirms file/session count), retain
+provenance/revision with saved records and refuse overlaps, changed IDs, stale
 revisions and invalid/future sessions before atomic save. Imported records are read-only and are
 not re-exported as new locally authored sessions. Missing rows never delete history; cross-device
 corrections/deletions require a future reviewed protocol. Phone provenance travels in its existing
-Study/full backup without a SwiftData schema/store change. Desktop/phone source checks are pending;
-folder availability/latency and Windows/iPhone lifecycle behavior need physical acceptance.
+Study/full backup without a SwiftData schema/store change. Desktop cloud checks, portable packaging
+and native finish review pass; phone exchange verification remains pending. Folder availability/
+latency and Windows/iPhone lifecycle behavior need physical acceptance (`cloud-build.md`).
 
 Build 40 source adds an optional `DailyRoutine` inside the existing To-do snapshot. Templates and
 dated, zone-labelled checklist snapshots commit together; no new SwiftData store or backup part is

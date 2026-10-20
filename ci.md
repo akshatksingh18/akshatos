@@ -10,7 +10,8 @@ PageVault's phone verification.
 
 - **Windows Study Desk** (`windows-study.yml`): path-scoped PR/main and manual jobs use pinned
   .NET 10.0.402. Ubuntu 24.04 runs clock/recovery/exchange assertions; Windows 2025 compiles WPF,
-  renders synthetic native normal/narrow/large/transfer states and publishes the self-contained
+  renders synthetic native normal/narrow/large/transfer/customize states, checks Pause/X and the
+  03:00 date heading, and publishes the self-contained
   x64 ZIP plus SHA-256. Read-only permissions, no secrets, bounded timeouts and concurrency
   cancellation apply. Shared wire fixtures also join the Swift study domain suite. Desktop success
   must be verified separately from the required iOS CI Gate; it does not package an IPA or prove

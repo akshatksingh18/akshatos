@@ -30,7 +30,8 @@ studied time below, readable resizable text and optional pinning. Lock/sleep/min
 resume is manual. The confirmed decisions and physical gates are in local `desktop-study-plan.md`;
 `windows/README.md` owns the technical operation/exchange contract. Build-40 source imports closed
 laptop sessions through an additive preview and exports phone-owned sessions in a separate format.
-Exact-source checks are pending. Existing roadmap export remains separate; backup restore still
+The Windows candidate passes cloud checks and native finish review; phone exchange verification
+remains pending (`cloud-build.md`). Existing roadmap export remains separate; backup restore still
 replaces data and must never be used as a merge. The delivered Build-39 IPA lacks the new importer.
 
 1. **Main number: countdown.** Remaining time against the day's target (default 6:00:00) is the big
