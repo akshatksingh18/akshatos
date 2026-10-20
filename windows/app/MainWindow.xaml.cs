@@ -93,7 +93,8 @@ public partial class MainWindow : Window
     }
     private Preferences CurrentPreferences() => store.State.Preferences with
     { Width = RestoreBounds.IsEmpty ? Width : RestoreBounds.Width, Height = RestoreBounds.IsEmpty ? Height : RestoreBounds.Height,
-      Left = RestoreBounds.IsEmpty ? Left : RestoreBounds.Left, Top = RestoreBounds.IsEmpty ? Top : RestoreBounds.Top,
+      Left = double.IsFinite(Left) ? (RestoreBounds.IsEmpty ? Left : RestoreBounds.Left) : null,
+      Top = double.IsFinite(Top) ? (RestoreBounds.IsEmpty ? Top : RestoreBounds.Top) : null,
       TimerSize = TimerScale.Value, Pinned = Pin.IsChecked == true };
     private void PreferenceChanged(object sender, RoutedEventArgs e)
     { if (ready) { Topmost = Pin.IsChecked == true; Run(() => store.SetPreferences(CurrentPreferences())); } }
@@ -189,6 +190,7 @@ public partial class MainWindow : Window
             if (files.Length > 8) throw new InvalidDataException("More than eight phone files. Select the intended export manually.");
             return files.Length == 0 ? "No phone exchange file arrived yet. Local history is unchanged." : $"Found {files.Length} phone file(s) to review.";
         });
-        foreach (var file in files.Take(8)) await ImportFile(file);
+        if (files.Length > 8) return;
+        foreach (var file in files) await ImportFile(file);
     }
 }

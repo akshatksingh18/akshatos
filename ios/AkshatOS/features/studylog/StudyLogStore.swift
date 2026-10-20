@@ -312,7 +312,7 @@ extension StudyLogStore {
             guard segment.exchangeOriginID == nil, let end = segment.end, end > segment.start else { return nil }
             return StudyExchange.Session(id: segment.id, start: segment.start, end: end,
                 timeZone: segment.timeZoneID ?? clock.calendar.timeZone.identifier,
-                targetSeconds: max(1800, segment.dayTarget), topic: segment.topic ?? "")
+                targetSeconds: segment.dayTarget, topic: segment.topic ?? "")
         }
         let data = try LocalDataCoding.encode(StudyExchange(sourceID: source, device: "iphone", revision: revision,
             exportedAt: now(), sessions: sessions))

@@ -30,7 +30,7 @@ struct StudyExchange: Codable {
         for item in sessions {
             guard item.start >= Date(timeIntervalSince1970: 0), item.end > item.start, item.end <= now,
                   item.id.uuidString != "00000000-0000-0000-0000-000000000000",
-                  (1800...86400).contains(item.targetSeconds), item.topic.count <= 200,
+                  (1...86400).contains(item.targetSeconds), item.topic.count <= 200,
                   TimeZone(identifier: item.timeZone) != nil else { throw StudyExchangeError.invalid }
             if let saved = byID[item.id] {
                 guard saved.exchangeOriginID == sourceID, saved.start == item.start, saved.end == item.end,

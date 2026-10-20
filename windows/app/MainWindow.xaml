@@ -28,7 +28,7 @@
   <Style TargetType="Expander"><Setter Property="Foreground" Value="#F3F0EA"/><Setter Property="Margin" Value="0,14,0,0"/></Style>
   <Style TargetType="TextBox"><Setter Property="Background" Value="#242822"/><Setter Property="Foreground" Value="#F3F0EA"/><Setter Property="CaretBrush" Value="#E5AD86"/><Setter Property="Padding" Value="8"/><Setter Property="BorderBrush" Value="#66715F"/></Style>
  </Window.Resources>
- <DockPanel>
+ <DockPanel Background="#191B1A" TextElement.Foreground="#F3F0EA" TextElement.FontFamily="Segoe UI" TextElement.FontSize="16">
   <Border DockPanel.Dock="Bottom" Background="#191B1A" Padding="28,12,28,18" BorderBrush="#46503F" BorderThickness="0,1,0,0">
    <StackPanel>
     <Button x:Name="TimerAction" Content="Start studying" Click="ToggleTimer" Background="{StaticResource Copper}" Foreground="#191B1A" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Left" MinWidth="190"/>

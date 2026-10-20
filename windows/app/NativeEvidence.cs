@@ -25,24 +25,25 @@ internal static class NativeEvidence
             var window = new MainWindow(store, () => at, true) { Width = width, Height = height };
             window.TimerScale.Value = size; window.Transfer.IsExpanded = details; window.History.IsExpanded = details;
             window.Customize.IsExpanded = name == "customize";
-            window.Show(); window.UpdateLayout();
-            // Capture the real WPF client surface at the requested logical viewport. Windows'
-            // non-client title bar is outside this visual tree and must not become black margins.
+            // Render the actual native client tree independently of the CI runner's desktop
+            // resolution. Keeping it parented under an HWND clips tall/large logical viewports.
             var content = (FrameworkElement)window.Content;
+            content.Resources.MergedDictionaries.Add(window.Resources);
+            window.Content = null;
             content.Width = width; content.Height = height;
             content.Measure(new Size(width, height)); content.Arrange(new Rect(0, 0, width, height)); content.UpdateLayout();
+            content.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() => { }));
             var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(content); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var file = File.Create(Path.Combine(output, name + ".png"))) encoder.Save(file);
-            // Do not trigger the real close-pause lifecycle during a render matrix.
-            window.Hide();
         }
         var check = new MainWindow(store, () => at, true);
+        check.Show(); check.UpdateLayout();
         check.TimerAction.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
         if (store.Running) throw new InvalidOperationException("Native Pause did not stop the timer.");
         check.TimerAction.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
         check.Close();
-        if (store.Running) throw new InvalidOperationException("Native X close did not pause.");
+        if (store.Running || check.IsVisible) throw new InvalidOperationException("Native X close did not pause and close.");
         app.Shutdown();
     }
 }

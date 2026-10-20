@@ -75,7 +75,7 @@ public static class StudyClock
         foreach (var s in sessions)
         {
             _ = Zone(s.TimeZone);
-            if (s.Id == Guid.Empty || s.TargetSeconds is < 1800 or > 86400 || s.Topic.Length > 200 ||
+            if (s.Id == Guid.Empty || s.TargetSeconds is < 1 or > 86400 || s.Topic.Length > 200 ||
                 s.Start < DateTimeOffset.UnixEpoch || s.End <= s.Start || s.OriginRevision < 0 ||
                 (s.OriginID is not null && (s.OriginID == Guid.Empty || s.End is null)) ||
                 (notAfter is not null && (s.Start > notAfter || s.End > notAfter)))

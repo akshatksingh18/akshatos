@@ -75,4 +75,6 @@ var golden = Coding.Decode<Exchange>(File.ReadAllBytes("tests/fixtures/laptop-wi
 Check(wire.SourceID == golden.SourceID && wire.Sessions.SequenceEqual(golden.Sessions), "Windows writer drifted from the shared phone fixture");
 var phoneGolden = Coding.Decode<Exchange>(File.ReadAllBytes("tests/fixtures/phone-wire.json"));
 Check(Store().Import(phoneGolden, at) == 1, "Phone fixture is incompatible with Windows");
+Check(Store().Import(phoneGolden with { Sessions = [phoneGolden.Sessions[0] with { TargetSeconds = 60 }] }, at) == 1,
+    "A legacy recorded target must not be clamped or lost during import");
 Console.WriteLine($"PASS: {count} study clock, persistence and exchange assertions");

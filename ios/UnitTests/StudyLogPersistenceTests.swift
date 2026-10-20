@@ -81,6 +81,13 @@ import XCTest
         let outward = try LocalDataCoding.decode(StudyExchange.self, restored.exchangeData().data)
         XCTAssertTrue(outward.sessions.isEmpty, "Laptop hours must not be exported as new phone hours")
     }
+    func testExchangeRetainsLegacyRecordedTarget() throws {
+        let store = try makeStore(try makeContainer())
+        XCTAssertTrue(store.saveSegment(StudySegment(start: current.addingTimeInterval(-600), end: current,
+            source: .manual, dayTarget: 60)))
+        let payload = try LocalDataCoding.decode(StudyExchange.self, store.exchangeData().data)
+        XCTAssertEqual(payload.sessions.first?.targetSeconds, 60)
+    }
 
     func testStartPauseUndoAndCSVUseTheSavedBlocks() throws {
         let store = try makeStore(try makeContainer())
