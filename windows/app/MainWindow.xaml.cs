@@ -115,7 +115,8 @@ public partial class MainWindow : Window
     {
         if (!ready) return;
         var current = now(); var studied = store.Studied(current); var target = store.Target(current);
-        DayLabel.Text = $"{DateTime.Now:dddd, d MMMM} · study day starts at 03:00";
+        var studyDate = DateTime.ParseExact(StudyClock.Day(current, StudyClock.SystemZone()), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        DayLabel.Text = $"{studyDate:dddd, d MMMM} · study day starts at 03:00";
         Remaining.Text = StudyClock.Display(Math.Max(0, target - studied));
         RemainingLabel.Text = studied >= target ? "Daily aim reached · study time still counts" : "Remaining today";
         Studied.Text = $"{StudyClock.Display(studied)} studied today";

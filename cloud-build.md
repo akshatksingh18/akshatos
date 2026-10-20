@@ -6,8 +6,12 @@ acceptance. It includes Build 38's personal hub and native accessibility fixes. 
 installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
-The Windows Study Desk and additive laptop/phone exchange are a new implementation awaiting
-exact-source verification. `Windows Study Desk` CI runs core checks on Linux, then native WPF
+The Windows Study Desk passes [run 39412259561](https://github.com/akshatksingh18/akshatos/actions/runs/39412259561)
+at `958475b`: 37 core assertions, native WPF compilation/action smoke checks, five native client
+renders and portable Windows x64 packaging. The corrected captures received a fresh finish-review
+`ship` verdict with no material fixes. A subsequent study-day date-heading correction must pass
+its new native 02:00 regression before delivery. The additive phone exchange still awaits iOS CI
+and its own native review. `Windows Study Desk` CI runs core checks on Linux, then native WPF
 compile/render and a portable Windows x64 build; it does not produce an IPA. The updated iOS source
 remains Build 40, with no Build-40 IPA requested. Earlier routine-only evidence at `18a59b1` below
 is a baseline, not verification of the new exchange. `windows/README.md` owns desktop use and gates.

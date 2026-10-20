@@ -37,6 +37,11 @@ internal static class NativeEvidence
             bitmap.Render(content); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var file = File.Create(Path.Combine(output, name + ".png"))) encoder.Save(file);
         }
+        var early = DateTime.SpecifyKind(DateTime.Today.AddHours(2), DateTimeKind.Unspecified);
+        var earlyClock = new DateTimeOffset(early, TimeZoneInfo.Local.GetUtcOffset(early));
+        var earlyView = new MainWindow(store, () => earlyClock, true);
+        if (!earlyView.DayLabel.Text.StartsWith(early.AddDays(-1).ToString("dddd, d MMMM")))
+            throw new InvalidOperationException("The date heading did not follow the 03:00 study-day boundary.");
         var check = new MainWindow(store, () => at, true);
         check.Show(); check.UpdateLayout();
         check.TimerAction.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
