@@ -19,17 +19,30 @@ internal static class NativeEvidence
         store.Start(at.AddHours(-2), "Etc/UTC"); store.Pause(at.AddMinutes(-30)); store.Start(at.AddMinutes(-15), "Etc/UTC");
         foreach (var (name, width, height, size, details) in new[] {
             ("normal", 720, 650, 92, false), ("narrow-large-text", 480, 540, 180, false),
-            ("large-focus", 1100, 760, 180, false), ("transfer", 800, 1100, 92, true) })
+            ("large-focus", 1100, 760, 180, false), ("transfer", 800, 1100, 92, true),
+            ("customize", 800, 1100, 120, false) })
         {
             var window = new MainWindow(store, () => at, true) { Width = width, Height = height };
             window.TimerScale.Value = size; window.Transfer.IsExpanded = details; window.History.IsExpanded = details;
+            window.Customize.IsExpanded = name == "customize";
             window.Show(); window.UpdateLayout();
-            var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
-            bitmap.Render(window); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            // Capture the real WPF client surface at the requested logical viewport. Windows'
+            // non-client title bar is outside this visual tree and must not become black margins.
+            var content = (FrameworkElement)window.Content;
+            content.Width = width; content.Height = height;
+            content.Measure(new Size(width, height)); content.Arrange(new Rect(0, 0, width, height)); content.UpdateLayout();
+            var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(content); var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var file = File.Create(Path.Combine(output, name + ".png"))) encoder.Save(file);
             // Do not trigger the real close-pause lifecycle during a render matrix.
             window.Hide();
         }
+        var check = new MainWindow(store, () => at, true);
+        check.TimerAction.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+        if (store.Running) throw new InvalidOperationException("Native Pause did not stop the timer.");
+        check.TimerAction.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+        check.Close();
+        if (store.Running) throw new InvalidOperationException("Native X close did not pause.");
         app.Shutdown();
     }
 }

@@ -28,6 +28,13 @@
   <Style TargetType="Expander"><Setter Property="Foreground" Value="#F3F0EA"/><Setter Property="Margin" Value="0,14,0,0"/></Style>
   <Style TargetType="TextBox"><Setter Property="Background" Value="#242822"/><Setter Property="Foreground" Value="#F3F0EA"/><Setter Property="CaretBrush" Value="#E5AD86"/><Setter Property="Padding" Value="8"/><Setter Property="BorderBrush" Value="#66715F"/></Style>
  </Window.Resources>
+ <DockPanel>
+  <Border DockPanel.Dock="Bottom" Background="#191B1A" Padding="28,12,28,18" BorderBrush="#46503F" BorderThickness="0,1,0,0">
+   <StackPanel>
+    <Button x:Name="TimerAction" Content="Start studying" Click="ToggleTimer" Background="{StaticResource Copper}" Foreground="#191B1A" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Left" MinWidth="190"/>
+    <TextBlock x:Name="Notice" Foreground="{StaticResource Muted}" AutomationProperties.LiveSetting="Polite"/>
+   </StackPanel>
+  </Border>
  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
   <StackPanel Margin="28,22,28,24">
    <DockPanel LastChildFill="True">
@@ -46,10 +53,8 @@
      <ProgressBar x:Name="Progress" Height="6" Minimum="0" Maximum="1" Margin="0,24,0,16" Foreground="{StaticResource Copper}" Background="#46503F" BorderThickness="0" AutomationProperties.Name="Today's study progress"/>
      <TextBlock x:Name="Studied" FontSize="23" Typography.NumeralAlignment="Tabular"/>
      <TextBlock x:Name="TopicLabel" Foreground="{StaticResource Muted}" Margin="0,8,0,0"/>
-     <Button x:Name="TimerAction" Content="Start studying" Click="ToggleTimer" Background="{StaticResource Copper}" Foreground="#191B1A" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Left" Margin="0,24,0,0" MinWidth="190"/>
     </StackPanel>
    </Border>
-   <TextBlock x:Name="Notice" Foreground="{StaticResource Muted}" Margin="0,14,0,0" AutomationProperties.LiveSetting="Polite"/>
    <Expander x:Name="Customize" Header="Customize">
     <StackPanel Margin="0,14,0,0">
      <TextBlock Text="Timer text size"/><Slider x:Name="TimerScale" Minimum="40" Maximum="180" Value="92" TickFrequency="8" ValueChanged="ScaleChanged" Margin="0,10,0,18" AutomationProperties.Name="Timer text size"/>
@@ -85,4 +90,5 @@
    </Expander>
   </StackPanel>
  </ScrollViewer>
+ </DockPanel>
 </Window>
