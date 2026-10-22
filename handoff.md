@@ -1,12 +1,50 @@
 # AkshatOS session handoff
 
-**Status:** Authorized personal-hub implementation is on `feature/personal-hub`, PR #67,
-source 0.14.0 (38). Complete the exact-commit CI Gate, native review and testing IPA before calling
-it delivered. Build 37 remains installed/enrolled; Build 31 remains accepted recovery.
-`implementation-plan.md` tracks coverage, `personal-hub.md` is the native contract and
-`todo-journal-plan.md` records accepted product/design decisions. Do not restart design selection
-or request permission for already authorized work. The user reviews on a remote phone; localhost
-and PC links are not phone-accessible. All work stays at source/CLI level.
+Build 40 (0.15.0) adds Daily routine and finished-session exchange in source; the pre-retirement CI Gate passes at
+`c798a2c` (run `39416930626`, attempt 2): 200 hosted and 16 UI tests, both device variants, no IPA.
+The earlier native routine review scored both accessibility fixes resolved.
+`daily-routine-plan.md` owns the grouped default (optional layout question unanswered), activity-day
+record and recovery contract. Phone acceptance remains open. Do not package a Build-40 IPA without a release request.
+Build 39 remains the delivered testing candidate described below.
+
+Windows Study Desk 0.1.0 passes cloud checks at `c798a2c` (run `39416930629`) and native finish review
+(`ship`); its ZIP/hash/version are validated locally. `cloud-build.md` owns the candidate path.
+The phone exchange passes that iOS run; fresh native captures score its requested conflict-copy fix
+resolved. Physical Windows/iPhone/iCloud acceptance remains open. The user confirmed remaining time primary,
+studied time below, automatic pause on lock/sleep/X and manual Resume, both devices recording and
+iCloud Drive research/testing. `windows/CLAUDE.md` and `windows/README.md` own the desktop source,
+operation and first-version limits; local `desktop-study-plan.md` retains decisions. No tiny fixed
+window, hidden running tray timer, repeat preference question or automatic private-data cloud write.
+Overlaps stop merge; disconnected devices cannot enforce one global running timer. Read-only closed
+sessions merge without duplication, source provenance survives backup, and imported time is not
+re-exported as new local time. Do not use roadmap export or replace-all restore as this exchange.
+The delivered Build-39 IPA lacks this importer and stays the SideStore/display test candidate.
+
+Build 39 (0.14.1), **study-live-activity variant**, is delivered without merging.
+Manual release run `38975509228` passed at verified `8342d0e` on the development branch. Local
+checksum/payload/version validation passed and the IPA replaced Build 38 in the one-slot testing
+cache. `cloud-build.md` owns the exact path/hash. `study-display.md` owns rotating desk Focus,
+keep-awake, quiet study notifications, the opt-in SideStore Live Activity candidate, research and
+DND/device/signing gates. SideStore exploration is authorized; installed signing/refresh ownership
+is unchanged. Cloud source/build/release checks pass at `8342d0e` on draft PR #68.
+Explicit variant selection and strict single-extension validation are complete, with both device
+.app directories validated without packaging. Native inspection at `86c4367` remains applicable;
+release preparation changes no UI source. `cloud-build.md` owns the run, counts and diagnostics,
+and `study-display.md` owns the release/signing contract. Installation/signing is user-operated;
+physical signing/DND/AOD/renewal checks remain open. Build 38's complete personal hub is included
+in this candidate, so no intermediate installation is required.
+
+**Status:** Build 39 (0.14.1), Live Activity candidate at `8342d0e`, is validated in the single-slot
+testing cache. Release CI and local artifact checks pass. The Build-38 personal hub merged through
+PR #67 at `b573ecc` and its two native accessibility fixes are included. Build 37 remains
+installed/enrolled; Build 31 remains accepted recovery, with its checksum unchanged.
+`implementation-plan.md` tracks local coverage, `personal-hub.md` the implementation and
+`todo-journal-plan.md` accepted decisions. Journal is retired in working Build 40; keep its legacy
+data and authenticated full-backup recovery. The combined full-day challenge is also retired. Do not restart design selection
+or request approval for completed authorized work. All work stays at source/CLI level. Final release
+evidence is synchronized locally and waits for the next real code change before its next push.
+Build 39 has been handed over, so the new routine source uses Build 40 in both host and optional
+extension settings. Documentation-only synchronization does not bump it.
 
 Planning files remain local because the public push containing a personal planning document was
 rejected by automatic approval review. The accepted retry was code-only. Review every subsequent
@@ -55,14 +93,15 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
-- Source 0.14.0 launches Today / To-do / Journal / Apps. Build 37 still has the old picker; legacy fitness stores stay behind a controlled handover/recovery path.
+- Working source 0.15.0 launches Today / To-do / Apps. Build 37 still has the old picker; legacy fitness stores stay behind a controlled handover/recovery path.
   This is not a combined dashboard. ReelVault shipped in Build 32 and is removed from Build 33.
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
   visuals and notifications plus PageVault's refreshed presentation are accepted in Build 25.
   The movement feature's remaining physical/refresh items stay open and are not superseded by PageVault work.
   Native source for both media modules goes into this hub. WHOOP stays standalone.
-- One ordinary application target/IPA, no widget, Watch app or other shipped extensions. Logical
+- Default: one ordinary application target/IPA, no widget, Watch app or shipped extension. Build 39
+  prepares a separately opt-in study Live Activity candidate; see `study-display.md`. Logical
   feature folders are not separately installed apps.
 - Local-only, single-user data; no backend, analytics, accounts or cloud sync. Windows authors
   source; GitHub macOS/Xcode builds; Sideloadly signs locally. Never put Apple secrets or IPAs in Git.
@@ -134,33 +173,37 @@ Back up important history before risky deployment/recovery tests, and do not uni
 
 ## Recommended continuation order
 
-0. **Finish the authorized implementation:** read `implementation-plan.md`, `personal-hub.md`,
-   accepted `todo-journal-plan.md` and the live PR #67 status. Finish the final exact-commit CI Gate,
-   native finish-review/documenter handoffs and validated Build-38 testing IPA. Day/design/scope and
-   implementation are authorized; Journal defaults to unlocked by explicit user choice; do not restart selection. Phone acceptance, file-provider proof,
-   roadmap receiver and fitness handover remain separate. Use source/CLI only.
-1. **Build 37 is installed and enrolled:** run its 0.13.0 (37) feature phone checks in `todo.md`
-   (Study Log, the single Voice list and Want to read ordering). Installation and enrollment do
-   not close those checks or promote the artifact; Build 31 remains the accepted recovery copy.
-   The remaining natural-voice, Lift Log and read-aloud checks are also in `todo.md`; exercise them
-   on the current build. The voice folder is in OneDrive at `Backups\AkshatOS Voice`.
-2. **Lift Log follow-on:** Build 27's build, local validation, focused phone and enrollment gates are
-   complete. Keep private history out of the public repository; consider the next scoped convenience
-   improvement only after Akshat chooses it.
-3. **PageVault device pass:** hand Akshat the latest verified PageVault build from `cloud-build.md`
-   and record what the phone shows there and in `pagevault/CLAUDE.md`. Fix defects before
-   calling any reader behavior working.
-4. **Complete the remaining Pushups physical edge-case matrix:** locked/force-quit/reboot, permission,
-   Focus/Scheduled Summary, picker/back, Undo/replay, summaries/recovery and Home-automation checks.
-   Record actual results and fix defects; `architecture.md` owns durability limits.
-5. **Deployment acceptance:** repeat same-ID USB/Wi-Fi refresh preserving data,
-   current/previous known-good IPA cache, verified early-refresh health checks and expiry alerts,
-   recovery exercises, then multiple signing cycles. Follow the existing guide's gates and recheck
-   current Apple/Sideloadly requirements before activation. Do not promise unattended reliability yet.
-6. **Optional App Intents/Shortcuts:** follow-on convenience triggers after the native core works,
-   never the reminder engine; use the same pause-source and idempotency rules.
+Build-40 routine implementation, exact-source cloud checks and the bounded native finish review
+are complete. Tests include legacy decode, daily/weekday/DST/replay, snapshot history, real save/restore
+and UI check/uncheck. The documenter confirmed that the existing design system remains appropriate.
+Future routine phone acceptance needs an explicitly requested Build-40 release; no IPA was created.
+Check real day rollover, native editing and restoration on the phone then. Build 39 remains in the
+testing cache and can be tested independently; no signing/installation or cache replacement occurred.
 
-V1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
+0. **User-operated signing/install of delivered Build 39:** the Live Activity IPA from successful
+   manual run `38975509228` is validated in testing. Follow the SideStore preservation/provisioning
+   gates in `study-display.md` and `sidestore-evaluation.md`: exports first, preserve signed identity,
+   keep/register the extension, no uninstall or unreviewed certificate revocation. Do not change
+   installed refresh ownership until verified handover. Keep the draft branch unmerged.
+   Build 38 is superseded and reproducible from its run, not an intermediate installation.
+1. **Phone acceptance:** three tabs without Journal, real study Start/Pause/Focus/corrections/Undo/rollover, task
+   recurrence/priorities, routines, retained backup recovery and optional notifications. The
+   retained Build-37 voice-menu and shelf-order checks should run on this candidate too; one
+   installation is not acceptance. Build 31 stays recovery until the full promotion rule passes.
+2. **Fitness handover:** new fitness work belongs in WHOOP. Verify its imports/photos/reminders and
+   recovery on the phone, then use AkshatOS Settings to stop the old reminder owner. Preserve old
+   stores/backups; no automatic synchronization or completed cutover is implied.
+3. **Files and roadmap:** measure provider latency, offline/revoked access and re-sign behavior.
+   Manual transport remains the baseline. The laptop receiving importer is separately unimplemented;
+   follow its owning instructions when explicitly requested. No new workspace upload exception.
+4. **Remaining legacy checks:** if continuing to rely on old Pushups before handover, its physical
+   edge-case matrix remains in `todo.md`/`architecture.md`. Do not treat new-hub CI as hardware proof.
+5. **Deployment acceptance:** same-ID USB/Wi-Fi refresh and data preservation, protected recovery,
+   early-refresh health and multiple signing cycles remain physical checks. Keep the accepted cache.
+6. **Shortcuts:** personal-hub App Intents are implemented; exercise them on the phone. Optional
+   fitness automation belongs to WHOOP, using its own source-aware/idempotency contracts.
+
+The retained Pushups v1 counts completed sets/breaks, not reps or notification deliveries. The chosen initial goal is
 eight sets and the chosen initial Home radius is 150 meters; both remain configurable. Reps,
 freezes, achievements and extra places are not committed.
 

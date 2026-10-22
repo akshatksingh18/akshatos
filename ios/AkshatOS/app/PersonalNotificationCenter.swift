@@ -6,6 +6,7 @@ import UserNotifications
     func authorize() async throws -> Bool
     func add(_ request: UNNotificationRequest) async throws
     func remove(_ identifiers: [String])
+    func removeDelivered(_ identifiers: [String])
     func badge(_ count: Int) async throws
 }
 
@@ -16,5 +17,6 @@ import UserNotifications
     func authorize() async throws -> Bool { try await center.requestAuthorization(options: [.alert, .sound, .badge]) }
     func add(_ request: UNNotificationRequest) async throws { try await center.add(request) }
     func remove(_ identifiers: [String]) { center.removePendingNotificationRequests(withIdentifiers: identifiers) }
+    func removeDelivered(_ identifiers: [String]) { center.removeDeliveredNotifications(withIdentifiers: identifiers) }
     func badge(_ count: Int) async throws { try await center.setBadgeCount(count) }
 }

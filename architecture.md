@@ -1,15 +1,49 @@
 # AkshatOS and Pushups architecture
 
-**State:** Native personal-hub source 0.14.0 (38), PR #67, is implemented with final verification
-pending. Build 37 remains installed/enrolled and Build 31 remains accepted recovery. Exact
-historical build and phone evidence belongs in `cloud-build.md`; `todo.md` owns remaining gates.
+**State:** Build 39 (0.14.1), study-live-activity variant at `8342d0e`, passed manual release CI
+and local checksum/payload/version checks; its IPA is in `testing/`. It includes the personal hub
+merged in Build 38. Installation and device acceptance remain open. Build 37 is installed/enrolled
+and Build 31 is accepted recovery; the development branch remains unmerged.
+`cloud-build.md` owns exact evidence and `todo.md` the remaining gates.
 
-Source 0.14.0 implements Today/To-do/Journal/Apps. `personal-hub.md` owns the feature stores,
-`HubDayPart` summaries, Journal access gate, staged media restore, personal notification coordinator,
+Windows Study Desk 0.1.0 is a WPF/.NET 10 companion under `windows/`, with a platform-independent
+core, atomic per-user local JSON state and a single-process guard. Lock/sleep/minimize/X close the
+current block; resume is manual. Checkpoints bound conservative recovery after a crash or missed
+interruption. The fixed `akshatos-study-exchange` version-1 format transports closed sessions,
+source IDs, timestamps, originating zone, recorded target and optional topic. It is distinct from
+the roadmap export and replace-all backup. Each origin writes its own file. Receivers review
+files before import (phone previews new additions; Windows confirms file/session count), retain
+provenance/revision with saved records and refuse overlaps, changed IDs, stale
+revisions and invalid/future sessions before atomic save. Imported records are read-only and are
+not re-exported as new locally authored sessions. Missing rows never delete history; cross-device
+corrections/deletions require a future reviewed protocol. Phone provenance travels in its existing
+Study/full backup without a SwiftData schema/store change. Desktop cloud checks, portable packaging
+and native finish review pass at `c798a2c`; full iOS CI also passes and the phone's requested
+conflict-copy fix is scored resolved. Folder availability/
+latency and Windows/iPhone lifecycle behavior need physical acceptance (`cloud-build.md`).
+
+Build 40 source adds an optional `DailyRoutine` inside the existing To-do snapshot. Templates and
+dated, zone-labelled checklist snapshots commit together; no new SwiftData store or backup part is
+created. Legacy JSON without the optional field still decodes. Explicit replacement from an older
+To-do backup clears the routine and warns accordingly. Daily materialization runs on load/day refresh,
+not completion or background work. Closed and completed/skipped snapshots retain their content;
+pending rows may follow today's template edits. `daily-routine-plan.md` owns scope; exact-source
+CI Gate for the pre-retirement routine/exchange source passes at `c798a2c` (run `39416930626`). Physical routine/recovery checks remain open.
+
+Build 39 (0.14.1) delivers the requested study-display testing IPA. The optional
+WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains
+extension-free. Release selection resolves fixed separate build/output paths; the payload validator
+checks either built .app directories or later IPA archives against the selected variant.
+`study-display.md` owns payload privacy, lifecycle, DND and activation/release gates.
+
+Working source 0.15.0 implements Today/To-do/Apps. `personal-hub.md` owns the feature stores,
+`HubDayPart` summaries, retained Journal recovery gate, staged media restore, personal notification coordinator,
 App Intents and explicit Files transport. Each new feature uses a versioned SwiftData snapshot and
 joins full backup; settings also join recovery. Final cloud/native/device evidence stays separate.
-The 03:00 activity day, one-to-three priorities, explicit nonempty Journal Done and optional combined
-challenge are accepted defaults. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
+Working Build 40 removes Journal UI/search/reminders/shortcuts and the combined full-day challenge.
+Legacy Journal storage, optional backup authentication and full-backup identifiers remain intact.
+Retired invitations are cancelled before permission/store guards; an old restore cannot reactivate
+the challenge. The 03:00 activity day and one-to-three priorities remain. Retirement CI is pending. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
 
 `hub-plan.md` owns the WHOOP boundary: fitness is absent from the new daily hub but legacy stores
 and services remain until explicit verified handover stops their reminders. WHOOP implementing
@@ -29,11 +63,11 @@ these features is not evidence of phone data migration or automatic synchronizat
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation. The app declares no document types and handles no opened
   files.
-  `HubRootView` adapts observed feature state into
-  display-only `HubEntry` values, injects destinations, and reconciles foreground entry.
-  `app/hub/HubView.swift` is the picker; `SquatDashboard.swift` opens only after choosing Pushups,
-  `PageVaultLibraryView.swift` only after choosing PageVault, and `LiftLogView.swift` only after
-  choosing Lift Log. Lift Log asks which of Akshat's editable splits (or an empty workout) before atomically creating
+  `HubRootView` composes Today / To-do / Apps, injects destinations and reconciles
+  foreground entry. The display-only `HubEntry`/`app/hub/HubView.swift` picker is retained legacy
+  source, not the current daily shell. Apps opens PageVault and the occasional tools; retained fitness
+  destinations are reached through Settings recovery/handover. Lift Log asks which of the editable
+  splits (or an empty workout) before atomically creating
   the active workout and preloading the split's ordered exercises; more can be added during the
   workout, and finishing removes exercises with no sets. From 0.11.0 (34) the workout keeps its
   split's id and each exercise its split exercise's id, `LiftWorkoutSession.sync(with:)` applies a
@@ -43,8 +77,8 @@ these features is not evidence of phone data migration or automatic synchronizat
   deletes the videos and store it left at launch, a no-op once they are gone. WHOOP
   remains separate.
 - `OrientationGate.swift` answers UIKit's supported-orientation query at app scope: portrait
-  everywhere except an open PDF reader, which reports its own presence rather than setting
-  orientation itself. The Pushups dashboard therefore keeps its verified portrait layout.
+  except the PDF reader and, in Build-39 source, study Focus. Each reports its own presence;
+  one ending cannot clear the other's rotation permission. Other destinations remain portrait.
 - `SquatSession.swift` is a pure Codable event/session model and calendar-day streak calculation.
   `SquatStore.swift` persists encoded sessions in the versioned SwiftData V1 schema. The feature's
   `ReminderService` schedules/cancels only its namespaced requests; the app owns the delegate.
@@ -100,7 +134,8 @@ these features is not evidence of phone data migration or automatic synchronizat
   reconciliation/repair, snooze cleanup, Home-health/disable, DST/time-zone, summary/recovery,
   legacy-payload and Settings UI coverage. It also requires a non-nil next fire date before Resume
   treats an existing repeating request as healthy.
-- Implemented in source 0.14.0: personal App Intents for study, tasks, thought capture and Journal. Physical edge-case/refresh acceptance remains separate. The notification category exposes
+- Implemented in source 0.14.0: personal App Intents for study, tasks and thought capture. Journal is retired in Build 40; its legacy
+  intent is undiscoverable and reports removal. Physical edge-case/refresh acceptance remains separate. The notification category exposes
   Done then Pause without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-
   unverified behavior as accepted.
@@ -176,8 +211,10 @@ background-capable services at app lifetime; load future media views/resources o
   Derive current/best streak from those records instead of treating mutable counters as truth. Core
   Data or SQLite is the fallback only if the final device/toolchain makes SwiftData unsuitable.
 - App Intents for optional Siri/Shortcuts commands after the same native domain commands are proven.
-- One application target only: no widget, Watch app, App Group, notification-service extension,
-  backend, analytics, or remote push. Add the honest location usage descriptions and only the
+- One application target in the default build: no widget, Watch app, App Group, notification-service
+  extension, backend, analytics, or remote push. The opt-in study Live Activity candidate adds one
+  WidgetKit extension without shared storage or push; `study-display.md` owns the explicit gate.
+  Add the honest location usage descriptions and only the
   location/background configuration proven necessary for region delivery on the selected target;
   do not enable continuous background-location updates as a substitute for region monitoring.
 

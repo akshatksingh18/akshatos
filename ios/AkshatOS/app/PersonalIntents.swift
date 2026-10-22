@@ -53,8 +53,10 @@ struct ParkThoughtIntent: AppIntent {
 struct OpenJournalIntent: AppIntent {
     static var title: LocalizedStringResource = "Open Journal"
     static var openAppWhenRun = true
+    static var isDiscoverable = false
     @MainActor func perform() async throws -> some IntentResult {
-        AppServices.shared.navigator.request(.journal)
+        // Keep the identifier for already-saved Shortcuts, without exposing a retired screen.
+        throw PersonalDataError.invalid("Journal has been removed from AkshatOS.")
         return .result()
     }
 }
@@ -74,6 +76,5 @@ struct PersonalShortcuts: AppShortcutsProvider {
         AppShortcut(intent: AddTodoIntent(), phrases: ["Add a task in \(.applicationName)"], shortTitle: "Add a task", systemImageName: "checkmark.circle")
         AppShortcut(intent: ParkThoughtIntent(), phrases: ["Park a thought in \(.applicationName)"], shortTitle: "Park a thought", systemImageName: "tray")
         AppShortcut(intent: StudyTimeTodayIntent(), phrases: ["Study time today in \(.applicationName)"], shortTitle: "Study minutes today", systemImageName: "timer")
-        AppShortcut(intent: OpenJournalIntent(), phrases: ["Open Journal in \(.applicationName)"], shortTitle: "Open Journal", systemImageName: "book.closed")
     }
 }

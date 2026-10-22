@@ -230,6 +230,10 @@ import Foundation
     var lastPause: Date? { isRunning ? nil : log.segments.compactMap(\.end).max() }
     var needsRunningReview: Bool { log.running.map { $0.duration(now: now()) >= 3600 } ?? false }
     @discardableResult func saveSegment(_ segment: StudySegment) -> Bool {
+        guard segment.exchangeOriginID == nil,
+              log.segments.first(where: { $0.id == segment.id })?.exchangeOriginID == nil else {
+            message = "Laptop sessions are read-only in this exchange version. They cannot be changed independently on the phone."; return false
+        }
         guard segment.end != nil, segment.start <= now(), (segment.end ?? .distantFuture) <= now() else {
             message = "Choose a finished block with start and end times no later than now."; return false
         }
@@ -239,6 +243,9 @@ import Foundation
         return replaceForEdit(values)
     }
     func removeSegment(_ id: UUID) {
+        guard log.segments.first(where: { $0.id == id })?.exchangeOriginID == nil else {
+            message = "Laptop sessions are read-only in this exchange version."; return
+        }
         guard log.running?.id != id else { message = "Pause the running block before removing it."; return }
         _ = replaceForEdit(log.segments.filter { $0.id != id })
     }
@@ -273,6 +280,45 @@ import Foundation
     func finishRunningRestore(_ end: Date?) {
         let continuation = restoreContinuation; restoreContinuation = nil; runningRestoreReview = nil
         continuation?.resume(returning: end)
+    }
+}
+
+extension StudyLogStore {
+    func exchangePreview(_ files: [Data]) throws -> (segments: [StudySegment], added: Int) {
+        guard storageAvailable, !files.isEmpty, files.count <= 8 else { throw StudyExchangeError.invalid }
+        var values = log.segments
+        for file in files {
+            let payload = try LocalDataCoding.decode(StudyExchange.self, file)
+            guard payload.sourceID.uuidString != defaults.string(forKey: "study.transfer-source") else { throw StudyExchangeError.invalid }
+            values = try payload.merged(into: values, now: now())
+        }
+        return (values, values.count - log.segments.count)
+    }
+    @discardableResult func importExchange(_ files: [Data]) -> Bool {
+        do {
+            // Revalidate against live state on confirmation, not the earlier preview's snapshot.
+            let preview = try exchangePreview(files)
+            try repository.replaceAll(with: preview.segments)
+            log = StudyLog(segments: preview.segments); editUndo = nil; canUndoEdit = false
+            message = "Imported \(preview.added) new laptop sessions. Duplicate sessions added no time."
+            onChange?(); return true
+        } catch { message = "Study import stopped: \(error.localizedDescription). Local records are unchanged."; return false }
+    }
+    func exchangeData() throws -> (data: Data, source: UUID) {
+        guard storageAvailable else { throw StudyExchangeError.invalid }
+        let source = defaults.string(forKey: "study.transfer-source").flatMap(UUID.init(uuidString:)) ?? UUID()
+        let revision = defaults.integer(forKey: "study.transfer-revision") + 1
+        let sessions = log.segments.compactMap { segment -> StudyExchange.Session? in
+            guard segment.exchangeOriginID == nil, let end = segment.end, end > segment.start else { return nil }
+            return StudyExchange.Session(id: segment.id, start: segment.start, end: end,
+                timeZone: segment.timeZoneID ?? clock.calendar.timeZone.identifier,
+                targetSeconds: segment.dayTarget, topic: segment.topic ?? "")
+        }
+        let data = try LocalDataCoding.encode(StudyExchange(sourceID: source, device: "iphone", revision: revision,
+            exportedAt: now(), sessions: sessions))
+        defaults.set(source.uuidString, forKey: "study.transfer-source")
+        defaults.set(revision, forKey: "study.transfer-revision")
+        return (data, source)
     }
 }
 

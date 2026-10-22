@@ -8,6 +8,7 @@ import UIKit
     private let liftLog: LiftLogStore
     private let navigator: HubNavigator
     private let personal: PersonalNotifications?
+    private let isStudying: () -> Bool
 
     /// Which feature owns a notification, by the namespace its request identifier starts with.
     ///
@@ -24,17 +25,18 @@ import UIKit
         (BodyReminderService.namespace, .body),
         (LiftReminderService.namespace, .liftLog),
         (PersonalNotifications.namespace + "todo.", .todo),
-        (PersonalNotifications.namespace + "journal", .journal),
         (PersonalNotifications.namespace + "study", .studyLog),
         (PersonalNotifications.namespace + "break", .studyLog),
         (PersonalNotifications.namespace + "morning", .studyLog)
     ]
 
-    init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator, personal: PersonalNotifications? = nil) {
+    init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator, personal: PersonalNotifications? = nil,
+         isStudying: @escaping () -> Bool = { false }) {
         self.squats = squats
         self.liftLog = liftLog
         self.navigator = navigator
         self.personal = personal
+        self.isStudying = isStudying
         super.init()
         UNUserNotificationCenter.current().delegate = self
         // This is the hub's complete category registry; add future feature categories here.
@@ -59,7 +61,11 @@ import UIKit
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completion: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completion([.banner, .list, .sound])
+        Task { @MainActor in completion(Self.presentationOptions(studying: isStudying())) }
+    }
+
+    static func presentationOptions(studying: Bool) -> UNNotificationPresentationOptions {
+        studying ? [.list] : [.banner, .list, .sound]
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,

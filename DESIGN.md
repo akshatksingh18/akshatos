@@ -65,11 +65,11 @@ components:
 
 **Creative North Star: "A quiet personal desk"**
 
-Graphite holds a calm working surface; warm copper marks study time and actions, while sage distinguishes completed tasks. The character comes from a useful instrument, recorded block graphics, a paper-shaped writing field and a small book illustration. These details explain the work without adding a theme to the language.
+Graphite holds a calm working surface; warm copper marks study time and actions, while sage distinguishes completed tasks. The character comes from a useful instrument, recorded block graphics and a small book illustration. These details explain the work without adding a theme to the language.
 
-This documents the implemented personal-hub SwiftUI system: Today, To-do, Journal, Apps, study history, Watchlist and Spending. Native controls, the system font, SF Symbols and deliberate sheet presentation supply the iPhone feel. The app pins dark appearance. The older `Palette`, `Surface`, `ProgressOrbit` and `ActionStyle` in `DesignSystem.swift` remain a separate visual boundary for retained modules; this document does not restyle those modules or the PageVault reader.
+This documents the implemented personal-hub SwiftUI system: Today, To-do, Apps, study history, Watchlist and Spending. Journal is retired from navigation, settings, search, reminders, shortcuts and the combined full-day challenge. Its existing store, media, optional authentication and full-backup recovery remain; the paper tokens and unused Journal components below are legacy references. Native controls, the system font, SF Symbols and deliberate sheet presentation supply the iPhone feel. The app pins dark appearance. The older `Palette`, `Surface`, `ProgressOrbit` and `ActionStyle` in `DesignSystem.swift` remain a separate visual boundary for retained modules; this document does not restyle those modules or the PageVault reader.
 
-This is a source extraction, not a release-acceptance claim. Source is authoritative for the latest Focus hit-region and quick-add label changes; their fresh CI, capture and finish-review evidence is tracked separately in the release documents. The HTML design reference establishes the approved direction, not native pixel geometry. Frontmatter uses portable CSS units: numeric `px` values represent the corresponding SwiftUI point values at the base content size; semantic fonts and Dynamic Type still control native layout.
+This is a source extraction, not a release-acceptance claim. Source is authoritative for the latest navigation and control changes; fresh CI, capture and finish-review evidence is tracked separately in the release documents. The HTML design reference establishes the approved direction, not native pixel geometry. Frontmatter uses portable CSS units: numeric `px` values represent the corresponding SwiftUI point values at the base content size; semantic fonts and Dynamic Type still control native layout.
 
 **Key Characteristics:**
 
@@ -77,7 +77,7 @@ This is a source extraction, not a release-acceptance claim. Source is authorita
 - Native navigation and controls with plain, visible labels.
 - Purposeful graphics grounded in actual records.
 - Scrolling and Dynamic Type reflow instead of a fixed phone composition.
-- Flat tonal surfaces with a quiet paper and book silhouette.
+- Flat tonal surfaces with a quiet book silhouette; legacy paper is retained as a reference.
 
 ## Colors
 
@@ -94,7 +94,7 @@ The four custom colors come directly from `HubInk` in `ios/AkshatOS/shared/desig
 ### Neutral
 
 - **Graphite** (`graphite`): the personal-hub background and the dark foreground on prominent copper actions.
-- **Instrument Surface** (`surface`): the study instrument, Journal writing field and unqualified elapsed calendar cells.
+- **Instrument Surface** (`surface`): the study instrument, unqualified elapsed calendar cells and legacy Journal writing field.
 
 Native `.primary` and `.secondary` supply text hierarchy. System list rows, segmented controls, separators, alerts, navigation and tab-bar material retain their platform colors. `.purple` identifies study personal bests; `.green` appears in a rising momentum comparison. These are semantic SwiftUI colors, not extra custom hex tokens. The weekly chart includes a text legend and inspected values, so color is accompanied by words.
 
@@ -120,23 +120,32 @@ The hierarchy is familiar and restrained. Frontmatter records explicit weights a
 
 ## Layout
 
-Each of the four tabs owns a native `NavigationStack`. Today, Journal writing and study history are vertically scrolling compositions; To-do, Apps, Watchlist, Spending and settings use native lists or forms. The page inset, instrument inset, paper inset and section rhythm are recorded in frontmatter. Native lists retain their own row geometry rather than borrowing these scroll-view insets.
+Each of the three tabs, Today, To-do and Apps, owns a native `NavigationStack`. Today and study history are vertically scrolling compositions; To-do, Apps, Watchlist, Spending and settings use native lists or forms. The page inset, instrument inset, legacy paper inset and section rhythm are recorded in frontmatter. Native lists retain their own row geometry rather than borrowing these scroll-view insets.
 
 The study instrument is one rounded container, with the status row, dial, explicit studied/block or break readout, primary timer action and thought capture. At accessibility Dynamic Type sizes, the main action moves above the dial, the date abbreviates and `AdaptiveRow` stacks its values. `StudyDial` changes its maximum width from 280 to 380 points and retains an aspect ratio of 1.12. It is allowed to scroll; there is no web-style viewport lock or documented width breakpoint.
 
+Build-39 Focus uses the same dial on a flat graphite desk surface. In compact-height landscape with
+at least 560 points of available width, the dial and controls align at the top side by side, with
+the dial sized to the usable height and an 8-point inner button inset instead of the portrait
+24-point inset, keeping the full countdown and single-line label readable. Narrow and accessibility
+layouts stack and scroll. Native navigation, safe areas and 44-point actions remain. Keep screen awake
+is one native switch; optional Live Activity controls are collapsed. The lock-screen card uses plain
+white semantic-sized text on graphite, system timer text and no animation or private topic content.
+`study-display.md` owns functional and device acceptance; source changes alone are not visual proof.
+
 Weekly blocks use a horizontal scroll area with day buttons at least 44 points wide, 24-point-wide block marks and a 100-point plot height. The month calendar has seven columns with 44-point minimum cells, a 320-point minimum grid width and horizontal overflow. Inspection happens by tapping a day. Future days have an explicit upcoming state rather than a fabricated total.
 
-Study history opens as one closable sheet. Focus opens a full-screen native cover with a Close action. Topic, task, priority and record editing use native sheets; Journal switches between writing and history inside its tab. Apps opens occasional tools through standard navigation. The daily hub has no fitness cards or fitness completion requirements; retained fitness recovery remains behind settings.
+Study history opens as one closable sheet. Focus opens a full-screen native cover with a Close action. Topic, task, priority and record editing use native sheets. Apps opens occasional tools through standard navigation. A retained Journal route opens Apps without exposing the retired editor. The daily hub has no fitness cards or fitness completion requirements; retained fitness recovery remains behind settings.
 
 ## Elevation & Depth
 
-The personal-hub custom surfaces use no custom shadows. Depth comes from the difference between graphite and the instrument surface, the dial's strokes, the Journal corner turn and layered book shapes. Native sheets, navigation, list rows and the tab bar retain the platform's own material and presentation. The dial's copper gradient communicates measured progress; it does not create a global gradient background. There is no custom perpetual animation or app-defined motion token in these components. Native control and presentation behavior remain system-owned.
+The personal-hub custom surfaces use no custom shadows. Depth comes from the difference between graphite and the instrument surface, the dial's strokes and layered book shapes. The unused Journal paper retains its corner turn. Native sheets, navigation, list rows and the tab bar retain the platform's own material and presentation. The dial's copper gradient communicates measured progress; it does not create a global gradient background. There is no custom perpetual animation or app-defined motion token in these components. Native control and presentation behavior remain system-owned.
 
 **The Tonal Surface Rule.** Use surface contrast and purposeful geometry for the personal hub; retain native presentation materials rather than adding ornamental shadow layers.
 
 ## Shapes
 
-The study instrument uses the rounded silhouette in `rounded.instrument`. Journal paper uses three small corners from `rounded.paper-edge` and a larger top-trailing corner from `rounded.paper-turn`; it is a dark writing surface, not a white notebook texture. Calendar cells and selected weekly-bar wells use their frontmatter radii. Priority progress uses capsules, and task states use native circle/checkmark-circle SF Symbols.
+The study instrument uses the rounded silhouette in `rounded.instrument`. Legacy Journal paper uses three small corners from `rounded.paper-edge` and a larger top-trailing corner from `rounded.paper-turn`; it is a dark writing surface, not a white notebook texture. Calendar cells and selected weekly-bar wells use their frontmatter radii. Priority progress uses capsules, and task states use native circle/checkmark-circle SF Symbols.
 
 The PageVault launcher book is `HubBookArtwork`: a 54 × 72-point composition with two rounded rectangles, a 5-point horizontal/4-point vertical back-layer offset, a copper outline inset by 10 points and a system book symbol. It is decorative and accessibility-hidden. It is separate from actual library covers. Native prominent and bordered buttons, form fields and segmented pickers retain intrinsic system corner shapes; no custom radius is asserted for them.
 
@@ -144,25 +153,25 @@ The PageVault launcher book is `HubBookArtwork`: a 54 × 72-point composition wi
 
 ### Buttons
 
-The study control is full-width, prominent and plain in meaning. It uses native `.borderedProminent`, copper tint, graphite foreground, `.headline` text and a label at least 44 points high. Its label changes between Start studying, Pause studying and Resume studying according to the timer. Journal's Done action uses the same prominent treatment and is disabled while writing is empty or unsaved.
+The study control is full-width, prominent and plain in meaning. It uses native `.borderedProminent`, copper tint, graphite foreground, `.headline` text and a label at least 44 points high. Its label changes between Start studying, Pause studying and Resume studying according to the timer. The unused legacy Journal Done action retains the same prominent treatment and is disabled while writing is empty or unsaved.
 
 Text actions inherit copper tint. Today Focus has an explicit 44 × 44-point minimum label frame; add icons and task checks likewise have explicit hit frames where specified. Thought capture's plus action is disabled for whitespace-only input. Bordered alternatives use native `.bordered`. Press, keyboard focus, disabled appearance and presentation transitions are intrinsic native behavior; there is no custom hover/focus animation vocabulary to copy from the HTML reference.
 
 ### Cards / Containers
 
-The study instrument uses `HubInk.surface`, the instrument corner token and inset token with no overlay border or custom shadow. Journal's writing container shares the surface color but uses its asymmetric paper silhouette and paper inset. These are contextual containers, not a generic card grid or a replacement for native list rows.
+The study instrument uses `HubInk.surface`, the instrument corner token and inset token with no overlay border or custom shadow. The unused legacy Journal writing container shares the surface color but uses its asymmetric paper silhouette and paper inset. These are contextual containers, not a generic card grid or a replacement for native list rows.
 
 ### Inputs / Fields
 
 To-do quick add is a native single-line `TextField` beside a plus-circle action. A persistent **Add a task** section header names the purpose; the example prompt uses sage explicitly. Submission adds the task and clears focus only after the store reports success. The thought field is a native vertical field limited to one through four lines; successful capture presents a short saved-location message.
 
-Journal uses a native `TextEditor` with hidden scroll background and a minimum height of 240 points inside the paper. Its label stays visible. Draft saved, draft not saved and Done are explicit statuses; a failed draft exposes Retry save. Native forms supply task, Watchlist and Spending editors, including validation, disabled Save actions and system alerts. No custom focus ring, input fill or validation border is defined by this system.
+The unused legacy Journal editor retains a native `TextEditor` with hidden scroll background and a minimum height of 240 points inside the paper. Its label stays visible. Draft saved, draft not saved and Done are explicit statuses; a failed draft exposes Retry save. Native forms supply task, Watchlist and Spending editors, including validation, disabled Save actions and system alerts. No custom focus ring, input fill or validation border is defined by this system.
 
 ### Navigation
 
-`HubRootView` uses the actual native `TabView` with Today/calendar, To-do/checklist, Journal/book.closed and Apps/square.grid.2x2 labels and SF Symbols. Copper supplies the selected tint; native chrome supplies sizing, inactive treatment and material. To-do's My To-do/After study switch and history's Week/Month switch use native segmented `Picker`s, not custom chips.
+`HubRootView` uses the actual native `TabView` with Today/calendar, To-do/checklist and Apps/square.grid.2x2 labels and SF Symbols, in that order. Copper supplies the selected tint; native chrome supplies sizing, inactive treatment and material. To-do's My To-do/After study switch and history's Week/Month switch use native segmented `Picker`s, not custom chips.
 
-The Apps PageVault row has the book artwork and a live continuation description when a current book exists; Watchlist and Spending use ordinary symbol-and-label rows. Settings and backup remain explicit destinations. Journal lock, unavailable stores, empty records and app-background privacy curtains are distinct native states; the lock is optional and does not imply encrypted exports.
+The Apps PageVault row has the book artwork and a live continuation description when a current book exists; Watchlist and Spending use ordinary symbol-and-label rows. Settings and backup remain explicit destinations. Apps search covers tasks and parked thoughts. Unavailable stores, empty records and app-background privacy curtains remain distinct native states. Retained Journal authentication remains optional; recovery exports are not encrypted.
 
 ### Study Dial and Recorded Blocks
 
@@ -177,7 +186,7 @@ The local `.impeccable/design.json` sidecar provides illustrative HTML/CSS inspe
 ### Do:
 
 - **Do** preserve the graphite, copper and sage roles while retaining native semantic text and control colors.
-- **Do** keep the four native tabs and deliberate, closable history and editing presentations.
+- **Do** keep the three native tabs, Today, To-do and Apps, and deliberate, closable history and editing presentations.
 - **Do** preserve semantic typography, Dynamic Type reflow and explicit 44-point action frames where implemented.
 - **Do** pair progress graphics with actual records, labels and honest empty, future, locked or unavailable states.
 - **Do** keep labels visible at rest and retain clear saved, unsaved and disabled states.

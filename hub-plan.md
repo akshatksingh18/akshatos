@@ -1,6 +1,6 @@
 # AkshatOS — shared integration contract
 
-**Status:** Active shared integration contract. AkshatOS source 0.14.0 uses Today, To-do, Journal
+**Status:** Active shared integration contract. AkshatOS working source 0.15.0 uses Today, To-do
 and Apps, with PageVault, Watchlist and Spending; legacy Pushups/Lift/Body stores remain recoverable
 until explicit verified WHOOP handover. Build 37 remains installed with the old picker. AkshatOS
 owns its native identity, build and full-backup registry; WHOOP remains independently built and
@@ -15,7 +15,11 @@ installed. `personal-hub.md` owns the new source contract; `cloud-build.md` owns
   Keep its native BLE restoration, database, and encrypted export/recovery separate from the hub.
 
 Two apps fit the free Personal Team allowance of three installed development apps; the third slot
-is unallocated, not an instruction to add a helper. Every product function can be available
+is not confirmed occupied. The separately approved SideStore pilot may use it as an installer helper;
+`sidestore-evaluation.md` owns that pilot. Build 39 prepares an opt-in study Live Activity extension,
+with separate App-ID provisioning and no change to installed app identity or data ownership;
+`study-display.md` owns its release/signing gates. Default recovery packaging remains extension-free.
+Every existing product function can be available
 without rotation or paid membership: Akshat's body-measurement tracker was added as a hub module
 rather than a separate app for exactly this reason. This is source-level feature composition, not guest
 IPAs, a PWA, LiveContainer, or an iOS extension workaround. No Flutter embedding is required.
@@ -93,7 +97,7 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - Use one native SwiftUI host and its feature modules (Pushups, PageVault, Lift Log, and
   Body); module names need not be separate
   application targets. Keep existing feature requirements and Android fallbacks intact.
-- Source 0.14.0 uses Today / To-do / Journal / Apps, with Study history as one closable sheet. The installed Build 37 uses its earlier selector. Load PDF documents only
+- Working source 0.15.0 uses Today / To-do / Apps, with Study history as one closable sheet. The installed Build 37 uses its earlier selector. Load PDF documents only
   when needed and release them on exit; preserve each module's state when switching.
 - Host-level Pushups services schedule local notifications and handle actions/Home-region events
   regardless of the selected screen. Navigating to a PDF must not stop an active day.

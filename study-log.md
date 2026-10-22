@@ -1,9 +1,18 @@
 # Study Log
 
-**Status:** Build 37 is installed/enrolled with the Build-1 phone pass open. Source 0.14.0 (38),
-PR #67, implements the authorized Build-2 study scope in the new Today tab: Focus, corrections/Undo,
-topics, target/marks, block/time inspection, motivation, optional reminders and versioned exports.
-`personal-hub.md` owns the shared contract; final CI/native/artifact and device gates remain open.
+Build 39 (0.14.1) is delivered as the requested combined Live Activity testing IPA;
+manual release run `38975509228` at `8342d0e` and local checksum/payload/version checks pass. Rotating desk Focus,
+scoped keep-awake, quiet study notifications and the optional SideStore Live Activity candidate are
+implemented with full cloud verification at `8342d0e` (draft PR #68). Native inspection at
+`86c4367` remains applicable to the unchanged UI source; release selection/validation is also complete.
+`study-display.md` owns exact evidence and the DND/signing/device gates.
+Build 39 includes the Build-38 personal-hub scope below and replaces its testing candidate.
+
+**Status:** Build 39 (0.14.1), Live Activity variant at `8342d0e`, is validated in `testing/` after
+manual release CI and local artifact checks. It includes the authorized Build-2
+scope on Today: Focus, corrections/Undo, topics, target/marks, history, motivation, optional reminders
+and versioned exports. Build 37 remains installed/enrolled. Study/provider/Shortcuts phone checks
+and the separately unimplemented roadmap receiver remain open (`personal-hub.md`, `todo.md`).
 
 ## Why
 
@@ -15,6 +24,16 @@ module keeps the same feel and adds a record. The goal is more real study time, 
 below favours less friction while studying and an honest record afterwards.
 
 ## Decisions
+
+The laptop companion is implemented in source under `windows/`, with remaining time primary,
+studied time below, readable resizable text and optional pinning. Lock/sleep/minimize/X pause;
+resume is manual. The confirmed decisions and physical gates are in local `desktop-study-plan.md`;
+`windows/README.md` owns the technical operation/exchange contract. Build-40 source imports closed
+laptop sessions through an additive preview and exports phone-owned sessions in a separate format.
+The Windows candidate passes cloud checks and native finish review; current full iOS CI passes at
+`c798a2c` and the phone's requested conflict-copy fix is scored resolved (`cloud-build.md`). Physical
+Windows/iPhone/provider acceptance remains open. Existing roadmap export remains separate; backup restore still
+replaces data and must never be used as a merge. The delivered Build-39 IPA lacks the new importer.
 
 1. **Main number: countdown.** Remaining time against the day's target (default 6:00:00) is the big
    number, exactly like the Windows Clock; studied time is smaller beneath it. No count-up setting
@@ -51,7 +70,7 @@ below favours less friction while studying and an honest record afterwards.
 7. **Day starts at 3:00 AM local.** A late session stays with its day; a segment crossing 3:00 AM is
    split there. Each day keeps the target it had, so changing the target never rewrites history.
 
-The accepted day is 03:00 for Study, Journal and priorities. Calendar deadlines remain distinct.
+The accepted day is 03:00 for Study and priorities. Calendar deadlines remain distinct.
 New blocks retain their originating zone and saved aim/marks; older blocks retain their previous
 local-time interpretation. A historical attribution migration would require a separate preview.
 
@@ -70,7 +89,7 @@ approved graphite/copper design is in `todo-journal-plan.md`; native details are
   history (a Monday-to-Sunday week of bars with total and average per day so far, earlier weeks by
   arrow, month-grouped days, a day's blocks); the 3:00 AM day; restoring a running block after
   relaunch or force-quit; JSON backup/restore and the hub's full backup. Target and marks were fixed defaults in Build 1; source 0.14.0 makes them prospectively editable.
-- **Build 2 (implemented in source 0.14.0, verification pending):**
+- **Build 2 (implemented in source 0.14.0, cloud verified; phone acceptance pending):**
   - **Forgotten pauses:** the repeating "Still studying?" nudge with Keep going and Pause; the app provides Stopped earlier and the open-app check (Decision 2).
   - **Corrections:** add, edit and delete blocks (manual blocks for laptop study; no overlaps, none
     in the future); **Undo** for ten seconds after Start or Pause, so a mistaken tap is one tap to
@@ -139,12 +158,31 @@ approved graphite/copper design is in `todo-journal-plan.md`; native details are
 
 - **Notification budget.** The app coordinator considers actual unrelated pending requests, keeps
   two spare slots and a maximum of fifteen timed tasks. Study check and break are mutually
-  exclusive; Journal has one generic invitation and Morning plan has one upcoming dated slot.
+  exclusive; Morning plan has one upcoming dated slot. Journal invitations are retired and cancelled.
   Pushups uses 39 nudges plus its normal request until verified handover. `personal-hub.md` owns
   capacity/failure handling; no delivery-time app execution is assumed.
 
-- **No app extension and no Live Activity** (free signing cannot provision them; `hub-plan.md`).
-  The timer lives in the app plus local notifications; the lock screen shows only the nudge.
+- **Current distribution has no app extension or Live Activity** (`hub-plan.md`). The tested
+  WHOOP/Sideloadly installation provisioned only the parent app, and iOS killed its Live Activity
+  extension before launch with a CODESIGNING / Invalid Page error; see
+  [WHOOP's signing evidence](../whoop/build-81-audit.md#decisions-akshat).
+  This establishes a limitation of the tested installation path, not a universal prohibition on
+  Live Activities with every free-account setup. The timer currently lives in the app plus local
+  notifications; the lock screen shows only the nudge.
+- **Build-39 display work (source, not device-verified):** Apple supports Live Activities on
+  iPhone's [Always-On Lock Screen](https://developer.apple.com/design/human-interface-guidelines/always-on),
+  but their UI requires a [WidgetKit extension](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities).
+  The requested unsigned testing IPA is delivered; extension provisioning, launch and display
+  acceptance remain open in the authorized SideStore experiment. Apple's
+  [StandBy](https://support.apple.com/en-ie/guide/iphone/iph878d77632/ios) can show Live Activities
+  while charging sideways and stationary, but does not bypass that requirement.
+  The foreground desk display uses
+  [`isIdleTimerDisabled`](https://developer.apple.com/documentation/uikit/uiapplication/isidletimerdisabled)
+  while running Focus is active and explicitly enabled, restoring normal auto-lock on exit. It uses more
+  power and requires the app to remain foreground; it is not the low-power Always-On Lock Screen.
+  Build 38 has no Focus keep-awake behavior, and Today/Focus remain portrait-only; only the
+  PageVault reader enables landscape there. Build-39 source adds portrait/landscape Focus; Today
+  stays portrait. `study-display.md` owns current implementation, public sources and all phone gates.
 - **Local only:** no network, account or sync with the Windows Clock. The roadmap bridge is a file
   Akshat moves himself; nothing is sent anywhere by the app.
 - **Plumbing, the same as Body:** `StudyLogBackupPart` with the permanent `backupID` `studyLog`, listed

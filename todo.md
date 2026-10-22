@@ -4,15 +4,55 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Finish the authorized 0.14.0 (38) personal hub, PR #67. Domain and intermediate
-native compilation have passed; the final complete cloud gate, native finish review and testing IPA
-remain open. `implementation-plan.md` owns implementation coverage. Build 37 is installed/enrolled,
-Build 31 is accepted recovery. Detailed historical evidence belongs in `cloud-build.md`.
+**Current focus:** Verify the requested Journal retirement in Build-40 source, then user-operated Windows Study Desk portable trial, then signing/install and physical acceptance of delivered Build 39
+(0.14.1), study-live-activity variant at `8342d0e`. Manual run `38975509228`, local checksum/payload/
+version checks and delivery to the one-slot testing cache pass. The draft branch remains unmerged;
+installed signing/refresh ownership is unchanged.
+Build 40 (0.15.0) implements Daily routine and finished-session exchange in source; full CI Gate passes at
+`c798a2c` (run `39416930626`, attempt 2), with 200 hosted and 16 UI tests and both device variants.
+The earlier native routine review scored both accessibility fixes resolved.
+Phone acceptance remains open. `daily-routine-plan.md` owns the grouped default, daily snapshots, scope
+and recovery contract. No Build-40 IPA is requested; the Build-39 testing cache stays intact.
+Rotating desk Focus, keep-awake, quiet study notifications and the optional SideStore Live Activity
+candidate are tracked in `study-display.md`; exact-source CI passes at `8342d0e`. Native inspection
+at `86c4367` remains applicable to the unchanged UI source.
+Build 38 (0.14.0), PR #67 at `b573ecc`, and its native accessibility fixes are included in Build 39;
+the never-installed Build-38 candidate was removed from testing. Build 37 remains installed/enrolled; Build 31 remains
+accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build.md` exact evidence.
 
-- [ ] Final exact-commit cloud CI Gate, native screenshot review and validated Build-38 testing IPA.
-- [ ] Phone: all four tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
-- [ ] Phone: tasks/repeats/priorities/Undo/parked thoughts; Journal lock/passcode, background privacy,
-      photos, failed/cancelled save/export and full recovery into disposable data.
+- [x] Build 39: exact-source cloud tests, native Focus/lock-screen content inspection and optional extension compile.
+      Current full CI: run `38971711206` at `8342d0e`; native inspection at `86c4367` applies to
+      the unchanged UI source. The subsequent requested release below delivers the IPA.
+- [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
+- [x] Windows Study Desk and additive phone exchange implemented in source: resizable countdown,
+      manual Resume, lock/sleep/minimize/X pause, explicit file transport and overlap refusal.
+- [x] Windows core/native/package checks at `c798a2c` (run `39416930629`): 37 core assertions,
+      Pause/X/date-heading smoke and five layouts; fresh native finish review returned `ship`.
+      Portable candidate hash/version checked locally. `cloud-build.md` owns its path and checksum.
+- [x] iOS CI Gate for the exchange addition: run `39416930626`, attempt 2, at `c798a2c` passes
+      200 hosted/16 UI tests and both device variants. Fresh native captures score the reviewer's
+      one requested conflict-copy fix resolved; this is scoped verification, not physical acceptance.
+      `windows/README.md` owns operation and first-version limits.
+- [ ] Physical Windows/iPhone/iCloud round trip, lifecycle, same-ID re-sign and duplicate/conflict
+      acceptance. No live distributed lock, cross-device edits/deletions or Build-40 IPA is implied.
+- [x] Build-40 routine source: Today checklist, user-authored day groups/times/weekdays, Done/Skip,
+      reversal, pause/reorder and seven-day history, in To-do's atomic snapshot and JSON recovery.
+- [x] Build-40 exact-source CI, native routine/manager/editor/history inspection and finish review;
+      routine-specific native evidence remains at `18a59b1`; current full source passes at `c798a2c`
+      in run `39416930626`, with 200 hosted and 16 UI tests, both device variants; no IPA created.
+- [ ] Future Build-40 phone acceptance after a requested release: check-offs/day rollover, native
+      form editing, accessibility/VoiceOver and backup restoration.
+- [x] Build-39 release preparation: explicit variant selection and strict single-study-extension
+      validation pass exact-source CI at `8342d0e` (run `38971711206`), with both complete built
+      .app directories, arm64 checks and matching generated versions. All 18 contract tests pass.
+- [x] Requested release: manual run `38975509228` passed with the study-live-activity variant;
+      published checksum/payload/version were verified locally and the IPA delivered to testing.
+      Keep PR #68 draft/unmerged and leave signing/installation to the user.
+
+- [x] Final exact-commit PR/main CI Gates, native accessibility-fix review and validated Build-38 testing IPA.
+- [ ] Phone: all three tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
+- [ ] Phone: tasks/repeats/priorities/Undo/parked thoughts; three-tab navigation with no Journal UI,
+      study/priority progress independent of Journal, cancelled old invitations and full recovery into disposable data.
 - [ ] Phone: optional reminders/badge while locked, stale actions and finite scheduling windows.
 - [ ] Phone: Files linking, offline/revoked provider, stale/replayed/conflict exports and same-ID re-sign.
 - [ ] User: benchmark iCloud latency and retain the standing workspace data policy; agent uploads
@@ -97,12 +137,11 @@ Build 31 is accepted recovery. Detailed historical evidence belongs in `cloud-bu
 
 ### Open
 
-- [x] **Authorize the personal hub and selected features.** The graphite/copper four-tab design,
-      day/completion defaults and reminder trim are accepted. Source 0.14.0 implements them;
+- [x] **Authorize the personal hub and selected features.** The graphite/copper design, now three tabs after Journal retirement,
+      day/completion defaults and reminder trim are accepted. Working source 0.15.0 implements them;
       `implementation-plan.md` and `personal-hub.md` own coverage and remaining verification.
-- [ ] **Phone-check installed 0.13.0 (37).** Akshat confirms installation, and Sideloadly records
-      current-version automatic-refresh enrollment in automatic mode with no error. Feature
-      acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
+- [ ] **Phone-check retained Build-37 changes on Build 39.** Build 37 is installed/enrolled;
+      Build 39 awaits signing/installation and its own enrollment. Prior feature acceptance remains open. (1) Speed menu: one Voice list, one tick; picking a
       natural speaker reads with Kokoro, picking an iPhone voice switches back; Choose voices…
       ticks natural speakers into the menu and plays their samples. (2) PageVault: hold a Want to
       read cover and drag it onto another; Move to top/bottom; the order survives relaunch.
@@ -211,7 +250,7 @@ Build 31 is accepted recovery. Detailed historical evidence belongs in `cloud-bu
 - Multiple saved places/geofences, multiple profiles/schedules, HealthKit, or a widget remain out of
   scope unless Akshat explicitly expands the one-purpose product after the core is reliable.
 - **Selected features:** `todo-journal-plan.md` is the accepted local plan, not an ideas backlog.
-  Source 0.14.0 implements its four-tab design and selected features. iCloud/provider timing,
+  Working source 0.15.0 implements its three-tab design and retained selected features. iCloud/provider timing,
   workspace data policy, the roadmap receiver and physical acceptance remain separate gates.
 - **Unpicked ideas:** self-care checklist, interview flashcards and deadline countdowns remain
   outside the selected plan and are revisited only if asked. Do not infer their selection from

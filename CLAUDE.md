@@ -1,6 +1,6 @@
 # AkshatOS
 
-Personal native iPhone hub: source 0.14.0 uses Today, To-do, Journal and Apps. Build 37 still uses the earlier module picker.
+Personal native iPhone hub: source 0.15.0 uses Today, To-do and Apps. Build 37 still uses the earlier module picker.
 PageVault is the activated next module — its scope, phases, and progress are owned by
 `pagevault/CLAUDE.md`, and its source lives in `ios/AkshatOS/features/pagevault/`. Lift Log is
 the local-only strength-session module, owned by `lift-log.md`; Body is the local-only weight,
@@ -17,17 +17,53 @@ Squats fallback.
 while AkshatOS's import/removal cutover remains open. Read it before a cross-app port, notification ownership,
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
-**Status:** Working source is 0.14.0 (38), the authorized four-tab personal hub in PR #67. Native compilation
-and domain suites passed an intermediate revision; the final CI Gate, native review and testing
-IPA are pending. Build 37 is installed/enrolled with its feature phone checks open; Build 31 remains
-the accepted recovery artifact. `personal-hub.md` owns the implemented feature contract,
-`implementation-plan.md` tracks coverage, and `cloud-build.md` owns build evidence.
+**Status:** Working Build 40 removes Journal from navigation, settings, search, reminders, shortcuts
+and the combined challenge. Legacy Journal data/full backup remain; retirement CI is pending. Windows Study Desk 0.1.0 has a portable testing candidate; Build 40 (0.15.0) adds Daily
+routine and finished-session exchange in source on draft PR #68. Windows and full iOS CI pass at
+`c798a2c`; native Windows finish review returned ship, and the phone's requested conflict-copy fix
+is scored resolved. `cloud-build.md` owns exact evidence. Physical acceptance remains open; no
+Build-40 IPA is created. Daily routine extends Today and To-do recovery without a new tab or notifications;
+`daily-routine-plan.md` owns scope and defaults. Build 39 (0.14.1) remains the delivered testing IPA. Exact-source
+cloud checks pass at `8342d0e`, including standard/Live Activity selection, strict payload validation
+and both complete device builds. Native Focus/card inspection at `86c4367` remains applicable;
+release preparation changes no UI source. The requested combined Live Activity IPA passed manual
+release run `38975509228` at `8342d0e`, local checksum/payload/version checks and delivery to the
+single-slot `testing/` cache. It replaces the never-installed Build-38 candidate. The draft branch
+remains unmerged; signing/refresh ownership is unchanged. Physical signing/display proof remains
+open. `study-display.md` owns this scope and signing/device gates.
+Build 38's personal-hub work, merged through PR #67 at `b573ecc`, is included in Build 39.
+Build 37 remains installed/enrolled; Build 31 remains accepted
+recovery. `personal-hub.md` owns the implementation, `implementation-plan.md` local coverage and
+`cloud-build.md` exact build evidence. Release evidence edits stay local until the next real code
+push under the standing documentation rule.
 
 ## Files
 
+- `windows/` — native Windows Study Desk companion, its core/transfer tests, portable build and
+  operation guide; read `windows/CLAUDE.md`. Portable candidate passes cloud checks/native review;
+  physical acceptance remains open. `cloud-build.md` owns exact evidence.
+- `desktop-study-plan.md` — selected resizable/customizable Windows app and additive
+  import into phone history (local only); confirmed close/lock/sleep rules and
+  implementation/device gates. Read before this work.
+- `daily-routine-plan.md` — requested Daily routine checklist, quiet Today integration, daily-record
+  and recovery contract, defaults and implementation/verification scope; read before routine work.
+- `ios/AkshatOS/features/todo/domain/DailyRoutine.swift` and `features/todo/RoutineView.swift`
+  (under `ios/AkshatOS/`) — user-authored routine templates, day snapshots and native checklist,
+  editor/history; persisted and recovered through the To-do snapshot, independently of priorities.
+- `study-display.md` — Build-39 desk Focus, DND/lock-screen contract, opt-in Live Activity variant,
+  public signing research and remaining device/release gates; read before this work.
+- `ios/AkshatOS/app/StudyFocusView.swift`, `StudyDisplayController.swift`, and
+  `StudyLiveActivityCoordinator.swift` — rotating Focus, scoped idle-timer override and optional
+  ActivityKit lifecycle; none owns or changes the persisted clock.
+- `ios/AkshatOS/shared/StudyActivityAttributes.swift`, `StudyActivityCard.swift`,
+  `ios/StudyActivityExtension/` and `ios/project-live-activity.yml` — timer-only payload/card and
+  optional WidgetKit target; default project remains extension-free. Generated extension Info.plist is ignored.
+- `ios/UnitTests/StudyDisplayTests.swift` — registered lifecycle, rotation and ActivityKit-adapter
+  regression tests with synthetic data and an injected client.
+
 - `DESIGN.md` — source-extracted native personal-hub tokens, component patterns and visual boundaries;
   read before changing the approved graphite/copper system. Release verification is tracked separately.
-- `personal-hub.md` — native four-tab implementation, feature stores, privacy, notification budget,
+- `personal-hub.md` — native three-tab implementation, feature stores, privacy, notification budget,
   full-backup and file-transfer contracts; read before changing the personal hub.
 
 - `implementation-plan.md` (local only) — authorized personal-hub build scope, explicit defaults, coverage and
@@ -49,8 +85,8 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   checks its render/state logic, and `mocks/make-chat-preview.cjs` packages a scoped, synthetic
   in-chat preview for phone review without a server or public deployment. Earlier comparisons stay
   as reference; the approved native system is documented in `DESIGN.md` after finish review.
-- `laptop-phone-sync.md` (local only) — reviewed research and proposed approach for moving files between the
-  laptop and the apps (iCloud Drive linked folder, measure first, test build), plus the open
+- `laptop-phone-sync.md` (local only) — reviewed research and implemented file-exchange contract between the
+  laptop and the apps (iCloud Drive linked folder, explicit transfer and device latency pilot), plus the open
   data-policy decision; read before building any import/export hand-off.
 - `laptop-phone-sync-research-prompt.md` (local only) — self-contained research brief (no personal data) on moving
   files between the Windows laptop and the sideloaded apps: setup, what was tried, requirements and
@@ -86,11 +122,14 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   changing CI or accepting a build.
 - `ios/tests/feature-tests.json` — required per-feature domain/integration/UI test inventory.
 - `ios/scripts/check-test-inventory.py` — validate inventory and run registered Swift domain suites.
-- `ios/scripts/validate-ipa.py` — inspect unsigned artifact identity/payload before publication,
-  including that no document types or file sharing are declared and that the only background mode
-  is audio (PageVault read-aloud).
+- `ios/scripts/validate-ipa.py` — validate an unsigned IPA or built .app against an explicit standard
+  or study-live-activity contract; preserve privacy/audio-only checks and allow only the named study extension.
+- `ios/scripts/release-variant.py` — resolve the selected variant to fixed device-build, filename and
+  artifact paths; standard stays the default, with distinct Live Activity output names. It packages nothing.
+- `ios/scripts/test-release-contract.py` — fast release-selection and payload-rejection regressions;
+  archives stay in memory, and directory probes create no IPA. Run in Source checks.
 - `ios/Support/AkshatOS-Info.plist` — the only Info.plist keys Xcode cannot generate from build
-  settings, merged with the generated ones: the audio background mode for PageVault read-aloud.
+  settings, merged with generated keys: PageVault's audio background mode and the study URL scheme.
 - `ios/UnitTests/` — hosted simulator XCTest tests for feature integration/persistence, not shipped.
 - `ios/UnitTests/SquatsActionTests.swift` — notification routing, replay, protected-store fallback,
   scheduling/save failures and file/disk recovery regression tests.
@@ -128,8 +167,8 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   install, and failure-handoff procedure; read before building or installing an iOS artifact.
 - `../final-ipas/akshatos/` (sibling folder, outside this repository) — the stable release cache:
   `backup\` holds the current accepted build, `testing\` a candidate awaiting its device pass; Build
-  31 is the accepted copy and `testing\` holds Build 37 (Study Log, one voice list, Want to read
-  order), installed and enrolled, awaiting its feature phone pass.
+  31 is the accepted copy and `testing\` holds validated Build 39 (personal hub and study Live Activity),
+  awaiting installation and its phone pass. Build 37 remains the installed/enrolled version.
   `../final-ipas/README.md` owns the model. Excluded from the workspace OneDrive backup the same way
   every `personal-project/` subfolder is — see the root `CLAUDE.md`'s Backup and recovery section —
   and not tracked in Git; recover a build by
@@ -173,7 +212,7 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
 - `ios/AkshatOS/app/` — composition/lifetime ownership, sole notification delegate, and `hub/`
   display-only picker with metadata and injected destinations; read for host integration changes.
 - `ios/AkshatOS/app/OrientationGate.swift` — app-scope supported-orientation answer: portrait
-  everywhere except an open PDF reader, which reports its presence instead of forcing rotation.
+  except the PageVault reader and study Focus, with independent presence ownership.
 - `ios/AkshatOS/app/backup/` — the hub's full backup: `AkshatOSBackup.swift` (the folder's index,
   part-name and registry checks, errors; Foundation-only), `FullBackupService.swift` (runs every
   registered `HubBackupPart`, knowing no module by name) and `FullBackupView.swift` (the Backup screen).
@@ -270,12 +309,14 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   accepted for the movement loop under its legacy Squats presentation, including automatic overdue
   nudges and the idle 9:00 AM start invitation, and Build 12 is its retained accepted predecessor.
   Build 25 is the accepted Pushup Reminder/presentation baseline; Build 31 is the current accepted
-  recovery/refresh artifact; Build 32 is installed pending its phone pass. The
+  recovery/refresh artifact; `cloud-build.md` owns the installed and testing versions. The
   broader physical edge-case and repeated-refresh matrix remains open.
   This is a new identity from the disposable smoke app, which Akshat removed; no user-history
   migration is implemented or needed for that featureless smoke. Preserve the hub ID going forward.
-- Launch into the hub picker, then select Pushup Reminder, PageVault, Lift Log, or Body
-  for its own destination. Returning to the picker must not stop reminders.
+- Working Build 40 launches Today / To-do / Apps; Build 38/39 retain the earlier Journal tab. PageVault and occasional tools
+  live in Apps; retained fitness destinations live behind Settings recovery/handover. Installed
+  Build 37 still uses the earlier picker. Navigation must never stop or reset a persisted session
+  or silently transfer reminder ownership.
   `architecture.md` owns implemented-vs-target details; `todo.md` owns unfinished work.
 
 - The accepted iPhone interaction is: choose a whole-minute interval (45 minutes by default), use
@@ -292,7 +333,9 @@ the accepted recovery artifact. `personal-hub.md` owns the implemented feature c
   Personal Automation, LiveContainer/JIT, or the Android phone. App Intents/Shortcuts are optional
   convenience entry points after the native core works, never the reminder engine.
 - Use a single ordinary application target with no widget, Watch app, App Group, or notification-
-  service extension. Core Location geographic-region monitoring and its honest usage descriptions
+  service extension in the default build. Build 39 additionally prepares an opt-in WidgetKit study
+  Live Activity candidate (`study-display.md`), with no App Group or remote push; its requested
+  unsigned IPA is delivered, while extension signing/device acceptance remain open. Core Location geographic-region monitoring and its honest usage descriptions
   are accepted for Home auto-pause. Add only the location/background configuration demonstrated to
   be necessary for region events on the target iOS version; never run continuous route/location
   tracking or retain movement history.
