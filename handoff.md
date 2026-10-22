@@ -1,14 +1,16 @@
 # AkshatOS session handoff
 
-Build 40 (0.15.0) adds the requested Daily routine in source; exact-source CI Gate passes at
-`18a59b1` (run `39122553639`), and native review scored both accessibility fixes resolved.
+Build 40 (0.15.0) adds Daily routine and finished-session exchange in source; the pre-retirement CI Gate passes at
+`c798a2c` (run `39416930626`, attempt 2): 200 hosted and 16 UI tests, both device variants, no IPA.
+The earlier native routine review scored both accessibility fixes resolved.
 `daily-routine-plan.md` owns the grouped default (optional layout question unanswered), activity-day
 record and recovery contract. Phone acceptance remains open. Do not package a Build-40 IPA without a release request.
 Build 39 remains the delivered testing candidate described below.
 
-Windows Study Desk 0.1.0 passes cloud checks at `cd17eef` (run `39412889714`) and native finish review
+Windows Study Desk 0.1.0 passes cloud checks at `c798a2c` (run `39416930629`) and native finish review
 (`ship`); its ZIP/hash/version are validated locally. `cloud-build.md` owns the candidate path.
-The additive phone exchange still awaits iOS CI/native review. The user confirmed remaining time primary,
+The phone exchange passes that iOS run; fresh native captures score its requested conflict-copy fix
+resolved. Physical Windows/iPhone/iCloud acceptance remains open. The user confirmed remaining time primary,
 studied time below, automatic pause on lock/sleep/X and manual Resume, both devices recording and
 iCloud Drive research/testing. `windows/CLAUDE.md` and `windows/README.md` own the desktop source,
 operation and first-version limits; local `desktop-study-plan.md` retains decisions. No tiny fixed
@@ -37,7 +39,8 @@ testing cache. Release CI and local artifact checks pass. The Build-38 personal 
 PR #67 at `b573ecc` and its two native accessibility fixes are included. Build 37 remains
 installed/enrolled; Build 31 remains accepted recovery, with its checksum unchanged.
 `implementation-plan.md` tracks local coverage, `personal-hub.md` the implementation and
-`todo-journal-plan.md` accepted decisions. Journal defaults unlocked. Do not restart design selection
+`todo-journal-plan.md` accepted decisions. Journal is retired in working Build 40; keep its legacy
+data and authenticated full-backup recovery. The combined full-day challenge is also retired. Do not restart design selection
 or request approval for completed authorized work. All work stays at source/CLI level. Final release
 evidence is synchronized locally and waits for the next real code change before its next push.
 Build 39 has been handed over, so the new routine source uses Build 40 in both host and optional
@@ -90,7 +93,7 @@ downloaded, indexed, cached, or otherwise copied while public. `ci.md` owns the 
 - Permanent target/display name: AkshatOS. Bundle: `com.akshatksingh18.akshatos`.
   Minimum iOS 17; the working source version is recorded in `cloud-build.md`. Preserve identity on
   updates.
-- Source 0.14.0 launches Today / To-do / Journal / Apps. Build 37 still has the old picker; legacy fitness stores stay behind a controlled handover/recovery path.
+- Working source 0.15.0 launches Today / To-do / Apps. Build 37 still has the old picker; legacy fitness stores stay behind a controlled handover/recovery path.
   This is not a combined dashboard. ReelVault shipped in Build 32 and is removed from Build 33.
 - The movement loop is accepted in ongoing phone use under its Build-13 Squats presentation, so
   PageVault was activated and its v1 is now accepted through Build 24. Pushup Reminder's new copy,
@@ -183,8 +186,8 @@ testing cache and can be tested independently; no signing/installation or cache 
    keep/register the extension, no uninstall or unreviewed certificate revocation. Do not change
    installed refresh ownership until verified handover. Keep the draft branch unmerged.
    Build 38 is superseded and reproducible from its run, not an intermediate installation.
-1. **Phone acceptance:** four tabs, real study Start/Pause/Focus/corrections/Undo/rollover, task
-   recurrence/priorities, Journal default/privacy/photos/recovery and optional notifications. The
+1. **Phone acceptance:** three tabs without Journal, real study Start/Pause/Focus/corrections/Undo/rollover, task
+   recurrence/priorities, routines, retained backup recovery and optional notifications. The
    retained Build-37 voice-menu and shelf-order checks should run on this candidate too; one
    installation is not acceptance. Build 31 stays recovery until the full promotion rule passes.
 2. **Fitness handover:** new fitness work belongs in WHOOP. Verify its imports/photos/reminders and

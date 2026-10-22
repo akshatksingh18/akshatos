@@ -18,7 +18,8 @@ revisions and invalid/future sessions before atomic save. Imported records are r
 not re-exported as new locally authored sessions. Missing rows never delete history; cross-device
 corrections/deletions require a future reviewed protocol. Phone provenance travels in its existing
 Study/full backup without a SwiftData schema/store change. Desktop cloud checks, portable packaging
-and native finish review pass; phone exchange verification remains pending. Folder availability/
+and native finish review pass at `c798a2c`; full iOS CI also passes and the phone's requested
+conflict-copy fix is scored resolved. Folder availability/
 latency and Windows/iPhone lifecycle behavior need physical acceptance (`cloud-build.md`).
 
 Build 40 source adds an optional `DailyRoutine` inside the existing To-do snapshot. Templates and
@@ -27,7 +28,7 @@ created. Legacy JSON without the optional field still decodes. Explicit replacem
 To-do backup clears the routine and warns accordingly. Daily materialization runs on load/day refresh,
 not completion or background work. Closed and completed/skipped snapshots retain their content;
 pending rows may follow today's template edits. `daily-routine-plan.md` owns scope; exact-source
-CI Gate passes at `18a59b1` (run `39122553639`). Physical routine/recovery checks remain open.
+CI Gate for the pre-retirement routine/exchange source passes at `c798a2c` (run `39416930626`). Physical routine/recovery checks remain open.
 
 Build 39 (0.14.1) delivers the requested study-display testing IPA. The optional
 WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains
@@ -35,12 +36,14 @@ extension-free. Release selection resolves fixed separate build/output paths; th
 checks either built .app directories or later IPA archives against the selected variant.
 `study-display.md` owns payload privacy, lifecycle, DND and activation/release gates.
 
-Source 0.14.0 implements Today/To-do/Journal/Apps. `personal-hub.md` owns the feature stores,
-`HubDayPart` summaries, Journal access gate, staged media restore, personal notification coordinator,
+Working source 0.15.0 implements Today/To-do/Apps. `personal-hub.md` owns the feature stores,
+`HubDayPart` summaries, retained Journal recovery gate, staged media restore, personal notification coordinator,
 App Intents and explicit Files transport. Each new feature uses a versioned SwiftData snapshot and
 joins full backup; settings also join recovery. Final cloud/native/device evidence stays separate.
-The 03:00 activity day, one-to-three priorities, explicit nonempty Journal Done and optional combined
-challenge are accepted defaults. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
+Working Build 40 removes Journal UI/search/reminders/shortcuts and the combined full-day challenge.
+Legacy Journal storage, optional backup authentication and full-backup identifiers remain intact.
+Retired invitations are cancelled before permission/store guards; an old restore cannot reactivate
+the challenge. The 03:00 activity day and one-to-three priorities remain. Retirement CI is pending. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
 
 `hub-plan.md` owns the WHOOP boundary: fitness is absent from the new daily hub but legacy stores
 and services remain until explicit verified handover stops their reminders. WHOOP implementing
@@ -60,7 +63,7 @@ these features is not evidence of phone data migration or automatic synchronizat
   `AppNotificationCoordinator`, one app-lifetime Core Location region adapter, and the
   `OrientationGate` across navigation. The app declares no document types and handles no opened
   files.
-  `HubRootView` composes Today / To-do / Journal / Apps, injects destinations and reconciles
+  `HubRootView` composes Today / To-do / Apps, injects destinations and reconciles
   foreground entry. The display-only `HubEntry`/`app/hub/HubView.swift` picker is retained legacy
   source, not the current daily shell. Apps opens PageVault and the occasional tools; retained fitness
   destinations are reached through Settings recovery/handover. Lift Log asks which of the editable
@@ -131,7 +134,8 @@ these features is not evidence of phone data migration or automatic synchronizat
   reconciliation/repair, snooze cleanup, Home-health/disable, DST/time-zone, summary/recovery,
   legacy-payload and Settings UI coverage. It also requires a non-nil next fire date before Resume
   treats an existing repeating request as healthy.
-- Implemented in source 0.14.0: personal App Intents for study, tasks, thought capture and Journal. Physical edge-case/refresh acceptance remains separate. The notification category exposes
+- Implemented in source 0.14.0: personal App Intents for study, tasks and thought capture. Journal is retired in Build 40; its legacy
+  intent is undiscoverable and reports removal. Physical edge-case/refresh acceptance remains separate. The notification category exposes
   Done then Pause without requiring foreground launch.
 - Review the intended contract below before extending these areas. Do not label cloud- or device-
   unverified behavior as accepted.

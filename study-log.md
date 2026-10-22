@@ -30,8 +30,9 @@ studied time below, readable resizable text and optional pinning. Lock/sleep/min
 resume is manual. The confirmed decisions and physical gates are in local `desktop-study-plan.md`;
 `windows/README.md` owns the technical operation/exchange contract. Build-40 source imports closed
 laptop sessions through an additive preview and exports phone-owned sessions in a separate format.
-The Windows candidate passes cloud checks and native finish review; phone exchange verification
-remains pending (`cloud-build.md`). Existing roadmap export remains separate; backup restore still
+The Windows candidate passes cloud checks and native finish review; current full iOS CI passes at
+`c798a2c` and the phone's requested conflict-copy fix is scored resolved (`cloud-build.md`). Physical
+Windows/iPhone/provider acceptance remains open. Existing roadmap export remains separate; backup restore still
 replaces data and must never be used as a merge. The delivered Build-39 IPA lacks the new importer.
 
 1. **Main number: countdown.** Remaining time against the day's target (default 6:00:00) is the big
@@ -69,7 +70,7 @@ replaces data and must never be used as a merge. The delivered Build-39 IPA lack
 7. **Day starts at 3:00 AM local.** A late session stays with its day; a segment crossing 3:00 AM is
    split there. Each day keeps the target it had, so changing the target never rewrites history.
 
-The accepted day is 03:00 for Study, Journal and priorities. Calendar deadlines remain distinct.
+The accepted day is 03:00 for Study and priorities. Calendar deadlines remain distinct.
 New blocks retain their originating zone and saved aim/marks; older blocks retain their previous
 local-time interpretation. A historical attribution migration would require a separate preview.
 
@@ -157,7 +158,7 @@ approved graphite/copper design is in `todo-journal-plan.md`; native details are
 
 - **Notification budget.** The app coordinator considers actual unrelated pending requests, keeps
   two spare slots and a maximum of fifteen timed tasks. Study check and break are mutually
-  exclusive; Journal has one generic invitation and Morning plan has one upcoming dated slot.
+  exclusive; Morning plan has one upcoming dated slot. Journal invitations are retired and cancelled.
   Pushups uses 39 nudges plus its normal request until verified handover. `personal-hub.md` owns
   capacity/failure handling; no delivery-time app execution is assumed.
 

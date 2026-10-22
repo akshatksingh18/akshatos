@@ -8,16 +8,23 @@ behavior and the separate roadmap receiving importer remain open; see `cloud-bui
 
 ## Navigation and presentation
 
+Journal is removed from working Build-40 navigation, settings, search, shortcuts and reminders by
+user request. Its writing milestones, reflection editor and Journal-dependent full-day challenge
+are removed too. Study and priority progress remain independent; weekly review shows study totals
+and completed priorities. Old Journal data/photos and the full-backup part remain for recovery.
+Journal-retirement CI is pending; earlier runs below verify their stated source only.
+
 Working Build-40 source adds a finished-session exchange under Settings > Linked folder: explicit
 manual import, linked laptop-file check/preview, and a separate phone-to-Study-Desk export. The
 foreground availability check never auto-applies records. Existing roadmap export remains separate.
 Study/full JSON recovery retains imported origin and revision. Overlap or changed-record conflicts
 refuse the complete merge. `windows/README.md` owns the first desktop client's limits; its new
-source/CI/device checks are separate from the earlier routine verification and delivered Build 39.
+source passes full iOS CI at `c798a2c`, including both device variants. Native review scores its
+requested conflict-copy fix resolved; physical acceptance remains open. Delivered Build 39 is unchanged.
 
 Build 40 source adds Daily routine below priorities on Today and a management entry in To-do's More
-menu. Its grouped checklist, native item editor and seven-day history use the same four tabs and
-visual system. Exact-source CI Gate passes at `18a59b1`; native review scored both accessibility
+menu. Its grouped checklist, native item editor and seven-day history use the same three tabs and
+visual system. The pre-retirement full CI Gate passes at `c798a2c`; the earlier routine native review scored both accessibility
 fixes resolved. Phone acceptance remains open; Build 39's delivered IPA is unchanged.
 
 Build-39 source adds rotating desk Focus, a foreground-only keep-awake switch, quiet study
@@ -25,7 +32,7 @@ notifications and an optional Live Activity candidate; `study-display.md` owns t
 unverified phone/signing boundaries. The requested unsigned IPA is delivered; signing/installation
 is user-operated and installed refresh ownership is unchanged.
 
-Four persistent tabs: Today, To-do, Journal, Apps. Today owns the study countdown, selected
+Three persistent tabs: Today, To-do, Apps. Today owns the study countdown, selected
 priorities, Park a thought and the weekly block graphic. History is one closable sheet containing
 week/month inspection, block corrections, topic/time distributions, motivation and weekly review.
 Apps contains PageVault, Watchlist, Spending and settings/recovery. No fitness cards or requirements
@@ -45,11 +52,8 @@ No demo values ship. Missing stores are unavailable, not zero. Future calendar c
 - Priorities are one to three selected unfinished tasks. All selected complete qualifies; no
   selection is unplanned. Completion and the next repeat commit together; Undo reverses both.
   Archived rows remain for historical references and never award a completion.
-- A nonempty Journal entry qualifies only after an explicit successful Done save. Removing its
-  writing withdraws completion. Its factual snapshot changes only on explicit refresh.
-- Independent progress is the default. The optional full-day challenge combines the study mark,
-  chosen priorities and Journal Done, beginning at its recorded activation day. Fitness is excluded.
-  Incomplete today does not break a current streak before the day closes.
+- Study and priority progress are independent. Journal writing and the combined full-day challenge
+  are retired; an older settings backup cannot reactivate them. Historical Journal records are retained.
 - Personal bests, prior-seven-day colours, fourteen-day momentum, study-day milestones and an
   optional twenty-more-minutes challenge use recorded time. They do not measure learning quality.
 
@@ -63,8 +67,8 @@ Normal mutations refuse an unavailable store. Explicit validated restore can rep
   ten-second completion Undo, local quick-date grammar, CSV and JSON recovery. Build 40 adds routine
   templates and daily check-offs to the same atomic snapshot; JSON includes them, while task CSV
   remains a task-only analysis export. Old JSON without routines remains readable.
-- `features/journal/`: activity-day writing/prompts, optional ratings/photos, immutable facts,
-  history/search/On this day, week notes, Markdown/photo export and Journal backup.
+- `features/journal/`: retained legacy store, media and backup implementation; no daily UI or search
+  entry point. Keep schema, storage identifiers and authentication for full-backup recovery.
 - `features/watchlist/`: phone-created titles, imported metadata and a separate watched-event stream.
 - `features/spending/`: exact integer cents, separate currencies, calendar-month totals, user-entered
   budgets, expense editing/deletion, formula-safe CSV and JSON recovery. No account integration.
@@ -72,21 +76,14 @@ Normal mutations refuse an unavailable store. Explicit validated restore can rep
 Shared code owns value types, protocols, date/CSV helpers and presentation. It does not own feature
 stores. App composition consumes `HubDayPart` summaries and provides cross-feature callbacks.
 
-## Journal privacy and recovery
+## Retained Journal recovery
 
-Journal defaults to unlocked by the confirmed user choice. Settings offers an optional lock using
-device-owner authentication with device-passcode fallback. Changing that privacy setting requires
-authentication; an unavailable device passcode cannot accidentally leave the Journal locked.
-Writing, history, search, ratings, photos, weekly excerpts and exports all use the same access gate.
-Only completion facts may leave it while locked. Inactive previews are concealed; backgrounding
-relocks when the optional lock is enabled and invalidates outstanding authentication. If an enabled
-lock cannot authenticate, the Journal stays locked and explains recovery through device settings.
-
-With the lock enabled, exports require authentication. Export actions warn that files are not encrypted by the screen
-lock. Cancelling Journal authentication stops a full export. Missing photos stop export/restore.
-Restore stages validated photo bytes locally while provider access is active, then installs them
-with a recovery preimage and rolls back on save failure. Draft-save errors remain visible and
-cannot mark an entry Done. Journal is never automatically sent to a linked folder.
+Journal is no longer an app destination. Existing entries, photos and week notes are not deleted or
+migrated into tasks. Full backup still includes the legacy `journal` part, retaining its optional
+device-owner authentication and passcode fallback. Cancelling authentication stops full export;
+exported files are not encrypted by that screen lock. Restore stages validated photo bytes before
+provider access ends and preserves the existing rollback behavior. Backgrounding still locks a
+retained protected store. No automatic Journal export is enabled.
 
 ## Full backup and notifications
 
@@ -100,8 +97,8 @@ explicit warning; absent To-do parts in older full backups still leave the entir
 
 Personal notification reconciliation is serialized under its own namespace. It considers the actual
 pending count, reserves two spare slots and schedules at most fifteen timed tasks, one running-study
-check or one break reminder, one generic Journal invitation and one upcoming eligible Morning plan
-invitation. It preserves unrelated requests and
+check or one break reminder and one upcoming eligible Morning plan invitation. Retired Journal
+pending/delivered notifications are removed even when permission is denied or a local store is unavailable. It preserves unrelated requests and
 reports denied permission/capacity/failure. Study actions carry the running block ID, so an old
 delivered notification cannot pause a newer block. The optional badge is remaining priorities.
 
@@ -112,8 +109,8 @@ This source path is not evidence that phone migration or WHOOP acceptance has ha
 
 ## Shortcuts and file hand-offs
 
-App Intents start/pause study, return today's study minutes, add a task, park a thought and open Journal. They open the ordinary
-app and retain Journal authentication. These intents add no extension, App Group or cloud container.
+App Intents start/pause study, return today's study minutes, add a task and park a thought. They open
+the ordinary app. The old Journal intent is undiscoverable and reports that the feature was removed. These intents add no extension, App Group or cloud container.
 The separately opt-in Build-39 study Live Activity target does not change this intent contract.
 
 An explicitly selected Files folder is a transport adapter, with manual import/export fallback.

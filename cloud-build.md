@@ -6,37 +6,42 @@ acceptance. It includes Build 38's personal hub and native accessibility fixes. 
 installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
-Windows Study Desk 0.1.0 passes [run 39412889714](https://github.com/akshatksingh18/akshatos/actions/runs/39412889714)
-at `cd17eef`: 37 core assertions, native WPF compilation/action smoke checks (Pause, X and the
+Working Build 40 now removes Journal and its full-day challenge by user request, preserving legacy
+data/full-backup recovery. Verification for this source change is pending; the earlier runs below
+remain scoped to their named commits. No new IPA is requested.
+
+Windows Study Desk 0.1.0 passes [run 39416930629](https://github.com/akshatksingh18/akshatos/actions/runs/39416930629)
+at `c798a2c`: 37 core assertions, native WPF compilation/action smoke checks (Pause, X and the
 02:00 study-day heading), five native client renders and portable Windows x64 packaging. The
 captures match the reviewed `958475b` layouts byte-for-byte; the fresh finish review returned
 `ship` with no material fixes. The documenter confirms an ordinary extension and preserves the
-incumbent design files. Phone simulator tests pass in run `39412889821`; the fresh review accepts
-all four native captures and requests one truthful recovery-copy fix for immutable overlap conflicts.
-That correction and the directly analogous Windows error clarification now await exact-source CI
-and a phone verdict pass; the validated Windows candidate below precedes those text-only changes.
+incumbent design files. At the same source, iOS
+[run 39416930626](https://github.com/akshatksingh18/akshatos/actions/runs/39416930626), attempt 2,
+passes Source checks, Build and test iOS and CI Gate: 18 release-contract tests, nine domain suites,
+200 hosted tests and 16 UI tests. Both complete device variants pass payload, identity, version and
+extension checks. Packaging and IPA upload are skipped; `test-diagnostics-190-2` is the diagnostics
+artifact. Four fresh native phone captures support the reviewer's scored verdict: the one requested
+immutable-conflict recovery-copy fix is resolved. This is scoped fix verification, not whole-surface
+or physical-phone acceptance. The documenter confirms no design-system change.
 `Windows Study Desk` CI runs core checks on Linux, then native WPF
 compile/render and a portable Windows x64 build; it does not produce an IPA. The updated iOS source
 remains Build 40, with no Build-40 IPA requested. Earlier routine-only evidence at `18a59b1` below
 is a baseline, not verification of the new exchange. `windows/README.md` owns desktop use and gates.
 
-Windows artifact `study-desk-windows-4` contains `AkshatOS-StudyDesk-windows-x64.zip` (60,830,490 bytes),
-SHA-256 `e9ab410de8ed25c58843da84e8e29598d0c7fdb00c3939382c5c6c5837def999`. It is downloaded and
-extracted under `windows/artifacts/testing/study-desk-cd17eef/app/`; launch `AkshatOS.StudyDesk.exe`.
+Windows artifact `study-desk-windows-5` contains `AkshatOS-StudyDesk-windows-x64.zip` (60,830,244 bytes),
+SHA-256 `a96b4b637c679203687666a1555f5824e03dc57c4becb0fc9d3b4c512ad86163`. It is downloaded and
+extracted under `windows/artifacts/testing/study-desk-c798a2c/app/`; launch `AkshatOS.StudyDesk.exe`.
 The executable is 139,833,003 bytes, file version 0.1.0.0; ProductVersion includes the Actions PR
-merge checkout `cdb7c0fefc89c5c989be889659c5ea8ac71ca475`. ZIP hash, safe entry paths and PE metadata
+merge checkout `6a7205f4baf5e90cdb99d40d0672a3efb1cda73a`. ZIP hash, safe entry paths and PE metadata
 were checked without running the app locally. Native evidence is in the ignored
-`.impeccable/review/windows-study-cd17eef/`; these are WPF client renders, not physical desktop
+`.impeccable/review/windows-study-c798a2c/`; these are WPF client renders, not physical desktop
 screenshots. The package is unsigned. Real lock/sleep/display scaling and iCloud delivery remain
 user-operated acceptance gates. The IPA cache is unchanged.
 
-Working source is **0.15.0 (40)** for the requested Daily routine addition. Exact-source
-[run 39122553639](https://github.com/akshatksingh18/akshatos/actions/runs/39122553639) at
-`18a59b1` passes Source checks, Build and test iOS and CI Gate: 18 release-contract tests, nine
-domain suites, 197 hosted tests and 15 UI tests. Both complete device variants pass payload checks.
-IPA packaging/upload were skipped; `test-diagnostics-185-1` is the only artifact. Matching native
-captures and a fresh reviewer confirm both routine accessibility fixes resolved; this is scoped
-evidence, not physical-phone acceptance. `daily-routine-plan.md` owns the capture/review boundary.
+Working source is **0.15.0 (40)** for Daily routine and finished-session exchange, verified at
+`c798a2c` by the full iOS run above. Earlier routine-specific native captures at `18a59b1` and the
+fresh review confirm both routine accessibility fixes resolved; this remains scoped evidence,
+not physical-phone acceptance. `daily-routine-plan.md` owns that capture/review boundary.
 No Build-40 IPA has been requested or created. Both host/extension versions are kept aligned.
 Delivered source is **0.14.1 (39)**. The user requested the combined Live Activity IPA;
 [manual release run 38975509228](https://github.com/akshatksingh18/akshatos/actions/runs/38975509228)

@@ -179,8 +179,9 @@ access gating and media staged before provider access ends, import replay with w
 preserved, exact expense recovery and stale notification actions. Notification tests inject denial,
 capacity and scheduling failures. Full backup restores all nine feature stores and personal
 settings. Native SwiftUI render fixtures capture synthetic Today at 390 points and 320 points with
-accessibility type, and the unlocked Journal. UI checks cover the four tabs, task capture, unlocked
-Journal default and occasional-tool destinations. These are cloud/simulator checks; they do not
+accessibility type. Journal remains covered for legacy backup recovery. UI checks cover three tabs,
+task capture, absence of Journal settings/search and occasional-tool destinations. Upgrade/restore
+checks keep retired reminders/challenge off; cancellation precedes permission/store guards. These are cloud/simulator checks; they do not
 verify hardware authentication, notification delivery, file-provider behavior or phone migration.
 
 ReelVault's domain, storage and UI suites were removed with the module in Build 33.

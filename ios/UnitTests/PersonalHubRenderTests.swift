@@ -10,11 +10,10 @@ import SwiftData
         let schema = Schema(versionedSchema: version)
         return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
     }
-    func testNativeTodayAndUnlockedJournalAtPhoneSizes() async throws {
+    func testNativeTodayAtPhoneSizes() async throws {
         let suite = "native-render-" + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set(false, forKey: "journal.lock-enabled")
         let now = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
         let study = StudyLogStore(repository: SwiftDataStudyLogRepository(container: try container(StudyLogSchemaV1.self)), defaults: defaults, now: { now })
         study.load()
@@ -26,14 +25,13 @@ import SwiftData
         XCTAssertTrue(todo.saveRoutine(routine))
         XCTAssertTrue(todo.saveRoutine(RoutineItem(title: "Review the day", period: .evening)))
         todo.recordRoutine(routine.id, status: .done, day: todo.today)
-        let journal = JournalStore(container: try container(JournalSchemaV1.self), defaults: defaults); journal.load()
-        var entry = journal.newEntry(journal.today)
-        entry.text = "A synthetic entry for visual testing. I kept the session small and returned after the break."
-        entry.mood = 4; entry.energy = 3; XCTAssertTrue(journal.save(entry))
         let preferences = PersonalPreferences(defaults: defaults)
-        let today = PersonalTodayView(study: study, todo: todo, journal: journal, preferences: preferences, orientation: OrientationGate(), studyActivity: StudyLiveActivityCoordinator(study: study, defaults: defaults, configured: false), keepGoing: {}, openTodo: {})
+        let today = PersonalTodayView(study: study, todo: todo, preferences: preferences, orientation: OrientationGate(), studyActivity: StudyLiveActivityCoordinator(study: study, defaults: defaults, configured: false), keepGoing: {}, openTodo: {})
         await capture(NavigationStack { today }, name: "Native Today 390", size: CGSize(width: 390, height: 844))
         await capture(NavigationStack { today.environment(\.dynamicTypeSize, .accessibility3) }, name: "Native Today 320 accessibility", size: CGSize(width: 320, height: 568))
+        // Capture the actual shell as well as the feature view: retirement must leave three tabs.
+        await capture(HubRootView(services: AppServices.shared), name: "Native three-tab shell 390", size: CGSize(width: 390, height: 844))
+        await capture(HubRootView(services: AppServices.shared).environment(\.dynamicTypeSize, .accessibility3), name: "Native three-tab shell 320 accessibility", size: CGSize(width: 320, height: 568))
         await capture(NavigationStack { ScrollView { DailyRoutineSection(store: todo).padding(22) }.background(HubInk.background).navigationTitle("Today") }, name: "Native routine 390", size: CGSize(width: 390, height: 844))
         await capture(NavigationStack { ScrollView { DailyRoutineSection(store: todo).padding(22) }.background(HubInk.background).environment(\.dynamicTypeSize, .accessibility3).navigationTitle("Today") }, name: "Native routine 320 accessibility", size: CGSize(width: 320, height: 568))
         await capture(RoutineManager(store: todo), name: "Native routine manager 390", size: CGSize(width: 390, height: 844))
@@ -54,9 +52,6 @@ import SwiftData
         await capture(staleCard, name: "Native study lock-screen stale", size: CGSize(width: 358, height: 160))
         await capture(card.environment(\.dynamicTypeSize, .accessibility3), name: "Native study lock-screen accessibility", size: CGSize(width: 358, height: 160))
         await capture(staleCard.environment(\.dynamicTypeSize, .accessibility3), name: "Native study lock-screen stale accessibility", size: CGSize(width: 358, height: 160))
-        let facts = JournalDayFacts(activityDay: journal.today, capturedAt: now, studySeconds: 3600, studyBlocks: 1,
-            completedTasks: 0, selectedPriorities: 2, completedPriorities: 0)
-        await capture(NavigationStack { JournalView(store: journal, facts: { _ in facts }, planTomorrow: {}) }, name: "Native Journal unlocked 390", size: CGSize(width: 390, height: 844))
     }
     func testStudyExchangeReviewAndConflictAtPhoneSizes() async throws {
         let suite = "exchange-render-" + UUID().uuidString

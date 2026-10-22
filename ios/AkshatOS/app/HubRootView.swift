@@ -7,21 +7,17 @@ struct HubRootView: View {
     @Environment(\.scenePhase) private var phase
     @State private var tab = PersonalHubTab.today
     @State private var appPath: [HubRoute] = []
-    @State private var tomorrowPlan = false
     @State private var legacyRoute: HubRoute?
     init(services: AppServices) { self.services = services; _navigator = ObservedObject(wrappedValue: services.navigator); _study = ObservedObject(wrappedValue: services.studyLog) }
     var body: some View {
         TabView(selection: $tab) {
             NavigationStack {
-                PersonalTodayView(study: services.studyLog, todo: services.todo, journal: services.journal, preferences: services.preferences, orientation: services.orientation, studyActivity: services.studyActivity,
+                PersonalTodayView(study: services.studyLog, todo: services.todo, preferences: services.preferences, orientation: services.orientation, studyActivity: services.studyActivity,
                     keepGoing: { services.preferences.lastStudyConfirmation = Date(); services.personalNotifications.reconcile() },
                     openTodo: { tab = .todo })
             }.tabItem { Label("Today", systemImage: "calendar") }.tag(PersonalHubTab.today)
             NavigationStack { TodoView(store: services.todo) }
                 .tabItem { Label("To-do", systemImage: "checklist") }.tag(PersonalHubTab.todo)
-            NavigationStack {
-                JournalView(store: services.journal, facts: { services.facts($0) }, planTomorrow: { tomorrowPlan = true })
-            }.tabItem { Label("Journal", systemImage: "book.closed") }.tag(PersonalHubTab.journal)
             NavigationStack(path: $appPath) {
                 PersonalAppsView(services: services)
                     .navigationDestination(for: HubRoute.self) { route in destination(route) }
@@ -33,7 +29,7 @@ struct HubRootView: View {
         }
         .task { await refresh() }
         .onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in
-            services.studyLog.refreshDay(); services.todo.refreshDay(); services.journal.refreshDay()
+            services.studyLog.refreshDay(); services.todo.refreshDay()
         }
         .onChange(of: phase) { _, phase in
             if phase == .background { services.journal.lock() }
@@ -44,15 +40,12 @@ struct HubRootView: View {
             switch route {
             case .studyLog: tab = .today
             case .todo: tab = .todo
-            case .journal: tab = .journal
+            case .journal: tab = .apps; appPath = [] // Retired route must never reopen Journal.
             case .squats, .liftLog, .body:
                 if !services.preferences.fitnessStopped { legacyRoute = route }
             default: tab = .apps; appPath = [route]
             }
             navigator.clear()
-        }
-        .sheet(isPresented: $tomorrowPlan) {
-            PriorityPicker(store: services.todo, day: services.todo.clock.shifted(services.todo.today, by: 1) ?? services.todo.today)
         }
         .sheet(item: Binding(get: { services.studyLog.runningRestoreReview }, set: { if $0 == nil { services.studyLog.finishRunningRestore(nil) } })) { review in
             StudyRunningRestoreView(store: services.studyLog, review: review)
@@ -72,14 +65,14 @@ struct HubRootView: View {
         case .backup: FullBackupView(service: services.backup)
         case .studyLog: StudyPreferencesView(store: services.studyLog)
         case .todo: TodoView(store: services.todo)
-        case .journal: JournalView(store: services.journal, facts: { services.facts($0) }, planTomorrow: { tomorrowPlan = true })
+        case .journal: PersonalAppsView(services: services)
         case .squats: SquatDashboard().environmentObject(services.squats)
         case .liftLog: LiftLogView(store: services.liftLog)
         case .body: BodyLogView(store: services.bodyLog)
         }
     }
     private func refresh() async {
-        services.studyLog.refreshDay(); services.todo.refreshDay(); services.journal.refreshDay()
+        services.studyLog.refreshDay(); services.todo.refreshDay()
         if !services.preferences.fitnessStopped { await services.squats.refresh() }
         services.liftLog.load(); services.bodyLog.load(); services.studyLog.load()
         services.todo.load(); services.journal.load(); services.watchlist.load(); services.spending.load()
@@ -90,19 +83,4 @@ struct HubRootView: View {
     }
 }
 
-private enum PersonalHubTab: String { case today, todo, journal, apps }
-
-extension AppServices {
-    func facts(_ day: String) -> JournalDayFacts {
-        let date = Date(), plan = todo.plan(day)
-        let reading = day == studyLog.today ? pageVault.current : nil
-        return JournalDayFacts(activityDay: day, capturedAt: date,
-            studySeconds: studyLog.storageAvailable ? studyLog.log.studied(on: day, now: date, clock: studyLog.clock) : nil,
-            studyBlocks: studyLog.storageAvailable ? studyLog.log.blocks(now: date, clock: studyLog.clock).filter { $0.day == day }.count : nil,
-            completedTasks: todo.available ? todo.state.tasks.filter { $0.completedAt.map { todo.clock.key($0) == day } == true }.count : nil,
-            selectedPriorities: todo.available ? plan?.selected.count : nil,
-            completedPriorities: todo.available ? plan?.completed.count : nil,
-            readingTitle: pageVault.storageAvailable ? reading?.title : nil,
-            readingPage: pageVault.storageAvailable ? reading.map { $0.currentPage + 1 } : nil)
-    }
-}
+private enum PersonalHubTab: String { case today, todo, apps }

@@ -31,12 +31,15 @@ import UserNotifications
         breakMinutes = defaults.object(forKey: "personal.break-minutes") as? Int ?? 15
         morningPlan = defaults.bool(forKey: "personal.morning-plan")
         morningHour = defaults.object(forKey: "personal.morning-hour") as? Int ?? 9
-        journalReminder = defaults.bool(forKey: "personal.journal-reminder")
+        // Retired features retain their archive keys, but cannot reactivate after upgrade/restore.
+        journalReminder = false
+        defaults.set(false, forKey: "personal.journal-reminder")
         journalHour = defaults.object(forKey: "personal.journal-hour") as? Int ?? 22
         badge = defaults.bool(forKey: "personal.badge")
         fullDayStart = defaults.string(forKey: "personal.full-day-start") ?? ""
         seenMilestone = defaults.integer(forKey: "personal.seen-milestone")
-        fullDayChallenge = defaults.bool(forKey: "personal.full-day-challenge")
+        fullDayChallenge = false
+        defaults.set(false, forKey: "personal.full-day-challenge")
         lastStudyConfirmation = defaults.object(forKey: "personal.study-confirmation") as? Date
         challengeDay = defaults.string(forKey: "personal.challenge-day") ?? ""
         challengeAccepted = defaults.bool(forKey: "personal.challenge-accepted")
@@ -90,6 +93,9 @@ import UserNotifications
         let pending = await center.pending()
         let owned = pending.filter { $0.identifier.hasPrefix(Self.namespace) }
         let otherCount = pending.count - owned.count
+        // Retire old invitations even when permission or another local store is unavailable.
+        center.remove(owned.filter { $0.identifier == Self.namespace + "journal" }.map(\.identifier))
+        center.removeDelivered([Self.namespace + "journal"])
         guard authorization == .authorized || authorization == .provisional else {
             status = "Notifications are off. Local study and lists still work."
             if preferences.badge { try? await center.badge(0) }
@@ -122,12 +128,6 @@ import UserNotifications
                 desired.append(UNNotificationRequest(identifier: Self.namespace + "break", content: content,
                     trigger: UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date), repeats: false)))
             }
-        }
-        if preferences.journalReminder {
-            let content = UNMutableNotificationContent(); content.title = "A little time to reflect"
-            content.body = "Your Journal is ready when you are."; content.sound = .default
-            desired.append(UNNotificationRequest(identifier: Self.namespace + "journal", content: content,
-                trigger: UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: min(23, max(0, preferences.journalHour))), repeats: true)))
         }
         if preferences.morningPlan {
             // One upcoming eligible invitation, replenished on app activity. Starting study cancels

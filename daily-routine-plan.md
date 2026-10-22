@@ -6,7 +6,7 @@ while the optional layout question is unanswered. Source/CI/device evidence must
 
 ## Scope
 
-- A Daily routine section on Today; no fifth tab. Morning, Day and Evening groups use the existing
+- A Daily routine section on Today; no extra tab. Morning, Day and Evening groups use the existing
   graphite/copper/sage design. Manage and history are deliberate closable sheets.
 - User-authored items with optional local target times, selected weekdays, ordering and pause.
   Start empty; never seed personal routines or turn a target time into an alarm.
@@ -17,8 +17,8 @@ while the optional layout question is unanswered. Source/CI/device evidence must
   failures for days the app never recorded. Closed snapshots survive template edits/removal.
 - Templates and history live inside To-do's atomic snapshot and full/module JSON backup. Replacing
   To-do from an old payload without routines clears the routine, with an explicit warning; a full
-  backup without the To-do module leaves the existing store intact. Routine progress does not alter priority/study/Journal
-  qualification or the optional full-day challenge. No cross-app/reading-time inference.
+  backup without the To-do module leaves the existing store intact. Routine progress does not alter priority/study
+  qualification. Journal and its full-day challenge are retired. No cross-app/reading-time inference.
 - No new notifications in this first addition. Timed reminders, automatic completion, target counters,
   streak mechanics and device-clock/health integrations are follow-ons, not silently enabled features.
 

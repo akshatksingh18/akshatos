@@ -4,6 +4,27 @@ import UIKit
 @testable import AkshatOS
 
 @MainActor final class PersonalHubPersistenceTests: XCTestCase {
+    func testRetiredJournalAndFullDayPreferencesStayOffAfterUpgradeAndLegacyRestore() async throws {
+        let suite = "retired-journal-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(true, forKey: "personal.journal-reminder")
+        defaults.set(true, forKey: "personal.full-day-challenge")
+        let preferences = PersonalPreferences(defaults: defaults)
+        XCTAssertFalse(preferences.journalReminder)
+        XCTAssertFalse(preferences.fullDayChallenge)
+        XCTAssertFalse(defaults.bool(forKey: "personal.journal-reminder"))
+        XCTAssertFalse(defaults.bool(forKey: "personal.full-day-challenge"))
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: file) }
+        try Data(#"{"version":1,"fullDayChallenge":true,"fullDayStart":"2026-10-15","seenMilestone":0,"checkMinutes":30,"breakMinutes":15,"journalHour":22}"#.utf8).write(to: file)
+        let restore = try await preferences.prepareBackupRestore(from: file)
+        let result = await restore.apply()
+        XCTAssertEqual(result, .restored)
+        XCTAssertFalse(preferences.fullDayChallenge)
+        XCTAssertFalse(preferences.journalReminder)
+        XCTAssertEqual(preferences.fullDayStart, "2026-10-15", "Keep legacy attribution without activating the retired challenge")
+    }
     private func container(_ type: any VersionedSchema.Type) throws -> ModelContainer {
         let schema = Schema(versionedSchema: type)
         return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])

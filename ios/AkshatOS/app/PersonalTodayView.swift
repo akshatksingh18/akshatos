@@ -3,7 +3,6 @@ import SwiftUI
 struct PersonalTodayView: View {
     @ObservedObject var study: StudyLogStore
     @ObservedObject var todo: TodoStore
-    @ObservedObject var journal: JournalStore
     @ObservedObject var preferences: PersonalPreferences
     let orientation: OrientationGate
     let studyActivity: StudyLiveActivityCoordinator
@@ -54,7 +53,7 @@ struct PersonalTodayView: View {
             }.padding(22)
         }
         .background(HubInk.background).navigationTitle("Today")
-        .sheet(isPresented: $history) { NavigationStack { PersonalProgressView(study: study, todo: todo, journal: journal, preferences: preferences) } }
+        .sheet(isPresented: $history) { NavigationStack { PersonalProgressView(study: study, todo: todo, preferences: preferences) } }
         .sheet(isPresented: $planning) { PriorityPicker(store: todo, day: todo.today) }
         .fullScreenCover(isPresented: $focus) {
             StudyFocusView(study: study, todo: todo, orientation: orientation, activity: studyActivity, close: { focus = false })

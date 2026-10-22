@@ -25,7 +25,6 @@ import UIKit
         (BodyReminderService.namespace, .body),
         (LiftReminderService.namespace, .liftLog),
         (PersonalNotifications.namespace + "todo.", .todo),
-        (PersonalNotifications.namespace + "journal", .journal),
         (PersonalNotifications.namespace + "study", .studyLog),
         (PersonalNotifications.namespace + "break", .studyLog),
         (PersonalNotifications.namespace + "morning", .studyLog)

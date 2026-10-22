@@ -31,7 +31,7 @@ extension PersonalPreferences: HubBackupPart {
     func prepareBackupRestore(from item: URL) async throws -> HubBackupRestore {
         let archive = try LocalDataCoding.decode(PersonalPreferencesArchive.self, Data(contentsOf: item)).validated()
         return HubBackupRestore(note: "Personal reminder opt-ins were switched off. Enable them deliberately in Settings. Re-link any Files folder yourself. Existing fitness handover and Journal lock choices were preserved.") { [self] in
-            fullDayStart = archive.fullDayStart; fullDayChallenge = archive.fullDayChallenge
+            fullDayStart = archive.fullDayStart; fullDayChallenge = false
             seenMilestone = archive.seenMilestone; checkMinutes = archive.checkMinutes
             breakMinutes = archive.breakMinutes; journalHour = archive.journalHour; morningHour = archive.morningHour ?? 9
             stillStudying = false; breakReminder = false; morningPlan = false; journalReminder = false; badge = false

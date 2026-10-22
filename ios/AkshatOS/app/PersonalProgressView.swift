@@ -4,14 +4,12 @@ import Charts
 struct PersonalProgressView: View {
     @ObservedObject var study: StudyLogStore
     @ObservedObject var todo: TodoStore
-    @ObservedObject var journal: JournalStore
     @ObservedObject var preferences: PersonalPreferences
     @Environment(\.dismiss) private var dismiss
     @State private var month = false
     @State private var anchor = ""
     @State private var selected = ""
     @State private var metric = "hours"
-    @State private var fullDay = false
     @State private var correction: StudySegment?
     private var clock: ActivityDayClock { ActivityDayClock(calendar: study.clock.calendar) }
     private var effectiveAnchor: String { anchor.isEmpty ? study.today : anchor }
@@ -63,33 +61,28 @@ struct PersonalProgressView: View {
     }
     private var monthGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if preferences.fullDayChallenge { Toggle("Show full-day challenge", isOn: $fullDay) }
             let days = monthDays, lead = days.first.flatMap(clock.date).map { (clock.calendar.component(.weekday, from: $0) + 5) % 7 } ?? 0
             ScrollView(.horizontal, showsIndicators: false) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 44), spacing: 2), count: 7), spacing: 2) {
                 ForEach(Array(["M", "T", "W", "T", "F", "S", "S"].enumerated()), id: \.offset) { _, title in Text(title).font(.caption).foregroundStyle(.secondary) }
                 ForEach(0..<lead, id: \.self) { _ in Color.clear.frame(minHeight: 44) }
                 ForEach(days, id: \.self) { day in
-                    let future = day > study.today, completed = dayQualifies(day), planned = !fullDay || (todo.plan(day)?.selected.isEmpty == false)
+                    let future = day > study.today, completed = dayQualifies(day)
                     Button { selected = day } label: {
                         Text(String(Int(day.suffix(2)) ?? 0)).font(.subheadline).frame(maxWidth: .infinity, minHeight: 44)
                             .background(future ? Color.clear : completed ? HubInk.copper.opacity(0.55) : HubInk.surface, in: RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(day == effectiveDay ? HubInk.copper : .clear, lineWidth: 2))
                     }.buttonStyle(.plain).disabled(future)
-                        .accessibilityLabel("\(day), \(future ? "upcoming" : fullDay && (!todo.available || !journal.available) ? "data unavailable" : fullDay && day < preferences.fullDayStart ? "before challenge began" : !planned ? "unplanned" : completed ? "completed" : "not completed")")
+                        .accessibilityLabel("\(day), \(future ? "upcoming" : completed ? "completed" : "not completed")")
                 }
             }.frame(minWidth: 320)
             }
-            if fullDay && (!todo.available || !journal.available) { Text("Full-day history unavailable. Retry the affected store before interpreting this grid.").font(.caption).foregroundStyle(.secondary) }
-            Text(fullDay ? "Copper: study mark, chosen priorities and Journal complete. No priorities: unplanned. Today remains open." : "Copper: the recorded study mark reached. The mark and the daily aim are separate.")
+            Text("Copper: the recorded study mark reached. The mark and the daily aim are separate.")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
     private func dayQualifies(_ day: String) -> Bool {
-        let studyFact = study.daySummary(day, at: Date())
-        if !fullDay { return studyFact.qualifies == true }
-        guard todo.available, journal.available, preferences.fullDayChallenge, !preferences.fullDayStart.isEmpty, day >= preferences.fullDayStart else { return false }
-        return studyFact.qualifies == true && todo.daySummary(day, at: Date()).qualifies == true && journal.daySummary(day, at: Date()).qualifies == true
+        study.daySummary(day, at: Date()).qualifies == true
     }
     private var selectedBlocks: some View {
         let day = effectiveDay, now = Date(), blocks = study.log.blocks(now: now, clock: study.clock).filter { $0.day == day }
@@ -194,14 +187,6 @@ struct PersonalProgressView: View {
                 let streak = ActivityProgress.streak(qualified, today: todo.today, clock: clock)
                 LabeledContent("Priority streak", value: "\(streak.current) · best \(streak.best)")
             } else { Text("Priority history unavailable").foregroundStyle(.secondary) }
-            if journal.available {
-                let qualified = Set(journal.entries.filter(\.qualifies).map(\.day))
-                if !journal.isLocked {
-                    DisclosureGroup("Writing milestones") { milestoneRows(count: qualified.count, name: "writing days") }
-                    let streak = ActivityProgress.streak(qualified, today: journal.today, clock: clock)
-                    LabeledContent("Writing streak", value: "\(streak.current) · best \(streak.best)")
-                } else { Text("Unlock Journal to see writing history.").foregroundStyle(.secondary) }
-            }
             Divider()
             Text("Daily challenge").font(.headline)
             if preferences.challengeAccepted && preferences.challengeDay == study.today {
@@ -211,17 +196,6 @@ struct PersonalProgressView: View {
             } else {
                 Text("Study 20 more minutes today. Optional; no deadline or reminder.").font(.subheadline).foregroundStyle(.secondary)
                 Button("Accept suggestion") { preferences.challengeDay = study.today; preferences.challengeStartedAt = Date(); preferences.challengeAccepted = true }
-            }
-            if preferences.fullDayChallenge {
-                let qualified = Set(todo.state.plans.map(\.day).filter { day in
-                    day >= preferences.fullDayStart && study.daySummary(day, at: Date()).qualifies == true
-                        && todo.daySummary(day, at: Date()).qualifies == true && journal.daySummary(day, at: Date()).qualifies == true
-                })
-                if todo.available && journal.available {
-                    let streak = ActivityProgress.streak(qualified, today: study.today, clock: clock)
-                    LabeledContent("Full-day streak", value: "\(streak.current) · best \(streak.best)")
-                } else { Text("Full-day history unavailable").foregroundStyle(.secondary) }
-                Text("Started \(preferences.fullDayStart). Full-day challenge: the recorded study mark + every chosen priority + a saved Journal entry marked Done. Fitness is not included.").font(.footnote).foregroundStyle(.secondary)
             }
         }
     }
@@ -235,23 +209,12 @@ struct PersonalProgressView: View {
         }.padding(.vertical, 8)
     }
     private var weeklyReview: some View {
-        let week = clock.week(effectiveAnchor), key = week.first ?? effectiveAnchor
+        let week = clock.week(effectiveAnchor)
         return DisclosureGroup("Weekly review") {
             VStack(alignment: .leading, spacing: 14) {
                 Text("\(week.first ?? "")–\(week.last ?? "") · \((week.last ?? "") >= study.today ? "week in progress" : "closed week")").font(.caption).foregroundStyle(.secondary)
                 LabeledContent("Study", value: StudyTimeDisplay.short(study.log.blocks(now: Date(), clock: study.clock).filter { week.contains($0.day) }.reduce(0) { $0 + $1.duration }))
                 if todo.available { LabeledContent("Completed priorities", value: String(todo.state.plans.filter { week.contains($0.day) }.reduce(0) { $0 + $1.completed.count })) }
-                if journal.isLocked {
-                    Button("Unlock Journal for reflection") { Task { _ = await journal.authenticate(reason: "Write your private weekly review") } }
-                } else {
-                    TextField("One focus for next week", text: Binding(get: { journal.weekNote(key) }, set: { journal.setWeekNote($0, week: key) }), axis: .vertical)
-                    ForEach(journal.entries.filter { week.contains($0.day) }) { entry in
-                        DisclosureGroup(entry.day) {
-                            Text(entry.text).font(.subheadline)
-                            if let mood = entry.mood { Text("Mood \(mood)/5").font(.caption).foregroundStyle(.secondary) }
-                        }
-                    }
-                }
             }.padding(.vertical, 12)
         }
     }

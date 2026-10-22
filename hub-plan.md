@@ -1,6 +1,6 @@
 # AkshatOS — shared integration contract
 
-**Status:** Active shared integration contract. AkshatOS source 0.14.0 uses Today, To-do, Journal
+**Status:** Active shared integration contract. AkshatOS working source 0.15.0 uses Today, To-do
 and Apps, with PageVault, Watchlist and Spending; legacy Pushups/Lift/Body stores remain recoverable
 until explicit verified WHOOP handover. Build 37 remains installed with the old picker. AkshatOS
 owns its native identity, build and full-backup registry; WHOOP remains independently built and
@@ -97,7 +97,7 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
 - Use one native SwiftUI host and its feature modules (Pushups, PageVault, Lift Log, and
   Body); module names need not be separate
   application targets. Keep existing feature requirements and Android fallbacks intact.
-- Source 0.14.0 uses Today / To-do / Journal / Apps, with Study history as one closable sheet. The installed Build 37 uses its earlier selector. Load PDF documents only
+- Working source 0.15.0 uses Today / To-do / Apps, with Study history as one closable sheet. The installed Build 37 uses its earlier selector. Load PDF documents only
   when needed and release them on exit; preserve each module's state when switching.
 - Host-level Pushups services schedule local notifications and handle actions/Home-region events
   regardless of the selected screen. Navigating to a PDF must not stop an active day.
