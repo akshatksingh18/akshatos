@@ -18,7 +18,7 @@ owns exact evidence; [todo.md](todo.md) owns phone, provider and recovery checks
 
 Build 40 (0.15.0) adds a Daily routine checklist in source: grouped day parts, chosen weekdays,
 optional target times, Done/Skip/undo, pause/reorder and seven-day history. It starts empty and joins
-To-do/full JSON recovery. The current Build-40 CI Gate passes at `18ebc46`, with 202 hosted and 17 UI tests;
+To-do/full JSON recovery. The current Build-40 CI Gate passes at `00e401e`, with 208 hosted and 17 UI tests;
 the earlier native routine review scored both accessibility fixes resolved. Phone acceptance remains open. No Build-40
 IPA is created; the routine is not in the delivered Build-39 IPA.
 [Routine contract](daily-routine-plan.md) owns the default layout and verification boundary.

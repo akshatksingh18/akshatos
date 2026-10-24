@@ -6,6 +6,23 @@ acceptance. It includes Build 38's personal hub and native accessibility fixes. 
 installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
+Build 41 is **0.15.1 (41)**, the first IPA to carry Build 40's Daily routine, finished-session
+exchange and Journal retirement together with the revised palette. It is requested as the
+**standard** extension-free variant, because Sideloadly is the proven signer and the
+study-live-activity variant still depends on unverified SideStore extension provisioning. Delivering
+it replaces the never-installed Build-39 Live Activity candidate in the single-slot testing cache;
+that candidate stays reproducible from its own run. Accepted Build 31 in `backup/` is untouched.
+
+The hub palette revision is verified in the cloud at `00e401e`, attempt 1:
+[run 40126784189](https://github.com/akshatksingh18/akshatos/actions/runs/40126784189) passes Source
+checks, Build and test iOS and CI Gate with 208 hosted and 17 UI tests, both device variants and no
+IPA. The six new `HubInkTests` assertions account for the rise from 202, and the suite is recorded as
+passed in the log. [Run 40126784187](https://github.com/akshatksingh18/akshatos/actions/runs/40126784187)
+passes the unaffected Windows Study Desk checks at the same source. This compiles and tests the new
+`HubBackground`, its generated grain tile and the palette contract; it is not physical-device
+acceptance, and nothing about how the lit ground actually looks or costs in battery is established by
+it. `look-and-feel.md` owns the direction and `DESIGN.md` the tokens.
+
 Working Build 40 now removes Journal and its full-day challenge by user request, preserving legacy
 data/full-backup recovery. Full [run 39705903157](https://github.com/akshatksingh18/akshatos/actions/runs/39705903157),
 at `18ebc46`, attempt 2, passes Source checks, Build and test iOS and CI Gate: 18 release-contract

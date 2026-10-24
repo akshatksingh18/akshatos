@@ -28,7 +28,7 @@ created. Legacy JSON without the optional field still decodes. Explicit replacem
 To-do backup clears the routine and warns accordingly. Daily materialization runs on load/day refresh,
 not completion or background work. Closed and completed/skipped snapshots retain their content;
 pending rows may follow today's template edits. `daily-routine-plan.md` owns scope.
-Current Build-40 CI Gate passes at `18ebc46` (run `39705903157`, attempt 2). Physical routine/recovery checks remain open.
+Current Build-40 CI Gate passes at `00e401e` (run `40126784189`, attempt 1), including the revised palette. Physical routine/recovery checks remain open.
 
 Build 39 (0.14.1) delivers the requested study-display testing IPA. The optional
 WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains

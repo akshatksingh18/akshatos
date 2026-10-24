@@ -8,10 +8,11 @@ primary; Android remains a separate fallback scaffold. PageVault's gates live in
 (0.14.1), study-live-activity variant at `8342d0e`. Manual run `38975509228`, local checksum/payload/
 version checks and delivery to the one-slot testing cache pass. The draft branch remains unmerged;
 installed signing/refresh ownership is unchanged.
-Build 40 (0.15.0) implements Daily routine, finished-session exchange and Journal retirement; full
-CI Gate passes at `18ebc46` (run `39705903157`, attempt 2), with 202 hosted and 17 UI tests and both
-device variants. Retirement native review scored its one direction-contract fix resolved.
-Further pushes and PR updates are on hold; keep remaining evidence/doc edits local.
+Build 40 (0.15.0) implements Daily routine, finished-session exchange and Journal retirement, and now
+the revised tungsten/violet palette; current full CI Gate passes at `00e401e` (run `40126784189`,
+attempt 1), with 208 hosted and 17 UI tests and both device variants. Retirement native review scored
+its one direction-contract fix resolved. The publishing hold was lifted only for the palette push and
+applies again; keep remaining evidence/doc edits local.
 The earlier native routine review scored both accessibility fixes resolved.
 Phone acceptance remains open. `daily-routine-plan.md` owns the grouped default, daily snapshots, scope
 and recovery contract. No Build-40 IPA is requested; the Build-39 testing cache stays intact.
@@ -56,9 +57,10 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       unlit; `HubInkTests` registered, holding the palette contract with the retired pair as a
       negative fixture. Local inventory, boundary and backup-coverage checks pass. `look-and-feel.md`
       owns the direction and `DESIGN.md` the tokens.
-- [ ] **Cloud-verify the new look.** No CI Gate run exists for it, because pushes are on hold. The
-      Swift has not been compiled anywhere: `HubBackground`, the generated grain tile and
-      `HubInkTests` are unproven. Run the exact-source CI Gate first, before any release request.
+- [x] **Cloud-verified the new look.** Full CI Gate passes at `00e401e` (run `40126784189`,
+      attempt 1): 208 hosted and 17 UI tests, both device variants, no IPA. `HubBackground`, the
+      generated grain tile and all six `HubInkTests` assertions compile and pass; the Windows run
+      `40126784187` passes unaffected. `cloud-build.md` owns the evidence.
 - [ ] **Phone-check the new look** after a requested release: the lit ground on Today against a dark
       room, the violet dial and action, week bars with their legend, task checks still reading as
       done, Focus confirmed unlit, battery across a long block, and the whole thing under

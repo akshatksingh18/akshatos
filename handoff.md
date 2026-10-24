@@ -4,9 +4,12 @@ The phone's visual system has been replaced in source and is **not verified anyw
 now a lit tungsten ground, a violet accent, support green and three validated chart series; the old
 copper/sage pair was retired because it measured as too pale and too close to tell apart on a dark
 ground. `look-and-feel.md` owns the decision, `DESIGN.md` the tokens, `UnitTests/HubInkTests.swift`
-the executable palette contract. Only the local Python checks have run: **the Swift has not been
-compiled**, there is no CI Gate run, and no IPA exists. Pushes remain on hold, so run the exact-source
-CI Gate before trusting any of it. The Windows Study Desk keeps its current look; its accepted
+the executable palette contract. It is **cloud-verified and not phone-verified**: the full CI Gate
+passes at `00e401e` (run `40126784189`, attempt 1) with 208 hosted and 17 UI tests, both device
+variants and no IPA, so the new `HubBackground`, its generated grain tile and all six palette
+assertions compile and pass. Nothing is known about how the lit ground looks on the device or what it
+costs in battery. The hold was lifted for that one push and applies again; keep later evidence and
+document edits local. The Windows Study Desk keeps its current look; its accepted
 Tungsten revision and snapping caption are owned by `desktop-study-plan.md` and are not built.
 
 Build 40 (0.15.0) adds Daily routine and finished-session exchange and removes Journal from daily

@@ -18,9 +18,10 @@ while AkshatOS's import/removal cutover remains open. Read it before a cross-app
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
 **Status:** Working Build 40 removes Journal from navigation, settings, search, reminders, shortcuts
-and the combined challenge. Legacy Journal data/full backup remain. Full iOS CI passes at `18ebc46`
-(run `39705903157`, attempt 2): 202 hosted and 17 UI tests, both device variants, no IPA. The
-retirement reviewer scored its one direction-contract fix resolved. Windows Study Desk 0.1.0 has a
+and the combined challenge. Legacy Journal data/full backup remain. The hub palette is now a lit
+tungsten ground with a violet accent and three validated chart series (`DESIGN.md`). Current full iOS
+CI passes at `00e401e` (run `40126784189`, attempt 1): 208 hosted and 17 UI tests, both device
+variants, no IPA. The retirement reviewer scored its one direction-contract fix resolved. Windows Study Desk 0.1.0 has a
 portable candidate verified at `c798a2c`; native finish review returned ship. Build 40 (0.15.0) also
 contains Daily routine and finished-session exchange on draft PR #68. `cloud-build.md` owns exact evidence. Physical acceptance remains open; no
 Build-40 IPA is created. Daily routine extends Today and To-do recovery without a new tab or notifications;
