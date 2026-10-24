@@ -31,7 +31,7 @@ resume is manual. The confirmed decisions and physical gates are in local `deskt
 `windows/README.md` owns the technical operation/exchange contract. Build-40 source imports closed
 laptop sessions through an additive preview and exports phone-owned sessions in a separate format.
 The Windows candidate passes cloud checks and native finish review; current full iOS CI passes at
-`c798a2c` and the phone's requested conflict-copy fix is scored resolved (`cloud-build.md`). Physical
+`18ebc46` and the phone's requested conflict-copy fix is scored resolved (`cloud-build.md`). Physical
 Windows/iPhone/provider acceptance remains open. Existing roadmap export remains separate; backup restore still
 replaces data and must never be used as a merge. The delivered Build-39 IPA lacks the new importer.
 

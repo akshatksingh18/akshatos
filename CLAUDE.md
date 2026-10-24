@@ -18,10 +18,11 @@ while AkshatOS's import/removal cutover remains open. Read it before a cross-app
 Home capability, import or cutover decision; no AkshatOS feature/store/reminder is moved by the plan.
 
 **Status:** Working Build 40 removes Journal from navigation, settings, search, reminders, shortcuts
-and the combined challenge. Legacy Journal data/full backup remain; retirement CI is pending. Windows Study Desk 0.1.0 has a portable testing candidate; Build 40 (0.15.0) adds Daily
-routine and finished-session exchange in source on draft PR #68. Windows and full iOS CI pass at
-`c798a2c`; native Windows finish review returned ship, and the phone's requested conflict-copy fix
-is scored resolved. `cloud-build.md` owns exact evidence. Physical acceptance remains open; no
+and the combined challenge. Legacy Journal data/full backup remain. Full iOS CI passes at `18ebc46`
+(run `39705903157`, attempt 2): 202 hosted and 17 UI tests, both device variants, no IPA. The
+retirement reviewer scored its one direction-contract fix resolved. Windows Study Desk 0.1.0 has a
+portable candidate verified at `c798a2c`; native finish review returned ship. Build 40 (0.15.0) also
+contains Daily routine and finished-session exchange on draft PR #68. `cloud-build.md` owns exact evidence. Physical acceptance remains open; no
 Build-40 IPA is created. Daily routine extends Today and To-do recovery without a new tab or notifications;
 `daily-routine-plan.md` owns scope and defaults. Build 39 (0.14.1) remains the delivered testing IPA. Exact-source
 cloud checks pass at `8342d0e`, including standard/Live Activity selection, strict payload validation
@@ -36,6 +37,10 @@ Build 37 remains installed/enrolled; Build 31 remains accepted
 recovery. `personal-hub.md` owns the implementation, `implementation-plan.md` local coverage and
 `cloud-build.md` exact build evidence. Release evidence edits stay local until the next real code
 push under the standing documentation rule.
+
+Further pushes and PR updates are on hold at the user's request. Keep subsequent changes local
+until explicit authorization resumes publishing. The Journal-retirement source was already pushed
+before that hold; the branch remains draft/unmerged.
 
 ## Files
 
@@ -62,7 +67,8 @@ push under the standing documentation rule.
   regression tests with synthetic data and an injected client.
 
 - `DESIGN.md` — source-extracted native personal-hub tokens, component patterns and visual boundaries;
-  read before changing the approved graphite/copper system. Release verification is tracked separately.
+  read before changing the approved tungsten/violet system and its validated chart series. Release
+  verification is tracked separately.
 - `personal-hub.md` — native three-tab implementation, feature stores, privacy, notification budget,
   full-backup and file-transfer contracts; read before changing the personal hub.
 
@@ -91,6 +97,12 @@ push under the standing documentation rule.
 - `laptop-phone-sync-research-prompt.md` (local only) — self-contained research brief (no personal data) on moving
   files between the Windows laptop and the sideloaded apps: setup, what was tried, requirements and
   questions. A prompt, not findings or a decision.
+- `look-and-feel.md` (local only) — the accepted Tungsten/Dial/Week-bars/Violet direction for the
+  phone and Tungsten for the desktop, the measured accent-palette finding behind it and the gates
+  before any of it is built; read before design work on either app's appearance. Mockups in
+  `.impeccable/mocks/` (`looks-mixer.html` to explore, `looks-chosen.html` for the accepted pick).
+- `notes-plan.md` (local only) — planned Notes tab with user-named sections (To-do as one of them) and
+  automatic parked-note import from the laptop; direction only, awaiting interface review and mockups.
 - `todo-journal-plan.md` (local only) — accepted feature scope and design decisions, including all 18 selected
   features and the day/completion/privacy contracts. Implementation and verification are tracked in
   `implementation-plan.md` and `personal-hub.md`.
@@ -180,7 +192,7 @@ push under the standing documentation rule.
   Sideloadly stays the refresher until it passes).
 - `setup.md` — keeping an installed build signed: the split between Sideloadly's refreshing daemon
   and the health check that proves it happened, what counts as success, the installed task and its
-  paths, and the refresh/recovery gates still open. Read before changing anything about weekly
+  paths, the prepared second-laptop signing-host migration and its physical cutover gates, and the refresh/recovery gates still open. Read before changing anything about weekly
   signing.
 - `scripts/check-signing-health.ps1` — the scheduled health check. Reports only a completed install
   moving forward as success, and only once corroborated — the install date past the first install and
@@ -809,5 +821,9 @@ data, device state, or durable release IPAs.
   especially `features.md`, `README.md`, `architecture.md`, and `todo.md`—in the same change. Keep
   iPhone plan, iPhone implementation, Android fallback, and physical verification claims explicitly
   separate.
-- **Whenever a new file is added to this folder**, add a bullet for it under `## Files` above,
+- **Whenever a new file is added to this folder**, add a bullet for it under `Further pushes and PR updates are on hold at the user's request. Keep subsequent changes local
+until explicit authorization resumes publishing. The Journal-retirement source was already pushed
+before that hold; the branch remains draft/unmerged.
+
+## Files` above,
   in the same edit, with a one-line description of what it's for.

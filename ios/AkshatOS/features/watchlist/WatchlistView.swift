@@ -73,7 +73,7 @@ struct WatchlistView: View {
     }
     private func titleRow(_ title: WatchTitle) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: title.kind == "Series" ? "tv" : "film").font(.title2).foregroundStyle(HubInk.sage).frame(width: 40)
+            Image(systemName: title.kind == "Series" ? "tv" : "film").font(.title2).foregroundStyle(HubInk.support).frame(width: 40)
             Button { editing = title } label: {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(title.title).foregroundStyle(.primary)

@@ -18,7 +18,7 @@ owns exact evidence; [todo.md](todo.md) owns phone, provider and recovery checks
 
 Build 40 (0.15.0) adds a Daily routine checklist in source: grouped day parts, chosen weekdays,
 optional target times, Done/Skip/undo, pause/reorder and seven-day history. It starts empty and joins
-To-do/full JSON recovery. The pre-retirement Build-40 CI Gate passes at `c798a2c`, with 200 hosted and 16 UI tests;
+To-do/full JSON recovery. The current Build-40 CI Gate passes at `18ebc46`, with 202 hosted and 17 UI tests;
 the earlier native routine review scored both accessibility fixes resolved. Phone acceptance remains open. No Build-40
 IPA is created; the routine is not in the delivered Build-39 IPA.
 [Routine contract](daily-routine-plan.md) owns the default layout and verification boundary.
@@ -44,17 +44,21 @@ Selecting a variant does not create an IPA.
 
 Working source 0.15.0 (40) simplifies the personal hub to **Today / To-do / Apps**; the original
 hub shipped in 0.14.0 (38), PR #67.
-The copper study dial, block chart and task checks provide direct interaction; occasional tools
+The violet study dial, block chart and task checks provide direct interaction; occasional tools
 stay in Apps and Study history is one closable sheet. [Implementation contract](personal-hub.md)
 covers tasks/repeats/Undo, Daily routine, Watchlist, Spending, optional progress and
 reminders, Shortcuts and explicit Files hand-offs. Build 39 retains the earlier Journal UI; working Build 40 removes Journal and its reminder/challenge
-connections while keeping old data in full backup. Retirement CI is pending. Build 37
+connections while keeping old data in full backup. Retirement CI passes; the native reviewer scored its one direction-contract fix resolved. Build 37
 is still installed. Fitness stores stay recoverable through a controlled WHOOP
 handover; the new daily hub has no fitness requirements. Provider/device proof remains separate.
 
 This repository evolved from Squat Reminder and now presents that feature as Pushup Reminder,
 retaining Git history and the unverified legacy Android Squats fallback. Source is temporarily public at
 [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos) for hosted macOS CI capacity.
+
+Moving the Windows signing host to the second laptop is prepared, with the primary retained until
+Wi-Fi/same-identity/data/enrollment checks pass. [Signing setup](setup.md#moving-the-windows-signing-host)
+owns the cutover; no phone install, identity change or verified new-host refresh is implied.
 
 ## First slice
 

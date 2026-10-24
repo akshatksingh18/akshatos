@@ -23,7 +23,7 @@ struct HubRootView: View {
                     .navigationDestination(for: HubRoute.self) { route in destination(route) }
             }.tabItem { Label("Apps", systemImage: "square.grid.2x2") }.tag(PersonalHubTab.apps)
         }
-        .tint(HubInk.copper)
+        .tint(HubInk.accent)
         .onOpenURL { url in
             if url.scheme == "akshatos", url.host == "study", url.path.isEmpty { navigator.request(.studyLog) }
         }

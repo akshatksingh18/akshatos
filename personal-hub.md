@@ -12,19 +12,21 @@ Journal is removed from working Build-40 navigation, settings, search, shortcuts
 user request. Its writing milestones, reflection editor and Journal-dependent full-day challenge
 are removed too. Study and priority progress remain independent; weekly review shows study totals
 and completed priorities. Old Journal data/photos and the full-backup part remain for recovery.
-Journal-retirement CI is pending; earlier runs below verify their stated source only.
+Full retirement CI passes at `18ebc46` (run `39705903157`, attempt 2): 202 hosted/17 UI tests and
+both device variants. Fresh native review scored its sole direction-contract fix resolved. Physical
+acceptance remains open. Earlier runs below verify their stated source only.
 
 Working Build-40 source adds a finished-session exchange under Settings > Linked folder: explicit
 manual import, linked laptop-file check/preview, and a separate phone-to-Study-Desk export. The
 foreground availability check never auto-applies records. Existing roadmap export remains separate.
 Study/full JSON recovery retains imported origin and revision. Overlap or changed-record conflicts
 refuse the complete merge. `windows/README.md` owns the first desktop client's limits; its new
-source passes full iOS CI at `c798a2c`, including both device variants. Native review scores its
+source passes current full iOS CI at `18ebc46`, including both device variants. Native review scores its
 requested conflict-copy fix resolved; physical acceptance remains open. Delivered Build 39 is unchanged.
 
 Build 40 source adds Daily routine below priorities on Today and a management entry in To-do's More
 menu. Its grouped checklist, native item editor and seven-day history use the same three tabs and
-visual system. The pre-retirement full CI Gate passes at `c798a2c`; the earlier routine native review scored both accessibility
+visual system. Current full CI Gate passes at `18ebc46`; the earlier routine native review scored both accessibility
 fixes resolved. Phone acceptance remains open; Build 39's delivered IPA is unchanged.
 
 Build-39 source adds rotating desk Focus, a foreground-only keep-awake switch, quiet study
@@ -36,7 +38,10 @@ Three persistent tabs: Today, To-do, Apps. Today owns the study countdown, selec
 priorities, Park a thought and the weekly block graphic. History is one closable sheet containing
 week/month inspection, block corrections, topic/time distributions, motivation and weekly review.
 Apps contains PageVault, Watchlist, Spending and settings/recovery. No fitness cards or requirements
-appear in the daily hub. The shared style is graphite, copper, sage and native system typography.
+appear in the daily hub. The shared style is a lit tungsten ground, a violet accent, support green and
+native system typography; `DESIGN.md` owns the tokens and the rule that chart categories use only the
+three validated `series` colours. Today takes the lit ground, Focus deliberately does not, and lists
+stay flat. This is implemented in source and has not been seen on the phone.
 
 The dial switches remaining/studied on tap. Charts support touch selection, not hover-only access.
 No demo values ship. Missing stores are unavailable, not zero. Future calendar cells are upcoming.

@@ -90,7 +90,8 @@
     "integration_tests": [
       "UnitTests/PersonalHubPersistenceTests.swift",
       "UnitTests/PersonalHubRenderTests.swift",
-      "UnitTests/PersonalNotificationTests.swift"
+      "UnitTests/PersonalNotificationTests.swift",
+      "UnitTests/HubInkTests.swift"
     ],
     "ui_tests": [
       "UITests/PersonalHubUITests.swift"

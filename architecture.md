@@ -27,8 +27,8 @@ dated, zone-labelled checklist snapshots commit together; no new SwiftData store
 created. Legacy JSON without the optional field still decodes. Explicit replacement from an older
 To-do backup clears the routine and warns accordingly. Daily materialization runs on load/day refresh,
 not completion or background work. Closed and completed/skipped snapshots retain their content;
-pending rows may follow today's template edits. `daily-routine-plan.md` owns scope; exact-source
-CI Gate for the pre-retirement routine/exchange source passes at `c798a2c` (run `39416930626`). Physical routine/recovery checks remain open.
+pending rows may follow today's template edits. `daily-routine-plan.md` owns scope.
+Current Build-40 CI Gate passes at `18ebc46` (run `39705903157`, attempt 2). Physical routine/recovery checks remain open.
 
 Build 39 (0.14.1) delivers the requested study-display testing IPA. The optional
 WidgetKit target is generated only by `ios/project-live-activity.yml`; default packaging remains
@@ -43,7 +43,7 @@ joins full backup; settings also join recovery. Final cloud/native/device eviden
 Working Build 40 removes Journal UI/search/reminders/shortcuts and the combined full-day challenge.
 Legacy Journal storage, optional backup authentication and full-backup identifiers remain intact.
 Retired invitations are cancelled before permission/store guards; an old restore cannot reactivate
-the challenge. The 03:00 activity day and one-to-three priorities remain. Retirement CI is pending. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
+the challenge. The 03:00 activity day and one-to-three priorities remain. Retirement CI passes at that source; native review scored its direction-contract fix resolved. Pushups uses 39 nudges; historical cleanup still removes 59 IDs.
 
 `hub-plan.md` owns the WHOOP boundary: fitness is absent from the new daily hub but legacy stores
 and services remain until explicit verified handover stops their reminders. WHOOP implementing

@@ -1,7 +1,19 @@
 # AkshatOS session handoff
 
-Build 40 (0.15.0) adds Daily routine and finished-session exchange in source; the pre-retirement CI Gate passes at
-`c798a2c` (run `39416930626`, attempt 2): 200 hosted and 16 UI tests, both device variants, no IPA.
+The phone's visual system has been replaced in source and is **not verified anywhere**. `HubInk` is
+now a lit tungsten ground, a violet accent, support green and three validated chart series; the old
+copper/sage pair was retired because it measured as too pale and too close to tell apart on a dark
+ground. `look-and-feel.md` owns the decision, `DESIGN.md` the tokens, `UnitTests/HubInkTests.swift`
+the executable palette contract. Only the local Python checks have run: **the Swift has not been
+compiled**, there is no CI Gate run, and no IPA exists. Pushes remain on hold, so run the exact-source
+CI Gate before trusting any of it. The Windows Study Desk keeps its current look; its accepted
+Tungsten revision and snapping caption are owned by `desktop-study-plan.md` and are not built.
+
+Build 40 (0.15.0) adds Daily routine and finished-session exchange and removes Journal from daily
+use. Full CI Gate passes at `18ebc46` (run `39705903157`, attempt 2): 202 hosted and 17 UI tests,
+both device variants, no IPA. The retirement reviewer scored its one direction-contract fix resolved.
+Further pushes and PR updates are on hold by user request. Source `18ebc46` was already pushed
+before that hold; keep final evidence/doc edits local until publishing is authorized again.
 The earlier native routine review scored both accessibility fixes resolved.
 `daily-routine-plan.md` owns the grouped default (optional layout question unanswered), activity-day
 record and recovery contract. Phone acceptance remains open. Do not package a Build-40 IPA without a release request.
@@ -9,7 +21,7 @@ Build 39 remains the delivered testing candidate described below.
 
 Windows Study Desk 0.1.0 passes cloud checks at `c798a2c` (run `39416930629`) and native finish review
 (`ship`); its ZIP/hash/version are validated locally. `cloud-build.md` owns the candidate path.
-The phone exchange passes that iOS run; fresh native captures score its requested conflict-copy fix
+The phone exchange passes the current iOS run above; fresh native captures score its requested conflict-copy fix
 resolved. Physical Windows/iPhone/iCloud acceptance remains open. The user confirmed remaining time primary,
 studied time below, automatic pause on lock/sleep/X and manual Resume, both devices recording and
 iCloud Drive research/testing. `windows/CLAUDE.md` and `windows/README.md` own the desktop source,
@@ -186,10 +198,11 @@ testing cache and can be tested independently; no signing/installation or cache 
    keep/register the extension, no uninstall or unreviewed certificate revocation. Do not change
    installed refresh ownership until verified handover. Keep the draft branch unmerged.
    Build 38 is superseded and reproducible from its run, not an intermediate installation.
-1. **Phone acceptance:** three tabs without Journal, real study Start/Pause/Focus/corrections/Undo/rollover, task
+1. **Future Build-40 phone acceptance, after a requested release:** three tabs without Journal, real study Start/Pause/Focus/corrections/Undo/rollover, task
    recurrence/priorities, routines, retained backup recovery and optional notifications. The
-   retained Build-37 voice-menu and shelf-order checks should run on this candidate too; one
-   installation is not acceptance. Build 31 stays recovery until the full promotion rule passes.
+   retained Build-37 voice-menu and shelf-order checks can also run on the delivered Build-39
+   candidate; its earlier Journal UI is unchanged. No Build-40 IPA exists yet. One installation
+   is not acceptance. Build 31 stays recovery until the full promotion rule passes.
 2. **Fitness handover:** new fitness work belongs in WHOOP. Verify its imports/photos/reminders and
    recovery on the phone, then use AkshatOS Settings to stop the old reminder owner. Preserve old
    stores/backups; no automatic synchronization or completed cutover is implied.

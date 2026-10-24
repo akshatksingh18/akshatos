@@ -31,7 +31,7 @@ struct DailyRoutineSection: View {
                 }
                 if day.checks.isEmpty { Text("Nothing scheduled today.").foregroundStyle(.secondary) }
                 else {
-                    ProgressView(value: Double(day.done), total: Double(day.checks.count)).tint(HubInk.sage)
+                    ProgressView(value: Double(day.done), total: Double(day.checks.count)).tint(HubInk.support)
                         .accessibilityLabel("Daily routine").accessibilityValue("\(day.done) of \(day.checks.count) completed")
                     ForEach(RoutinePeriod.allCases) { period in
                         let checks = day.checks.filter { $0.period == period }
@@ -68,7 +68,7 @@ struct DailyRoutineSection: View {
             } label: {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: check.status == .done ? "checkmark.circle.fill" : check.status == .skipped ? "minus.circle" : "circle")
-                        .font(.title3).foregroundStyle(check.status == .done ? HubInk.sage : HubInk.copper)
+                        .font(.title3).foregroundStyle(check.status == .done ? HubInk.support : HubInk.accent)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(check.title).foregroundStyle(check.status == .pending ? .primary : .secondary)
                             .multilineTextAlignment(.leading)
@@ -192,7 +192,7 @@ struct RoutineHistoryContent: View {
                             ForEach(day.checks) { check in
                                 HStack(alignment: .top) {
                                     Image(systemName: check.status == .done ? "checkmark.circle.fill" : check.status == .skipped ? "minus.circle" : "circle")
-                                        .foregroundStyle(check.status == .done ? HubInk.sage : .secondary)
+                                        .foregroundStyle(check.status == .done ? HubInk.support : .secondary)
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(check.title)
                                         if let recorded = check.recordedAt {

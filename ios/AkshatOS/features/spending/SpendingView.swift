@@ -29,7 +29,7 @@ struct SpendingView: View {
                 let total = store.state.total(key, currency: store.state.currency)
                 LabeledContent("Spent", value: money(total, currency: store.state.currency))
                 if let budget = store.state.budget(key, currency: store.state.currency) {
-                    ProgressView(value: min(Double(total), Double(budget)), total: Double(max(1, budget))).tint(HubInk.copper)
+                    ProgressView(value: min(Double(total), Double(budget)), total: Double(max(1, budget))).tint(HubInk.accent)
                     LabeledContent(total > budget ? "Over budget" : "Remaining", value: money(abs(budget - total), currency: store.state.currency))
                 } else { Text("No budget set").foregroundStyle(.secondary) }
                 Button("Set this month’s budget") {

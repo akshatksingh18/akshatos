@@ -12,10 +12,10 @@ struct StudyDial: View {
         ZStack {
             Circle().trim(from: 0, to: 0.75).stroke(.white.opacity(0.14), style: StrokeStyle(lineWidth: 8, lineCap: .round)).rotationEffect(.degrees(135))
             Circle().trim(from: 0, to: 0.75 * fraction)
-                .stroke(LinearGradient(colors: [HubInk.copper.opacity(0.65), HubInk.copper, Color(red: 0.94, green: 0.77, blue: 0.63)], startPoint: .bottomLeading, endPoint: .topTrailing), style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(LinearGradient(colors: [HubInk.accent.opacity(0.65), HubInk.accent, Color(red: 0.780, green: 0.698, blue: 1.000)], startPoint: .bottomLeading, endPoint: .topTrailing), style: StrokeStyle(lineWidth: 8, lineCap: .round))
                 .rotationEffect(.degrees(135))
                 .opacity(fraction > 0 ? 1 : 0)
-            DialTickShape().stroke(HubInk.sage.opacity(0.8), lineWidth: 1).padding(-13)
+            DialTickShape().stroke(HubInk.support.opacity(0.8), lineWidth: 1).padding(-13)
             Button { showingStudied.toggle() } label: {
                 VStack(spacing: 8) {
                     Text(StudyTimeDisplay.short(showingStudied ? studied : max(0, Double(target) - studied)))

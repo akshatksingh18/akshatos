@@ -4,12 +4,14 @@ This is current-state work, not a claim that either platform is already usable. 
 primary; Android remains a separate fallback scaffold. PageVault's gates live in
 `pagevault/CLAUDE.md`; this file owns Pushups and hub-wide gates.
 
-**Current focus:** Verify the requested Journal retirement in Build-40 source, then user-operated Windows Study Desk portable trial, then signing/install and physical acceptance of delivered Build 39
+**Current focus:** User-operated Windows Study Desk portable trial, then signing/install and physical acceptance of delivered Build 39
 (0.14.1), study-live-activity variant at `8342d0e`. Manual run `38975509228`, local checksum/payload/
 version checks and delivery to the one-slot testing cache pass. The draft branch remains unmerged;
 installed signing/refresh ownership is unchanged.
-Build 40 (0.15.0) implements Daily routine and finished-session exchange in source; full CI Gate passes at
-`c798a2c` (run `39416930626`, attempt 2), with 200 hosted and 16 UI tests and both device variants.
+Build 40 (0.15.0) implements Daily routine, finished-session exchange and Journal retirement; full
+CI Gate passes at `18ebc46` (run `39705903157`, attempt 2), with 202 hosted and 17 UI tests and both
+device variants. Retirement native review scored its one direction-contract fix resolved.
+Further pushes and PR updates are on hold; keep remaining evidence/doc edits local.
 The earlier native routine review scored both accessibility fixes resolved.
 Phone acceptance remains open. `daily-routine-plan.md` owns the grouped default, daily snapshots, scope
 and recovery contract. No Build-40 IPA is requested; the Build-39 testing cache stays intact.
@@ -24,6 +26,13 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       Current full CI: run `38971711206` at `8342d0e`; native inspection at `86c4367` applies to
       the unchanged UI source. The subsequent requested release below delivers the IPA.
 - [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
+- [ ] Second Windows signing host: run the prepared C:-based workspace kit, USB trust/iTunes Wi-Fi
+      pairing, intended-version same-ID installs with data intact, current-version enrollment and
+      new-host health task verification before retiring the primary daemon/monitor. `setup.md` owns
+      this separate operational migration; it does not activate SideStore or change app identity.
+- [x] Journal removed from daily navigation/settings/search/reminders/shortcuts and the combined
+      challenge; existing store/media/full-backup recovery preserved. Full current CI and native
+      scoped retirement review pass; `cloud-build.md` owns evidence.
 - [x] Windows Study Desk and additive phone exchange implemented in source: resizable countdown,
       manual Resume, lock/sleep/minimize/X pause, explicit file transport and overlap refusal.
 - [x] Windows core/native/package checks at `c798a2c` (run `39416930629`): 37 core assertions,
@@ -38,10 +47,24 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
 - [x] Build-40 routine source: Today checklist, user-authored day groups/times/weekdays, Done/Skip,
       reversal, pause/reorder and seven-day history, in To-do's atomic snapshot and JSON recovery.
 - [x] Build-40 exact-source CI, native routine/manager/editor/history inspection and finish review;
-      routine-specific native evidence remains at `18a59b1`; current full source passes at `c798a2c`
-      in run `39416930626`, with 200 hosted and 16 UI tests, both device variants; no IPA created.
+      routine-specific native evidence remains at `18a59b1`; current full source passes at `18ebc46`
+      in run `39705903157`, attempt 2, with 202 hosted and 17 UI tests, both device variants; no IPA created.
 - [ ] Future Build-40 phone acceptance after a requested release: check-offs/day rollover, native
       form editing, accessibility/VoiceOver and backup restoration.
+- [x] New look in source: `HubInk` revised to the lit tungsten ground, violet accent, support green
+      and three validated chart series; `HubBackground` added with Today lit and Focus deliberately
+      unlit; `HubInkTests` registered, holding the palette contract with the retired pair as a
+      negative fixture. Local inventory, boundary and backup-coverage checks pass. `look-and-feel.md`
+      owns the direction and `DESIGN.md` the tokens.
+- [ ] **Cloud-verify the new look.** No CI Gate run exists for it, because pushes are on hold. The
+      Swift has not been compiled anywhere: `HubBackground`, the generated grain tile and
+      `HubInkTests` are unproven. Run the exact-source CI Gate first, before any release request.
+- [ ] **Phone-check the new look** after a requested release: the lit ground on Today against a dark
+      room, the violet dial and action, week bars with their legend, task checks still reading as
+      done, Focus confirmed unlit, battery across a long block, and the whole thing under
+      Increased Contrast, Reduce Transparency and accessibility type sizes.
+- [ ] **Decide whether the lit ground extends past Today.** To-do and Apps currently take the flat
+      ground, which is a deliberate battery budget, not an oversight. Settle it once it is on the phone.
 - [x] Build-39 release preparation: explicit variant selection and strict single-study-extension
       validation pass exact-source CI at `8342d0e` (run `38971711206`), with both complete built
       .app directories, arm64 checks and matching generated versions. All 18 contract tests pass.
@@ -50,8 +73,8 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       Keep PR #68 draft/unmerged and leave signing/installation to the user.
 
 - [x] Final exact-commit PR/main CI Gates, native accessibility-fix review and validated Build-38 testing IPA.
-- [ ] Phone: all three tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
-- [ ] Phone: tasks/repeats/priorities/Undo/parked thoughts; three-tab navigation with no Journal UI,
+- [ ] Future Build-40 phone: all three tabs, study Start/Pause/Focus/corrections/Undo and actual 03:00 rollover.
+- [ ] Future Build-40 phone: tasks/repeats/priorities/Undo/parked thoughts; three-tab navigation with no Journal UI,
       study/priority progress independent of Journal, cancelled old invitations and full recovery into disposable data.
 - [ ] Phone: optional reminders/badge while locked, stale actions and finite scheduling windows.
 - [ ] Phone: Files linking, offline/revoked provider, stale/replayed/conflict exports and same-ID re-sign.

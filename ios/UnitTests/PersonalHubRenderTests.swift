@@ -77,7 +77,7 @@ import SwiftData
         let window = UIWindow(frame: CGRect(origin: .zero, size: size))
         if let scene = previous?.windowScene { window.windowScene = scene }
         window.frame = CGRect(origin: .zero, size: size)
-        let host = UIHostingController(rootView: view.preferredColorScheme(.dark).tint(HubInk.copper).environment(\.scenePhase, .active))
+        let host = UIHostingController(rootView: view.preferredColorScheme(.dark).tint(HubInk.accent).environment(\.scenePhase, .active))
         window.rootViewController = host; window.makeKeyAndVisible()
         host.view.frame = window.bounds
         try? await Task.sleep(nanoseconds: 250_000_000)

@@ -32,7 +32,7 @@ struct PersonalTodayView: View {
                     let milestone = ActivityProgress.milestones.last(where: { $0 <= count }) ?? 0
                     if milestone > preferences.seenMilestone {
                         HStack {
-                            Label("\(milestone) days with study recorded", systemImage: "checkmark.seal").foregroundStyle(HubInk.copper)
+                            Label("\(milestone) days with study recorded", systemImage: "checkmark.seal").foregroundStyle(HubInk.accent)
                             Spacer()
                             Button("Got it") { preferences.seenMilestone = milestone }.frame(minHeight: 44)
                         }.font(.subheadline)
@@ -52,7 +52,7 @@ struct PersonalTodayView: View {
                 }
             }.padding(22)
         }
-        .background(HubInk.background).navigationTitle("Today")
+        .background(HubBackground()).navigationTitle("Today")
         .sheet(isPresented: $history) { NavigationStack { PersonalProgressView(study: study, todo: todo, preferences: preferences) } }
         .sheet(isPresented: $planning) { PriorityPicker(store: todo, day: todo.today) }
         .fullScreenCover(isPresented: $focus) {
@@ -76,7 +76,7 @@ struct PersonalTodayView: View {
         VStack(spacing: 10) {
             if !focused {
                 HStack {
-                    Circle().fill(study.isRunning ? HubInk.copper : HubInk.sage).frame(width: 7, height: 7).accessibilityHidden(true)
+                    Circle().fill(study.isRunning ? HubInk.accent : HubInk.support).frame(width: 7, height: 7).accessibilityHidden(true)
                     Text(study.isRunning ? "Studying" : typeSize.isAccessibilitySize ? "Paused" : "Ready when you are").font(.subheadline)
                     Spacer()
                     Button { focus = true } label: {
@@ -120,7 +120,7 @@ struct PersonalTodayView: View {
         Button { study.toggle() } label: {
                 Label(study.isRunning ? "Pause studying" : study.studiedToday(at: date) > 0 ? "Resume studying" : "Start studying", systemImage: study.isRunning ? "pause.fill" : "play.fill")
                     .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
-            }.buttonStyle(.borderedProminent).tint(HubInk.copper).foregroundStyle(HubInk.background).accessibilityIdentifier("study-toggle")
+            }.buttonStyle(.borderedProminent).tint(HubInk.accent).foregroundStyle(HubInk.background).accessibilityIdentifier("study-toggle")
     }
     private var priorities: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -133,11 +133,11 @@ struct PersonalTodayView: View {
             if !todo.available { Text("Tasks unavailable").foregroundStyle(.secondary) }
             else if values.isEmpty { Button("Choose today’s priorities") { planning = true } }
             else {
-                HStack(spacing: 4) { ForEach(values) { item in Capsule().fill(plan?.completed.contains(item.id) == true ? HubInk.sage : HubInk.sage.opacity(0.2)) } }.frame(width: 110, height: 5).accessibilityHidden(true)
+                HStack(spacing: 4) { ForEach(values) { item in Capsule().fill(plan?.completed.contains(item.id) == true ? HubInk.support : HubInk.support.opacity(0.2)) } }.frame(width: 110, height: 5).accessibilityHidden(true)
                 ForEach(values) { item in
                     Button { todo.toggle(item.id) } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: item.completedAt == nil ? "circle" : "checkmark.circle.fill").font(.title3).foregroundStyle(item.completedAt == nil ? HubInk.copper : HubInk.sage)
+                            Image(systemName: item.completedAt == nil ? "circle" : "checkmark.circle.fill").font(.title3).foregroundStyle(item.completedAt == nil ? HubInk.accent : HubInk.support)
                             VStack(alignment: .leading) { Text(item.title).foregroundStyle(item.completedAt == nil ? .primary : .secondary); if item.archivedAt != nil { Text("Archived · choose a replacement").font(.caption).foregroundStyle(.secondary) }; if item.completedAt != nil && plan?.completed.contains(item.id) != true { Text("Completed earlier · choose a replacement").font(.caption).foregroundStyle(.secondary) } }
                             Spacer()
                         }.frame(minHeight: 44).contentShape(Rectangle())
@@ -156,14 +156,14 @@ struct StudyWeekGraphic: View {
     private func barColor(day: String, total: Double) -> Color {
         let closed = store.days(at: Date()).filter { $0.day < store.today && $0.studied > 0 }
         let best = closed.map(\.studied).max() ?? 0
-        if best > 0 && total >= best { return .purple }
+        if best > 0 && total >= best { return HubInk.seriesBest }
         let clock = ActivityDayClock(calendar: store.clock.calendar)
         let prior = (1...7).compactMap { clock.shifted(day, by: -$0) }
         if let first = closed.map(\.day).min(), let start = prior.min(), first <= start {
             let baseline = prior.reduce(0.0) { sum, key in sum + (closed.first { $0.day == key }?.studied ?? 0) } / 7
-            if total > baseline && baseline > 0 { return HubInk.sage }
+            if total > baseline && baseline > 0 { return HubInk.seriesAboveUsual }
         }
-        return HubInk.copper.opacity(day == selected ? 1 : 0.65)
+        return HubInk.seriesRecorded.opacity(day == selected ? 1 : 0.65)
     }
     var body: some View {
         let now = Date(), days = store.clock.week(containing: anchor), blocks = store.log.blocks(now: now, clock: store.clock)
@@ -187,11 +187,11 @@ struct StudyWeekGraphic: View {
                                                     .frame(height: max(2, 100 * piece.duration / scale - 2))
                                             }
                                         }.frame(width: 24)
-                                    } else { Capsule().fill(HubInk.sage.opacity(0.3)).frame(width: 24, height: 3) }
+                                    } else { Capsule().fill(HubInk.support.opacity(0.3)).frame(width: 24, height: 3) }
                                 }.frame(height: 100)
                                 Text(store.clock.date(of: day)?.formatted(.dateTime.weekday(.abbreviated)) ?? day).font(.caption2)
                             }.frame(minWidth: 44).padding(.vertical, 4)
-                                .background(day == selected ? HubInk.copper.opacity(0.05) : .clear, in: RoundedRectangle(cornerRadius: 9))
+                                .background(day == selected ? HubInk.accent.opacity(0.05) : .clear, in: RoundedRectangle(cornerRadius: 9))
                         }.buttonStyle(.plain).accessibilityLabel("\(day), \(future ? "upcoming day" : StudyTimeDisplay.short(total)), \(pieces.count) blocks")
                             .accessibilityAddTraits(day == selected ? .isSelected : [])
                     }

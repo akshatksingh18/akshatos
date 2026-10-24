@@ -46,11 +46,13 @@ struct StudyFocusView: View {
                     }
                 }
             }
-            .background(HubInk.background)
+            // Focus holds the screen on for a whole study block, so it deliberately takes the ground
+            // without the lights or the grain. Do not "fix" this to match Today.
+            .background(HubBackground(lit: false))
             .navigationTitle("Focus").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Close", action: close).frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("study-focus-close") } }
         }
-        .tint(HubInk.copper)
+        .tint(HubInk.accent)
         .onAppear { visible = true; orientation.setStudyFocusSession(true); updateDisplay() }
         .onDisappear { visible = false; display.release(); orientation.setStudyFocusSession(false) }
         .onChange(of: phase) { _, _ in updateDisplay(); if phase == .active { activity.reconcile() } }
@@ -70,7 +72,7 @@ struct StudyFocusView: View {
     private func dial(at date: Date, compact: Bool = false) -> some View {
         VStack(spacing: 12) {
             Label(study.isRunning ? "Studying" : "Paused", systemImage: study.isRunning ? "circle.fill" : "pause.circle")
-                .font(.subheadline).foregroundStyle(HubInk.sage)
+                .font(.subheadline).foregroundStyle(HubInk.support)
             StudyDial(studied: study.studiedToday(at: date), target: study.targetToday(at: date), compact: compact)
             Text("\(StudyTimeDisplay.short(study.studiedToday(at: date))) studied today")
                 .font(.subheadline).monospacedDigit().foregroundStyle(.secondary)
@@ -111,7 +113,7 @@ struct StudyFocusView: View {
         Button { study.toggle() } label: {
             Label(study.isRunning ? "Pause studying" : study.studiedToday(at: study.currentDate()) > 0 ? "Resume studying" : "Start studying", systemImage: study.isRunning ? "pause.fill" : "play.fill")
                 .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
-        }.buttonStyle(.borderedProminent).tint(HubInk.copper).foregroundStyle(HubInk.background)
+        }.buttonStyle(.borderedProminent).tint(HubInk.accent).foregroundStyle(HubInk.background)
             .accessibilityIdentifier("study-focus-toggle")
     }
 

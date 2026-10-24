@@ -33,6 +33,33 @@ promotion, while a later daemon refresh remains separate ongoing-cycle evidence.
 
 ## The two halves, and why they are separate
 
+### Moving the Windows signing host
+
+The accepted next host is the second laptop, with the workspace at `C:\AI Important Files`.
+The primary remains the active signer/monitor until a real new-host Wi-Fi install, same-identity
+data preservation and current-version automatic-refresh enrollment pass. No signing-host cutover,
+phone installation or account/team change has been performed as part of preparing scripts.
+
+Use the [workspace setup kit](../../.claude/backup-source/second-laptop-quickstart.md) for desktop
+iTunes/iCloud, Sideloadly, Bonjour, Apple Mobile Device Service and narrow private-LAN discovery
+rules. The initial USB trust/iTunes Wi-Fi-sync step and Apple login are user-operated. Do not copy
+`key.pem`, certificates, sessions, home pairing records or `installations.db` into a cloud package.
+The offline project exporter carries local source/runbooks and the IPA cache, not home signing state.
+Select the intended installed/current IPA deliberately: an accepted older recovery IPA must not
+be auto-installed as a downgrade merely because it lives in `backup`.
+
+Keep the same Apple Account/team and `scripts/signing-apps.json` identity/mode contract for both
+apps. Install over the existing apps with auto-refresh enabled, prove USB-disconnected `@Wi-Fi`
+installation and open each app with its data intact. Do not uninstall or promote a testing candidate
+as part of laptop migration. New Sideloadly versions still require real record/enrollment validation.
+
+After these checks, the kit's `Finish -PhoneChecked` copies the existing three health sources into
+the new excluded trusted runtime, passes that laptop's Python path explicitly, requires a healthy
+real enrollment check and registers the limited native task at delayed sign-in/09:00/21:00. Its
+state/log stay local to the new machine. Only after acceptance disable the old host's daemon/startup
+and health task. One successful manual install is not an unattended refresh cycle. The existing
+physical/repeated-refresh gates below remain open.
+
 The researched [SideStore alternative](sidestore-evaluation.md) is not active. This procedure
 and its Windows health check apply to Sideloadly only; they cannot verify phone-owned SideStore
 renewals. Do not disable or repurpose them until a migration and replacement monitoring plan

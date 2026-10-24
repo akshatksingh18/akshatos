@@ -39,7 +39,7 @@ struct TodoView: View {
                 Section {
                     HStack {
                         TextField("Add a task", text: $quickAdd,
-                                  prompt: Text("e.g. read tomorrow 5pm").foregroundStyle(HubInk.sage))
+                                  prompt: Text("e.g. read tomorrow 5pm").foregroundStyle(HubInk.support))
                             .focused($quickAddFocused).onSubmit(add).accessibilityIdentifier("todo-quick-add")
                         Button(action: add) { Image(systemName: "plus.circle.fill").frame(minWidth: 44, minHeight: 44) }
                             .accessibilityLabel("Add task").accessibilityIdentifier("todo-add")
@@ -110,7 +110,7 @@ struct TodoView: View {
         HStack(alignment: .top, spacing: 12) {
             Button { store.toggle(task.id) } label: {
                 Image(systemName: task.completedAt == nil ? "circle" : "checkmark.circle.fill")
-                    .font(.title3).foregroundStyle(task.completedAt == nil ? HubInk.copper : HubInk.sage)
+                    .font(.title3).foregroundStyle(task.completedAt == nil ? HubInk.accent : HubInk.support)
                     .frame(minWidth: 44, minHeight: 44)
             }.buttonStyle(.plain).disabled(task.completedAt != nil || task.archivedAt != nil).accessibilityLabel(task.completedAt == nil ? "Complete \(task.title)" : "Completed \(task.title)")
             Button { editing = task } label: {

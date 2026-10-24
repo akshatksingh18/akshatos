@@ -28,7 +28,7 @@ struct JournalView: View {
             else { editor }
         }
         .background(HubInk.background).navigationTitle(history ? "Journal history" : "Journal")
-        .tint(HubInk.copper).privacySensitive()
+        .tint(HubInk.accent).privacySensitive()
         .task { if day.isEmpty { day = store.today }; if !store.available { store.load() } }
         .toolbar {
             if !store.isLocked {
@@ -90,7 +90,7 @@ struct JournalView: View {
     }
     private var locked: some View {
         VStack(spacing: 18) {
-            Image(systemName: "lock.fill").font(.largeTitle).foregroundStyle(HubInk.copper)
+            Image(systemName: "lock.fill").font(.largeTitle).foregroundStyle(HubInk.accent)
             Text("Your journal is locked").font(.title2)
             Button("Unlock Journal") { Task { _ = await store.authenticate() } }
                 .buttonStyle(.borderedProminent).foregroundStyle(HubInk.background).accessibilityIdentifier("journal-unlock")
@@ -179,7 +179,7 @@ struct JournalView: View {
                             if let date = store.clock.date(entry.day), let energy = entry.energy {
                                 PointMark(x: .value("Day", date), y: .value("Rating", energy)).foregroundStyle(by: .value("Measure", "Energy"))
                             }
-                        }.chartYScale(domain: 1...5).chartForegroundStyleScale(["Mood": HubInk.copper, "Energy": HubInk.sage]).frame(height: 160)
+                        }.chartYScale(domain: 1...5).chartForegroundStyleScale(["Mood": HubInk.accent, "Energy": HubInk.support]).frame(height: 160)
                         Text("Only recorded ratings appear. Tap an entry below to inspect or edit its values.").font(.caption).foregroundStyle(.secondary)
                     } else { Text("No ratings recorded in this period.").foregroundStyle(.secondary) }
                 }

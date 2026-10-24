@@ -7,8 +7,20 @@ installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its ch
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
 Working Build 40 now removes Journal and its full-day challenge by user request, preserving legacy
-data/full-backup recovery. Verification for this source change is pending; the earlier runs below
-remain scoped to their named commits. No new IPA is requested.
+data/full-backup recovery. Full [run 39705903157](https://github.com/akshatksingh18/akshatos/actions/runs/39705903157),
+at `18ebc46`, attempt 2, passes Source checks, Build and test iOS and CI Gate: 18 release-contract
+tests, nine domain suites, 202 hosted tests and 17 UI tests. Both complete unsigned device variants
+pass payload/identity/version/extension checks. IPA packaging and upload are skipped; diagnostics
+artifact is `test-diagnostics-191-2`. The retry clears simulator background-assertion timeouts at the
+same source. No new IPA is requested or created.
+
+Valid same-source native shell captures at 390 and 320/accessibility3, plus Apps and Settings
+simulator captures, are in `.impeccable/review/journal-retirement-18ebc46/` from diagnostics
+`test-diagnostics-191-1`; each corresponding test passed. Fresh review accepted the removal path
+and scored its sole direction-contract persistence fix resolved, disposition ship at that scope.
+A fresh documenter synchronized DESIGN.md and its local sidecar without changing visual tokens.
+Physical-device acceptance remains open. Further publishing is on hold by user request; final
+evidence/documents stay local, and the already-pushed draft remains unmerged.
 
 Windows Study Desk 0.1.0 passes [run 39416930629](https://github.com/akshatksingh18/akshatos/actions/runs/39416930629)
 at `c798a2c`: 37 core assertions, native WPF compilation/action smoke checks (Pause, X and the
@@ -38,8 +50,8 @@ were checked without running the app locally. Native evidence is in the ignored
 screenshots. The package is unsigned. Real lock/sleep/display scaling and iCloud delivery remain
 user-operated acceptance gates. The IPA cache is unchanged.
 
-Working source is **0.15.0 (40)** for Daily routine and finished-session exchange, verified at
-`c798a2c` by the full iOS run above. Earlier routine-specific native captures at `18a59b1` and the
+Working source is **0.15.0 (40)** for Daily routine, finished-session exchange and Journal retirement,
+verified at `18ebc46` by the latest full iOS run above. Earlier routine-specific native captures at `18a59b1` and the
 fresh review confirm both routine accessibility fixes resolved; this remains scoped evidence,
 not physical-phone acceptance. `daily-routine-plan.md` owns that capture/review boundary.
 No Build-40 IPA has been requested or created. Both host/extension versions are kept aligned.

@@ -16,7 +16,13 @@ Windows/iPhone/provider acceptance remains open. `../cloud-build.md` owns exact 
 
 ## Working agreement
 
-- Remaining time is primary, studied time below. Preserve graphite/copper and native Windows controls.
+- Remaining time is primary, studied time below. The implemented styling is graphite/copper; the
+  accepted but unbuilt direction is Tungsten with a violet accent (`../look-and-feel.md`). Either
+  way, keep native Windows controls.
+- The window must snap like any other app, including the Snap Layouts hover grid, so it can live on
+  half the screen beside other work. Snapping is not minimising, so a snapped window keeps running.
+  The accepted chrome is a tinted caption with real minimise/maximise/close buttons, never frameless;
+  `../desktop-study-plan.md` owns the requirement and the hit-testing it needs.
 - Lock, sleep, minimize and close pause; resuming is manual. No hidden running/tray timer.
 - Save local state before reporting success. Keep records outside the executable directory.
 - Never merge overlapping intervals or silently replace another device's history. Exchange is
