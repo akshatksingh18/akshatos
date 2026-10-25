@@ -9,6 +9,8 @@ import CryptoKit
     @Published private(set) var lastWrite: Date?
     @Published private(set) var newWatchlistAvailable = false
     @Published private(set) var busy = false
+    @Published private(set) var studyFiles: [Data] = []
+    @Published private(set) var studyStatus = "No laptop sessions checked yet."
     private var watchlistData: Data?
     private let defaults: UserDefaults
     init(defaults: UserDefaults = .standard) { self.defaults = defaults; linked = defaults.data(forKey: "handoff.folder") != nil }
@@ -23,6 +25,7 @@ import CryptoKit
     }
     func unlink() {
         defaults.removeObject(forKey: "handoff.folder"); linked = false; watchlistData = nil
+        studyFiles = []; studyStatus = "Folder unlinked. Local study records are unchanged."
         newWatchlistAvailable = false; status = "Folder unlinked. Local records are unchanged."
     }
     private func resolve() throws -> URL {
@@ -50,13 +53,36 @@ import CryptoKit
         }
     }
     func previewWatchlist(in store: WatchlistStore) { if let data = watchlistData { store.preview(data) } }
-    func write(_ data: Data, file: ExportFile) async {
+    func checkStudy() async {
+        guard linked, !busy else { return }; busy = true; defer { busy = false }
+        do {
+            let folder = try resolve(), scoped = folder.startAccessingSecurityScopedResource()
+            defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
+            let files = try await Task.detached(priority: .utility) {
+                let urls = try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
+                    .filter { $0.lastPathComponent.hasPrefix("study-laptop-") && $0.pathExtension == "json" }
+                guard urls.count <= 8 else { throw PersonalDataError.invalid("Select the intended laptop file manually; this folder has more than eight.") }
+                return try urls.sorted { $0.lastPathComponent < $1.lastPathComponent }.map(Self.read)
+            }.value
+            studyFiles = files
+            studyStatus = files.isEmpty ? "No laptop session file has arrived. Phone records are unchanged."
+                : "\(files.count) laptop file(s) available to preview. Nothing is imported automatically."
+        } catch {
+            studyFiles = []
+            studyStatus = "Laptop files are unavailable or incomplete. Retry, use manual import or re-link; phone records are unchanged."
+        }
+    }
+    nonisolated static func readStudyDocument(_ url: URL) throws -> Data { try read(url) }
+    func write(_ data: Data, file: ExportFile) async { await writeNamed(data, name: file.rawValue) }
+    func writePhoneStudy(_ data: Data, source: UUID) async {
+        await writeNamed(data, name: "study-iphone-\(source.uuidString.lowercased()).json")
+    }
+    private func writeNamed(_ data: Data, name: String) async {
         guard !busy else { return }; busy = true; defer { busy = false }
         do {
             guard data.count <= 25_000_000 else { throw PersonalDataError.invalid("Export is too large for this hand-off.") }
             let folder = try resolve(), scoped = folder.startAccessingSecurityScopedResource()
             defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
-            let name = file.rawValue
             try await Task.detached(priority: .utility) { try Self.write(data, folder: folder, name: name) }.value
             lastWrite = Date(); status = "\(name) exported. Provider delivery to the laptop is not yet confirmed."
         } catch { status = "Export was not confirmed: \(error.localizedDescription). Keep the local data and retry." }

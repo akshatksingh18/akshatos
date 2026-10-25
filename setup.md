@@ -31,7 +31,76 @@ enrollment, no error, and expiry on 2026-09-30 at 17:24 local. Build 27 is the a
 `everRefreshed: false` is expected for this newly installed version and does not block enrollment or
 promotion, while a later daemon refresh remains separate ongoing-cycle evidence.
 
+## The phone watches its own expiry
+
+The Windows check reads Sideloadly's database, so it can only see what Sideloadly refreshes. An app
+moved to SideStore — or to any other signer — would keep working and stop being watched, which is
+exactly how the retired Squat Reminder registration reached expiry with `failures_count: 0` and an
+empty `last_error`. A silent blind spot is worse than a noisy check.
+
+AkshatOS therefore carries its own monitor, in source from Build 42 and **not yet device-verified**.
+The CI Gate passes at `8f0abc6` (run `40214152747`), covering the rules and the absent-profile path
+against synthetic data; CI has no real profile, so reading an actual one is still unproven and no
+released IPA contains it yet. It reads the `embedded.mobileprovision` inside its own bundle, takes the `ExpirationDate`, and
+schedules at most two passive local notifications — about three days out, and one day out. It
+refreshes nothing; like the Windows check it only proves the state and says so. The expiry and its
+wording appear on the Backup screen, and a tapped warning opens that screen, because backing up is
+the first useful thing to do when the app is days from no longer opening.
+
+Why the bundle rather than anything else: it is true whoever signed the build, needs no network, no
+Apple credentials and no companion machine, and survives a change of signer. A missing profile — the
+normal simulator case — is reported as unknown rather than healthy, because an unknown expiry is not
+a safe one. `ios/AkshatOS/app/SigningExpiry.swift` holds the rules and `UnitTests/SigningExpiryTests.swift`
+the contract, including the thresholds below.
+
+Its limits, which matter before leaning on it: it only re-arms when the app is opened, so an app left
+unopened for a week warns about nothing; it stays silent without notification permission rather than
+prompting for it; and it cannot see or influence whether a refresh actually happens. It narrows the
+blind spot left by a signer change — it does not replace opening the app occasionally.
+
+The two checks divide cleanly. Windows answers "did Sideloadly complete a refresh", with
+corroboration. The phone answers "how long is this build signed for", whoever signed it. Keep both
+while Sideloadly owns an app; keep the phone one regardless.
+
 ## The two halves, and why they are separate
+
+### Moving the Windows signing host
+
+The requested next host is the second laptop, with the workspace at `C:\AI Important Files`.
+It is now confirmed Snapdragon/ARM64. The core AI/sync kit supports ARM, but its Apple/Sideloadly
+portion and signing-health activation are deferred: native Apple device-driver/signing compatibility
+has not been established. Do not bypass that guard or assume x64 app emulation covers drivers.
+The primary remains the active signer/monitor until ARM compatibility and a real new-host Wi-Fi install, same-identity
+data preservation and current-version automatic-refresh enrollment pass. No signing-host cutover,
+phone installation or account/team change has been performed as part of preparing scripts.
+
+The kit's separate optional ARM `PhonePilot` mode now prepares pinned public Impactor ARM64 and
+iloader downloads, with an explicit Store Apple Devices installation option. Developer packaging
+and SideStore's Windows 11 prerequisite guidance provide test candidates, not proof on this phone.
+[SideStore evaluation](sidestore-evaluation.md#windows-11-arm-pilot) owns the current research,
+data/identity/certificate gates and separate extension-profile warning. Impactor's beta refresh
+and SideStore cannot be monitored by this Sideloadly database reader. No alternative has been
+adopted, and preparing downloads must not disable the primary daemon or its health task.
+
+For an x64 host, use the [workspace setup kit](../../.claude/backup-source/second-laptop-quickstart.md) for desktop
+iTunes/iCloud, Sideloadly, Bonjour, Apple Mobile Device Service and narrow private-LAN discovery
+rules. The initial USB trust/iTunes Wi-Fi-sync step and Apple login are user-operated. Do not copy
+`key.pem`, certificates, sessions, home pairing records or `installations.db` into a cloud package.
+The offline project exporter carries local source/runbooks and the IPA cache, not home signing state.
+Select the intended installed/current IPA deliberately: an accepted older recovery IPA must not
+be auto-installed as a downgrade merely because it lives in `backup`.
+
+Keep the same Apple Account/team and `scripts/signing-apps.json` identity/mode contract for both
+apps. Install over the existing apps with auto-refresh enabled, prove USB-disconnected `@Wi-Fi`
+installation and open each app with its data intact. Do not uninstall or promote a testing candidate
+as part of laptop migration. New Sideloadly versions still require real record/enrollment validation.
+
+On a supported x64 signing host after these checks, the kit's `Finish -PhoneChecked` copies the existing three health sources into
+the new excluded trusted runtime, passes that laptop's Python path explicitly, requires a healthy
+real enrollment check and registers the limited native task at delayed sign-in/09:00/21:00. Its
+state/log stay local to the new machine. Only after acceptance disable the old host's daemon/startup
+and health task. One successful manual install is not an unattended refresh cycle. The existing
+physical/repeated-refresh gates below remain open.
 
 The researched [SideStore alternative](sidestore-evaluation.md) is not active. This procedure
 and its Windows health check apply to Sideloadly only; they cannot verify phone-owned SideStore

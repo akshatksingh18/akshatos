@@ -15,6 +15,7 @@ struct TodoView: View {
     @State private var exportType = UTType.json
     @State private var importing = false
     @State private var pending: TodoState?
+    @State private var routines = false
     var body: some View {
         List {
             Picker("List", selection: $afterStudy) {
@@ -38,7 +39,7 @@ struct TodoView: View {
                 Section {
                     HStack {
                         TextField("Add a task", text: $quickAdd,
-                                  prompt: Text("e.g. read tomorrow 5pm").foregroundStyle(HubInk.sage))
+                                  prompt: Text("e.g. read tomorrow 5pm").foregroundStyle(HubInk.support))
                             .focused($quickAddFocused).onSubmit(add).accessibilityIdentifier("todo-quick-add")
                         Button(action: add) { Image(systemName: "plus.circle.fill").frame(minWidth: 44, minHeight: 44) }
                             .accessibilityLabel("Add task").accessibilityIdentifier("todo-add")
@@ -72,14 +73,16 @@ struct TodoView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button("New task", systemImage: "plus") { editing = TodoItem(title: "") }
+                    Button("Daily routine", systemImage: "checklist") { routines = true }
                     Button("Plan tomorrow", systemImage: "calendar") { planDay = store.clock.shifted(store.today, by: 1) ?? store.today; planning = true }
                     Button("Export backup") { prepareExport(.json) }
-                    Button("Export CSV") { prepareExport(.commaSeparatedText) }
+                    Button("Export task CSV") { prepareExport(.commaSeparatedText) }
                     Button("Restore backup") { importing = true }
                 } label: { Label("More", systemImage: "ellipsis.circle") }
             }
         }
         .sheet(item: $editing) { item in TodoEditor(store: store, item: item) }
+        .sheet(isPresented: $routines) { RoutineManager(store: store) }
         .sheet(isPresented: $planning) { PriorityPicker(store: store, day: planDay) }
         .personalMessage("To-do", message: $store.message)
         .fileExporter(isPresented: $export, document: document, contentType: exportType, defaultFilename: "akshatos-todo") { result in
@@ -95,7 +98,7 @@ struct TodoView: View {
         .alert("Replace To-do?", isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } })) {
             Button("Replace", role: .destructive) { if let pending { _ = store.commit(pending, replacingUnavailable: true) }; pending = nil }
             Button("Cancel", role: .cancel) { pending = nil }
-        } message: { Text("This replaces tasks, parked thoughts and priority plans. Export your current backup first.") }
+        } message: { Text("This replaces tasks, parked thoughts, priority plans and routine history. A backup made before routines were added clears the routine too. Export your current backup first.") }
     }
     private var matching: [TodoItem] {
         store.visible.filter { search.isEmpty || ($0.title + " " + $0.note + " " + $0.area).localizedCaseInsensitiveContains(search) }
@@ -107,7 +110,7 @@ struct TodoView: View {
         HStack(alignment: .top, spacing: 12) {
             Button { store.toggle(task.id) } label: {
                 Image(systemName: task.completedAt == nil ? "circle" : "checkmark.circle.fill")
-                    .font(.title3).foregroundStyle(task.completedAt == nil ? HubInk.copper : HubInk.sage)
+                    .font(.title3).foregroundStyle(task.completedAt == nil ? HubInk.accent : HubInk.support)
                     .frame(minWidth: 44, minHeight: 44)
             }.buttonStyle(.plain).disabled(task.completedAt != nil || task.archivedAt != nil).accessibilityLabel(task.completedAt == nil ? "Complete \(task.title)" : "Completed \(task.title)")
             Button { editing = task } label: {

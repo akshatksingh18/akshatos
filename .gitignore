@@ -29,10 +29,13 @@ keystore.properties
 
 # Generated iOS project/build artifacts
 ios/*.xcodeproj/
+ios/Support/StudyActivity-Info.plist
 ios/DerivedData/
 ios/AkshatOS/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 
 # Local environment and OS files
+__pycache__/
+*.pyc
 .env
 .env.*
 !.env.example
@@ -51,3 +54,12 @@ implementation-plan.md
 todo-journal-plan.md
 laptop-phone-sync.md
 laptop-phone-sync-research-prompt.md
+desktop-study-plan.md
+look-and-feel.md
+notes-plan.md
+setup-checklist.md
+
+# Windows companion build output and local records
+**/bin/
+**/obj/
+windows/artifacts/

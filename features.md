@@ -46,7 +46,7 @@ until the explicit verified WHOOP handover stops it; a design approval does not 
 
 ## Hub entry
 
-Installed Build 37 uses the app selector. Source 0.14.0 launches Today / To-do / Journal / Apps;
+Installed Build 37 uses the app selector. Working source 0.15.0 launches Today / To-do / Apps;
 Settings contains a temporary WHOOP handover path into the retained fitness modules. Switching
 screens preserves an active session and its reminders until handover is explicitly completed.
 WHOOP is not embedded. App composition owns navigation, while the feature retains its rules/store.
@@ -107,7 +107,7 @@ in the UI or in notifications; labels say plainly what things are ("Log a set", 
 "History", "Want to read"). State is always conveyed with text and symbols as well as colour, and
 nothing may fabricate completions, points or streaks that did not happen. Real motivating mechanics
 — streaks, goals, levels, personal bests — are welcome where they help Akshat's development; only
-the themed decoration is out. The new hub has four fixed tabs; the retained Pushups screen uses this minimal visual contract.
+the themed decoration is out. The new hub has three fixed tabs; the retained Pushups screen uses this minimal visual contract.
 
 - A state card shows the current state, the time until the next reminder while running, and a
   plain paused/blocked/ended explanation in other states. The countdown

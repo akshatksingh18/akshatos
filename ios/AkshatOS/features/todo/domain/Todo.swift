@@ -36,6 +36,8 @@ struct TodoState: Codable, Equatable {
     var thoughts: [ParkedThought] = []
     var plans: [PriorityPlan] = []
     var areas = ["Study", "Job", "Health", "Personal"]
+    // Optional for decoding all pre-routine snapshots and backups without a migration reset.
+    var routine: DailyRoutine?
     func validated() throws -> Self {
         guard version == 1, tasks.count <= 100_000, thoughts.count <= 100_000,
               Set(tasks.map(\.id)).count == tasks.count,
@@ -54,6 +56,7 @@ struct TodoState: Codable, Equatable {
                   && TimeZone(identifier: $0.zone) != nil }) else {
             throw PersonalDataError.invalid("The To-do file has an unsupported version or invalid records.")
         }
+        if let routine { _ = try routine.validated() }
         return self
     }
     mutating func select(_ id: UUID, for day: String, clock: ActivityDayClock) throws {

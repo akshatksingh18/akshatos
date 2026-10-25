@@ -3,6 +3,7 @@ import SwiftUI
 struct StudyDial: View {
     var studied: Double
     var target: Int
+    var compact = false
     @State private var showingStudied = false
     @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 48
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -11,10 +12,10 @@ struct StudyDial: View {
         ZStack {
             Circle().trim(from: 0, to: 0.75).stroke(.white.opacity(0.14), style: StrokeStyle(lineWidth: 8, lineCap: .round)).rotationEffect(.degrees(135))
             Circle().trim(from: 0, to: 0.75 * fraction)
-                .stroke(LinearGradient(colors: [HubInk.copper.opacity(0.65), HubInk.copper, Color(red: 0.94, green: 0.77, blue: 0.63)], startPoint: .bottomLeading, endPoint: .topTrailing), style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(LinearGradient(colors: [HubInk.accent.opacity(0.65), HubInk.accent, Color(red: 0.780, green: 0.698, blue: 1.000)], startPoint: .bottomLeading, endPoint: .topTrailing), style: StrokeStyle(lineWidth: 8, lineCap: .round))
                 .rotationEffect(.degrees(135))
                 .opacity(fraction > 0 ? 1 : 0)
-            DialTickShape().stroke(HubInk.sage.opacity(0.8), lineWidth: 1).padding(-13)
+            DialTickShape().stroke(HubInk.support.opacity(0.8), lineWidth: 1).padding(-13)
             Button { showingStudied.toggle() } label: {
                 VStack(spacing: 8) {
                     Text(StudyTimeDisplay.short(showingStudied ? studied : max(0, Double(target) - studied)))
@@ -24,9 +25,9 @@ struct StudyDial: View {
                     HStack(spacing: 6) {
                         Text(showingStudied ? "Studied" : "Remaining")
                         Image(systemName: "arrow.left.arrow.right").font(.caption2)
-                    }.font(.subheadline).foregroundStyle(.secondary)
+                    }.font(.subheadline).lineLimit(1).minimumScaleFactor(0.7).foregroundStyle(.secondary)
                 }.frame(maxWidth: .infinity, minHeight: 100).contentShape(Circle())
-            }.buttonStyle(.plain).padding(24).accessibilityLabel(showingStudied ? "Show remaining time" : "Show studied time")
+            }.buttonStyle(.plain).padding(compact ? 8 : 24).accessibilityLabel(showingStudied ? "Show remaining time" : "Show studied time")
             VStack {
                 Spacer()
                 HStack {

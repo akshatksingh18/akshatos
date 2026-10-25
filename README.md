@@ -1,7 +1,7 @@
 # AkshatOS
 
-A native personal iPhone hub for effective study time, tasks, private reflection and occasional
-tools. Source 0.14.0 uses **Today / To-do / Journal / Apps**, with PageVault, Watchlist and Spending.
+A native personal iPhone hub for effective study time, tasks, daily routines and occasional
+tools. Source 0.15.0 uses **Today / To-do / Apps**, with PageVault, Watchlist and Spending.
 Build 37 remains installed with the earlier module picker. WHOOP is the separate fitness app.
 
 Lift Log, Body/Progress and Pushup Reminder are implemented in WHOOP and retained in its installed
@@ -10,22 +10,57 @@ AkshatOS import/removal cutover remain open ([shared boundary](hub-plan.md)). Th
 design excludes those fitness features; the installed hub and its stores, backups and reminder
 ownership remain intact until the separate migration/recovery and acceptance gates pass.
 
-**Current state:** Build 37 is installed and enrolled, with feature phone checks open. Build 31
-remains the accepted recovery artifact. Source 0.14.0 (38), PR #67, is undergoing final verification.
-[Cloud build](cloud-build.md) owns exact build/run/artifact evidence and historical device findings;
-[todo.md](todo.md) owns outstanding checks. Physical and refresh acceptance remain separate from CI.
+**Current state:** Build 39 (0.14.1), Live Activity variant at `8342d0e`, is validated and ready in
+`testing/`. Manual release run `38975509228`, local checksum/payload/version validation and the
+app/extension builds pass. It includes Build 38's personal hub and replaces its testing candidate.
+Build 37 remains installed/enrolled; Build 31 remains accepted recovery. [Cloud build](cloud-build.md)
+owns exact evidence; [todo.md](todo.md) owns phone, provider and recovery checks.
 
-Source 0.14.0 (38), PR #67, implements the approved personal hub: **Today / To-do / Journal / Apps**.
-The copper study dial, block chart and task checks provide direct interaction; occasional tools
+Build 40 (0.15.0) adds a Daily routine checklist in source: grouped day parts, chosen weekdays,
+optional target times, Done/Skip/undo, pause/reorder and seven-day history. It starts empty and joins
+To-do/full JSON recovery. The current Build-40 CI Gate passes at `00e401e`, with 208 hosted and 17 UI tests;
+the earlier native routine review scored both accessibility fixes resolved. Phone acceptance remains open. No Build-40
+IPA is created; the routine is not in the delivered Build-39 IPA.
+[Routine contract](daily-routine-plan.md) owns the default layout and verification boundary.
+
+The first [Windows Study Desk](windows/README.md) implementation adds a resizable native desktop
+countdown, automatic pause on lock/sleep/minimize/close, local records and explicit finished-session
+exchange. Working Build-40 iOS source gains a previewed additive laptop importer and a separate
+phone-to-desktop exchange export. The portable Windows candidate passes cloud checks and native
+finish review; phone exchange CI passes and its requested conflict-copy fix is scored resolved.
+Physical lifecycle, accessibility and provider acceptance remain open. See [cloud build](cloud-build.md) for
+the candidate path and remaining device gates.
+It does not change the delivered Build-39 IPA or signing ownership. iCloud folder delivery is
+optional transport, not a live cross-device lock; overlaps are refused rather than double-counted.
+
+Build 39 (0.14.1) is the requested Live Activity testing candidate: portrait/landscape study Focus,
+scoped keep-awake, quiet notifications during study and an optional SideStore Live Activity variant.
+Exact-source cloud checks and native Focus/card inspection pass on draft PR #68, which stays
+unmerged. Phone signing/display proof remains open; installed refresh ownership is unchanged.
+Release preparation provides explicit standard/study Live Activity selection and strict matching
+payload validation. Both complete device variants pass exact-source cloud checks at `8342d0e`.
+Selecting a variant does not create an IPA.
+[Study display](study-display.md) owns behavior, DND limits, public research and signing/device gates.
+
+Working source 0.15.0 (40) simplifies the personal hub to **Today / To-do / Apps**; the original
+hub shipped in 0.14.0 (38), PR #67.
+The violet study dial, block chart and task checks provide direct interaction; occasional tools
 stay in Apps and Study history is one closable sheet. [Implementation contract](personal-hub.md)
-covers tasks/repeats/Undo, Journal/photos with optional Face ID protection, Watchlist, Spending, optional progress and
-reminders, Shortcuts and explicit Files hand-offs. Final CI, native review and IPA delivery remain
-pending. Build 37 is still installed. Fitness stores stay recoverable through a controlled WHOOP
+covers tasks/repeats/Undo, Daily routine, Watchlist, Spending, optional progress and
+reminders, Shortcuts and explicit Files hand-offs. Build 39 retains the earlier Journal UI; working Build 40 removes Journal and its reminder/challenge
+connections while keeping old data in full backup. Retirement CI passes; the native reviewer scored its one direction-contract fix resolved. Build 37
+is still installed. Fitness stores stay recoverable through a controlled WHOOP
 handover; the new daily hub has no fitness requirements. Provider/device proof remains separate.
 
 This repository evolved from Squat Reminder and now presents that feature as Pushup Reminder,
 retaining Git history and the unverified legacy Android Squats fallback. Source is temporarily public at
 [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos) for hosted macOS CI capacity.
+
+Moving the Windows signing host to the now-confirmed ARM64 second laptop is deferred pending
+native Apple driver/signing compatibility and Wi-Fi/same-identity/data/enrollment checks. The
+primary remains the signing host. An optional researched ARM pilot is prepared but unverified.
+[Signing setup](setup.md#moving-the-windows-signing-host)
+owns the cutover; no phone install, identity change or verified new-host refresh is implied.
 
 ## First slice
 
@@ -36,7 +71,7 @@ build skipping, and the server-enforced `main` protection. Green CI is not physi
 App composition, display-only hub, shared styling and the Pushup Reminder feature are separated;
 [architecture.md](architecture.md) defines dependencies and the boundary-check command.
 
-- Four fixed tabs in source 0.14.0, with the study dial and priorities on Today and occasional tools in Apps. Full backup includes every retained and new module. The installed Build 37 still uses its earlier picker.
+- Three fixed tabs in working source 0.15.0, with the study dial and priorities on Today and occasional tools in Apps. Full backup includes every retained and new module. The installed Build 37 still uses its earlier picker.
 - Lift Log starts from an editable split or Empty workout, keeps split edits and an open workout
   linked, and supports search, reorder and today-only removal. It shows every set of the last
   finished performance for the same exercise/mode, and edits/deletes active sets. It
@@ -59,7 +94,8 @@ App composition, display-only hub, shared styling and the Pushup Reminder featur
   Start/Resume choices, visible health, and edit/disable/delete. No route history is retained.
 - No server, telemetry, account, or embedded WHOOP.
 
-**Still deferred:** Shortcuts and the remaining physical, refresh and recovery testing. The full
+**Still deferred for retained Pushups:** optional Shortcut automation and the remaining physical,
+refresh and recovery testing. Personal-hub App Intents are implemented in Build 38. The full
 intended scope below remains the target, not a list of completed features. Until recovery and device tests pass, use
 disposable test activity only.
 

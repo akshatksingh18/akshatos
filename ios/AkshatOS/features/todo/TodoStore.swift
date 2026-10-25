@@ -27,7 +27,11 @@ enum TodoSchemaV1: VersionedSchema {
         self.container = container; self.now = now; clock = ActivityDayClock(calendar: calendar ?? .current); followsSystemZone = calendar == nil
     }
     var today: String { clock.key(now()) }
-    func refreshDay() { if followsSystemZone { clock.calendar.timeZone = .current }; let stamp = today + "|" + clock.calendar.timeZone.identifier; if dayStamp != stamp { dayStamp = stamp; onChange?() } }
+    func refreshDay() {
+        if followsSystemZone { clock.calendar.timeZone = .current }
+        let stamp = today + "|" + clock.calendar.timeZone.identifier
+        if dayStamp != stamp { dayStamp = stamp; prepareRoutine(); onChange?() }
+    }
     var visible: [TodoItem] { state.tasks.filter { $0.archivedAt == nil } }
     var nextTimed: TodoItem? {
         visible.filter { $0.completedAt == nil && $0.hasTime && ($0.due ?? .distantPast) >= now() }
@@ -49,6 +53,7 @@ enum TodoSchemaV1: VersionedSchema {
             let rows = try context().fetch(FetchDescriptor<TodoSchemaV1.Snapshot>())
             state = try rows.first.map { try LocalDataCoding.decode(TodoState.self, $0.payload).validated() } ?? TodoState()
             available = true
+            prepareRoutine()
         } catch { available = false; message = "To-do could not be read. Your data has not been replaced: \(error.localizedDescription)" }
     }
     @discardableResult func commit(_ value: TodoState, replacingUnavailable: Bool = false) -> Bool {
@@ -62,6 +67,44 @@ enum TodoSchemaV1: VersionedSchema {
             } catch { context.rollback(); throw error }
             state = checked; available = true; onChange?(); return true
         } catch { message = "To-do was not saved: \(error.localizedDescription)"; return false }
+    }
+    var routineToday: RoutineDay? { state.routine?.days.first { $0.day == today } }
+    private func prepareRoutine() {
+        guard available, var routine = state.routine else { return }
+        routine.prepare(at: now(), clock: clock)
+        guard routine != state.routine else { return }
+        var next = state; next.routine = routine; _ = commit(next)
+    }
+    @discardableResult func saveRoutine(_ item: RoutineItem) -> Bool {
+        var next = state, routine = state.routine ?? DailyRoutine()
+        if let i = routine.items.firstIndex(where: { $0.id == item.id }) { routine.items[i] = item }
+        else { routine.items.append(item) }
+        routine.prepare(at: now(), clock: clock); next.routine = routine
+        return commit(next)
+    }
+    func removeRoutine(_ id: UUID) {
+        var next = state; guard var routine = next.routine else { return }
+        routine.items.removeAll { $0.id == id }
+        routine.prepare(at: now(), clock: clock); next.routine = routine; _ = commit(next)
+    }
+    func moveRoutines(from offsets: IndexSet, to destination: Int) {
+        guard var routine = state.routine else { return }
+        guard offsets.allSatisfy({ routine.items.indices.contains($0) }),
+              (0...routine.items.count).contains(destination) else { return }
+        // Foundation-only store; preserve the order within and between requested offsets.
+        let moving = offsets.sorted().map { routine.items[$0] }
+        let insertion = destination - offsets.filter { $0 < destination }.count
+        for i in offsets.sorted(by: >) { routine.items.remove(at: i) }
+        routine.items.insert(contentsOf: moving, at: insertion)
+        routine.prepare(at: now(), clock: clock)
+        var next = state; next.routine = routine; _ = commit(next)
+    }
+    func recordRoutine(_ id: UUID, status: RoutineStatus, day: String) {
+        guard var routine = state.routine else { return }
+        do {
+            try routine.record(id, status: status, day: day, at: now(), clock: clock)
+            var next = state; next.routine = routine; _ = commit(next)
+        } catch { message = error.localizedDescription }
     }
     @discardableResult func add(_ text: String) -> Bool {
         let parsed = QuickTask.parse(text, now: now(), calendar: clock.calendar)

@@ -1,12 +1,24 @@
 # SideStore evaluation
 
+**Decided purpose:** Akshat wants SideStore to refresh signing **without the laptop**, not for the
+lock-screen Live Activity timer. So the pilot moves the ordinary standard IPA (Build 41), the
+Build-39 Live Activity candidate does not need restoring, and the kept-extension provisioning work
+below is out of scope unless he later asks for the timer. The honest goal is not needing the laptop
+weekly: initial setup still requires USB trust, iloader and a pairing file, and an iOS update or
+reset can invalidate that pairing. Gate 5 below — a replacement expiry monitor — becomes the
+critical one, because the installed health check reads Sideloadly's database and cannot see
+SideStore-owned renewals. Build the replacement and prove it before retiring Sideloadly's AkshatOS
+enrolment; `setup-checklist.md` stage 5 carries the running order.
+
 **Status:** Pilot approved; Akshat reports setting up SideStore on the laptop. On-phone installation,
 self-refresh, app handover and unattended renewals are not yet confirmed. Sideloadly's local
 records still enroll both apps; no signing ownership or certificate setting was changed in this
-check. Akshat runs the steps below on the PC and phone, alongside
-WHOOP Build 86's implementation (WHOOP `todo.md` section 10). LocalDevVPN is allowed on the phone
+check. Akshat runs the steps below on the PC and phone; WHOOP's current build and its later handover
+remain owned by that project's instructions. LocalDevVPN is allowed on the phone
 as SideStore's installer helper; it is never a WHOOP or AkshatOS dependency.
-Public sources checked 2026-10-09; release claims are from that research, not a fresh release check.
+Public install/prerequisite/FAQ pages and the latest-release URL were rechecked 2026-10-24.
+They still prescribe iloader and LocalDevVPN, and latest resolves to 0.7.0-alpha. The study
+extension follow-up uses pinned upstream provisioning source. The phone pilot remains unverified.
 The cached iloader MSI is present locally; registry/process probes did not establish an installed
 or running iloader in this session, which does not contradict Akshat's setup report.
 
@@ -15,6 +27,36 @@ or running iloader in this session, which does not contradict Akshat's setup rep
 SideStore is a credible way to remove routine PC dependence for the existing two-app portfolio,
 but not a proven reliability upgrade yet. Prefer a controlled pilot over an immediate switch.
 The current release situation and preservation of installed data are the main gates.
+
+## Windows 11 ARM pilot
+
+The second laptop is confirmed Snapdragon/ARM64 Windows 11. The normal workspace kit supports
+native ARM developer tools but defers the old desktop-iTunes/iCloud/Sideloadly stack. Its separate
+explicit `PhonePilot` mode only downloads verified public candidates; an optional
+`-InstallDeviceSupport` requests Apple Devices through the Store's normal compatibility checks.
+It never launches a signer, authenticates, pairs or installs an IPA. The primary remains active.
+
+[SideStore's prerequisites](https://docs.sidestore.io/docs/installation/prerequisites) exclude
+Windows 10 on ARM and 32-bit Windows, and prescribe iloader with Apple Devices as a fallback when
+iTunes fails. This supports testing Windows 11 ARM; it does not prove this laptop's Apple driver,
+USB or pairing path. Test USB/Trust first without forcing an incompatible driver package.
+The kit pins [iloader v2.4.0](https://github.com/nab138/iloader/releases/tag/v2.4.0), Windows x64 MSI,
+SHA-256 `24a594680f40e7750746d43384756b7a3d848cc054ed7760cb576ebde0e582d5`.
+This x64 client would use Windows 11 app emulation. Its release defaults to using the main profile;
+the Live Activity pilot still requires separate profiles for kept extensions. Do not silently
+upgrade the existing v2.3.6 installation/report or treat a new download as installed evidence.
+
+[Impactor v2.7.2](https://github.com/claration/impactor/releases/tag/v2.7.2) is another candidate,
+with a native ARM64 portable build. Downloaded bytes match the release digest and the actual PE
+machine header is ARM64; SHA-256
+`351ff17e1eab2a5615ab5c155a499f1eeb3c7347c0404cbf6918a4462b756b80`.
+Its Windows release still requires iTunes device drivers, so Apple Devices compatibility with this
+client remains a test, not a documented guarantee. Its [FAQ](https://impactor.claration.dev/docs/troubleshooting/faq/)
+describes remote anisette and beta automatic refresh. No credentials or pairing files were
+submitted in this research and it was not executed. This candidate has not replaced the approved
+SideStore experiment or current Sideloadly ownership. Use one route at a time and retain the
+data/identity/certificate gates below; either alternative needs suitable expiry monitoring before
+retiring the Sideloadly health task. A matching public hash is integrity evidence, not a security audit.
 
 ## What changes
 
@@ -75,6 +117,10 @@ These are our acceptance requirements, not completed migration steps:
    later ships the proposed background tasks. Preserve required capabilities and BLE ownership.
    A new signer is not evidence that background restoration works.
 5. Define a replacement expiry-health check before disabling Sideloadly enrollment or tasks.
+   **Built in source from Build 42, not device-verified:** the app reads its own bundled
+   provisioning profile and warns before expiry, which works whoever signs it. `setup.md`
+   owns it and its limits - it only re-arms when the app is opened and cannot make a refresh
+   happen. Prove it on the phone before retiring Sideloadly enrollment, not after.
    Our Windows check reads Sideloadly's database and cannot certify SideStore-managed renewals.
    A stale record must not become either false reassurance or endless recovery attempts.
 6. Prove at least two renewals without the PC, including SideStore's own renewal, with advancing
@@ -88,10 +134,10 @@ These are our acceptance requirements, not completed migration steps:
 Approved; laptop setup reported, phone steps unconfirmed. Each step is done by Akshat on the
 PC/phone; nothing is automated by the agent.
 
-1. **Timing (Akshat: alongside WHOOP Build 86):** set up SideStore and move AkshatOS first,
-   install WHOOP Build 86 with Sideloadly (the proven path), and move WHOOP to SideStore only
-   after Build 86 has worked for a day or two. A signing problem and a new-build problem then
-   stay distinguishable while both happen in the same window.
+1. **Timing:** set up SideStore and pilot the delivered AkshatOS Build-39 Live Activity candidate
+   first. Leave WHOOP's installed app and existing refresh owner alone during this pilot; its
+   owning project controls its current build and later handover. Build 40 is source-only and is
+   not in this installation. Do not assume the earlier WHOOP Build-86 timing remains current.
 2. **Backups first:** WHOOP encrypted export copied to Windows; AkshatOS Back up everything with
    the Body photo count checked against the library. Record each app's final bundle ID and expiry.
 3. **Install SideStore** from its official release after checking which version the Stable
@@ -114,7 +160,78 @@ PC/phone; nothing is automated by the agent.
 8. **Rollback:** reinstall the cached IPA with Sideloadly at the same final bundle ID and
    re-enable its automatic refresh; restore from the step-2 backups only if data was lost.
 
+## Build-39 install and test checklist
+
+This is an instruction checklist, not evidence that any installation or test was performed.
+`cloud-build.md` owns the exact testing IPA path and checksum; `study-display.md` owns the full
+physical edge-case matrix. Keep the accepted Build-31 recovery copy unchanged.
+
+1. Export AkshatOS full backup and WHOOP's encrypted backup to Windows. Confirm the files are
+   actually readable there; compare Body photos with the library. Do not test a destructive
+   restore against the only live copy. Do not uninstall either app or switch Apple Accounts.
+2. Use home Wi-Fi and USB for initial setup. Install LocalDevVPN from the official prerequisite
+   page on the phone. Open iloader on Windows (use its official installer if needed), connect and
+   trust the phone, sign in with the same signing Apple Account/team, select the phone and choose
+   Install SideStore (Stable), not LiveContainer. Check the fetched version against releases.
+3. Trust the developer in Settings > General > VPN & Device Management; enable Developer Mode
+   if needed. Connect LocalDevVPN, open SideStore, sign in with the same account and manually
+   refresh SideStore itself before adding AkshatOS. Stop at certificate-revocation prompts for
+   review: the generic upstream Yes instruction does not establish safety for the existing apps.
+4. Copy the validated Build-39 unsigned IPA to Files yourself. In SideStore > My Apps > +,
+   select it and keep extensions with Register app ID for each extension. Preserve the expected
+   final host identity `com.akshatksingh18.akshatos.5564K8D4SV`, team and keychain groups; do not
+   select a random/custom identity. If identity cannot be confirmed before overwrite, stop for
+   inspection. A duplicate app, unexpected empty store or prompt to delete the original is not
+   a successful in-place handover. Do not delete either copy to troubleshoot.
+5. Confirm version 0.14.1 (39), four tabs, previous study/task/fitness/Body/PageVault data and
+   permissions. After a successful SideStore-managed install/refresh and identity/data checks,
+   retire only AkshatOS's Sideloadly automatic-refresh enrollment and update its expiry monitor;
+   do not change WHOOP's owner or globally disable its daemon. No ownership change has occurred
+   merely because SideStore installed.
+6. Run a short study, pause for a break and resume. Check actual elapsed time. Open Focus,
+   rotate both ways, enable Keep screen awake, then leave/reopen Focus and verify it defaults off.
+7. Enable Focus > Lock-screen timer > Show study timer, lock and check the card. Pausing should
+   end it; resuming from the foreground should request a new one. Missing cards are display/signing
+   failures, not permission to erase study data. Check system Live Activity access if absent.
+8. Enable Settings > StandBy, charge and stand the locked phone sideways. Inspect/expand the
+   study Live Activity if present. Compare its studied/remaining values with the app. Then test
+   DND before Start and toggled during study, without an AkshatOS allowlist, plus Low Power Mode,
+   Sleep Focus and unplugging. Display sleep must not pause the persisted block; dimmed seconds
+   need not animate continuously. Calls/other apps remain under iOS control.
+9. Switch apps, lock for several minutes, relaunch and compare totals; inspect the next actual
+   03:00 rollover. Reboot/card recovery and long-session limits follow `study-display.md`.
+10. Test other hub features using disposable tasks/Journal entries and a short PageVault read;
+    export a fresh full backup without replacing live data. Build 39 has no Daily routine yet.
+11. Separately test linked-folder delivery with harmless files in both directions; measure actual
+    arrival/edit latency, offline recovery and re-linking per `laptop-phone-sync.md`. This is not
+    continuous sync, and it does not depend on SideStore working.
+12. Away from the PC, manually refresh SideStore and AkshatOS and check advancing expiry/data.
+    Then verify two unattended renewals of both with Wi-Fi and the required tunnel available.
+    Record exact expiry changes rather than assuming a rounded day counter proves renewal. Keep
+    WHOOP migration and cache promotion open until their own acceptance gates pass.
+
+Report version, old-data preservation, manual refresh/expiry, landscape/keep-awake, lock-screen,
+StandBy, DND and timed-session results as pass/fail. Never include passwords, pairing files or
+signing material in reports. No installer, account, certificate or refresh-owner state was changed
+by preparing these instructions.
+
 ## Scope boundary
+
+### Build-39 study Live Activity experiment
+
+SideStore is authorized as the preferred free signing experiment for the combined Build-39 candidate;
+Sideloadly need not remain the long-term dependency. The requested unsigned Live Activity IPA is
+validated and delivered in `testing/`; `cloud-build.md` owns its exact evidence. Existing renewal
+ownership remains until verified handover. `study-display.md` owns the source variant and phone matrix.
+At upstream 0.7.0-alpha (`6032424a0e56c1c319762e786099bdd9186a238b`),
+[`FetchProvisioningProfilesOperation`](https://github.com/SideStore/SideStore/blob/6032424a0e56c1c319762e786099bdd9186a238b/SideStore/Core/Operations/PipelineOperations/FetchProvisioningProfilesOperation.swift)
+explicitly registers/fetches a profile per extension when `useMainProfile` is false. Choose
+**Keep app extensions (register app ID for each extension)** for the future experiment; reusing the
+parent profile or removing the extension does not test the required path. This is source evidence
+that a suitable provisioning route exists, not proof of signing, launch or renewals on the phone.
+Extensions also consume the separate weekly [App ID allowance](https://faq.altstore.io/altstore-classic/app-ids).
+Keep the existing preservation/certificate/monitoring gates above, then prove the card renders with
+DND, lock-screen access, AOD and StandBy. No account/installer changes are made by the source work.
 
 Signing refresh keeps an app launchable. It does not retrieve band history, refresh dashboards,
 improve GPS speed, grant continuous execution or override iOS suspension/force-quit behavior.

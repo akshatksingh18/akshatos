@@ -21,6 +21,9 @@ struct StudySegment: Codable, Identifiable, Equatable {
     var topic: String?
     var timeZoneID: String?
     var roadmapType: String?
+    /// Provenance for read-only, finished sessions imported from Study Desk. Travels in backup.
+    var exchangeOriginID: UUID?
+    var exchangeOriginRevision: Int?
     static let roadmapTypes = ["main/project", "SQL", "DSA lesson/Mixed practice", "other", "DSA solve already logged"]
 
     init(id: UUID = UUID(), start: Date, end: Date? = nil, source: Source = .timer,
@@ -276,6 +279,8 @@ struct StudyLog: Equatable {
                   segment.dayGoal == nil || (0...segment.dayTarget).contains(segment.dayGoal!),
                   segment.dayFloor == nil || segment.dayGoal == nil || segment.dayFloor! <= segment.dayGoal!,
                   segment.roadmapType == nil || StudySegment.roadmapTypes.contains(segment.roadmapType!),
+                  (segment.exchangeOriginID == nil && segment.exchangeOriginRevision == nil) ||
+                    (segment.exchangeOriginID != nil && (segment.exchangeOriginRevision ?? -1) >= 0 && segment.end != nil),
                   (segment.topic?.count ?? 0) <= 200, (segment.note?.count ?? 0) <= 100_000,
                   segment.timeZoneID == nil || TimeZone(identifier: segment.timeZoneID!) != nil else { throw StudyLogError.invalidSegment }
         }

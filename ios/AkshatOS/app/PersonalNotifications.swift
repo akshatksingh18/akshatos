@@ -31,12 +31,15 @@ import UserNotifications
         breakMinutes = defaults.object(forKey: "personal.break-minutes") as? Int ?? 15
         morningPlan = defaults.bool(forKey: "personal.morning-plan")
         morningHour = defaults.object(forKey: "personal.morning-hour") as? Int ?? 9
-        journalReminder = defaults.bool(forKey: "personal.journal-reminder")
+        // Retired features retain their archive keys, but cannot reactivate after upgrade/restore.
+        journalReminder = false
+        defaults.set(false, forKey: "personal.journal-reminder")
         journalHour = defaults.object(forKey: "personal.journal-hour") as? Int ?? 22
         badge = defaults.bool(forKey: "personal.badge")
         fullDayStart = defaults.string(forKey: "personal.full-day-start") ?? ""
         seenMilestone = defaults.integer(forKey: "personal.seen-milestone")
-        fullDayChallenge = defaults.bool(forKey: "personal.full-day-challenge")
+        fullDayChallenge = false
+        defaults.set(false, forKey: "personal.full-day-challenge")
         lastStudyConfirmation = defaults.object(forKey: "personal.study-confirmation") as? Date
         challengeDay = defaults.string(forKey: "personal.challenge-day") ?? ""
         challengeAccepted = defaults.bool(forKey: "personal.challenge-accepted")
@@ -90,6 +93,9 @@ import UserNotifications
         let pending = await center.pending()
         let owned = pending.filter { $0.identifier.hasPrefix(Self.namespace) }
         let otherCount = pending.count - owned.count
+        // Retire old invitations even when permission or another local store is unavailable.
+        center.remove(owned.filter { $0.identifier == Self.namespace + "journal" }.map(\.identifier))
+        center.removeDelivered([Self.namespace + "journal"])
         guard authorization == .authorized || authorization == .provisional else {
             status = "Notifications are off. Local study and lists still work."
             if preferences.badge { try? await center.badge(0) }
@@ -123,12 +129,6 @@ import UserNotifications
                     trigger: UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date), repeats: false)))
             }
         }
-        if preferences.journalReminder {
-            let content = UNMutableNotificationContent(); content.title = "A little time to reflect"
-            content.body = "Your Journal is ready when you are."; content.sound = .default
-            desired.append(UNNotificationRequest(identifier: Self.namespace + "journal", content: content,
-                trigger: UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: min(23, max(0, preferences.journalHour))), repeats: true)))
-        }
         if preferences.morningPlan {
             // One upcoming eligible invitation, replenished on app activity. Starting study cancels
             // today's invitation; a closed app is never assumed to inspect its records at delivery.
@@ -148,6 +148,16 @@ import UserNotifications
             }
         }
         let capacity = max(0, 64 - otherCount - 2)
+        if study.isRunning {
+            desired = desired.map { request in
+                // Keep timed tasks and invitations in Notification Center without interrupting a block,
+                // even if AkshatOS is allowed through DND. The explicit study-check opt-in is separate.
+                guard request.identifier != Self.namespace + "study",
+                      let content = request.content.mutableCopy() as? UNMutableNotificationContent else { return request }
+                content.sound = nil; content.interruptionLevel = .passive
+                return UNNotificationRequest(identifier: request.identifier, content: content, trigger: request.trigger)
+            }
+        }
         let planned = Array(desired.prefix(capacity)), IDs = Set(planned.map(\.identifier))
         // Remove only surplus own requests; unrelated modules are never cancelled to create room.
         center.remove( owned.filter { !IDs.contains($0.identifier) }.map(\.identifier))
@@ -162,6 +172,7 @@ import UserNotifications
             try await center.badge(left)
             let dueCount = desired.filter { $0.identifier.contains(".todo.") }.count
             status = "\(planned.count) scheduled. Timed tasks: next \(min(dueCount, capacity)) of at most 15; opening the app refreshes the window."
+            if study.isRunning { status += " Tasks and invitations stay quiet while studying." }
             if planned.count < desired.count { status += " Other reminders currently use the remaining capacity." }
         } catch { status = "Some reminders could not be scheduled. Open Settings and retry. Existing unrelated reminders are unchanged." }
     }

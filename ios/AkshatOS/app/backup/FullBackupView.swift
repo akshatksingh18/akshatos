@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 /// Back up or restore every module at once. Each module's own backup still works on its own.
 struct FullBackupView: View {
     @ObservedObject var service: FullBackupService
+    var signing: SigningExpiryService?
     @State private var staged: URL?
     @State private var showMover = false
     @State private var showImporter = false
@@ -12,6 +13,7 @@ struct FullBackupView: View {
 
     var body: some View {
         Form {
+            if let signing { Section { SigningExpiryPanel(service: signing) } }
             Section {
                 Button {
                     Task { await backUp() }

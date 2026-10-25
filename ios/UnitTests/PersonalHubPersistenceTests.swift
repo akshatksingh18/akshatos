@@ -4,6 +4,27 @@ import UIKit
 @testable import AkshatOS
 
 @MainActor final class PersonalHubPersistenceTests: XCTestCase {
+    func testRetiredJournalAndFullDayPreferencesStayOffAfterUpgradeAndLegacyRestore() async throws {
+        let suite = "retired-journal-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(true, forKey: "personal.journal-reminder")
+        defaults.set(true, forKey: "personal.full-day-challenge")
+        let preferences = PersonalPreferences(defaults: defaults)
+        XCTAssertFalse(preferences.journalReminder)
+        XCTAssertFalse(preferences.fullDayChallenge)
+        XCTAssertFalse(defaults.bool(forKey: "personal.journal-reminder"))
+        XCTAssertFalse(defaults.bool(forKey: "personal.full-day-challenge"))
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: file) }
+        try Data(#"{"version":1,"fullDayChallenge":true,"fullDayStart":"2026-10-15","seenMilestone":0,"checkMinutes":30,"breakMinutes":15,"journalHour":22}"#.utf8).write(to: file)
+        let restore = try await preferences.prepareBackupRestore(from: file)
+        let result = await restore.apply()
+        XCTAssertEqual(result, .restored)
+        XCTAssertFalse(preferences.fullDayChallenge)
+        XCTAssertFalse(preferences.journalReminder)
+        XCTAssertEqual(preferences.fullDayStart, "2026-10-15", "Keep legacy attribution without activating the retired challenge")
+    }
     private func container(_ type: any VersionedSchema.Type) throws -> ModelContainer {
         let schema = Schema(versionedSchema: type)
         return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
@@ -34,6 +55,51 @@ import UIKit
         XCTAssertFalse(unopened.add("Overwrite"))
         unopened.load()
         XCTAssertEqual(unopened.visible.map(\.title), ["Keep me"])
+    }
+    func testRoutineSurvivesRelaunchRolloverAndModuleBackupRestore() async throws {
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(identifier: "UTC")!
+        var now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-15T08:00:00Z"))
+        let db = try container(TodoSchemaV1.self)
+        let store = TodoStore(container: db, now: { now }, calendar: calendar); store.load()
+        let item = RoutineItem(title: "Synthetic reading", targetMinute: 510)
+        XCTAssertTrue(store.saveRoutine(item))
+        store.recordRoutine(item.id, status: .done, day: store.today)
+        let reopened = TodoStore(container: db, now: { now }, calendar: calendar); reopened.load()
+        XCTAssertEqual(reopened.routineToday?.done, 1)
+        now = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: now))
+        reopened.refreshDay()
+        XCTAssertEqual(reopened.routineToday?.done, 0)
+        XCTAssertEqual(reopened.routineToday?.checks.count, 1)
+        reopened.recordRoutine(item.id, status: .skipped, day: reopened.today)
+        XCTAssertEqual(reopened.routineToday?.skipped, 1)
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        _ = try await reopened.writeBackup(into: root)
+        let target = TodoStore(container: try container(TodoSchemaV1.self), now: { now }, calendar: calendar); target.load()
+        let restore = try await target.prepareBackupRestore(from: root.appendingPathComponent("todo.json"))
+        let result = await restore.apply()
+        XCTAssertEqual(result, .restored)
+        XCTAssertEqual(target.state.routine, reopened.state.routine)
+        let historical = try XCTUnwrap(target.state.routine?.days.first)
+        target.removeRoutine(item.id)
+        XCTAssertEqual(target.state.routine?.days.first, historical)
+    }
+    func testInvalidRoutineRestoreAndUnavailableMutationKeepExistingTasks() async throws {
+        let db = try container(TodoSchemaV1.self)
+        let store = TodoStore(container: db); store.load(); XCTAssertTrue(store.add("Synthetic preserved task"))
+        let unopened = TodoStore(container: db)
+        XCTAssertFalse(unopened.saveRoutine(RoutineItem(title: "Must not overwrite")))
+        var value = store.state
+        value.routine = DailyRoutine(items: [RoutineItem(title: "Invalid", weekdays: [])])
+        XCTAssertFalse(store.commit(value))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try LocalDataCoding.encode(value).write(to: root)
+        do { _ = try await store.prepareBackupRestore(from: root); XCTFail("Invalid routine restored") } catch {}
+        store.load()
+        XCTAssertEqual(store.visible.map(\.title), ["Synthetic preserved task"])
+        XCTAssertNil(store.state.routine)
     }
     func testJournalLockHidesTextAndPhotosButAllowsCompletionFact() throws {
         let suite = "journal-test-" + UUID().uuidString
