@@ -8,7 +8,18 @@ the executable palette contract. It is **cloud-verified and not phone-verified**
 passes at `00e401e` (run `40126784189`, attempt 1) with 208 hosted and 17 UI tests, both device
 variants and no IPA, so the new `HubBackground`, its generated grain tile and all six palette
 assertions compile and pass. Nothing is known about how the lit ground looks on the device or what it
-costs in battery. The hold was lifted for that one push and applies again; keep later evidence and
+costs in battery. A phone-side signing-expiry monitor is new in source and **not compiled, not CI-run and not on a
+phone**: the app reads its own provisioning profile and warns before expiry, which works whoever
+signs it and closes the blind spot a SideStore move would otherwise open. `setup.md` owns it.
+Akshat has chosen SideStore for laptop-free refresh, not for the Live Activity timer, so the
+Build-39 candidate stays retired.
+
+**Build 41 (0.15.1, standard variant) is delivered to `testing/` and not installed**
+— manual run `40129184233` at `a4cabfa`, checksum and payload verified locally; it replaced the
+never-installed Build-39 Live Activity candidate, and Build 31 remains accepted recovery. It is the
+first IPA carrying Daily routine, the exchange importer and Journal retirement as well as the new
+palette, so its phone pass covers more than the look. `cloud-build.md` owns the evidence. The hold
+was lifted only for the palette and version-bump pushes and applies again; keep release evidence and
 document edits local. The Windows Study Desk keeps its current look; its accepted
 Tungsten revision and snapping caption are owned by `desktop-study-plan.md` and are not built.
 

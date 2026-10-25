@@ -56,8 +56,10 @@ This repository evolved from Squat Reminder and now presents that feature as Pus
 retaining Git history and the unverified legacy Android Squats fallback. Source is temporarily public at
 [akshatksingh18/akshatos](https://github.com/akshatksingh18/akshatos) for hosted macOS CI capacity.
 
-Moving the Windows signing host to the second laptop is prepared, with the primary retained until
-Wi-Fi/same-identity/data/enrollment checks pass. [Signing setup](setup.md#moving-the-windows-signing-host)
+Moving the Windows signing host to the now-confirmed ARM64 second laptop is deferred pending
+native Apple driver/signing compatibility and Wi-Fi/same-identity/data/enrollment checks. The
+primary remains the signing host. An optional researched ARM pilot is prepared but unverified.
+[Signing setup](setup.md#moving-the-windows-signing-host)
 owns the cutover; no phone install, identity change or verified new-host refresh is implied.
 
 ## First slice

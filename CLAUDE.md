@@ -98,6 +98,10 @@ before that hold; the branch remains draft/unmerged.
 - `laptop-phone-sync-research-prompt.md` (local only) — self-contained research brief (no personal data) on moving
   files between the Windows laptop and the sideloaded apps: setup, what was tried, requirements and
   questions. A prompt, not findings or a decision.
+- `setup-checklist.md` (local only) - Akshat's ordered working checklist for the three
+  user-operated setups: Windows Study Desk, iCloud Drive and SideStore, plus the Build-41
+  install they depend on. A running order that links to the owning documents, not a source of
+  truth; read it to see what he has actually done.
 - `look-and-feel.md` (local only) — the accepted Tungsten/Dial/Week-bars/Violet direction for the
   phone and Tungsten for the desktop, the measured accent-palette finding behind it and the gates
   before any of it is built; read before design work on either app's appearance. Mockups in
@@ -188,12 +192,13 @@ before that hold; the branch remains draft/unmerged.
   re-running its workflow, not by restoring this folder.
 - `apple-account-switch.md` — the planned one-time move of AkshatOS and WHOOP signing to a
   separate Apple Account: what changes, data restore per module, app-slot order and the steps.
-- `sidestore-evaluation.md` — research-only alternative to PC-owned signing refresh for both apps;
-  current release caveats, preservation gates and the approved step-by-step pilot (not started;
-  Sideloadly stays the refresher until it passes).
+- `sidestore-evaluation.md` — alternative to PC-owned signing refresh, Windows 11 ARM candidates,
+  release caveats and preservation gates for the approved pilot. Laptop setup is reported;
+  phone handover/renewals remain unverified, and Sideloadly stays the refresher until acceptance.
 - `setup.md` — keeping an installed build signed: the split between Sideloadly's refreshing daemon
   and the health check that proves it happened, what counts as success, the installed task and its
-  paths, the prepared second-laptop signing-host migration and its physical cutover gates, and the refresh/recovery gates still open. Read before changing anything about weekly
+  paths, the deferred ARM64 second-laptop signing-host migration and its compatibility/physical
+  cutover gates, and the refresh/recovery gates still open. Read before changing anything about weekly
   signing.
 - `scripts/check-signing-health.ps1` — the scheduled health check. Reports only a completed install
   moving forward as success, and only once corroborated — the install date past the first install and

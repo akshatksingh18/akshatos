@@ -27,7 +27,10 @@ import UIKit
         (PersonalNotifications.namespace + "todo.", .todo),
         (PersonalNotifications.namespace + "study", .studyLog),
         (PersonalNotifications.namespace + "break", .studyLog),
-        (PersonalNotifications.namespace + "morning", .studyLog)
+        (PersonalNotifications.namespace + "morning", .studyLog),
+        // Not a feature: a signing warning opens the backup screen, because backing up is the
+        // first useful thing to do when the app is days from no longer opening.
+        (SigningExpiryService.namespace, .backup)
     ]
 
     init(squats: SquatStore, liftLog: LiftLogStore, navigator: HubNavigator, personal: PersonalNotifications? = nil,

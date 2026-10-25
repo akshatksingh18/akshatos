@@ -91,7 +91,8 @@
       "UnitTests/PersonalHubPersistenceTests.swift",
       "UnitTests/PersonalHubRenderTests.swift",
       "UnitTests/PersonalNotificationTests.swift",
-      "UnitTests/HubInkTests.swift"
+      "UnitTests/HubInkTests.swift",
+      "UnitTests/SigningExpiryTests.swift"
     ],
     "ui_tests": [
       "UITests/PersonalHubUITests.swift"

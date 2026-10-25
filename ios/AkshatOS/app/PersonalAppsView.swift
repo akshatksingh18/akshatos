@@ -58,7 +58,7 @@ struct PersonalSettingsView: View {
             }
             Section("Files and recovery") {
                 NavigationLink("Linked folder") { LinkedFolderView(services: services) }
-                NavigationLink { FullBackupView(service: services.backup) } label: { Text("Back up / restore everything") }
+                NavigationLink { FullBackupView(service: services.backup, signing: services.signing) } label: { Text("Back up / restore everything") }
             }
             Section {
                 NavigationLink { FitnessTransitionView(services: services) } label: {
@@ -81,7 +81,7 @@ private struct FitnessTransitionView: View {
         Form {
             Section {
                 Text("Pushup Reminder, Lift Log and Body now belong in WHOOP. Their old AkshatOS stores are retained for recovery, not daily progress.")
-                NavigationLink { FullBackupView(service: services.backup) } label: { Text("Back up old and new data") }
+                NavigationLink { FullBackupView(service: services.backup, signing: services.signing) } label: { Text("Back up old and new data") }
             }
             if !preferences.fitnessStopped {
                 Section("Review before switching") {

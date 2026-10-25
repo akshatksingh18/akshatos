@@ -122,7 +122,10 @@ the host wires their entry points. `architecture.md` owns exact boundaries and c
     Forgetting is not a breakage — an unclaimed notification routes nowhere and the hub stays put,
     which is the old behaviour. Registered today: Pushups (`akshatos.squats.`), Body's weekly
     reminder (`akshatos.body.`) and, from Build 33, Lift Log's inactivity reminder
-    (`akshatos.liftlog.`).
+    (`akshatos.liftlog.`). `akshatos.signing.` is the one entry that is not a module: it warns
+    before the app's own provisioning profile expires, and routes to the Backup screen because
+    backing up is the first useful thing to do when the app is days from no longer opening. It
+    costs at most two pending requests out of the shared budget, both passive.
 - One hub means one system notification identity and permission settings. Explain that location
   permission serves Pushups, the camera serves Body's progress
   photos only when one is taken, and Files import serves libraries and explicit Lift Log/Body

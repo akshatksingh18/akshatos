@@ -27,7 +27,10 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       Current full CI: run `38971711206` at `8342d0e`; native inspection at `86c4367` applies to
       the unchanged UI source. The subsequent requested release below delivers the IPA.
 - [ ] SideStore/Build 39: same-ID data-preserving install, separate extension profile/launch, DND/AOD/StandBy matrix and renewals.
-- [ ] Second Windows signing host: run the prepared C:-based workspace kit, USB trust/iTunes Wi-Fi
+- [ ] Second Windows signing host: establish native Apple driver/signing compatibility for the
+      confirmed Snapdragon/ARM64 laptop first; the updated kit defers the legacy Apple stack and
+      offers optional Impactor/iloader/Store Apple Devices pilot preparation only. Keep the primary
+      signer/monitor active. For Sideloadly, verify USB trust/iTunes Wi-Fi
       pairing, intended-version same-ID installs with data intact, current-version enrollment and
       new-host health task verification before retiring the primary daemon/monitor. `setup.md` owns
       this separate operational migration; it does not activate SideStore or change app identity.
@@ -61,10 +64,32 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       attempt 1): 208 hosted and 17 UI tests, both device variants, no IPA. `HubBackground`, the
       generated grain tile and all six `HubInkTests` assertions compile and pass; the Windows run
       `40126784187` passes unaffected. `cloud-build.md` owns the evidence.
-- [ ] **Phone-check the new look** after a requested release: the lit ground on Today against a dark
-      room, the violet dial and action, week bars with their legend, task checks still reading as
-      done, Focus confirmed unlit, battery across a long block, and the whole thing under
-      Increased Contrast, Reduce Transparency and accessibility type sizes.
+- [x] **Build 41 released and delivered.** 0.15.1 (41), standard extension-free variant, manual run
+      `40129184233` at `a4cabfa`. Published checksum, `validate-ipa.py --variant standard` and
+      correct rejection against the live-activity contract all verified locally; 13,984,854 bytes in
+      `../final-ipas/akshatos/testing/akshatos-build-41-a4cabfa/akshatos-ios-193/`. It replaced the
+      never-installed Build-39 candidate; Build 31 in `backup/` is unchanged.
+- [x] **Phone-side expiry monitor in source.** `SigningExpiry` reads this build's own
+      `embedded.mobileprovision` and `SigningExpiryService` arms at most two passive warnings
+      (about three days and one day out), routed to the Backup screen. Closes the blind spot
+      where a SideStore-refreshed app would stop being watched by the Sideloadly-reading
+      Windows check. `setup.md` owns it; `SigningExpiryTests` holds the contract. Local checks
+      pass; **not compiled, no CI run, not on a phone.**
+- [ ] **Cloud-verify and phone-check the expiry monitor.** Needs a CI Gate run, then a release.
+      On the phone: confirm the Backup screen shows a real signed-until date, that a warning
+      actually arrives before expiry, and that tapping it opens Backup. Until a warning has
+      been seen arriving, do not retire Sideloadly enrolment for AkshatOS.
+- [ ] **Decide whether the expiry warnings need a toggle.** They are on whenever notification
+      permission already exists, with no opt-out, because an off-by-default safety net is
+      useless. That is two pending requests against the shared budget and was not separately
+      approved; say if you want a switch.
+- [ ] **Install Build 41 and phone-check the new look.** Sideloadly, install **over** the existing
+      app, keep **Use automatic bundle ID** on, never uninstall. Then confirm the five device gates
+      in `setup.md` and check: the lit ground on Today in a dark room, the violet dial and action,
+      week bars with their legend, task checks still reading as done, Focus confirmed unlit, battery
+      across a long block, and the whole thing under Increased Contrast, Reduce Transparency and
+      accessibility type sizes. Build 41 also carries Daily routine, the exchange importer and
+      Journal retirement, none of which have been on a phone before.
 - [ ] **Decide whether the lit ground extends past Today.** To-do and Apps currently take the flat
       ground, which is a deliberate battery budget, not an oversight. Settle it once it is on the phone.
 - [x] Build-39 release preparation: explicit variant selection and strict single-study-extension

@@ -1,12 +1,22 @@
 # SideStore evaluation
 
+**Decided purpose:** Akshat wants SideStore to refresh signing **without the laptop**, not for the
+lock-screen Live Activity timer. So the pilot moves the ordinary standard IPA (Build 41), the
+Build-39 Live Activity candidate does not need restoring, and the kept-extension provisioning work
+below is out of scope unless he later asks for the timer. The honest goal is not needing the laptop
+weekly: initial setup still requires USB trust, iloader and a pairing file, and an iOS update or
+reset can invalidate that pairing. Gate 5 below — a replacement expiry monitor — becomes the
+critical one, because the installed health check reads Sideloadly's database and cannot see
+SideStore-owned renewals. Build the replacement and prove it before retiring Sideloadly's AkshatOS
+enrolment; `setup-checklist.md` stage 5 carries the running order.
+
 **Status:** Pilot approved; Akshat reports setting up SideStore on the laptop. On-phone installation,
 self-refresh, app handover and unattended renewals are not yet confirmed. Sideloadly's local
 records still enroll both apps; no signing ownership or certificate setting was changed in this
 check. Akshat runs the steps below on the PC and phone; WHOOP's current build and its later handover
 remain owned by that project's instructions. LocalDevVPN is allowed on the phone
 as SideStore's installer helper; it is never a WHOOP or AkshatOS dependency.
-Public install/prerequisite/FAQ pages and the latest-release URL were rechecked 2026-10-19.
+Public install/prerequisite/FAQ pages and the latest-release URL were rechecked 2026-10-24.
 They still prescribe iloader and LocalDevVPN, and latest resolves to 0.7.0-alpha. The study
 extension follow-up uses pinned upstream provisioning source. The phone pilot remains unverified.
 The cached iloader MSI is present locally; registry/process probes did not establish an installed
@@ -17,6 +27,36 @@ or running iloader in this session, which does not contradict Akshat's setup rep
 SideStore is a credible way to remove routine PC dependence for the existing two-app portfolio,
 but not a proven reliability upgrade yet. Prefer a controlled pilot over an immediate switch.
 The current release situation and preservation of installed data are the main gates.
+
+## Windows 11 ARM pilot
+
+The second laptop is confirmed Snapdragon/ARM64 Windows 11. The normal workspace kit supports
+native ARM developer tools but defers the old desktop-iTunes/iCloud/Sideloadly stack. Its separate
+explicit `PhonePilot` mode only downloads verified public candidates; an optional
+`-InstallDeviceSupport` requests Apple Devices through the Store's normal compatibility checks.
+It never launches a signer, authenticates, pairs or installs an IPA. The primary remains active.
+
+[SideStore's prerequisites](https://docs.sidestore.io/docs/installation/prerequisites) exclude
+Windows 10 on ARM and 32-bit Windows, and prescribe iloader with Apple Devices as a fallback when
+iTunes fails. This supports testing Windows 11 ARM; it does not prove this laptop's Apple driver,
+USB or pairing path. Test USB/Trust first without forcing an incompatible driver package.
+The kit pins [iloader v2.4.0](https://github.com/nab138/iloader/releases/tag/v2.4.0), Windows x64 MSI,
+SHA-256 `24a594680f40e7750746d43384756b7a3d848cc054ed7760cb576ebde0e582d5`.
+This x64 client would use Windows 11 app emulation. Its release defaults to using the main profile;
+the Live Activity pilot still requires separate profiles for kept extensions. Do not silently
+upgrade the existing v2.3.6 installation/report or treat a new download as installed evidence.
+
+[Impactor v2.7.2](https://github.com/claration/impactor/releases/tag/v2.7.2) is another candidate,
+with a native ARM64 portable build. Downloaded bytes match the release digest and the actual PE
+machine header is ARM64; SHA-256
+`351ff17e1eab2a5615ab5c155a499f1eeb3c7347c0404cbf6918a4462b756b80`.
+Its Windows release still requires iTunes device drivers, so Apple Devices compatibility with this
+client remains a test, not a documented guarantee. Its [FAQ](https://impactor.claration.dev/docs/troubleshooting/faq/)
+describes remote anisette and beta automatic refresh. No credentials or pairing files were
+submitted in this research and it was not executed. This candidate has not replaced the approved
+SideStore experiment or current Sideloadly ownership. Use one route at a time and retain the
+data/identity/certificate gates below; either alternative needs suitable expiry monitoring before
+retiring the Sideloadly health task. A matching public hash is integrity evidence, not a security audit.
 
 ## What changes
 
@@ -77,6 +117,10 @@ These are our acceptance requirements, not completed migration steps:
    later ships the proposed background tasks. Preserve required capabilities and BLE ownership.
    A new signer is not evidence that background restoration works.
 5. Define a replacement expiry-health check before disabling Sideloadly enrollment or tasks.
+   **Built in source from Build 42, not device-verified:** the app reads its own bundled
+   provisioning profile and warns before expiry, which works whoever signs it. `setup.md`
+   owns it and its limits - it only re-arms when the app is opened and cannot make a refresh
+   happen. Prove it on the phone before retiring Sideloadly enrollment, not after.
    Our Windows check reads Sideloadly's database and cannot certify SideStore-managed renewals.
    A stale record must not become either false reassurance or endless recovery attempts.
 6. Prove at least two renewals without the PC, including SideStore's own renewal, with advancing

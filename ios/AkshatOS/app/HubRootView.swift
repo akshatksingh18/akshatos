@@ -62,7 +62,7 @@ struct HubRootView: View {
         case .pageVault: PageVaultLibraryView(store: services.pageVault) { services.orientation.setReadingSession($0) }
         case .watchlist: WatchlistView(store: services.watchlist)
         case .spending: SpendingView(store: services.spending)
-        case .backup: FullBackupView(service: services.backup)
+        case .backup: FullBackupView(service: services.backup, signing: services.signing)
         case .studyLog: StudyPreferencesView(store: services.studyLog)
         case .todo: TodoView(store: services.todo)
         case .journal: PersonalAppsView(services: services)
@@ -77,6 +77,7 @@ struct HubRootView: View {
         services.liftLog.load(); services.bodyLog.load(); services.studyLog.load()
         services.todo.load(); services.journal.load(); services.watchlist.load(); services.spending.load()
         services.personalNotifications.reconcile()
+        await services.signing.refresh()
         services.studyActivity.reconcile()
         if services.transfer.linked { await services.transfer.checkWatchlist(after: services.watchlist.state.metadataRevision) }
         if services.transfer.linked { await services.transfer.checkStudy() }

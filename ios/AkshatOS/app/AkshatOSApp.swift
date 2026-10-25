@@ -39,6 +39,7 @@ struct AkshatOSApp: App {
     let transfer: LinkedFolderService
     let backup: FullBackupService
     let notifications: AppNotificationCoordinator
+    let signing: SigningExpiryService
     /// App-lifetime, like the stores: a notification can be tapped before any hub screen exists,
     /// and the request has to survive until one does.
     let navigator = HubNavigator()
@@ -66,6 +67,8 @@ struct AkshatOSApp: App {
         let study = studyLog
         notifications = AppNotificationCoordinator(squats: squats, liftLog: liftLog, navigator: navigator, personal: personalNotifications,
             isStudying: { study.isRunning })
+        // Watches this build's own profile, so expiry is reported whoever re-signs the app.
+        signing = SigningExpiryService(center: SystemPersonalNotificationCenter())
         let scheduler = personalNotifications
         let activity = studyActivity
         studyLog.onChange = { scheduler.reconcile(); activity.reconcile() }; todo.onChange = { scheduler.reconcile() }
