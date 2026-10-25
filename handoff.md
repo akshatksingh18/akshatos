@@ -8,9 +8,11 @@ the executable palette contract. It is **cloud-verified and not phone-verified**
 passes at `00e401e` (run `40126784189`, attempt 1) with 208 hosted and 17 UI tests, both device
 variants and no IPA, so the new `HubBackground`, its generated grain tile and all six palette
 assertions compile and pass. Nothing is known about how the lit ground looks on the device or what it
-costs in battery. A phone-side signing-expiry monitor is new in source and **not compiled, not CI-run and not on a
-phone**: the app reads its own provisioning profile and warns before expiry, which works whoever
-signs it and closes the blind spot a SideStore move would otherwise open. `setup.md` owns it.
+costs in battery. A phone-side signing-expiry monitor is new in source: **cloud-verified at `8f0abc6`
+(run `40214152747`, 225 hosted/17 UI tests) but not on a phone and in no IPA** - Build 41
+predates it. The app reads its own provisioning profile and warns before expiry, which works
+whoever signs it and closes the blind spot a SideStore move would otherwise open. CI has no real
+profile, so the tests cover the rules and the absent-profile path only. `setup.md` owns it.
 Akshat has chosen SideStore for laptop-free refresh, not for the Live Activity timer, so the
 Build-39 candidate stays retired.
 

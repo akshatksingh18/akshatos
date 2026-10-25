@@ -39,7 +39,9 @@ exactly how the retired Squat Reminder registration reached expiry with `failure
 empty `last_error`. A silent blind spot is worse than a noisy check.
 
 AkshatOS therefore carries its own monitor, in source from Build 42 and **not yet device-verified**.
-It reads the `embedded.mobileprovision` inside its own bundle, takes the `ExpirationDate`, and
+The CI Gate passes at `8f0abc6` (run `40214152747`), covering the rules and the absent-profile path
+against synthetic data; CI has no real profile, so reading an actual one is still unproven and no
+released IPA contains it yet. It reads the `embedded.mobileprovision` inside its own bundle, takes the `ExpirationDate`, and
 schedules at most two passive local notifications — about three days out, and one day out. It
 refreshes nothing; like the Windows check it only proves the state and says so. The expiry and its
 wording appear on the Backup screen, and a tapped warning opens that screen, because backing up is

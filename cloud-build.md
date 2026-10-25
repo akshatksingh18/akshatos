@@ -6,6 +6,23 @@ acceptance. It includes Build 38's personal hub and native accessibility fixes. 
 installed/enrolled; Build 31 remains accepted recovery in `backup/`, with its checksum unchanged.
 The testing cache contains exactly one candidate. No new candidate is promoted without its phone pass.
 
+Build 42 is **0.16.0 (42)**, the standard extension-free variant. A minor bump rather than a
+patch because it adds a capability: the phone-side signing-expiry monitor. It supersedes the
+never-installed Build 41 in the single-slot testing cache, which stays reproducible from run
+`40129184233`. Accepted Build 31 in `backup/` is untouched. Everything Build 41 carried is
+included: Daily routine, the exchange importer, Journal retirement and the tungsten/violet
+palette.
+
+The phone-side signing-expiry monitor is verified in the cloud at `8f0abc6`, attempt 1:
+[run 40214152747](https://github.com/akshatksingh18/akshatos/actions/runs/40214152747) passes
+Source checks, Build and test iOS and CI Gate with 225 hosted and 17 UI tests, both device
+variants and no IPA. Hosted tests rose by exactly 17, matching `SigningExpiryDomainTests` (8) and
+`SigningExpiryServiceTests` (9); both are recorded as passed in the log. Windows run
+40214152759 passes unaffected. What this does **not** establish: CI has no real
+`embedded.mobileprovision`, so every test runs against synthetic profile data or the absent-profile
+path. Whether the monitor reads the actual installed profile is answerable only on the phone.
+No IPA carries it yet - Build 41 predates it.
+
 Build 41 is **0.15.1 (41)**, the first IPA to carry Build 40's Daily routine, finished-session
 exchange and Journal retirement together with the revised palette. It is the **standard**
 extension-free variant, because Sideloadly is the proven signer and the study-live-activity variant

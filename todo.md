@@ -73,12 +73,15 @@ accepted recovery. `implementation-plan.md` owns local coverage and `cloud-build
       `embedded.mobileprovision` and `SigningExpiryService` arms at most two passive warnings
       (about three days and one day out), routed to the Backup screen. Closes the blind spot
       where a SideStore-refreshed app would stop being watched by the Sideloadly-reading
-      Windows check. `setup.md` owns it; `SigningExpiryTests` holds the contract. Local checks
-      pass; **not compiled, no CI run, not on a phone.**
-- [ ] **Cloud-verify and phone-check the expiry monitor.** Needs a CI Gate run, then a release.
-      On the phone: confirm the Backup screen shows a real signed-until date, that a warning
-      actually arrives before expiry, and that tapping it opens Backup. Until a warning has
-      been seen arriving, do not retire Sideloadly enrolment for AkshatOS.
+      Windows check. `setup.md` owns it; `SigningExpiryTests` holds the contract.
+- [x] **Cloud-verified the expiry monitor.** CI Gate passes at `8f0abc6` (run `40214152747`,
+      attempt 1): 225 hosted and 17 UI tests, both device variants. Both new suites passed and the
+      hosted count rose by exactly 17. CI has no real provisioning profile, so this proves the
+      rules and the absent-profile path, not that it reads a real one.
+- [ ] **Phone-check the expiry monitor.** Needs a release that contains it; Build 41 predates it.
+      Confirm the Backup screen shows a real signed-until date matching Sideloadly's record, that
+      a warning actually arrives before expiry, and that tapping it opens Backup. **Until a warning
+      has been seen arriving, do not retire Sideloadly enrolment for AkshatOS.**
 - [ ] **Decide whether the expiry warnings need a toggle.** They are on whenever notification
       permission already exists, with no opt-out, because an off-by-default safety net is
       useless. That is two pending requests against the shared budget and was not separately
